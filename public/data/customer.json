@@ -1,0 +1,110 @@
+[
+  {
+    "code": "001",
+    "name": "ABC Corp",
+    "contact": "010-1234-5678",
+    "manager": "홍길동",
+    "email": "hong@example.com",
+    "address": "서울시 강남구",
+    "date": "2024-07-23"
+  },
+  {
+    "code": "002",
+    "name": "XYZ Inc",
+    "contact": "010-9876-5432",
+    "manager": "김철수",
+    "email": "kim@example.com",
+    "address": "부산시 해운대구",
+    "date": "2024-07-22"
+  },
+  {
+    "code": "003",
+    "name": "LMN Ltd",
+    "contact": "010-2345-6789",
+    "manager": "이영희",
+    "email": "lee@example.com",
+    "address": "대구시 수성구",
+    "date": "2024-07-21"
+  },
+  {
+    "code": "004",
+    "name": "PQR Co",
+    "contact": "010-3456-7890",
+    "manager": "박민수",
+    "email": "park@example.com",
+    "address": "서울시 동작구",
+    "date": "2024-07-20"
+  },
+  {
+    "code": "005",
+    "name": "STU Enterprises",
+    "contact": "010-4567-8901",
+    "manager": "최지훈",
+    "email": "choi@example.com",
+    "address": "인천시 연수구",
+    "date": "2024-07-19"
+  },
+  {
+    "code": "006",
+    "name": "VWX Solutions",
+    "contact": "010-5678-9012",
+    "manager": "정민석",
+    "email": "jeong@example.com",
+    "address": "경기도 성남시",
+    "date": "2024-07-18"
+  },
+  {
+    "code": "007",
+    "name": "YZA Technologies",
+    "contact": "010-6789-0123",
+    "manager": "윤석진",
+    "email": "yoon@example.com",
+    "address": "대전시 유성구",
+    "date": "2024-07-17"
+  },
+  {
+    "code": "008",
+    "name": "BCD Industries",
+    "contact": "010-7890-1234",
+    "manager": "한지민",
+    "email": "han@example.com",
+    "address": "울산시 남구",
+    "date": "2024-07-16"
+  },
+  {
+    "code": "009",
+    "name": "EFG Marketing",
+    "contact": "010-8901-2345",
+    "manager": "조성범",
+    "email": "jo@example.com",
+    "address": "광주시 북구",
+    "date": "2024-07-15"
+  },
+  {
+    "code": "010",
+    "name": "HIJ Services",
+    "contact": "010-9012-3456",
+    "manager": "한상훈",
+    "email": "han.sanghoon@example.com",
+    "address": "서울시 중구",
+    "date": "2024-07-14"
+  },
+  {
+    "code": "011",
+    "name": "KLM Solutions",
+    "contact": "010-0123-4567",
+    "manager": "배수정",
+    "email": "bae@example.com",
+    "address": "부산시 남구",
+    "date": "2024-07-13"
+  },
+  {
+    "code": "012",
+    "name": "NOP Logistics",
+    "contact": "010-1234-5679",
+    "manager": "서정민",
+    "email": "seo@example.com",
+    "address": "서울시 관악구",
+    "date": "2024-07-12"
+  }
+]
