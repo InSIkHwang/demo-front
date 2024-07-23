@@ -2,8 +2,8 @@ import React, { useState, useEffect, KeyboardEvent } from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
+import CustomerModal from "../components/customer/CustomerModal";
 
-// Styled components
 const ListWrap = styled.div`
   position: relative;
   top: 100px;
@@ -28,6 +28,16 @@ const ListHeader = styled.div`
   width: 100%;
 `;
 
+const CreateBtn = styled.div`
+  padding: 10px;
+  font-size: 16px;
+  margin-right: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-sizing: border-box;
+  cursor: pointer;
+`;
+
 const ListSearchBarWrapper = styled.div`
   position: relative;
   display: flex;
@@ -38,7 +48,7 @@ const ListSearchBarWrapper = styled.div`
 
 const ListSearchBar = styled.input`
   width: 100%;
-  padding: 10px 40px 10px 10px; /* 아이콘을 위한 패딩 추가 */
+  padding: 10px 40px 10px 10px;
   font-size: 16px;
   border: 1px solid #ddd;
   border-radius: 4px;
@@ -50,7 +60,7 @@ const SearchIcon = styled(FontAwesomeIcon)`
   right: 10px;
   transform: translateY(-50%);
   color: #888;
-  cursor: pointer; /* 클릭할 수 있음을 시각적으로 표시 */
+  cursor: pointer;
 `;
 
 const SearchDropdown = styled.select`
@@ -59,8 +69,7 @@ const SearchDropdown = styled.select`
   font-size: 16px;
   border: 1px solid #ddd;
   border-radius: 4px;
-  margin-right: 10px; /* 검색 바와의 간격 */
-  box-sizing: border-box; /* 패딩과 테두리를 너비에 포함 */
+  box-sizing: border-box;
 `;
 
 const ListTable = styled.div`
@@ -97,7 +106,6 @@ const LoadingMessage = styled.div`
   padding: 20px;
 `;
 
-// Define the Customer type
 interface Customer {
   code: string;
   name: string;
@@ -113,10 +121,11 @@ const CustomerList = () => {
   const [searchText, setSearchText] = useState("");
   const [searchCategory, setSearchCategory] = useState("all");
   const [filteredData, setFilteredData] = useState<Customer[]>([]);
-  const [loading, setLoading] = useState(true); // 로딩 상태 추가
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    fetch("/data/customer.json") // 데이터 파일 경로
+    fetch("/data/customer.json") // 임시 데이터 파일 경로
       .then((response) => response.json())
       .then((data: Customer[]) => {
         setData(data);
@@ -129,7 +138,6 @@ const CustomerList = () => {
       });
   }, []);
 
-  // Search filter logic
   const applyFilter = () => {
     const result =
       searchText.trim() === ""
@@ -154,12 +162,14 @@ const CustomerList = () => {
     setFilteredData(result);
   };
 
-  // Handle Enter key press
-  const handleKeyPress = (event: KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
       applyFilter();
     }
   };
+
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
 
   if (loading) {
     return <LoadingMessage>로딩 중...</LoadingMessage>;
@@ -169,6 +179,7 @@ const CustomerList = () => {
     <ListWrap>
       <ListTitle>매출처 관리</ListTitle>
       <ListHeader>
+        <CreateBtn onClick={openModal}>신규 등록</CreateBtn>{" "}
         <SearchDropdown onChange={(e) => setSearchCategory(e.target.value)}>
           <option value="all">통합검색</option>
           <option value="code">코드검색</option>
@@ -179,12 +190,12 @@ const CustomerList = () => {
             placeholder="검색..."
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
-            onKeyPress={handleKeyPress} // 엔터 키 이벤트 핸들링
+            onKeyDown={handleKeyDown}
           />
           <SearchIcon icon={faSearch} onClick={applyFilter} />{" "}
-          {/* 돋보기 버튼 클릭 시 필터링 */}
         </ListSearchBarWrapper>
       </ListHeader>
+      {isModalOpen && <CustomerModal onClose={closeModal} />}{" "}
       <ListTable>
         <Table>
           <thead>
