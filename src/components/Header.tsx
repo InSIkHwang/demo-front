@@ -84,7 +84,7 @@ interface SubMenuProps {
 }
 
 const SubMenu = styled.div<SubMenuProps>`
-  padding-left: 30px;
+  margin-left: 40px;
   font-size: 12px;
   display: ${({ isOpen }) => (isOpen ? "block" : "none")};
   margin-bottom: 35px;
