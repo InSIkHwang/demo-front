@@ -22,13 +22,20 @@ const ModalContent = styled.div`
   position: relative;
 `;
 
+const ModalTitle = styled.div`
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 15px;
+`;
+
 const CloseButton = styled.button`
   position: absolute;
   top: 10px;
   right: 10px;
   border: none;
   background: transparent;
-  font-size: 18px;
+  font-size: 32px;
   cursor: pointer;
 `;
 
@@ -43,7 +50,7 @@ const Label = styled.label`
 
 const Input = styled.input`
   width: 100%;
-  padding: 8px;
+  padding: 8px 0;
   border: 1px solid #ddd;
   border-radius: 4px;
 `;
@@ -56,13 +63,22 @@ const SubmitButton = styled.button`
   color: white;
   border-radius: 4px;
   cursor: pointer;
+  display: block;
+  margin-left: auto;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: #1560ac;
+  }
 `;
 
 interface ModalProps {
   onClose: () => void;
 }
 
-const CustomerModal = ({ onClose }: ModalProps) => {
+const CustomerCreateModal = ({ onClose }: ModalProps) => {
+  const todayDate = new Date().toISOString().split("T")[0]; //
+
   const [formData, setFormData] = useState({
     code: "",
     name: "",
@@ -70,7 +86,7 @@ const CustomerModal = ({ onClose }: ModalProps) => {
     manager: "",
     email: "",
     address: "",
-    date: "",
+    date: todayDate,
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -87,11 +103,17 @@ const CustomerModal = ({ onClose }: ModalProps) => {
     onClose();
   };
 
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   return (
-    <ModalBackdrop>
+    <ModalBackdrop onClick={handleBackdropClick}>
       <ModalContent>
         <CloseButton onClick={onClose}>&times;</CloseButton>
-        <h2>신규 매출처 등록</h2>
+        <ModalTitle>신규 매출처 등록</ModalTitle>
         <form onSubmit={handleSubmit}>
           <FormGroup>
             <Label htmlFor="code">코드</Label>
@@ -163,4 +185,4 @@ const CustomerModal = ({ onClose }: ModalProps) => {
   );
 };
 
-export default CustomerModal;
+export default CustomerCreateModal;

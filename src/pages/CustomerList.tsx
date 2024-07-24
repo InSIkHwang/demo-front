@@ -1,110 +1,54 @@
-import React, { useState, useEffect, KeyboardEvent } from "react";
+import React, { useState, useEffect } from "react";
+import { Table, Input, Button as AntButton, Select, Pagination } from "antd";
+import { SearchOutlined, LeftOutlined, RightOutlined } from "@ant-design/icons";
+import CustomerCreateModal from "../components/customer/CustomerCreateModal";
+import type { ColumnsType } from "antd/es/table";
 import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSearch } from "@fortawesome/free-solid-svg-icons";
-import CustomerModal from "../components/customer/CustomerModal";
+import CustomerDetailModal from "../components/customer/CustomerDetailModal ";
 
-const ListWrap = styled.div`
+const Container = styled.div`
   position: relative;
   top: 100px;
+  padding: 20px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
   margin: 0 auto;
   width: 1200px;
-  border: 2px solid #ccc;
-  padding: 20px;
-  border-radius: 8px;
 `;
 
-const ListTitle = styled.h1`
+const Title = styled.h1`
   font-size: 24px;
   margin-bottom: 20px;
   color: #333;
 `;
 
-const ListHeader = styled.div`
+const TableHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+`;
+
+const SearchBar = styled.div`
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  margin-bottom: 20px;
-  width: 100%;
 `;
 
-const CreateBtn = styled.div`
-  padding: 10px;
-  font-size: 16px;
-  margin-right: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  box-sizing: border-box;
-  cursor: pointer;
-`;
-
-const ListSearchBarWrapper = styled.div`
-  position: relative;
-  display: flex;
-  width: 40%;
-  margin-left: 10px;
-  justify-content: flex-end;
-`;
-
-const ListSearchBar = styled.input`
-  width: 100%;
-  padding: 10px 40px 10px 10px;
-  font-size: 16px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-`;
-
-const SearchIcon = styled(FontAwesomeIcon)`
-  position: absolute;
-  top: 50%;
-  right: 10px;
-  transform: translateY(-50%);
-  color: #888;
-  cursor: pointer;
-`;
-
-const SearchDropdown = styled.select`
-  width: 20%;
-  padding: 10px;
-  font-size: 16px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  box-sizing: border-box;
-`;
-
-const ListTable = styled.div`
-  overflow-x: auto;
-`;
-
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-`;
-
-const TableHeader = styled.th`
+const Button = styled(AntButton)`
   background-color: #1976d2;
   color: white;
-  padding: 10px;
-  text-align: left;
-`;
+  transition: background-color 0.3s;
 
-const TableCell = styled.td`
-  padding: 10px;
-  border: 1px solid #ddd;
-`;
-
-const TableRow = styled.tr`
-  &:nth-child(even) {
-    background-color: #f9f9f9;
+  &:hover {
+    background-color: #1560ac !important;
   }
 `;
 
-const LoadingMessage = styled.div`
-  text-align: center;
-  font-size: 18px;
-  color: #666;
-  padding: 20px;
+const PaginationWrapper = styled(Pagination)`
+  margin-top: 20px;
+  justify-content: center;
 `;
+
+const { Option } = Select;
 
 interface Customer {
   code: string;
@@ -118,23 +62,29 @@ interface Customer {
 
 const CustomerList = () => {
   const [data, setData] = useState<Customer[]>([]);
-  const [searchText, setSearchText] = useState("");
-  const [searchCategory, setSearchCategory] = useState("all");
+  const [searchText, setSearchText] = useState<string>("");
+  const [searchCategory, setSearchCategory] = useState<string>("all");
   const [filteredData, setFilteredData] = useState<Customer[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(10);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+    null
+  );
 
   useEffect(() => {
-    fetch("/data/customer.json") // 임시 데이터 파일 경로
+    fetch("/data/customer.json")
       .then((response) => response.json())
       .then((data: Customer[]) => {
         setData(data);
-        setFilteredData(data); // 데이터 로드 후 필터링된 데이터 초기화
-        setLoading(false); // 데이터 로드 완료 후 로딩 상태 변경
+        setFilteredData(data);
+        setLoading(false);
       })
       .catch((error) => {
         console.error("Error loading data:", error);
-        setLoading(false); // 오류 발생 시에도 로딩 상태 변경
+        setLoading(false);
       });
   }, []);
 
@@ -156,75 +106,152 @@ const CustomerList = () => {
               return item.code.includes(searchText);
             } else if (searchCategory === "name") {
               return item.name.includes(searchText);
+            } else if (searchCategory === "address") {
+              return item.address.includes(searchText);
             }
             return false;
           });
     setFilteredData(result);
+    setCurrentPage(1);
   };
 
-  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter") {
-      applyFilter();
-    }
+  const columns: ColumnsType<Customer> = [
+    {
+      title: "코드",
+      dataIndex: "code",
+      key: "code",
+    },
+    {
+      title: "상호명",
+      dataIndex: "name",
+      key: "name",
+      sorter: (a, b) => a.name.localeCompare(b.name),
+      sortDirections: ["ascend", "descend"],
+    },
+    {
+      title: "연락처",
+      dataIndex: "contact",
+      key: "contact",
+    },
+    {
+      title: "담당자",
+      dataIndex: "manager",
+      key: "manager",
+    },
+    {
+      title: "이메일",
+      dataIndex: "email",
+      key: "email",
+    },
+    {
+      title: "주소",
+      dataIndex: "address",
+      key: "address",
+    },
+    {
+      title: "등록일",
+      dataIndex: "date",
+      key: "date",
+      sorter: (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+      sortDirections: ["ascend", "descend"],
+    },
+  ];
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
-  if (loading) {
-    return <LoadingMessage>로딩 중...</LoadingMessage>;
-  }
+  const openDetailModal = (customer: Customer) => {
+    setSelectedCustomer(customer);
+    setIsDetailModalOpen(true);
+  };
+
+  const closeDetailModal = () => {
+    setSelectedCustomer(null);
+    setIsDetailModalOpen(false);
+  };
+
+  const paginatedData = filteredData.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handlePageSizeChange = (current: number, size: number) => {
+    setItemsPerPage(size);
+    setCurrentPage(1);
+  };
 
   return (
-    <ListWrap>
-      <ListTitle>매출처 관리</ListTitle>
-      <ListHeader>
-        <CreateBtn onClick={openModal}>신규 등록</CreateBtn>{" "}
-        <SearchDropdown onChange={(e) => setSearchCategory(e.target.value)}>
-          <option value="all">통합검색</option>
-          <option value="code">코드검색</option>
-          <option value="name">상호명</option>
-        </SearchDropdown>
-        <ListSearchBarWrapper>
-          <ListSearchBar
-            placeholder="검색..."
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            onKeyDown={handleKeyDown}
-          />
-          <SearchIcon icon={faSearch} onClick={applyFilter} />{" "}
-        </ListSearchBarWrapper>
-      </ListHeader>
-      {isModalOpen && <CustomerModal onClose={closeModal} />}{" "}
-      <ListTable>
-        <Table>
-          <thead>
-            <tr>
-              <TableHeader>코드</TableHeader>
-              <TableHeader>상호명</TableHeader>
-              <TableHeader>연락처</TableHeader>
-              <TableHeader>담당자</TableHeader>
-              <TableHeader>이메일</TableHeader>
-              <TableHeader>주소</TableHeader>
-              <TableHeader>등록일</TableHeader>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredData.map((item) => (
-              <TableRow key={item.code}>
-                <TableCell>{item.code}</TableCell>
-                <TableCell>{item.name}</TableCell>
-                <TableCell>{item.contact}</TableCell>
-                <TableCell>{item.manager}</TableCell>
-                <TableCell>{item.email}</TableCell>
-                <TableCell>{item.address}</TableCell>
-                <TableCell>{item.date}</TableCell>
-              </TableRow>
-            ))}
-          </tbody>
-        </Table>
-      </ListTable>
-    </ListWrap>
+    <>
+      <Container>
+        <Title>매출처 관리</Title>
+        <TableHeader>
+          <SearchBar>
+            <Select
+              defaultValue="all"
+              style={{ width: 120, marginRight: 10 }}
+              onChange={(value) => setSearchCategory(value)}
+            >
+              <Option value="all">통합검색</Option>
+              <Option value="code">코드</Option>
+              <Option value="name">상호명</Option>
+              <Option value="address">주소</Option>
+            </Select>
+            <Input
+              placeholder="검색..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              onPressEnter={applyFilter}
+              style={{ width: 300, marginRight: 10 }}
+              suffix={<SearchOutlined onClick={applyFilter} />}
+            />
+          </SearchBar>
+          <Button type="primary" onClick={openModal}>
+            신규 등록
+          </Button>
+        </TableHeader>
+        <Table
+          columns={columns}
+          dataSource={paginatedData}
+          pagination={false}
+          loading={loading}
+          rowKey="code"
+          onRow={(record) => ({
+            onClick: () => openDetailModal(record),
+          })}
+          style={{ cursor: "pointer" }}
+        />
+        <PaginationWrapper
+          current={currentPage}
+          pageSize={itemsPerPage}
+          total={filteredData.length}
+          onChange={handlePageChange}
+          onShowSizeChange={handlePageSizeChange}
+          showSizeChanger
+          pageSizeOptions={[10, 15, 30, 50, 100]}
+          showQuickJumper
+          itemRender={(page, type, originalElement) => {
+            if (type === "prev") {
+              return <LeftOutlined />;
+            }
+            if (type === "next") {
+              return <RightOutlined />;
+            }
+            return originalElement;
+          }}
+        />
+      </Container>
+      {isModalOpen && <CustomerCreateModal onClose={closeModal} />}
+      {isDetailModalOpen && selectedCustomer && (
+        <CustomerDetailModal
+          customer={selectedCustomer}
+          onClose={closeDetailModal}
+        />
+      )}
+    </>
   );
 };
 

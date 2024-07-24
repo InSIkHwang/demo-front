@@ -11,18 +11,17 @@ import {
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
-// Styled components
 const StyledHeader = styled.header`
   display: flex;
   align-items: center;
   position: fixed;
   width: 100vw;
-  height: 30px; /* 헤더 높이 조정 */
+  height: 60px;
   top: 0;
   font-size: 14px;
   padding: 20px;
   color: white;
-  z-index: 1000; /* 헤더가 사이드 메뉴보다 위에 오도록 z-index 조정 */
+  z-index: 1000;
   background-color: #1976d2;
 `;
 
@@ -41,7 +40,7 @@ const HeaderMenuBtnWrapper = styled.div`
   border-radius: 50%;
   background-color: white;
   cursor: pointer;
-  z-index: 1001; /* 버튼이 헤더와 사이드 메뉴보다 위에 있도록 z-index 조정 */
+  z-index: 1001;
 `;
 
 const HeaderMenuBtnIcon = styled(FontAwesomeIcon)`
@@ -56,36 +55,45 @@ const HeaderMenuBtnIcon = styled(FontAwesomeIcon)`
 
 const SideMenu = styled(motion.div)`
   position: fixed;
-  top: 60px; /* 헤더의 높이만큼 조정 */
+  top: 60px;
   left: 0;
-  height: calc(100vh - 60px); /* 헤더의 높이만큼 제외 */
+  height: calc(100vh - 60px);
   width: 280px;
-  background-color: #333; /* 배경 색상 */
+  background-color: #333;
   color: white;
   padding: 20px;
-  z-index: 999; /* 사이드 메뉴가 헤더와 버튼보다 아래에 있도록 z-index 조정 */
+  z-index: 999;
   overflow: hidden;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 `;
-
-// TypeScript interface for SubMenu props
-interface SubMenuProps {
-  isOpen: boolean;
-}
 
 const MenuItem = styled.div`
   margin: 10px 0;
   font-size: 18px;
   display: flex;
   align-items: center;
-  padding-top: 30px;
+  padding: 10px 20px;
   cursor: pointer;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.205);
+  }
 `;
+interface SubMenuProps {
+  isOpen: boolean;
+}
 
 const SubMenu = styled.div<SubMenuProps>`
-  margin-left: 20px;
+  padding-left: 30px;
   font-size: 12px;
   display: ${({ isOpen }) => (isOpen ? "block" : "none")};
+  margin-bottom: 35px;
+
+  & > div {
+    border-radius: 5px;
+    border-left: 1px solid #ccc;
+  }
 `;
 
 const menuVariants = {
@@ -93,7 +101,16 @@ const menuVariants = {
   closed: { x: "-100%", opacity: 0 },
 };
 
-// Main Header component
+const Backdrop = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #0000004e;
+  z-index: 998;
+`;
+
 const Header = () => {
   const [isMenuOpen, setMenuOpen] = useState(false);
   const [isEstimateOpen, setEstimateOpen] = useState(false);
@@ -109,14 +126,21 @@ const Header = () => {
     setMenuOpen(false);
   };
 
+  const handleMenuItemClick = (callback: () => void) => {
+    callback();
+    setMenuOpen(false);
+  };
+
   return (
     <>
-      <StyledHeader onClick={closeMenu}>
+      <StyledHeader>
         <HeaderMenuBtnWrapper onClick={toggleMenu}>
           <HeaderMenuBtnIcon icon={faBars} />
         </HeaderMenuBtnWrapper>
         <HeaderTitle>BAS KOREA</HeaderTitle>
       </StyledHeader>
+
+      {isMenuOpen && <Backdrop onClick={closeMenu} />}
 
       <SideMenu
         initial="closed"
@@ -137,8 +161,16 @@ const Header = () => {
           />
         </MenuItem>
         <SubMenu isOpen={isEstimateOpen}>
-          <MenuItem>견적생성</MenuItem>
-          <MenuItem>견적관리</MenuItem>
+          <MenuItem
+            onClick={() => handleMenuItemClick(() => console.log("견적생성"))}
+          >
+            견적생성
+          </MenuItem>
+          <MenuItem
+            onClick={() => handleMenuItemClick(() => console.log("견적관리"))}
+          >
+            견적관리
+          </MenuItem>
         </SubMenu>
         <MenuItem onClick={() => setCodeOpen(!isCodeOpen)}>
           <FontAwesomeIcon icon={faCode} style={{ marginRight: "10px" }} />
@@ -149,9 +181,21 @@ const Header = () => {
           />
         </MenuItem>
         <SubMenu isOpen={isCodeOpen}>
-          <MenuItem onClick={() => navigate("/customerlist")}>매출처</MenuItem>
-          <MenuItem>매입처</MenuItem>
-          <MenuItem>선박</MenuItem>
+          <MenuItem
+            onClick={() => handleMenuItemClick(() => navigate("/customerlist"))}
+          >
+            매출처
+          </MenuItem>
+          <MenuItem
+            onClick={() => handleMenuItemClick(() => console.log("매입처"))}
+          >
+            매입처
+          </MenuItem>
+          <MenuItem
+            onClick={() => handleMenuItemClick(() => console.log("선박"))}
+          >
+            선박
+          </MenuItem>
         </SubMenu>
       </SideMenu>
     </>
