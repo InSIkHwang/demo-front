@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 
 const ModalBackdrop = styled.div`
@@ -55,20 +55,22 @@ const Input = styled.input`
   border-radius: 4px;
 `;
 
-const SubmitButton = styled.button`
+const SubmitButton = styled.button<{ disabled: boolean }>`
   padding: 10px 20px;
   font-size: 16px;
   border: none;
   background-color: #1976d2;
   color: white;
   border-radius: 4px;
-  cursor: pointer;
+  cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
   display: block;
   margin-left: auto;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s, opacity 0.3s;
+
+  opacity: ${({ disabled }) => (disabled ? 0.5 : 1)};
 
   &:hover {
-    background-color: #1560ac;
+    background-color: ${({ disabled }) => (disabled ? "#1976d2" : "#1560ac")};
   }
 `;
 
@@ -77,7 +79,7 @@ interface ModalProps {
 }
 
 const CustomerCreateModal = ({ onClose }: ModalProps) => {
-  const todayDate = new Date().toISOString().split("T")[0]; //
+  const todayDate = new Date().toISOString().split("T")[0];
 
   const [formData, setFormData] = useState({
     code: "",
@@ -89,6 +91,9 @@ const CustomerCreateModal = ({ onClose }: ModalProps) => {
     date: todayDate,
   });
 
+  const [isCodeUnique, setIsCodeUnique] = useState(false);
+  const [isCheckingCode, setIsCheckingCode] = useState(false);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
@@ -96,7 +101,41 @@ const CustomerCreateModal = ({ onClose }: ModalProps) => {
     });
   };
 
-  //API 연동 후 처리 가능 현재는 콘솔 출력만 함.
+  const debounce = <T extends (...args: any[]) => void>(
+    func: T,
+    delay: number
+  ) => {
+    let timer: NodeJS.Timeout;
+    return (...args: Parameters<T>) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => func(...args), delay);
+    };
+  };
+
+  //중복 코드 체크 로직
+  const checkCodeUnique = debounce(async () => {
+    if (formData.code.trim() === "") {
+      setIsCodeUnique(false);
+      return;
+    }
+    setIsCheckingCode(true);
+    try {
+      // API request 예시
+      const response = await fetch(`/api/check-code?code=${formData.code}`);
+      const result = await response.json();
+      setIsCodeUnique(result.code); // 응답 T/F
+    } catch (error) {
+      console.error("Error checking code unique:", error);
+      setIsCodeUnique(false);
+    } finally {
+      setIsCheckingCode(false);
+    }
+  }, 200);
+
+  useEffect(() => {
+    checkCodeUnique();
+  }, [formData.code]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Form Data:", formData);
@@ -178,7 +217,12 @@ const CustomerCreateModal = ({ onClose }: ModalProps) => {
               onChange={handleChange}
             />
           </FormGroup>
-          <SubmitButton type="submit">등록</SubmitButton>
+          <SubmitButton
+            type="submit"
+            disabled={!isCodeUnique || isCheckingCode}
+          >
+            등록
+          </SubmitButton>
         </form>
       </ModalContent>
     </ModalBackdrop>

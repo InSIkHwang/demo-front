@@ -16,8 +16,7 @@ const StyledHeader = styled.header`
   align-items: center;
   position: fixed;
   width: 100vw;
-  height: 60px;
-  top: 0;
+  height: 70px;
   font-size: 14px;
   padding: 20px;
   color: white;

@@ -8,12 +8,13 @@ import CustomerDetailModal from "../components/customer/CustomerDetailModal ";
 
 const Container = styled.div`
   position: relative;
-  top: 100px;
+  top: 150px;
   padding: 20px;
   border: 2px solid #ccc;
   border-radius: 8px;
   margin: 0 auto;
   width: 1200px;
+  margin-bottom: 300px;
 `;
 
 const Title = styled.h1`

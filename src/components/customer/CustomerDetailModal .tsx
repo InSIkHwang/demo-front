@@ -41,14 +41,25 @@ const CloseButton = styled.button`
 `;
 
 const DetailItem = styled.div`
-  margin-bottom: 10px;
+  padding: 10px 0;
+  border-top: 1px solid #ccc;
   display: flex;
-  justify-content: space-between;
+`;
+
+const PropName = styled.span`
+  font-weight: 700;
+  text-align: center;
+  width: 70px;
+  border-right: 1px solid #ccc;
+`;
+
+const PropValue = styled.span`
+  padding-left: 10px;
 `;
 
 const BtnWrap = styled.div`
   display: flex;
-  margin-top: 25px;
+  margin-top: 30px;
   justify-content: space-around;
 `;
 
@@ -122,8 +133,15 @@ const CustomerDetailModal = ({ customer, onClose }: ModalProps) => {
     onClose();
   };
 
+  const handleDelete = () => {
+    if (window.confirm("정말 삭제하시겠습니까?")) {
+      console.log("Deleted Data:", formData);
+      onClose();
+    }
+  };
+
   const readOnlyFields = {
-    code: true, // Code field is read-only
+    code: true, //read-only
     name: !isEditing,
     contact: !isEditing,
     manager: !isEditing,
@@ -147,39 +165,41 @@ const CustomerDetailModal = ({ customer, onClose }: ModalProps) => {
           />
         ) : (
           <>
-            <DetailItem>
-              <span>코드:</span>
-              <span>{formData.code}</span>
+            <DetailItem style={{ borderTop: "none" }}>
+              <PropName>코드</PropName>
+              <PropValue>{formData.code}</PropValue>
             </DetailItem>
             <DetailItem>
-              <span>상호명:</span>
-              <span>{formData.name}</span>
+              <PropName>상호명</PropName>
+              <PropValue>{formData.name}</PropValue>
             </DetailItem>
             <DetailItem>
-              <span>연락처:</span>
-              <span>{formData.contact}</span>
+              <PropName>연락처</PropName>
+              <PropValue>{formData.contact}</PropValue>
             </DetailItem>
             <DetailItem>
-              <span>담당자:</span>
-              <span>{formData.manager}</span>
+              <PropName>담당자</PropName>
+              <PropValue>{formData.manager}</PropValue>
             </DetailItem>
             <DetailItem>
-              <span>이메일:</span>
-              <span>{formData.email}</span>
+              <PropName>이메일</PropName>
+              <PropValue>{formData.email}</PropValue>
             </DetailItem>
             <DetailItem>
-              <span>주소:</span>
-              <span>{formData.address}</span>
+              <PropName>주소</PropName>
+              <PropValue>{formData.address}</PropValue>
             </DetailItem>
             <DetailItem>
-              <span>등록일:</span>
-              <span>{formData.date}</span>
+              <PropName>등록일</PropName>
+              <PropValue>{formData.date}</PropValue>
             </DetailItem>
             <BtnWrap>
               <UpdateButton type="button" onClick={() => setIsEditing(true)}>
                 수정
               </UpdateButton>
-              <DeleteButton type="button">삭제</DeleteButton>
+              <DeleteButton type="button" onClick={handleDelete}>
+                삭제
+              </DeleteButton>
             </BtnWrap>
           </>
         )}
