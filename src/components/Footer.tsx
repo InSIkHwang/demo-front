@@ -10,6 +10,7 @@ const FooterDiv = styled.div`
   font-size: 13px;
   color: #7c7c7c;
   border-top: 1px solid #7c7c7c;
+  bottom: 0;
 `;
 
 const Footer = () => {

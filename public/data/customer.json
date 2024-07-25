@@ -6,6 +6,7 @@
     "manager": "홍길동",
     "email": "hong@example.com",
     "address": "서울시 강남구",
+    "language": "ENG",
     "date": "2024-07-23"
   },
   {
@@ -15,6 +16,7 @@
     "manager": "김철수",
     "email": "kim@example.com",
     "address": "부산시 해운대구",
+    "language": "ENG",
     "date": "2024-07-22"
   },
   {
@@ -24,6 +26,7 @@
     "manager": "이영희",
     "email": "lee@example.com",
     "address": "대구시 수성구",
+    "language": "ENG",
     "date": "2024-07-21"
   },
   {
@@ -33,6 +36,7 @@
     "manager": "박민수",
     "email": "park@example.com",
     "address": "서울시 동작구",
+    "language": "ENG",
     "date": "2024-07-20"
   },
   {
@@ -42,6 +46,7 @@
     "manager": "최지훈",
     "email": "choi@example.com",
     "address": "인천시 연수구",
+    "language": "ENG",
     "date": "2024-07-19"
   },
   {
@@ -51,6 +56,7 @@
     "manager": "정민석",
     "email": "jeong@example.com",
     "address": "경기도 성남시",
+    "language": "ENG",
     "date": "2024-07-18"
   },
   {
@@ -60,6 +66,7 @@
     "manager": "윤석진",
     "email": "yoon@example.com",
     "address": "대전시 유성구",
+    "language": "ENG",
     "date": "2024-07-17"
   },
   {
@@ -69,6 +76,7 @@
     "manager": "한지민",
     "email": "han@example.com",
     "address": "울산시 남구",
+    "language": "ENG",
     "date": "2024-07-16"
   },
   {
@@ -78,6 +86,7 @@
     "manager": "조성범",
     "email": "jo@example.com",
     "address": "광주시 북구",
+    "language": "ENG",
     "date": "2024-07-15"
   },
   {
@@ -87,6 +96,7 @@
     "manager": "한상훈",
     "email": "han.sanghoon@example.com",
     "address": "서울시 중구",
+    "language": "ENG",
     "date": "2024-07-14"
   },
   {
@@ -96,6 +106,7 @@
     "manager": "배수정",
     "email": "bae@example.com",
     "address": "부산시 남구",
+    "language": "ENG",
     "date": "2024-07-13"
   },
   {
@@ -105,6 +116,7 @@
     "manager": "서정민",
     "email": "seo@example.com",
     "address": "서울시 관악구",
+    "language": "ENG",
     "date": "2024-07-12"
   },
   {
@@ -114,6 +126,7 @@
     "manager": "문성호",
     "email": "mun@example.com",
     "address": "서울시 서초구",
+    "language": "ENG",
     "date": "2024-07-11"
   },
   {
@@ -123,6 +136,7 @@
     "manager": "홍지혜",
     "email": "hongji@example.com",
     "address": "서울시 강서구",
+    "language": "ENG",
     "date": "2024-07-10"
   },
   {
@@ -132,6 +146,7 @@
     "manager": "이민수",
     "email": "lee.minsoo@example.com",
     "address": "경기도 부천시",
+    "language": "ENG",
     "date": "2024-07-09"
   },
   {
@@ -141,6 +156,7 @@
     "manager": "김나영",
     "email": "kim.nayoung@example.com",
     "address": "울산시 북구",
+    "language": "ENG",
     "date": "2024-07-08"
   },
   {
@@ -150,6 +166,7 @@
     "manager": "최윤석",
     "email": "choi.yoonseok@example.com",
     "address": "대전시 동구",
+    "language": "ENG",
     "date": "2024-07-07"
   },
   {
@@ -159,6 +176,7 @@
     "manager": "정호영",
     "email": "jeong.hoyoung@example.com",
     "address": "부산시 사하구",
+    "language": "ENG",
     "date": "2024-07-05"
   },
   {
@@ -168,6 +186,7 @@
     "manager": "이혜진",
     "email": "lee.hyejin@example.com",
     "address": "서울시 송파구",
+    "language": "ENG",
     "date": "2024-07-04"
   },
   {
@@ -177,6 +196,7 @@
     "manager": "김영호",
     "email": "kim.youngho@example.com",
     "address": "서울시 마포구",
+    "language": "ENG",
     "date": "2024-07-03"
   },
   {
@@ -186,6 +206,7 @@
     "manager": "정미래",
     "email": "jeong.mirae@example.com",
     "address": "경기도 안양시",
+    "language": "ENG",
     "date": "2024-07-02"
   },
   {
@@ -195,6 +216,7 @@
     "manager": "한수민",
     "email": "han.sumin@example.com",
     "address": "부산시 서구",
+    "language": "ENG",
     "date": "2024-07-01"
   },
   {
@@ -204,6 +226,7 @@
     "manager": "서태양",
     "email": "seo.taeyang@example.com",
     "address": "경기도 시흥시",
+    "language": "ENG",
     "date": "2024-06-30"
   },
   {
@@ -213,6 +236,7 @@
     "manager": "조현수",
     "email": "jo.hyeonsu@example.com",
     "address": "서울시 강북구",
+    "language": "ENG",
     "date": "2024-06-29"
   },
   {
@@ -222,6 +246,7 @@
     "manager": "박하늘",
     "email": "park.haneul@example.com",
     "address": "부산시 금정구",
+    "language": "ENG",
     "date": "2024-06-28"
   },
   {
@@ -231,6 +256,7 @@
     "manager": "이수연",
     "email": "lee.suyeon@example.com",
     "address": "울산시 중구",
+    "language": "ENG",
     "date": "2024-06-27"
   },
   {
@@ -240,6 +266,7 @@
     "manager": "정석진",
     "email": "jeong.seokjin@example.com",
     "address": "서울시 서대문구",
+    "language": "ENG",
     "date": "2024-06-26"
   },
   {
@@ -249,6 +276,7 @@
     "manager": "한예진",
     "email": "han.yejin@example.com",
     "address": "대구시 달서구",
+    "language": "ENG",
     "date": "2024-06-25"
   },
   {
@@ -258,6 +286,7 @@
     "manager": "이민아",
     "email": "lee.mina@example.com",
     "address": "부산시 북구",
+    "language": "ENG",
     "date": "2024-06-24"
   },
   {
@@ -267,6 +296,7 @@
     "manager": "김선영",
     "email": "kim.seonyoung@example.com",
     "address": "경기도 고양시",
+    "language": "ENG",
     "date": "2024-06-23"
   },
   {
@@ -276,6 +306,7 @@
     "manager": "정지훈",
     "email": "jeong.jihoon@example.com",
     "address": "서울시 노원구",
+    "language": "ENG",
     "date": "2024-06-22"
   },
   {
@@ -285,6 +316,7 @@
     "manager": "한상미",
     "email": "han.sangmi@example.com",
     "address": "부산시 사상구",
+    "language": "ENG",
     "date": "2024-06-21"
   },
   {
@@ -294,6 +326,7 @@
     "manager": "서유진",
     "email": "seo.yujin@example.com",
     "address": "경기도 용인시",
+    "language": "ENG",
     "date": "2024-06-20"
   },
   {
@@ -303,6 +336,7 @@
     "manager": "조동현",
     "email": "jo.donghyun@example.com",
     "address": "서울시 강동구",
+    "language": "ENG",
     "date": "2024-06-19"
   },
   {
@@ -312,6 +346,7 @@
     "manager": "이시원",
     "email": "lee.siwan@example.com",
     "address": "부산시 연제구",
+    "language": "ENG",
     "date": "2024-06-18"
   },
   {
@@ -321,6 +356,7 @@
     "manager": "박지은",
     "email": "park.jieun@example.com",
     "address": "대구시 동구",
+    "language": "ENG",
     "date": "2024-06-17"
   },
   {
@@ -330,6 +366,7 @@
     "manager": "박상현",
     "email": "park.sanghyun@example.com",
     "address": "서울시 영등포구",
+    "language": "ENG",
     "date": "2024-07-06"
   },
   {
@@ -339,6 +376,7 @@
     "manager": "정호영",
     "email": "jeong.hoyoung@example.com",
     "address": "부산시 사하구",
+    "language": "ENG",
     "date": "2024-07-05"
   },
   {
@@ -348,6 +386,7 @@
     "manager": "이혜진",
     "email": "lee.hyejin@example.com",
     "address": "서울시 송파구",
+    "language": "ENG",
     "date": "2024-07-04"
   },
   {
@@ -357,6 +396,7 @@
     "manager": "김영호",
     "email": "kim.youngho@example.com",
     "address": "서울시 마포구",
+    "language": "ENG",
     "date": "2024-07-03"
   },
   {
@@ -366,6 +406,7 @@
     "manager": "정미래",
     "email": "jeong.mirae@example.com",
     "address": "경기도 안양시",
+    "language": "ENG",
     "date": "2024-07-02"
   },
   {
@@ -375,6 +416,7 @@
     "manager": "한수민",
     "email": "han.sumin@example.com",
     "address": "부산시 서구",
+    "language": "ENG",
     "date": "2024-07-01"
   },
   {
@@ -384,6 +426,7 @@
     "manager": "서태양",
     "email": "seo.taeyang@example.com",
     "address": "경기도 시흥시",
+    "language": "ENG",
     "date": "2024-06-30"
   },
   {
@@ -393,6 +436,7 @@
     "manager": "조현수",
     "email": "jo.hyeonsu@example.com",
     "address": "서울시 강북구",
+    "language": "ENG",
     "date": "2024-06-29"
   },
   {
@@ -402,6 +446,7 @@
     "manager": "박하늘",
     "email": "park.haneul@example.com",
     "address": "부산시 금정구",
+    "language": "ENG",
     "date": "2024-06-28"
   },
   {
@@ -411,6 +456,7 @@
     "manager": "이수연",
     "email": "lee.suyeon@example.com",
     "address": "울산시 중구",
+    "language": "ENG",
     "date": "2024-06-27"
   },
   {
@@ -420,6 +466,7 @@
     "manager": "정석진",
     "email": "jeong.seokjin@example.com",
     "address": "서울시 서대문구",
+    "language": "ENG",
     "date": "2024-06-26"
   },
   {
@@ -429,6 +476,7 @@
     "manager": "한예진",
     "email": "han.yejin@example.com",
     "address": "대구시 달서구",
+    "language": "ENG",
     "date": "2024-06-25"
   },
   {
@@ -438,6 +486,7 @@
     "manager": "이민아",
     "email": "lee.mina@example.com",
     "address": "부산시 북구",
+    "language": "ENG",
     "date": "2024-06-24"
   },
   {
@@ -447,6 +496,7 @@
     "manager": "김선영",
     "email": "kim.seonyoung@example.com",
     "address": "경기도 고양시",
+    "language": "ENG",
     "date": "2024-06-23"
   },
   {
@@ -456,6 +506,7 @@
     "manager": "정지훈",
     "email": "jeong.jihoon@example.com",
     "address": "서울시 노원구",
+    "language": "ENG",
     "date": "2024-06-22"
   },
   {
@@ -465,6 +516,7 @@
     "manager": "한상미",
     "email": "han.sangmi@example.com",
     "address": "부산시 사상구",
+    "language": "ENG",
     "date": "2024-06-21"
   },
   {
@@ -474,6 +526,7 @@
     "manager": "서유진",
     "email": "seo.yujin@example.com",
     "address": "경기도 용인시",
+    "language": "ENG",
     "date": "2024-06-20"
   },
   {
@@ -483,6 +536,7 @@
     "manager": "조동현",
     "email": "jo.donghyun@example.com",
     "address": "서울시 강동구",
+    "language": "ENG",
     "date": "2024-06-19"
   },
   {
@@ -492,6 +546,7 @@
     "manager": "이시원",
     "email": "lee.siwan@example.com",
     "address": "부산시 연제구",
+    "language": "ENG",
     "date": "2024-06-18"
   },
   {
@@ -501,6 +556,7 @@
     "manager": "박지은",
     "email": "park.jieun@example.com",
     "address": "대구시 동구",
+    "language": "ENG",
     "date": "2024-06-17"
   },
   {
@@ -510,6 +566,7 @@
     "manager": "김지훈",
     "email": "kim.jihoon@example.com",
     "address": "서울시 강서구",
+    "language": "ENG",
     "date": "2024-06-16"
   },
   {
@@ -519,6 +576,7 @@
     "manager": "정수빈",
     "email": "jeong.subin@example.com",
     "address": "부산시 기장군",
+    "language": "ENG",
     "date": "2024-06-15"
   },
   {
@@ -528,6 +586,7 @@
     "manager": "한서연",
     "email": "han.seoyeon@example.com",
     "address": "경기도 군포시",
+    "language": "ENG",
     "date": "2024-06-14"
   },
   {
@@ -537,6 +596,7 @@
     "manager": "김지우",
     "email": "kim.jiwoo@example.com",
     "address": "서울시 송파구",
+    "language": "ENG",
     "date": "2024-06-13"
   },
   {
@@ -546,6 +606,7 @@
     "manager": "정현수",
     "email": "jeong.hyeonsu@example.com",
     "address": "부산시 서구",
+    "language": "ENG",
     "date": "2024-06-12"
   },
   {
@@ -555,6 +616,7 @@
     "manager": "한지수",
     "email": "han.jisu@example.com",
     "address": "서울시 중랑구",
+    "language": "ENG",
     "date": "2024-06-11"
   },
   {
@@ -564,6 +626,7 @@
     "manager": "서명진",
     "email": "seo.myeongjin@example.com",
     "address": "경기도 평택시",
+    "language": "ENG",
     "date": "2024-06-10"
   },
   {
@@ -573,6 +636,7 @@
     "manager": "조현정",
     "email": "jo.hyeonjeong@example.com",
     "address": "대전시 서구",
+    "language": "ENG",
     "date": "2024-06-09"
   },
   {
@@ -582,6 +646,7 @@
     "manager": "박소연",
     "email": "park.soyeon@example.com",
     "address": "서울시 도봉구",
+    "language": "ENG",
     "date": "2024-06-08"
   },
   {
@@ -591,6 +656,7 @@
     "manager": "이정은",
     "email": "lee.jeongun@example.com",
     "address": "부산시 연제구",
+    "language": "ENG",
     "date": "2024-06-07"
   },
   {
@@ -600,6 +666,7 @@
     "manager": "김보라",
     "email": "kim.bora@example.com",
     "address": "서울시 강남구",
+    "language": "ENG",
     "date": "2024-06-06"
   },
   {
@@ -609,6 +676,7 @@
     "manager": "정아름",
     "email": "jeong.areum@example.com",
     "address": "부산시 남구",
+    "language": "ENG",
     "date": "2024-06-05"
   },
   {
@@ -618,6 +686,7 @@
     "manager": "한시우",
     "email": "han.siwoo@example.com",
     "address": "경기도 하남시",
+    "language": "ENG",
     "date": "2024-06-04"
   },
   {
@@ -627,6 +696,7 @@
     "manager": "홍길동",
     "email": "hong@example.com",
     "address": "서울시 강남구",
+    "language": "ENG",
     "date": "2024-07-23"
   },
   {
@@ -636,6 +706,7 @@
     "manager": "김철수",
     "email": "kim@example.com",
     "address": "부산시 해운대구",
+    "language": "ENG",
     "date": "2024-07-22"
   },
   {
@@ -645,6 +716,7 @@
     "manager": "이영희",
     "email": "lee@example.com",
     "address": "대구시 수성구",
+    "language": "ENG",
     "date": "2024-07-21"
   },
   {
@@ -654,6 +726,7 @@
     "manager": "박민수",
     "email": "park@example.com",
     "address": "서울시 동작구",
+    "language": "ENG",
     "date": "2024-07-20"
   },
   {
@@ -663,6 +736,7 @@
     "manager": "최지훈",
     "email": "choi@example.com",
     "address": "인천시 연수구",
+    "language": "ENG",
     "date": "2024-07-19"
   },
   {
@@ -672,6 +746,7 @@
     "manager": "정민석",
     "email": "jeong@example.com",
     "address": "경기도 성남시",
+    "language": "ENG",
     "date": "2024-07-18"
   },
   {
@@ -681,6 +756,7 @@
     "manager": "윤석진",
     "email": "yoon@example.com",
     "address": "대전시 유성구",
+    "language": "ENG",
     "date": "2024-07-17"
   },
   {
@@ -690,6 +766,7 @@
     "manager": "한지민",
     "email": "han@example.com",
     "address": "울산시 남구",
+    "language": "ENG",
     "date": "2024-07-16"
   },
   {
@@ -699,6 +776,7 @@
     "manager": "조성범",
     "email": "jo@example.com",
     "address": "광주시 북구",
+    "language": "ENG",
     "date": "2024-07-15"
   },
   {
@@ -708,6 +786,7 @@
     "manager": "한상훈",
     "email": "han.sanghoon@example.com",
     "address": "서울시 중구",
+    "language": "ENG",
     "date": "2024-07-14"
   },
   {
@@ -717,6 +796,7 @@
     "manager": "배수정",
     "email": "bae@example.com",
     "address": "부산시 남구",
+    "language": "ENG",
     "date": "2024-07-13"
   },
   {
@@ -726,6 +806,7 @@
     "manager": "서정민",
     "email": "seo@example.com",
     "address": "서울시 관악구",
+    "language": "ENG",
     "date": "2024-07-12"
   },
   {
@@ -735,6 +816,7 @@
     "manager": "문성호",
     "email": "mun@example.com",
     "address": "서울시 서초구",
+    "language": "ENG",
     "date": "2024-07-11"
   },
   {
@@ -744,6 +826,7 @@
     "manager": "홍지혜",
     "email": "hongji@example.com",
     "address": "서울시 강서구",
+    "language": "ENG",
     "date": "2024-07-10"
   },
   {
@@ -753,6 +836,7 @@
     "manager": "이민수",
     "email": "lee.minsoo@example.com",
     "address": "경기도 부천시",
+    "language": "ENG",
     "date": "2024-07-09"
   },
   {
@@ -762,6 +846,7 @@
     "manager": "김나영",
     "email": "kim.nayoung@example.com",
     "address": "울산시 북구",
+    "language": "ENG",
     "date": "2024-07-08"
   },
   {
@@ -771,6 +856,7 @@
     "manager": "최윤석",
     "email": "choi.yoonseok@example.com",
     "address": "대전시 동구",
+    "language": "ENG",
     "date": "2024-07-07"
   },
   {
@@ -780,6 +866,7 @@
     "manager": "박상현",
     "email": "park.sanghyun@example.com",
     "address": "서울시 영등포구",
+    "language": "ENG",
     "date": "2024-07-06"
   },
 
@@ -790,6 +877,7 @@
     "manager": "김지훈",
     "email": "kim.jihoon@example.com",
     "address": "서울시 강서구",
+    "language": "ENG",
     "date": "2024-06-16"
   },
   {
@@ -799,6 +887,7 @@
     "manager": "정수빈",
     "email": "jeong.subin@example.com",
     "address": "부산시 기장군",
+    "language": "ENG",
     "date": "2024-06-15"
   },
   {
@@ -808,6 +897,7 @@
     "manager": "한서연",
     "email": "han.seoyeon@example.com",
     "address": "경기도 군포시",
+    "language": "ENG",
     "date": "2024-06-14"
   },
   {
@@ -817,6 +907,7 @@
     "manager": "김지우",
     "email": "kim.jiwoo@example.com",
     "address": "서울시 송파구",
+    "language": "ENG",
     "date": "2024-06-13"
   },
   {
@@ -826,6 +917,7 @@
     "manager": "정현수",
     "email": "jeong.hyeonsu@example.com",
     "address": "부산시 서구",
+    "language": "ENG",
     "date": "2024-06-12"
   },
   {
@@ -835,6 +927,7 @@
     "manager": "한지수",
     "email": "han.jisu@example.com",
     "address": "서울시 중랑구",
+    "language": "ENG",
     "date": "2024-06-11"
   },
   {
@@ -844,6 +937,7 @@
     "manager": "서명진",
     "email": "seo.myeongjin@example.com",
     "address": "경기도 평택시",
+    "language": "ENG",
     "date": "2024-06-10"
   },
   {
@@ -853,6 +947,7 @@
     "manager": "조현정",
     "email": "jo.hyeonjeong@example.com",
     "address": "대전시 서구",
+    "language": "ENG",
     "date": "2024-06-09"
   },
   {
@@ -862,6 +957,7 @@
     "manager": "박소연",
     "email": "park.soyeon@example.com",
     "address": "서울시 도봉구",
+    "language": "ENG",
     "date": "2024-06-08"
   },
   {
@@ -871,6 +967,7 @@
     "manager": "이정은",
     "email": "lee.jeongun@example.com",
     "address": "부산시 연제구",
+    "language": "ENG",
     "date": "2024-06-07"
   },
   {
@@ -880,6 +977,7 @@
     "manager": "김보라",
     "email": "kim.bora@example.com",
     "address": "서울시 강남구",
+    "language": "ENG",
     "date": "2024-06-06"
   },
   {
@@ -889,6 +987,7 @@
     "manager": "정아름",
     "email": "jeong.areum@example.com",
     "address": "부산시 남구",
+    "language": "ENG",
     "date": "2024-06-05"
   },
   {
@@ -898,6 +997,7 @@
     "manager": "한시우",
     "email": "han.siwoo@example.com",
     "address": "경기도 하남시",
+    "language": "ENG",
     "date": "2024-06-04"
   }
 ]

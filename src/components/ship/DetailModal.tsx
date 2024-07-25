@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import CustomerForm from "./CustomerForm";
+import Form from "./Form";
 
 const ModalBackdrop = styled.div`
   position: fixed;
@@ -18,7 +18,7 @@ const ModalContent = styled.div`
   background: white;
   padding: 20px;
   border-radius: 8px;
-  width: 400px;
+  width: 800px;
   max-width: 90%;
   position: relative;
 `;
@@ -40,16 +40,23 @@ const CloseButton = styled.button`
   cursor: pointer;
 `;
 
+const DetailItemContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+`;
+
 const DetailItem = styled.div`
   padding: 10px 0;
+  margin: 5px;
   border-top: 1px solid #ccc;
   display: flex;
+  flex: 1 1 calc(50% - 20px);
 `;
 
 const PropName = styled.span`
   font-weight: 700;
   text-align: center;
-  width: 70px;
+  width: 90px;
   border-right: 1px solid #ccc;
 `;
 
@@ -95,24 +102,29 @@ const DeleteButton = styled.button`
   }
 `;
 
-interface Customer {
+interface Company {
   code: string;
-  name: string;
-  contact: string;
-  manager: string;
-  email: string;
-  address: string;
-  date: string;
+  shipname: string;
+  company: string;
+  callsign: string;
+  imonumber: string;
+  hullnumber: string;
+  shipyard: string;
+  shiptype: string;
+  remark: string;
+  enginetype1: string;
+  enginetype2: string;
 }
 
 interface ModalProps {
-  customer: Customer;
+  category: string;
+  company: Company;
   onClose: () => void;
 }
 
-const CustomerDetailModal = ({ customer, onClose }: ModalProps) => {
+const DetailModal = ({ category, company, onClose }: ModalProps) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState(customer);
+  const [formData, setFormData] = useState(company);
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
@@ -142,21 +154,27 @@ const CustomerDetailModal = ({ customer, onClose }: ModalProps) => {
 
   const readOnlyFields = {
     code: true, //read-only
-    name: !isEditing,
-    contact: !isEditing,
-    manager: !isEditing,
-    email: !isEditing,
-    address: !isEditing,
-    date: !isEditing,
+    shipname: !isEditing,
+    company: !isEditing,
+    callsign: !isEditing,
+    imonumber: !isEditing,
+    hullnumber: !isEditing,
+    shipyard: !isEditing,
+    shiptype: !isEditing,
+    remark: !isEditing,
+    enginetype1: !isEditing,
+    enginetype2: !isEditing,
   };
 
   return (
     <ModalBackdrop onClick={handleBackdropClick}>
       <ModalContent>
         <CloseButton onClick={onClose}>&times;</CloseButton>
-        <ModalTitle>매출처 상세 정보</ModalTitle>
+        <ModalTitle>
+          {category === "customer" ? "매출처 상세 정보" : "매입처 상세 정보"}
+        </ModalTitle>
         {isEditing ? (
-          <CustomerForm
+          <Form
             formData={formData}
             onChange={handleChange}
             onSubmit={handleSubmit}
@@ -165,34 +183,52 @@ const CustomerDetailModal = ({ customer, onClose }: ModalProps) => {
           />
         ) : (
           <>
-            <DetailItem style={{ borderTop: "none" }}>
-              <PropName>코드</PropName>
-              <PropValue>{formData.code}</PropValue>
-            </DetailItem>
-            <DetailItem>
-              <PropName>상호명</PropName>
-              <PropValue>{formData.name}</PropValue>
-            </DetailItem>
-            <DetailItem>
-              <PropName>연락처</PropName>
-              <PropValue>{formData.contact}</PropValue>
-            </DetailItem>
-            <DetailItem>
-              <PropName>담당자</PropName>
-              <PropValue>{formData.manager}</PropValue>
-            </DetailItem>
-            <DetailItem>
-              <PropName>이메일</PropName>
-              <PropValue>{formData.email}</PropValue>
-            </DetailItem>
-            <DetailItem>
-              <PropName>주소</PropName>
-              <PropValue>{formData.address}</PropValue>
-            </DetailItem>
-            <DetailItem>
-              <PropName>등록일</PropName>
-              <PropValue>{formData.date}</PropValue>
-            </DetailItem>
+            <DetailItemContainer>
+              <DetailItem>
+                <PropName>코드</PropName>
+                <PropValue>{formData.code}</PropValue>
+              </DetailItem>
+              <DetailItem>
+                <PropName>선명</PropName>
+                <PropValue>{formData.shipname}</PropValue>
+              </DetailItem>
+              <DetailItem>
+                <PropName>선박회사</PropName>
+                <PropValue>{formData.company}</PropValue>
+              </DetailItem>
+              <DetailItem>
+                <PropName>호출부호</PropName>
+                <PropValue>{formData.callsign}</PropValue>
+              </DetailItem>
+              <DetailItem>
+                <PropName>IMO No.</PropName>
+                <PropValue>{formData.imonumber}</PropValue>
+              </DetailItem>
+              <DetailItem>
+                <PropName>HULL No.</PropName>
+                <PropValue>{formData.hullnumber}</PropValue>
+              </DetailItem>
+              <DetailItem>
+                <PropName>SHIPYARD</PropName>
+                <PropValue>{formData.shipyard}</PropValue>
+              </DetailItem>
+              <DetailItem>
+                <PropName>선박구분</PropName>
+                <PropValue>{formData.shiptype}</PropValue>
+              </DetailItem>
+              <DetailItem>
+                <PropName>비고</PropName>
+                <PropValue>{formData.remark}</PropValue>
+              </DetailItem>
+              <DetailItem>
+                <PropName>엔진타입1</PropName>
+                <PropValue>{formData.enginetype1}</PropValue>
+              </DetailItem>
+              <DetailItem>
+                <PropName>엔진타입2</PropName>
+                <PropValue>{formData.enginetype2}</PropValue>
+              </DetailItem>
+            </DetailItemContainer>
             <BtnWrap>
               <UpdateButton type="button" onClick={() => setIsEditing(true)}>
                 수정
@@ -208,4 +244,4 @@ const CustomerDetailModal = ({ customer, onClose }: ModalProps) => {
   );
 };
 
-export default CustomerDetailModal;
+export default DetailModal;

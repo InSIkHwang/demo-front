@@ -5,6 +5,8 @@ import Home from "./pages/Home";
 import Header from "./components/Header";
 import CustomerList from "./pages/CustomerList";
 import Footer from "./components/Footer";
+import SupplierList from "./pages/SupplierList";
+import ShipList from "./pages/ShipList";
 
 function App() {
   return (
@@ -13,6 +15,8 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />}></Route>
         <Route path="/customerlist" element={<CustomerList />}></Route>
+        <Route path="/supplierlist" element={<SupplierList />}></Route>
+        <Route path="/shiplist" element={<ShipList />}></Route>
       </Routes>
       <Footer />
     </BrowserRouter>

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Table, Input, Button as AntButton, Select, Pagination } from "antd";
 import { SearchOutlined, LeftOutlined, RightOutlined } from "@ant-design/icons";
-import CreateModal from "../components/company/CreateModal";
+import CreateModal from "../components/ship/CreateModal";
 import type { ColumnsType } from "antd/es/table";
 import styled from "styled-components";
-import DetailModal from "../components/company/DetailModal";
 import axios from "axios";
+import DetailModal from "../components/ship/DetailModal";
 
 const Container = styled.div`
   position: relative;
@@ -54,16 +54,19 @@ const { Option } = Select;
 
 interface Customer {
   code: string;
-  name: string;
-  contact: string;
-  manager: string;
-  email: string;
-  address: string;
-  language: string;
-  date: string;
+  shipname: string;
+  company: string;
+  callsign: string;
+  imonumber: string;
+  hullnumber: string;
+  shipyard: string;
+  shiptype: string;
+  remark: string;
+  enginetype1: string;
+  enginetype2: string;
 }
 
-const CustomerList = () => {
+const ShipList = () => {
   const [data, setData] = useState<Customer[]>([]);
   const [searchText, setSearchText] = useState<string>("");
   const [searchCategory, setSearchCategory] = useState<string>("all");
@@ -80,7 +83,7 @@ const CustomerList = () => {
   const category = "customer";
 
   useEffect(() => {
-    fetch("/data/customer.json")
+    fetch("/data/ship.json")
       .then((response) => response.json())
       .then((data: Customer[]) => {
         setData(data);
@@ -101,18 +104,23 @@ const CustomerList = () => {
             if (searchCategory === "all") {
               return (
                 item.code.includes(searchText) ||
-                item.name.includes(searchText) ||
-                item.contact.includes(searchText) ||
-                item.manager.includes(searchText) ||
-                item.email.includes(searchText) ||
-                item.address.includes(searchText)
+                item.shipname.includes(searchText) ||
+                item.company.includes(searchText) ||
+                item.callsign.includes(searchText) ||
+                item.imonumber.includes(searchText) ||
+                item.hullnumber.includes(searchText) ||
+                item.shipyard.includes(searchText) ||
+                item.shiptype.includes(searchText) ||
+                item.remark.includes(searchText) ||
+                item.enginetype1.includes(searchText) ||
+                item.enginetype2.includes(searchText)
               );
             } else if (searchCategory === "code") {
               return item.code.includes(searchText);
-            } else if (searchCategory === "name") {
-              return item.name.includes(searchText);
-            } else if (searchCategory === "address") {
-              return item.address.includes(searchText);
+            } else if (searchCategory === "shipname") {
+              return item.shipname.includes(searchText);
+            } else if (searchCategory === "company") {
+              return item.company.includes(searchText);
             }
             return false;
           });
@@ -127,43 +135,56 @@ const CustomerList = () => {
       key: "code",
     },
     {
-      title: "상호명",
-      dataIndex: "name",
-      key: "name",
-      sorter: (a, b) => a.name.localeCompare(b.name),
+      title: "선명",
+      dataIndex: "shipname",
+      key: "shipname",
+      sorter: (a, b) => a.shipname.localeCompare(b.shipname),
       sortDirections: ["ascend", "descend"],
     },
     {
-      title: "연락처",
-      dataIndex: "contact",
-      key: "contact",
+      title: "선박회사",
+      dataIndex: "company",
+      key: "company",
     },
     {
-      title: "담당자",
-      dataIndex: "manager",
-      key: "manager",
+      title: "호출부호",
+      dataIndex: "callsign",
+      key: "callsign",
     },
     {
-      title: "이메일",
-      dataIndex: "email",
-      key: "email",
+      title: "IMO No.",
+      dataIndex: "imonumber",
+      key: "imonumber",
     },
     {
-      title: "주소",
-      dataIndex: "address",
-      key: "address",
+      title: "HULL No.",
+      dataIndex: "hullnumber",
+      key: "hullnumber",
     },
     {
-      title: "사용 언어",
-      dataIndex: "language",
-      key: "language",
+      title: "SHIPYARD",
+      dataIndex: "shipyard",
+      key: "shipyard",
     },
     {
-      title: "수정된 날짜",
-      dataIndex: "date",
-      key: "date",
-      sorter: (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-      sortDirections: ["ascend", "descend"],
+      title: "선박구분",
+      dataIndex: "shiptype",
+      key: "shiptype",
+    },
+    {
+      title: "비고",
+      dataIndex: "remark",
+      key: "remark",
+    },
+    {
+      title: "엔진타입1",
+      dataIndex: "enginetype1",
+      key: "enginetype1",
+    },
+    {
+      title: "엔진타입2",
+      dataIndex: "enginetype2",
+      key: "enginetype2",
     },
   ];
 
@@ -197,7 +218,7 @@ const CustomerList = () => {
   return (
     <>
       <Container>
-        <Title>매출처 관리</Title>
+        <Title>선박 관리</Title>
         <TableHeader>
           <SearchBar>
             <Select
@@ -207,8 +228,8 @@ const CustomerList = () => {
             >
               <Option value="all">통합검색</Option>
               <Option value="code">코드</Option>
-              <Option value="name">상호명</Option>
-              <Option value="address">주소</Option>
+              <Option value="shipname">선명</Option>
+              <Option value="company">선박회사</Option>
             </Select>
             <Input
               placeholder="검색..."
@@ -266,4 +287,4 @@ const CustomerList = () => {
   );
 };
 
-export default CustomerList;
+export default ShipList;

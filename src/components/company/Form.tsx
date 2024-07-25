@@ -41,7 +41,7 @@ const SubmitButton = styled.button`
   }
 `;
 
-interface CustomerFormProps {
+interface FormProps {
   formData: {
     code: string;
     name: string;
@@ -49,6 +49,7 @@ interface CustomerFormProps {
     manager: string;
     email: string;
     address: string;
+    language: string;
     date: string;
   };
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -57,13 +58,13 @@ interface CustomerFormProps {
   isEditing: boolean;
 }
 
-const CustomerForm = ({
+const Form = ({
   formData,
   onChange,
   onSubmit,
   readOnlyFields,
   isEditing, // Use the new prop
-}: CustomerFormProps) => (
+}: FormProps) => (
   <form onSubmit={onSubmit}>
     <FormGroup>
       <Label htmlFor="code">코드</Label>
@@ -116,11 +117,16 @@ const CustomerForm = ({
       />
     </FormGroup>
     <FormGroup>
-      <Label htmlFor="date">등록일</Label>
-      <Input id="date" name="date" value={formData.date} onChange={onChange} />
+      <Label htmlFor="language">사용 언어</Label>
+      <Input
+        id="language"
+        name="language"
+        value={formData.language}
+        onChange={onChange}
+      />
     </FormGroup>
     <SubmitButton type="submit">{isEditing ? "수정" : "등록"}</SubmitButton>
   </form>
 );
 
-export default CustomerForm;
+export default Form;

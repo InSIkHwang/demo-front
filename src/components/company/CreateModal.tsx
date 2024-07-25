@@ -1,3 +1,4 @@
+import axios from "../../api/axios";
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 
@@ -75,11 +76,12 @@ const SubmitButton = styled.button<{ disabled: boolean }>`
 `;
 
 interface ModalProps {
+  category: string;
   onClose: () => void;
 }
 
-const CustomerCreateModal = ({ onClose }: ModalProps) => {
-  const todayDate = new Date().toISOString().split("T")[0];
+const CreateModal = ({ category, onClose }: ModalProps) => {
+  const todayDate = new Date().toLocaleDateString("en-CA");
 
   const [formData, setFormData] = useState({
     code: "",
@@ -87,6 +89,7 @@ const CustomerCreateModal = ({ onClose }: ModalProps) => {
     contact: "",
     manager: "",
     email: "",
+    language: "",
     address: "",
     date: todayDate,
   });
@@ -120,10 +123,14 @@ const CustomerCreateModal = ({ onClose }: ModalProps) => {
     }
     setIsCheckingCode(true);
     try {
-      // API request 예시
-      const response = await fetch(`/api/check-code?code=${formData.code}`);
-      const result = await response.json();
-      setIsCodeUnique(result.code); // 응답 T/F
+      const endpoint =
+        category === "customer"
+          ? `/api/customers/check-code/${formData.code}`
+          : `/api/suppliers/check-code/${formData.code}`;
+
+      const response = await axios.get(endpoint);
+
+      setIsCodeUnique(response.data); // 응답 T/F
     } catch (error) {
       console.error("Error checking code unique:", error);
       setIsCodeUnique(false);
@@ -136,9 +143,27 @@ const CustomerCreateModal = ({ onClose }: ModalProps) => {
     checkCodeUnique();
   }, [formData.code]);
 
+  const postCreate = async () => {
+    try {
+      const endpoint =
+        category === "customer" ? "/api/customers" : "/api/suppliers";
+      const response = await axios.post(endpoint, {
+        code: formData.code,
+        companyName: formData.name,
+        phoneNumber: formData.contact,
+        representative: formData.manager,
+        email: formData.email,
+        address: formData.address,
+        communicationLanguage: formData.language,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form Data:", formData);
+    postCreate();
     onClose();
   };
 
@@ -152,7 +177,13 @@ const CustomerCreateModal = ({ onClose }: ModalProps) => {
     <ModalBackdrop onClick={handleBackdropClick}>
       <ModalContent>
         <CloseButton onClick={onClose}>&times;</CloseButton>
-        <ModalTitle>신규 매출처 등록</ModalTitle>
+        <ModalTitle>
+          {category === "customer"
+            ? "신규 매출처 등록"
+            : category === "supplier"
+            ? "신규 매입처 등록"
+            : "등록"}
+        </ModalTitle>
         <form onSubmit={handleSubmit}>
           <FormGroup>
             <Label htmlFor="code">코드</Label>
@@ -209,18 +240,15 @@ const CustomerCreateModal = ({ onClose }: ModalProps) => {
             />
           </FormGroup>
           <FormGroup>
-            <Label htmlFor="date">등록일</Label>
+            <Label htmlFor="language">사용 언어</Label>
             <Input
-              id="date"
-              name="date"
-              value={formData.date}
+              id="language"
+              name="language"
+              value={formData.language}
               onChange={handleChange}
             />
           </FormGroup>
-          <SubmitButton
-            type="submit"
-            disabled={!isCodeUnique || isCheckingCode}
-          >
+          <SubmitButton type="submit" disabled={isCodeUnique || isCheckingCode}>
             등록
           </SubmitButton>
         </form>
@@ -229,4 +257,4 @@ const CustomerCreateModal = ({ onClose }: ModalProps) => {
   );
 };
 
-export default CustomerCreateModal;
+export default CreateModal;

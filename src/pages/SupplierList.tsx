@@ -5,7 +5,7 @@ import CreateModal from "../components/company/CreateModal";
 import type { ColumnsType } from "antd/es/table";
 import styled from "styled-components";
 import DetailModal from "../components/company/DetailModal";
-import axios from "axios";
+import axios from "../api/axios";
 
 const Container = styled.div`
   position: relative;
@@ -52,7 +52,7 @@ const PaginationWrapper = styled(Pagination)`
 
 const { Option } = Select;
 
-interface Customer {
+interface Supplier {
   code: string;
   name: string;
   contact: string;
@@ -63,26 +63,26 @@ interface Customer {
   date: string;
 }
 
-const CustomerList = () => {
-  const [data, setData] = useState<Customer[]>([]);
+const SupplierList = () => {
+  const [data, setData] = useState<Supplier[]>([]);
   const [searchText, setSearchText] = useState<string>("");
   const [searchCategory, setSearchCategory] = useState<string>("all");
-  const [filteredData, setFilteredData] = useState<Customer[]>([]);
+  const [filteredData, setFilteredData] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage, setItemsPerPage] = useState<number>(10);
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+  const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(
     null
   );
 
-  const category = "customer";
+  const category = "supplier";
 
   useEffect(() => {
-    fetch("/data/customer.json")
+    fetch("/data/supplier.json")
       .then((response) => response.json())
-      .then((data: Customer[]) => {
+      .then((data: Supplier[]) => {
         setData(data);
         setFilteredData(data);
         setLoading(false);
@@ -92,6 +92,33 @@ const CustomerList = () => {
         setLoading(false);
       });
   }, []);
+
+  //API TEST************************************
+
+  const [test, setTest] = useState([]);
+
+  const API = async () => {
+    try {
+      const response = await axios.get("/api/suppliers", {
+        //default params
+        params: {
+          page: 0,
+          size: 100,
+        },
+      });
+      setTest(response.data.suppliers);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  useEffect(() => {
+    API();
+  }, []);
+
+  console.log(test);
+
+  //API TEST************************************
 
   const applyFilter = () => {
     const result =
@@ -120,7 +147,7 @@ const CustomerList = () => {
     setCurrentPage(1);
   };
 
-  const columns: ColumnsType<Customer> = [
+  const columns: ColumnsType<Supplier> = [
     {
       title: "코드",
       dataIndex: "code",
@@ -152,6 +179,7 @@ const CustomerList = () => {
       title: "주소",
       dataIndex: "address",
       key: "address",
+      width: 280,
     },
     {
       title: "사용 언어",
@@ -174,13 +202,13 @@ const CustomerList = () => {
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
-  const openDetailModal = (category: Customer) => {
-    setSelectedCustomer(category);
+  const openDetailModal = (category: Supplier) => {
+    setSelectedSupplier(category);
     setIsDetailModalOpen(true);
   };
 
   const closeDetailModal = () => {
-    setSelectedCustomer(null);
+    setSelectedSupplier(null);
     setIsDetailModalOpen(false);
   };
 
@@ -197,7 +225,7 @@ const CustomerList = () => {
   return (
     <>
       <Container>
-        <Title>매출처 관리</Title>
+        <Title>매입처 관리</Title>
         <TableHeader>
           <SearchBar>
             <Select
@@ -255,10 +283,10 @@ const CustomerList = () => {
         />
       </Container>
       {isModalOpen && <CreateModal category={category} onClose={closeModal} />}
-      {isDetailModalOpen && selectedCustomer && (
+      {isDetailModalOpen && selectedSupplier && (
         <DetailModal
           category={category}
-          company={selectedCustomer}
+          company={selectedSupplier}
           onClose={closeDetailModal}
         />
       )}
@@ -266,4 +294,4 @@ const CustomerList = () => {
   );
 };
 
-export default CustomerList;
+export default SupplierList;

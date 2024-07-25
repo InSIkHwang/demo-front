@@ -1,0 +1,1002 @@
+[
+  {
+    "code": "001",
+    "name": "TaeSung Corp",
+    "contact": "010-1200-5600",
+    "manager": "mr. Jordan",
+    "email": "Jordan@example.com",
+    "address": "Chandragupta Marg, Chanakyapuri Extension, New Delhi",
+    "language": "IND",
+    "date": "2022-05-23"
+  },
+  {
+    "code": "002",
+    "name": "XYZ Inc",
+    "contact": "010-9876-5432",
+    "manager": "김철수",
+    "email": "kim@example.com",
+    "address": "부산시 해운대구",
+    "language": "KOR",
+    "date": "2024-07-22"
+  },
+  {
+    "code": "003",
+    "name": "LMN Ltd",
+    "contact": "010-2345-6789",
+    "manager": "ms. Lee",
+    "email": "lee@example.com",
+    "address": "Washington, D.C.",
+    "language": "ENG",
+    "date": "2023-07-21"
+  },
+  {
+    "code": "004",
+    "name": "Alpha Tech",
+    "contact": "010-3456-7890",
+    "manager": "dr. Smith",
+    "email": "smith@example.com",
+    "address": "1234 Elm Street, Springfield",
+    "language": "ENG",
+    "date": "2021-08-19"
+  },
+  {
+    "code": "005",
+    "name": "Beta Solutions",
+    "contact": "010-4567-8901",
+    "manager": "mrs. Johnson",
+    "email": "johnson@example.com",
+    "address": "5678 Oak Avenue, Rivertown",
+    "language": "ENG",
+    "date": "2022-01-15"
+  },
+  {
+    "code": "006",
+    "name": "Gamma Innovations",
+    "contact": "010-5678-9012",
+    "manager": "mr. Garcia",
+    "email": "garcia@example.com",
+    "address": "9101 Maple Drive, Lakeside",
+    "language": "ENG",
+    "date": "2023-04-10"
+  },
+  {
+    "code": "007",
+    "name": "Delta Systems",
+    "contact": "010-6789-0123",
+    "manager": "ms. Patel",
+    "email": "patel@example.com",
+    "address": "1213 Pine Street, Metropolis",
+    "language": "ENG",
+    "date": "2022-11-05"
+  },
+  {
+    "code": "008",
+    "name": "Epsilon Enterprises",
+    "contact": "010-7890-1234",
+    "manager": "dr. Kumar",
+    "email": "kumar@example.com",
+    "address": "1415 Cedar Road, Hilltown",
+    "language": "IND",
+    "date": "2023-03-17"
+  },
+  {
+    "code": "009",
+    "name": "Zeta Tech",
+    "contact": "010-8901-2345",
+    "manager": "mrs. Wong",
+    "email": "wong@example.com",
+    "address": "1617 Birch Street, Gotham",
+    "language": "ENG",
+    "date": "2024-06-30"
+  },
+  {
+    "code": "010",
+    "name": "Eta Industries",
+    "contact": "010-9012-3456",
+    "manager": "mr. Lee",
+    "email": "lee@example.com",
+    "address": "1819 Willow Avenue, Smallville",
+    "language": "ENG",
+    "date": "2024-05-14"
+  },
+  {
+    "code": "011",
+    "name": "Theta Solutions",
+    "contact": "010-0123-4567",
+    "manager": "mrs. Martinez",
+    "email": "martinez@example.com",
+    "address": "2020 Elm Street, Star City",
+    "language": "ENG",
+    "date": "2022-10-28"
+  },
+  {
+    "code": "012",
+    "name": "Iota Services",
+    "contact": "010-1234-5678",
+    "manager": "mr. Hernandez",
+    "email": "hernandez@example.com",
+    "address": "2121 Maple Road, Crescent City",
+    "language": "ENG",
+    "date": "2023-09-12"
+  },
+  {
+    "code": "013",
+    "name": "Kappa Networks",
+    "contact": "010-2345-6789",
+    "manager": "ms. Chang",
+    "email": "chang@example.com",
+    "address": "2323 Oak Avenue, Edgewood",
+    "language": "ENG",
+    "date": "2024-01-23"
+  },
+  {
+    "code": "014",
+    "name": "Lambda Group",
+    "contact": "010-3456-7890",
+    "manager": "dr. Singh",
+    "email": "singh@example.com",
+    "address": "2424 Pine Street, Westwood",
+    "language": "IND",
+    "date": "2022-02-09"
+  },
+  {
+    "code": "015",
+    "name": "Mu Solutions",
+    "contact": "010-4567-8901",
+    "manager": "mrs. Robinson",
+    "email": "robinson@example.com",
+    "address": "2525 Cedar Drive, Newton",
+    "language": "ENG",
+    "date": "2023-08-04"
+  },
+  {
+    "code": "016",
+    "name": "Nu Enterprises",
+    "contact": "010-5678-9012",
+    "manager": "mr. Scott",
+    "email": "scott@example.com",
+    "address": "2626 Birch Road, Oakville",
+    "language": "ENG",
+    "date": "2024-04-19"
+  },
+  {
+    "code": "017",
+    "name": "Xi Corp",
+    "contact": "010-6789-0123",
+    "manager": "ms. Kim",
+    "email": "kim@example.com",
+    "address": "2727 Maple Avenue, Ridgefield",
+    "language": "KOR",
+    "date": "2023-11-10"
+  },
+  {
+    "code": "018",
+    "name": "Omicron Ltd",
+    "contact": "010-7890-1234",
+    "manager": "dr. Zhang",
+    "email": "zhang@example.com",
+    "address": "2828 Willow Lane, Brighton",
+    "language": "ENG",
+    "date": "2024-07-09"
+  },
+  {
+    "code": "019",
+    "name": "Pi Tech",
+    "contact": "010-8901-2345",
+    "manager": "mrs. Garcia",
+    "email": "garcia@example.com",
+    "address": "2929 Cedar Street, Jefferson",
+    "language": "ENG",
+    "date": "2022-12-05"
+  },
+  {
+    "code": "020",
+    "name": "Rho Solutions",
+    "contact": "010-9012-3456",
+    "manager": "mr. Lee",
+    "email": "lee@example.com",
+    "address": "3030 Pine Road, San Jose",
+    "language": "ENG",
+    "date": "2023-05-18"
+  },
+  {
+    "code": "021",
+    "name": "Sigma Industries",
+    "contact": "010-0123-4567",
+    "manager": "ms. Nguyen",
+    "email": "nguyen@example.com",
+    "address": "3131 Birch Drive, Baltimore",
+    "language": "ENG",
+    "date": "2024-02-25"
+  },
+  {
+    "code": "022",
+    "name": "Tau Enterprises",
+    "contact": "010-1234-5678",
+    "manager": "dr. Chen",
+    "email": "chen@example.com",
+    "address": "3232 Willow Avenue, Washington",
+    "language": "ENG",
+    "date": "2023-06-30"
+  },
+  {
+    "code": "023",
+    "name": "Upsilon Tech",
+    "contact": "010-2345-6789",
+    "manager": "mr. Kim",
+    "email": "kim@example.com",
+    "address": "3333 Oak Street, Honolulu",
+    "language": "KOR",
+    "date": "2024-03-12"
+  },
+  {
+    "code": "024",
+    "name": "Phi Solutions",
+    "contact": "010-3456-7890",
+    "manager": "ms. Patel",
+    "email": "patel@example.com",
+    "address": "3434 Maple Lane, Anchorage",
+    "language": "ENG",
+    "date": "2022-09-25"
+  },
+  {
+    "code": "025",
+    "name": "Chi Enterprises",
+    "contact": "010-4567-8901",
+    "manager": "mrs. Zhang",
+    "email": "zhang@example.com",
+    "address": "3535 Cedar Road, Salt Lake City",
+    "language": "ENG",
+    "date": "2023-07-14"
+  },
+  {
+    "code": "026",
+    "name": "Psi Ltd",
+    "contact": "010-5678-9012",
+    "manager": "dr. Sharma",
+    "email": "sharma@example.com",
+    "address": "3636 Pine Street, Sacramento",
+    "language": "IND",
+    "date": "2024-05-21"
+  },
+  {
+    "code": "027",
+    "name": "Omega Corp",
+    "contact": "010-6789-0123",
+    "manager": "ms. Nguyen",
+    "email": "nguyen@example.com",
+    "address": "3737 Birch Avenue, Portland",
+    "language": "ENG",
+    "date": "2022-04-18"
+  },
+  {
+    "code": "028",
+    "name": "Aplha Dynamics",
+    "contact": "010-7890-1234",
+    "manager": "mr. Lee",
+    "email": "lee@example.com",
+    "address": "3838 Willow Drive, Austin",
+    "language": "ENG",
+    "date": "2023-12-11"
+  },
+  {
+    "code": "029",
+    "name": "Beta Innovations",
+    "contact": "010-8901-2345",
+    "manager": "mrs. Wilson",
+    "email": "wilson@example.com",
+    "address": "3939 Cedar Street, Denver",
+    "language": "ENG",
+    "date": "2024-09-03"
+  },
+  {
+    "code": "030",
+    "name": "Gamma Solutions",
+    "contact": "010-9012-3456",
+    "manager": "dr. Brown",
+    "email": "brown@example.com",
+    "address": "4040 Pine Avenue, Minneapolis",
+    "language": "ENG",
+    "date": "2022-08-22"
+  },
+  {
+    "code": "031",
+    "name": "Delta Dynamics",
+    "contact": "010-0123-4567",
+    "manager": "ms. Kim",
+    "email": "kim@example.com",
+    "address": "4141 Oak Lane, Seattle",
+    "language": "KOR",
+    "date": "2024-01-10"
+  },
+  {
+    "code": "032",
+    "name": "Epsilon Ltd",
+    "contact": "010-1234-5678",
+    "manager": "mr. Patel",
+    "email": "patel@example.com",
+    "address": "4242 Maple Street, Charlotte",
+    "language": "ENG",
+    "date": "2023-10-29"
+  },
+  {
+    "code": "033",
+    "name": "Zeta Corp",
+    "contact": "010-2345-6789",
+    "manager": "mrs. Garcia",
+    "email": "garcia@example.com",
+    "address": "4343 Birch Road, Indianapolis",
+    "language": "ENG",
+    "date": "2022-03-19"
+  },
+  {
+    "code": "034",
+    "name": "Eta Enterprises",
+    "contact": "010-3456-7890",
+    "manager": "ms. Johnson",
+    "email": "johnson@example.com",
+    "address": "4444 Cedar Avenue, Tampa",
+    "language": "ENG",
+    "date": "2024-02-14"
+  },
+  {
+    "code": "035",
+    "name": "Theta Dynamics",
+    "contact": "010-4567-8901",
+    "manager": "mr. Singh",
+    "email": "singh@example.com",
+    "address": "4545 Pine Drive, Nashville",
+    "language": "IND",
+    "date": "2023-09-02"
+  },
+  {
+    "code": "036",
+    "name": "Iota Solutions",
+    "contact": "010-5678-9012",
+    "manager": "ms. Zhang",
+    "email": "zhang@example.com",
+    "address": "4646 Willow Lane, Kansas City",
+    "language": "ENG",
+    "date": "2024-06-18"
+  },
+  {
+    "code": "037",
+    "name": "Kappa Enterprises",
+    "contact": "010-6789-0123",
+    "manager": "dr. Lee",
+    "email": "lee@example.com",
+    "address": "4747 Maple Street, Philadelphia",
+    "language": "ENG",
+    "date": "2022-11-07"
+  },
+  {
+    "code": "038",
+    "name": "Lambda Solutions",
+    "contact": "010-7890-1234",
+    "manager": "mr. Martinez",
+    "email": "martinez@example.com",
+    "address": "4848 Birch Avenue, Las Vegas",
+    "language": "ENG",
+    "date": "2023-05-26"
+  },
+  {
+    "code": "039",
+    "name": "Mu Tech",
+    "contact": "010-8901-2345",
+    "manager": "ms. Lee",
+    "email": "lee@example.com",
+    "address": "4949 Pine Road, Atlanta",
+    "language": "ENG",
+    "date": "2024-07-12"
+  },
+  {
+    "code": "040",
+    "name": "Nu Corp",
+    "contact": "010-9012-3456",
+    "manager": "dr. Wang",
+    "email": "wang@example.com",
+    "address": "5050 Cedar Street, Dallas",
+    "language": "ENG",
+    "date": "2023-12-01"
+  },
+  {
+    "code": "041",
+    "name": "Xi Ltd",
+    "contact": "010-0123-4567",
+    "manager": "mrs. Patel",
+    "email": "patel@example.com",
+    "address": "5151 Willow Avenue, Miami",
+    "language": "IND",
+    "date": "2024-10-15"
+  },
+  {
+    "code": "042",
+    "name": "Omicron Dynamics",
+    "contact": "010-1234-5678",
+    "manager": "ms. Nguyen",
+    "email": "nguyen@example.com",
+    "address": "5252 Maple Drive, Houston",
+    "language": "ENG",
+    "date": "2022-04-25"
+  },
+  {
+    "code": "043",
+    "name": "Pi Corp",
+    "contact": "010-2345-6789",
+    "manager": "mr. Scott",
+    "email": "scott@example.com",
+    "address": "5353 Oak Lane, Seattle",
+    "language": "ENG",
+    "date": "2024-11-23"
+  },
+  {
+    "code": "044",
+    "name": "Rho Solutions",
+    "contact": "010-3456-7890",
+    "manager": "dr. Zhang",
+    "email": "zhang@example.com",
+    "address": "5454 Pine Street, Portland",
+    "language": "ENG",
+    "date": "2023-06-15"
+  },
+  {
+    "code": "045",
+    "name": "Sigma Enterprises",
+    "contact": "010-4567-8901",
+    "manager": "ms. Kim",
+    "email": "kim@example.com",
+    "address": "5555 Cedar Avenue, Austin",
+    "language": "KOR",
+    "date": "2022-12-12"
+  },
+  {
+    "code": "046",
+    "name": "Tau Tech",
+    "contact": "010-5678-9012",
+    "manager": "mrs. Zhang",
+    "email": "zhang@example.com",
+    "address": "5656 Willow Lane, San Diego",
+    "language": "ENG",
+    "date": "2024-05-30"
+  },
+  {
+    "code": "047",
+    "name": "Upsilon Corp",
+    "contact": "010-6789-0123",
+    "manager": "mr. Patel",
+    "email": "patel@example.com",
+    "address": "5757 Maple Street, Minneapolis",
+    "language": "ENG",
+    "date": "2023-01-19"
+  },
+  {
+    "code": "048",
+    "name": "Phi Ltd",
+    "contact": "010-7890-1234",
+    "manager": "ms. Lee",
+    "email": "lee@example.com",
+    "address": "5858 Pine Road, Detroit",
+    "language": "ENG",
+    "date": "2024-07-22"
+  },
+  {
+    "code": "049",
+    "name": "Chi Dynamics",
+    "contact": "010-8901-2345",
+    "manager": "dr. Johnson",
+    "email": "johnson@example.com",
+    "address": "5959 Birch Avenue, Cleveland",
+    "language": "ENG",
+    "date": "2023-03-15"
+  },
+  {
+    "code": "050",
+    "name": "Psi Corp",
+    "contact": "010-9012-3456",
+    "manager": "ms. Garcia",
+    "email": "garcia@example.com",
+    "address": "6060 Cedar Lane, Milwaukee",
+    "language": "ENG",
+    "date": "2022-06-30"
+  },
+  {
+    "code": "051",
+    "name": "Omega Enterprises",
+    "contact": "010-0123-4567",
+    "manager": "mr. Kim",
+    "email": "kim@example.com",
+    "address": "6161 Willow Drive, Charlotte",
+    "language": "KOR",
+    "date": "2024-02-07"
+  },
+  {
+    "code": "052",
+    "name": "Alpha Innovations",
+    "contact": "010-1234-5678",
+    "manager": "ms. Patel",
+    "email": "patel@example.com",
+    "address": "6262 Maple Street, San Francisco",
+    "language": "ENG",
+    "date": "2023-11-18"
+  },
+  {
+    "code": "053",
+    "name": "Beta Tech",
+    "contact": "010-2345-6789",
+    "manager": "dr. Lee",
+    "email": "lee@example.com",
+    "address": "6363 Cedar Road, Philadelphia",
+    "language": "ENG",
+    "date": "2024-09-10"
+  },
+  {
+    "code": "054",
+    "name": "Gamma Enterprises",
+    "contact": "010-3456-7890",
+    "manager": "mrs. Zhang",
+    "email": "zhang@example.com",
+    "address": "6464 Willow Lane, Portland",
+    "language": "ENG",
+    "date": "2023-07-14"
+  },
+  {
+    "code": "055",
+    "name": "Delta Ltd",
+    "contact": "010-4567-8901",
+    "manager": "ms. Scott",
+    "email": "scott@example.com",
+    "address": "6565 Maple Avenue, Dallas",
+    "language": "ENG",
+    "date": "2024-03-22"
+  },
+  {
+    "code": "056",
+    "name": "Epsilon Dynamics",
+    "contact": "010-5678-9012",
+    "manager": "mr. Martinez",
+    "email": "martinez@example.com",
+    "address": "6666 Pine Drive, Houston",
+    "language": "ENG",
+    "date": "2023-02-28"
+  },
+  {
+    "code": "057",
+    "name": "Zeta Solutions",
+    "contact": "010-6789-0123",
+    "manager": "ms. Kim",
+    "email": "kim@example.com",
+    "address": "6767 Cedar Street, Miami",
+    "language": "KOR",
+    "date": "2024-08-14"
+  },
+  {
+    "code": "058",
+    "name": "Eta Corp",
+    "contact": "010-7890-1234",
+    "manager": "dr. Wang",
+    "email": "wang@example.com",
+    "address": "6868 Willow Avenue, Orlando",
+    "language": "ENG",
+    "date": "2022-01-12"
+  },
+  {
+    "code": "059",
+    "name": "Theta Enterprises",
+    "contact": "010-8901-2345",
+    "manager": "mrs. Patel",
+    "email": "patel@example.com",
+    "address": "6969 Maple Lane, Atlanta",
+    "language": "ENG",
+    "date": "2023-05-30"
+  },
+  {
+    "code": "060",
+    "name": "Iota Corp",
+    "contact": "010-9012-3456",
+    "manager": "mr. Singh",
+    "email": "singh@example.com",
+    "address": "7070 Cedar Avenue, Boston",
+    "language": "ENG",
+    "date": "2024-11-15"
+  },
+  {
+    "code": "061",
+    "name": "Kappa Solutions",
+    "contact": "010-0123-4567",
+    "manager": "ms. Nguyen",
+    "email": "nguyen@example.com",
+    "address": "7171 Pine Street, San Diego",
+    "language": "ENG",
+    "date": "2023-04-09"
+  },
+  {
+    "code": "062",
+    "name": "Lambda Tech",
+    "contact": "010-1234-5678",
+    "manager": "dr. Chen",
+    "email": "chen@example.com",
+    "address": "7272 Willow Drive, Detroit",
+    "language": "ENG",
+    "date": "2024-01-08"
+  },
+  {
+    "code": "063",
+    "name": "Mu Dynamics",
+    "contact": "010-2345-6789",
+    "manager": "mrs. Martinez",
+    "email": "martinez@example.com",
+    "address": "7373 Cedar Lane, San Francisco",
+    "language": "ENG",
+    "date": "2023-08-12"
+  },
+  {
+    "code": "064",
+    "name": "Nu Solutions",
+    "contact": "010-3456-7890",
+    "manager": "ms. Kim",
+    "email": "kim@example.com",
+    "address": "7474 Maple Street, Seattle",
+    "language": "KOR",
+    "date": "2024-10-19"
+  },
+  {
+    "code": "065",
+    "name": "Xi Tech",
+    "contact": "010-4567-8901",
+    "manager": "dr. Lee",
+    "email": "lee@example.com",
+    "address": "7575 Pine Avenue, Dallas",
+    "language": "ENG",
+    "date": "2023-11-22"
+  },
+  {
+    "code": "066",
+    "name": "Omicron Solutions",
+    "contact": "010-5678-9012",
+    "manager": "mrs. Patel",
+    "email": "patel@example.com",
+    "address": "7676 Willow Lane, Miami",
+    "language": "ENG",
+    "date": "2024-06-21"
+  },
+  {
+    "code": "067",
+    "name": "Pi Ltd",
+    "contact": "010-6789-0123",
+    "manager": "ms. Scott",
+    "email": "scott@example.com",
+    "address": "7777 Maple Avenue, Boston",
+    "language": "ENG",
+    "date": "2022-07-25"
+  },
+  {
+    "code": "068",
+    "name": "Rho Tech",
+    "contact": "010-7890-1234",
+    "manager": "dr. Martinez",
+    "email": "martinez@example.com",
+    "address": "7878 Cedar Street, Denver",
+    "language": "ENG",
+    "date": "2023-12-09"
+  },
+  {
+    "code": "069",
+    "name": "Sigma Corp",
+    "contact": "010-8901-2345",
+    "manager": "mr. Zhang",
+    "email": "zhang@example.com",
+    "address": "7979 Pine Drive, Atlanta",
+    "language": "ENG",
+    "date": "2024-03-11"
+  },
+  {
+    "code": "070",
+    "name": "Tau Dynamics",
+    "contact": "010-9012-3456",
+    "manager": "ms. Lee",
+    "email": "lee@example.com",
+    "address": "8080 Willow Lane, Orlando",
+    "language": "ENG",
+    "date": "2023-02-23"
+  },
+  {
+    "code": "071",
+    "name": "Upsilon Innovations",
+    "contact": "010-0123-4567",
+    "manager": "dr. Kim",
+    "email": "kim@example.com",
+    "address": "8181 Maple Street, Cleveland",
+    "language": "ENG",
+    "date": "2024-07-17"
+  },
+  {
+    "code": "072",
+    "name": "Phi Enterprises",
+    "contact": "010-1234-5678",
+    "manager": "mrs. Nguyen",
+    "email": "nguyen@example.com",
+    "address": "8282 Cedar Avenue, Portland",
+    "language": "ENG",
+    "date": "2023-11-08"
+  },
+  {
+    "code": "073",
+    "name": "Chi Ltd",
+    "contact": "010-2345-6789",
+    "manager": "ms. Patel",
+    "email": "patel@example.com",
+    "address": "8383 Pine Drive, Miami",
+    "language": "ENG",
+    "date": "2024-06-11"
+  },
+  {
+    "code": "074",
+    "name": "Psi Enterprises",
+    "contact": "010-3456-7890",
+    "manager": "mr. Scott",
+    "email": "scott@example.com",
+    "address": "8484 Willow Lane, Seattle",
+    "language": "ENG",
+    "date": "2023-03-22"
+  },
+  {
+    "code": "075",
+    "name": "Omega Dynamics",
+    "contact": "010-4567-8901",
+    "manager": "mrs. Martinez",
+    "email": "martinez@example.com",
+    "address": "8585 Maple Avenue, San Francisco",
+    "language": "ENG",
+    "date": "2024-10-02"
+  },
+  {
+    "code": "076",
+    "name": "Alpha Enterprises",
+    "contact": "010-5678-9012",
+    "manager": "ms. Lee",
+    "email": "lee@example.com",
+    "address": "8686 Pine Street, Detroit",
+    "language": "ENG",
+    "date": "2023-01-15"
+  },
+  {
+    "code": "077",
+    "name": "Beta Dynamics",
+    "contact": "010-6789-0123",
+    "manager": "dr. Kim",
+    "email": "kim@example.com",
+    "address": "8787 Cedar Lane, Austin",
+    "language": "ENG",
+    "date": "2024-04-26"
+  },
+  {
+    "code": "078",
+    "name": "Gamma Tech",
+    "contact": "010-7890-1234",
+    "manager": "mrs. Patel",
+    "email": "patel@example.com",
+    "address": "8888 Willow Lane, Dallas",
+    "language": "ENG",
+    "date": "2023-08-01"
+  },
+  {
+    "code": "079",
+    "name": "Delta Enterprises",
+    "contact": "010-8901-2345",
+    "manager": "ms. Nguyen",
+    "email": "nguyen@example.com",
+    "address": "8989 Maple Street, Chicago",
+    "language": "ENG",
+    "date": "2024-11-18"
+  },
+  {
+    "code": "080",
+    "name": "Epsilon Tech",
+    "contact": "010-9012-3456",
+    "manager": "dr. Wang",
+    "email": "wang@example.com",
+    "address": "9090 Cedar Avenue, Seattle",
+    "language": "ENG",
+    "date": "2022-05-08"
+  },
+  {
+    "code": "081",
+    "name": "Zeta Dynamics",
+    "contact": "010-0123-4567",
+    "manager": "mr. Lee",
+    "email": "lee@example.com",
+    "address": "9191 Pine Street, Boston",
+    "language": "ENG",
+    "date": "2024-08-22"
+  },
+  {
+    "code": "082",
+    "name": "Eta Solutions",
+    "contact": "010-1234-5678",
+    "manager": "ms. Martinez",
+    "email": "martinez@example.com",
+    "address": "9292 Willow Lane, Atlanta",
+    "language": "ENG",
+    "date": "2023-12-05"
+  },
+  {
+    "code": "083",
+    "name": "Theta Tech",
+    "contact": "010-2345-6789",
+    "manager": "dr. Patel",
+    "email": "patel@example.com",
+    "address": "9393 Maple Avenue, Philadelphia",
+    "language": "ENG",
+    "date": "2024-09-29"
+  },
+  {
+    "code": "084",
+    "name": "Iota Innovations",
+    "contact": "010-3456-7890",
+    "manager": "ms. Scott",
+    "email": "scott@example.com",
+    "address": "9494 Cedar Lane, Miami",
+    "language": "ENG",
+    "date": "2023-06-07"
+  },
+  {
+    "code": "085",
+    "name": "Kappa Ltd",
+    "contact": "010-4567-8901",
+    "manager": "mr. Kim",
+    "email": "kim@example.com",
+    "address": "9595 Pine Drive, San Francisco",
+    "language": "ENG",
+    "date": "2024-02-14"
+  },
+  {
+    "code": "086",
+    "name": "Lambda Enterprises",
+    "contact": "010-5678-9012",
+    "manager": "mrs. Zhang",
+    "email": "zhang@example.com",
+    "address": "9696 Cedar Street, Denver",
+    "language": "ENG",
+    "date": "2023-11-30"
+  },
+  {
+    "code": "087",
+    "name": "Mu Ltd",
+    "contact": "010-6789-0123",
+    "manager": "dr. Johnson",
+    "email": "johnson@example.com",
+    "address": "9797 Maple Lane, Orlando",
+    "language": "ENG",
+    "date": "2024-08-08"
+  },
+  {
+    "code": "088",
+    "name": "Nu Tech",
+    "contact": "010-7890-1234",
+    "manager": "ms. Lee",
+    "email": "lee@example.com",
+    "address": "9898 Willow Avenue, Minneapolis",
+    "language": "ENG",
+    "date": "2023-04-05"
+  },
+  {
+    "code": "089",
+    "name": "Xi Enterprises",
+    "contact": "010-8901-2345",
+    "manager": "mr. Patel",
+    "email": "patel@example.com",
+    "address": "9999 Cedar Road, Boston",
+    "language": "IND",
+    "date": "2024-05-19"
+  },
+  {
+    "code": "090",
+    "name": "Omicron Innovations",
+    "contact": "010-9012-3456",
+    "manager": "ms. Nguyen",
+    "email": "nguyen@example.com",
+    "address": "10000 Pine Avenue, Seattle",
+    "language": "ENG",
+    "date": "2022-09-27"
+  },
+  {
+    "code": "091",
+    "name": "Pi Tech",
+    "contact": "010-0123-4567",
+    "manager": "dr. Zhang",
+    "email": "zhang@example.com",
+    "address": "10101 Cedar Street, Denver",
+    "language": "ENG",
+    "date": "2024-04-15"
+  },
+  {
+    "code": "092",
+    "name": "Rho Enterprises",
+    "contact": "010-1234-5678",
+    "manager": "mrs. Martinez",
+    "email": "martinez@example.com",
+    "address": "10202 Maple Drive, Houston",
+    "language": "ENG",
+    "date": "2023-02-14"
+  },
+  {
+    "code": "093",
+    "name": "Sigma Solutions",
+    "contact": "010-2345-6789",
+    "manager": "ms. Kim",
+    "email": "kim@example.com",
+    "address": "10303 Pine Lane, Chicago",
+    "language": "KOR",
+    "date": "2022-10-17"
+  },
+  {
+    "code": "094",
+    "name": "Tau Enterprises",
+    "contact": "010-3456-7890",
+    "manager": "dr. Martinez",
+    "email": "martinez@example.com",
+    "address": "10404 Willow Avenue, San Diego",
+    "language": "ENG",
+    "date": "2024-05-15"
+  },
+  {
+    "code": "095",
+    "name": "Upsilon Solutions",
+    "contact": "010-4567-8901",
+    "manager": "ms. Nguyen",
+    "email": "nguyen@example.com",
+    "address": "10505 Maple Street, Denver",
+    "language": "ENG",
+    "date": "2023-10-25"
+  },
+  {
+    "code": "096",
+    "name": "Phi Dynamics",
+    "contact": "010-5678-9012",
+    "manager": "mr. Lee",
+    "email": "lee@example.com",
+    "address": "10606 Cedar Avenue, Charlotte",
+    "language": "ENG",
+    "date": "2024-11-05"
+  },
+  {
+    "code": "097",
+    "name": "Chi Enterprises",
+    "contact": "010-6789-0123",
+    "manager": "ms. Patel",
+    "email": "patel@example.com",
+    "address": "10707 Pine Drive, San Francisco",
+    "language": "ENG",
+    "date": "2023-09-20"
+  },
+  {
+    "code": "098",
+    "name": "Psi Solutions",
+    "contact": "010-7890-1234",
+    "manager": "mr. Kim",
+    "email": "kim@example.com",
+    "address": "10808 Willow Lane, Orlando",
+    "language": "ENG",
+    "date": "2024-06-25"
+  },
+  {
+    "code": "099",
+    "name": "Omega Solutions",
+    "contact": "010-8901-2345",
+    "manager": "dr. Chen",
+    "email": "chen@example.com",
+    "address": "10909 Cedar Lane, Charlotte",
+    "language": "ENG",
+    "date": "2024-09-08"
+  },
+  {
+    "code": "100",
+    "name": "Alpha Tech",
+    "contact": "010-9012-3456",
+    "manager": "ms. Nguyen",
+    "email": "nguyen@example.com",
+    "address": "11010 Maple Avenue, Minneapolis",
+    "language": "ENG",
+    "date": "2023-07-11"
+  }
+]

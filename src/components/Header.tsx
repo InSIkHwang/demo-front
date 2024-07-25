@@ -12,10 +12,11 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
 const StyledHeader = styled.header`
+  top: 0;
   display: flex;
   align-items: center;
   position: fixed;
-  width: 100vw;
+  width: 100%;
   height: 70px;
   font-size: 14px;
   padding: 20px;
@@ -56,7 +57,7 @@ const SideMenu = styled(motion.div)`
   position: fixed;
   top: 60px;
   left: 0;
-  height: calc(100vh - 60px);
+  height: calc(100% - 60px);
   width: 280px;
   background-color: #333;
   color: white;
@@ -104,8 +105,8 @@ const Backdrop = styled.div`
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   background-color: #0000004e;
   z-index: 998;
 `;
@@ -186,12 +187,12 @@ const Header = () => {
             매출처
           </MenuItem>
           <MenuItem
-            onClick={() => handleMenuItemClick(() => console.log("매입처"))}
+            onClick={() => handleMenuItemClick(() => navigate("/supplierlist"))}
           >
             매입처
           </MenuItem>
           <MenuItem
-            onClick={() => handleMenuItemClick(() => console.log("선박"))}
+            onClick={() => handleMenuItemClick(() => navigate("/shiplist"))}
           >
             선박
           </MenuItem>
