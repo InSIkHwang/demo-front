@@ -43,14 +43,15 @@ const SubmitButton = styled.button`
 
 interface FormProps {
   formData: {
+    id: number;
     code: string;
-    name: string;
-    contact: string;
-    manager: string;
+    companyName: string;
+    phoneNumber: string;
+    representative: string;
     email: string;
     address: string;
-    language: string;
-    date: string;
+    communicationLanguage: string;
+    modifiedAt: string;
   };
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSubmit: (e: React.FormEvent) => void;
@@ -67,7 +68,7 @@ const Form = ({
 }: FormProps) => (
   <form onSubmit={onSubmit}>
     <FormGroup>
-      <Label htmlFor="code">코드</Label>
+      <Label htmlFor="code">코드:</Label>
       <Input
         id="code"
         name="code"
@@ -77,29 +78,34 @@ const Form = ({
       />
     </FormGroup>
     <FormGroup>
-      <Label htmlFor="name">상호명</Label>
-      <Input id="name" name="name" value={formData.name} onChange={onChange} />
-    </FormGroup>
-    <FormGroup>
-      <Label htmlFor="contact">연락처</Label>
+      <Label htmlFor="companyName">상호명:</Label>
       <Input
-        id="contact"
-        name="contact"
-        value={formData.contact}
+        id="companyName"
+        name="companyName"
+        value={formData.companyName}
         onChange={onChange}
       />
     </FormGroup>
     <FormGroup>
-      <Label htmlFor="manager">담당자</Label>
+      <Label htmlFor="phoneNumber">연락처:</Label>
       <Input
-        id="manager"
-        name="manager"
-        value={formData.manager}
+        id="phoneNumber"
+        name="phoneNumber"
+        value={formData.phoneNumber}
         onChange={onChange}
       />
     </FormGroup>
     <FormGroup>
-      <Label htmlFor="email">이메일</Label>
+      <Label htmlFor="representative">담당자:</Label>
+      <Input
+        id="representative"
+        name="representative"
+        value={formData.representative}
+        onChange={onChange}
+      />
+    </FormGroup>
+    <FormGroup>
+      <Label htmlFor="email">이메일:</Label>
       <Input
         id="email"
         name="email"
@@ -108,7 +114,7 @@ const Form = ({
       />
     </FormGroup>
     <FormGroup>
-      <Label htmlFor="address">주소</Label>
+      <Label htmlFor="address">주소:</Label>
       <Input
         id="address"
         name="address"
@@ -117,11 +123,11 @@ const Form = ({
       />
     </FormGroup>
     <FormGroup>
-      <Label htmlFor="language">사용 언어</Label>
+      <Label htmlFor="communicationLanguage">사용 언어:</Label>
       <Input
-        id="language"
-        name="language"
-        value={formData.language}
+        id="communicationLanguage"
+        name="communicationLanguage"
+        value={formData.communicationLanguage}
         onChange={onChange}
       />
     </FormGroup>

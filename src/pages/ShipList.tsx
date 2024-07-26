@@ -96,6 +96,19 @@ const ShipList = () => {
       });
   }, []);
 
+  // 모달 열릴 때 스크롤 방지
+  useEffect(() => {
+    if (isModalOpen || isDetailModalOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [isModalOpen, isDetailModalOpen]);
+
   const applyFilter = () => {
     const result =
       searchText.trim() === ""

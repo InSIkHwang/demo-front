@@ -12,13 +12,14 @@ const ModalBackdrop = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 10;
 `;
 
 const ModalContent = styled.div`
   background: white;
-  padding: 20px;
+  padding: 30px;
   border-radius: 8px;
-  width: 400px;
+  width: 500px;
   max-width: 90%;
   position: relative;
 `;
@@ -56,6 +57,12 @@ const Input = styled.input`
   border-radius: 4px;
 `;
 
+const ErrorMessage = styled.div`
+  color: red;
+  font-size: 12px;
+  margin-top: 5px;
+`;
+
 const SubmitButton = styled.button<{ disabled: boolean }>`
   padding: 10px 20px;
   font-size: 16px;
@@ -78,9 +85,10 @@ const SubmitButton = styled.button<{ disabled: boolean }>`
 interface ModalProps {
   category: string;
   onClose: () => void;
+  onUpdate: () => void;
 }
 
-const CreateModal = ({ category, onClose }: ModalProps) => {
+const CreateModal = ({ category, onClose, onUpdate }: ModalProps) => {
   const todayDate = new Date().toLocaleDateString("en-CA");
 
   const [formData, setFormData] = useState({
@@ -94,7 +102,7 @@ const CreateModal = ({ category, onClose }: ModalProps) => {
     date: todayDate,
   });
 
-  const [isCodeUnique, setIsCodeUnique] = useState(false);
+  const [isCodeUnique, setIsCodeUnique] = useState(true);
   const [isCheckingCode, setIsCheckingCode] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -115,10 +123,9 @@ const CreateModal = ({ category, onClose }: ModalProps) => {
     };
   };
 
-  //중복 코드 체크 로직
   const checkCodeUnique = debounce(async () => {
     if (formData.code.trim() === "") {
-      setIsCodeUnique(false);
+      setIsCodeUnique(true);
       return;
     }
     setIsCheckingCode(true);
@@ -130,10 +137,10 @@ const CreateModal = ({ category, onClose }: ModalProps) => {
 
       const response = await axios.get(endpoint);
 
-      setIsCodeUnique(response.data); // 응답 T/F
+      setIsCodeUnique(!response.data); // 응답 T/F를 반전시킴
     } catch (error) {
       console.error("Error checking code unique:", error);
-      setIsCodeUnique(false);
+      setIsCodeUnique(true); // 오류가 발생하면 기본적으로 유효하다고 처리
     } finally {
       setIsCheckingCode(false);
     }
@@ -161,9 +168,11 @@ const CreateModal = ({ category, onClose }: ModalProps) => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    postCreate();
+    if (!isCodeUnique) return; // 코드가 유효하지 않으면 제출하지 않음
+    await postCreate();
+    onUpdate();
     onClose();
   };
 
@@ -186,69 +195,84 @@ const CreateModal = ({ category, onClose }: ModalProps) => {
         </ModalTitle>
         <form onSubmit={handleSubmit}>
           <FormGroup>
-            <Label htmlFor="code">코드</Label>
+            <Label htmlFor="code">코드:</Label>
             <Input
               id="code"
               name="code"
               value={formData.code}
               onChange={handleChange}
+              placeholder="BAS"
+              required
             />
+            {!isCodeUnique && (
+              <ErrorMessage>이미 등록된 코드입니다.</ErrorMessage>
+            )}
           </FormGroup>
           <FormGroup>
-            <Label htmlFor="name">상호명</Label>
+            <Label htmlFor="name">상호명:</Label>
             <Input
               id="name"
               name="name"
               value={formData.name}
               onChange={handleChange}
+              placeholder="바스코리아"
+              required
             />
           </FormGroup>
           <FormGroup>
-            <Label htmlFor="contact">연락처</Label>
+            <Label htmlFor="contact">연락처:</Label>
             <Input
               id="contact"
               name="contact"
               value={formData.contact}
               onChange={handleChange}
+              placeholder="051-123-4567"
             />
           </FormGroup>
           <FormGroup>
-            <Label htmlFor="manager">담당자</Label>
+            <Label htmlFor="manager">담당자:</Label>
             <Input
               id="manager"
               name="manager"
               value={formData.manager}
               onChange={handleChange}
+              placeholder="김바스"
             />
           </FormGroup>
           <FormGroup>
-            <Label htmlFor="email">이메일</Label>
+            <Label htmlFor="email">이메일:</Label>
             <Input
               id="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
+              placeholder="info@bas-korea.com"
             />
           </FormGroup>
           <FormGroup>
-            <Label htmlFor="address">주소</Label>
+            <Label htmlFor="address">주소:</Label>
             <Input
               id="address"
               name="address"
               value={formData.address}
               onChange={handleChange}
+              placeholder="부산광역시 해운대구"
             />
           </FormGroup>
           <FormGroup>
-            <Label htmlFor="language">사용 언어</Label>
+            <Label htmlFor="language">사용 언어:</Label>
             <Input
               id="language"
               name="language"
               value={formData.language}
               onChange={handleChange}
+              placeholder="KOR"
             />
           </FormGroup>
-          <SubmitButton type="submit" disabled={isCodeUnique || isCheckingCode}>
+          <SubmitButton
+            type="submit"
+            disabled={!isCodeUnique || isCheckingCode}
+          >
             등록
           </SubmitButton>
         </form>

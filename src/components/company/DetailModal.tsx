@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import Form from "./Form";
+import axios from "../../api/axios";
 
 const ModalBackdrop = styled.div`
   position: fixed;
@@ -12,13 +13,14 @@ const ModalBackdrop = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 10;
 `;
 
 const ModalContent = styled.div`
   background: white;
-  padding: 20px;
+  padding: 30px;
   border-radius: 8px;
-  width: 400px;
+  width: 500px;
   max-width: 90%;
   position: relative;
 `;
@@ -96,23 +98,25 @@ const DeleteButton = styled.button`
 `;
 
 interface Company {
+  id: number;
   code: string;
-  name: string;
-  contact: string;
-  manager: string;
+  companyName: string;
+  phoneNumber: string;
+  representative: string;
   email: string;
   address: string;
-  language: string;
-  date: string;
+  communicationLanguage: string;
+  modifiedAt: string;
 }
 
 interface ModalProps {
   category: string;
   company: Company;
   onClose: () => void;
+  onUpdate: () => void;
 }
 
-const DetailModal = ({ category, company, onClose }: ModalProps) => {
+const DetailModal = ({ category, company, onClose, onUpdate }: ModalProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(company);
 
@@ -122,6 +126,7 @@ const DetailModal = ({ category, company, onClose }: ModalProps) => {
     }
   };
 
+  //수정폼 데이터 입력 처리
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
@@ -129,27 +134,65 @@ const DetailModal = ({ category, company, onClose }: ModalProps) => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  //데이터 수정 PUT API
+  const editData = async () => {
+    try {
+      const endpoint =
+        category === "customer"
+          ? `/api/customers/${formData.id}`
+          : `/api/suppliers/${formData.id}`;
+      const response = await axios.put(endpoint, {
+        code: formData.code,
+        companyName: formData.companyName,
+        phoneNumber: formData.phoneNumber,
+        representative: formData.representative,
+        email: formData.email,
+        address: formData.address,
+        communicationLanguage: formData.communicationLanguage,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  //데이터 삭제 DELETE API
+  const deleteData = async () => {
+    try {
+      const endpoint =
+        category === "customer"
+          ? `/api/customers/${formData.id}`
+          : `/api/suppliers/${formData.id}`;
+      const response = await axios.delete(endpoint);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  //수정 SUBMIT 비동기처리, PUT 처리 후 FETCH
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Updated Data:", formData);
+    await editData();
+    onUpdate();
     onClose();
   };
 
-  const handleDelete = () => {
+  //삭제 SUBMIT 비동기처리, DELETE 처리 후 FETCH
+  const handleDelete = async () => {
     if (window.confirm("정말 삭제하시겠습니까?")) {
-      console.log("Deleted Data:", formData);
+      await deleteData();
+      onUpdate();
       onClose();
     }
   };
 
   const readOnlyFields = {
     code: true, //read-only
-    name: !isEditing,
-    contact: !isEditing,
-    manager: !isEditing,
+    companyName: !isEditing,
+    phoneNumber: !isEditing,
+    representative: !isEditing,
     email: !isEditing,
     address: !isEditing,
-    date: !isEditing,
+    communicationLanguage: !isEditing,
   };
 
   return (
@@ -175,15 +218,15 @@ const DetailModal = ({ category, company, onClose }: ModalProps) => {
             </DetailItem>
             <DetailItem>
               <PropName>상호명</PropName>
-              <PropValue>{formData.name}</PropValue>
+              <PropValue>{formData.companyName}</PropValue>
             </DetailItem>
             <DetailItem>
               <PropName>연락처</PropName>
-              <PropValue>{formData.contact}</PropValue>
+              <PropValue>{formData.phoneNumber}</PropValue>
             </DetailItem>
             <DetailItem>
               <PropName>담당자</PropName>
-              <PropValue>{formData.manager}</PropValue>
+              <PropValue>{formData.representative}</PropValue>
             </DetailItem>
             <DetailItem>
               <PropName>이메일</PropName>
@@ -195,11 +238,11 @@ const DetailModal = ({ category, company, onClose }: ModalProps) => {
             </DetailItem>
             <DetailItem>
               <PropName>사용 언어</PropName>
-              <PropValue>{formData.language}</PropValue>
+              <PropValue>{formData.communicationLanguage}</PropValue>
             </DetailItem>
             <DetailItem>
               <PropName>수정된 날짜</PropName>
-              <PropValue>{formData.date}</PropValue>
+              <PropValue>{formData.modifiedAt}</PropValue>
             </DetailItem>
             <BtnWrap>
               <UpdateButton type="button" onClick={() => setIsEditing(true)}>

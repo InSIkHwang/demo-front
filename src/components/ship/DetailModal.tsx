@@ -12,15 +12,18 @@ const ModalBackdrop = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 10;
 `;
 
 const ModalContent = styled.div`
   background: white;
-  padding: 20px;
+  padding: 30px;
   border-radius: 8px;
-  width: 800px;
+  width: 500px;
   max-width: 90%;
   position: relative;
+  overflow-y: scroll;
+  height: 600px;
 `;
 
 const ModalTitle = styled.div`
@@ -40,17 +43,10 @@ const CloseButton = styled.button`
   cursor: pointer;
 `;
 
-const DetailItemContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-`;
-
 const DetailItem = styled.div`
   padding: 10px 0;
-  margin: 5px;
   border-top: 1px solid #ccc;
   display: flex;
-  flex: 1 1 calc(50% - 20px);
 `;
 
 const PropName = styled.span`
@@ -183,52 +179,50 @@ const DetailModal = ({ category, company, onClose }: ModalProps) => {
           />
         ) : (
           <>
-            <DetailItemContainer>
-              <DetailItem>
-                <PropName>코드</PropName>
-                <PropValue>{formData.code}</PropValue>
-              </DetailItem>
-              <DetailItem>
-                <PropName>선명</PropName>
-                <PropValue>{formData.shipname}</PropValue>
-              </DetailItem>
-              <DetailItem>
-                <PropName>선박회사</PropName>
-                <PropValue>{formData.company}</PropValue>
-              </DetailItem>
-              <DetailItem>
-                <PropName>호출부호</PropName>
-                <PropValue>{formData.callsign}</PropValue>
-              </DetailItem>
-              <DetailItem>
-                <PropName>IMO No.</PropName>
-                <PropValue>{formData.imonumber}</PropValue>
-              </DetailItem>
-              <DetailItem>
-                <PropName>HULL No.</PropName>
-                <PropValue>{formData.hullnumber}</PropValue>
-              </DetailItem>
-              <DetailItem>
-                <PropName>SHIPYARD</PropName>
-                <PropValue>{formData.shipyard}</PropValue>
-              </DetailItem>
-              <DetailItem>
-                <PropName>선박구분</PropName>
-                <PropValue>{formData.shiptype}</PropValue>
-              </DetailItem>
-              <DetailItem>
-                <PropName>비고</PropName>
-                <PropValue>{formData.remark}</PropValue>
-              </DetailItem>
-              <DetailItem>
-                <PropName>엔진타입1</PropName>
-                <PropValue>{formData.enginetype1}</PropValue>
-              </DetailItem>
-              <DetailItem>
-                <PropName>엔진타입2</PropName>
-                <PropValue>{formData.enginetype2}</PropValue>
-              </DetailItem>
-            </DetailItemContainer>
+            <DetailItem>
+              <PropName>코드</PropName>
+              <PropValue>{formData.code}</PropValue>
+            </DetailItem>
+            <DetailItem>
+              <PropName>선명</PropName>
+              <PropValue>{formData.shipname}</PropValue>
+            </DetailItem>
+            <DetailItem>
+              <PropName>선박회사</PropName>
+              <PropValue>{formData.company}</PropValue>
+            </DetailItem>
+            <DetailItem>
+              <PropName>호출부호</PropName>
+              <PropValue>{formData.callsign}</PropValue>
+            </DetailItem>
+            <DetailItem>
+              <PropName>IMO No.</PropName>
+              <PropValue>{formData.imonumber}</PropValue>
+            </DetailItem>
+            <DetailItem>
+              <PropName>HULL No.</PropName>
+              <PropValue>{formData.hullnumber}</PropValue>
+            </DetailItem>
+            <DetailItem>
+              <PropName>SHIPYARD</PropName>
+              <PropValue>{formData.shipyard}</PropValue>
+            </DetailItem>
+            <DetailItem>
+              <PropName>선박구분</PropName>
+              <PropValue>{formData.shiptype}</PropValue>
+            </DetailItem>
+            <DetailItem>
+              <PropName>비고</PropName>
+              <PropValue>{formData.remark}</PropValue>
+            </DetailItem>
+            <DetailItem>
+              <PropName>엔진타입1</PropName>
+              <PropValue>{formData.enginetype1}</PropValue>
+            </DetailItem>
+            <DetailItem>
+              <PropName>엔진타입2</PropName>
+              <PropValue>{formData.enginetype2}</PropValue>
+            </DetailItem>
             <BtnWrap>
               <UpdateButton type="button" onClick={() => setIsEditing(true)}>
                 수정

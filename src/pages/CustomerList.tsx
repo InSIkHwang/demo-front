@@ -5,7 +5,7 @@ import CreateModal from "../components/company/CreateModal";
 import type { ColumnsType } from "antd/es/table";
 import styled from "styled-components";
 import DetailModal from "../components/company/DetailModal";
-import axios from "axios";
+import axios from "../api/axios";
 
 const Container = styled.div`
   position: relative;
@@ -53,21 +53,22 @@ const PaginationWrapper = styled(Pagination)`
 const { Option } = Select;
 
 interface Customer {
+  id: number;
   code: string;
-  name: string;
-  contact: string;
-  manager: string;
+  companyName: string;
+  phoneNumber: string;
+  representative: string;
   email: string;
   address: string;
-  language: string;
-  date: string;
+  country: string;
+  communicationLanguage: string;
+  modifiedAt: string;
 }
 
 const CustomerList = () => {
   const [data, setData] = useState<Customer[]>([]);
   const [searchText, setSearchText] = useState<string>("");
   const [searchCategory, setSearchCategory] = useState<string>("all");
-  const [filteredData, setFilteredData] = useState<Customer[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
@@ -79,46 +80,65 @@ const CustomerList = () => {
 
   const category = "customer";
 
-  useEffect(() => {
-    fetch("/data/customer.json")
-      .then((response) => response.json())
-      .then((data: Customer[]) => {
-        setData(data);
-        setFilteredData(data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error loading data:", error);
-        setLoading(false);
+  //데이터 FETCH
+  const fetchData = async () => {
+    try {
+      const response = await axios.get("/api/customers", {
+        params: {
+          page: currentPage - 1, // 페이지는 0
+          size: itemsPerPage,
+        },
       });
+      setData(response.data.customers);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
   }, []);
 
-  const applyFilter = () => {
-    const result =
-      searchText.trim() === ""
-        ? data
-        : data.filter((item) => {
-            if (searchCategory === "all") {
-              return (
-                item.code.includes(searchText) ||
-                item.name.includes(searchText) ||
-                item.contact.includes(searchText) ||
-                item.manager.includes(searchText) ||
-                item.email.includes(searchText) ||
-                item.address.includes(searchText)
-              );
-            } else if (searchCategory === "code") {
-              return item.code.includes(searchText);
-            } else if (searchCategory === "name") {
-              return item.name.includes(searchText);
-            } else if (searchCategory === "address") {
-              return item.address.includes(searchText);
-            }
-            return false;
-          });
-    setFilteredData(result);
-    setCurrentPage(1);
+  // 모달 열릴 때 스크롤 방지
+  useEffect(() => {
+    if (isModalOpen || isDetailModalOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [isModalOpen, isDetailModalOpen]);
+
+  //검색 API 로직
+  const fetchFilteredData = async () => {
+    try {
+      const params: any = {};
+      if (searchCategory === "code") {
+        params.code = searchText;
+      } else if (searchCategory === "companyName") {
+        params.companyName = searchText;
+      } else if (searchCategory === "all") {
+        params.query = searchText;
+      }
+      const response = await axios.get("/api/customers/search", { params });
+      setData(response.data.customers);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching filtered data:", error);
+      setLoading(false);
+    }
   };
+
+  //최초 렌더링 시 데이터 FETCH
+  useEffect(() => {
+    fetchData();
+    console.log("fetch data");
+  }, []);
 
   const columns: ColumnsType<Customer> = [
     {
@@ -128,20 +148,20 @@ const CustomerList = () => {
     },
     {
       title: "상호명",
-      dataIndex: "name",
-      key: "name",
-      sorter: (a, b) => a.name.localeCompare(b.name),
+      dataIndex: "companyName",
+      key: "companyName",
+      sorter: (a, b) => a.companyName.localeCompare(b.companyName),
       sortDirections: ["ascend", "descend"],
     },
     {
       title: "연락처",
-      dataIndex: "contact",
-      key: "contact",
+      dataIndex: "phoneNumber",
+      key: "phoneNumber",
     },
     {
       title: "담당자",
-      dataIndex: "manager",
-      key: "manager",
+      dataIndex: "representative",
+      key: "representative",
     },
     {
       title: "이메일",
@@ -155,14 +175,15 @@ const CustomerList = () => {
     },
     {
       title: "사용 언어",
-      dataIndex: "language",
-      key: "language",
+      dataIndex: "communicationLanguage",
+      key: "communicationLanguage",
     },
     {
       title: "수정된 날짜",
-      dataIndex: "date",
-      key: "date",
-      sorter: (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+      dataIndex: "modifiedAt",
+      key: "modifiedAt",
+      sorter: (a, b) =>
+        new Date(a.modifiedAt).getTime() - new Date(b.modifiedAt).getTime(),
       sortDirections: ["ascend", "descend"],
     },
   ];
@@ -184,7 +205,8 @@ const CustomerList = () => {
     setIsDetailModalOpen(false);
   };
 
-  const paginatedData = filteredData.slice(
+  //한 페이지에 보일 데이터
+  const paginatedData = data.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
@@ -207,16 +229,15 @@ const CustomerList = () => {
             >
               <Option value="all">통합검색</Option>
               <Option value="code">코드</Option>
-              <Option value="name">상호명</Option>
-              <Option value="address">주소</Option>
+              <Option value="companyName">상호명</Option>
             </Select>
             <Input
               placeholder="검색..."
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
-              onPressEnter={applyFilter}
+              onPressEnter={fetchFilteredData}
               style={{ width: 300, marginRight: 10 }}
-              suffix={<SearchOutlined onClick={applyFilter} />}
+              suffix={<SearchOutlined onClick={fetchFilteredData} />}
             />
           </SearchBar>
           <Button type="primary" onClick={openModal}>
@@ -237,7 +258,7 @@ const CustomerList = () => {
         <PaginationWrapper
           current={currentPage}
           pageSize={itemsPerPage}
-          total={filteredData.length}
+          total={data.length}
           onChange={handlePageChange}
           onShowSizeChange={handlePageSizeChange}
           showSizeChanger
@@ -254,12 +275,19 @@ const CustomerList = () => {
           }}
         />
       </Container>
-      {isModalOpen && <CreateModal category={category} onClose={closeModal} />}
+      {isModalOpen && (
+        <CreateModal
+          category={category}
+          onClose={closeModal}
+          onUpdate={fetchData}
+        />
+      )}
       {isDetailModalOpen && selectedCustomer && (
         <DetailModal
           category={category}
           company={selectedCustomer}
           onClose={closeDetailModal}
+          onUpdate={fetchData}
         />
       )}
     </>

@@ -53,21 +53,22 @@ const PaginationWrapper = styled(Pagination)`
 const { Option } = Select;
 
 interface Supplier {
+  id: number;
   code: string;
-  name: string;
-  contact: string;
-  manager: string;
+  companyName: string;
+  phoneNumber: string;
+  representative: string;
   email: string;
   address: string;
-  language: string;
-  date: string;
+  country: string;
+  communicationLanguage: string;
+  modifiedAt: string;
 }
 
 const SupplierList = () => {
   const [data, setData] = useState<Supplier[]>([]);
   const [searchText, setSearchText] = useState<string>("");
   const [searchCategory, setSearchCategory] = useState<string>("all");
-  const [filteredData, setFilteredData] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
@@ -79,73 +80,61 @@ const SupplierList = () => {
 
   const category = "supplier";
 
-  useEffect(() => {
-    fetch("/data/supplier.json")
-      .then((response) => response.json())
-      .then((data: Supplier[]) => {
-        setData(data);
-        setFilteredData(data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error loading data:", error);
-        setLoading(false);
-      });
-  }, []);
-
-  //API TEST************************************
-
-  const [test, setTest] = useState([]);
-
-  const API = async () => {
+  //데이터 FETCH
+  const fetchData = async () => {
     try {
       const response = await axios.get("/api/suppliers", {
-        //default params
         params: {
-          page: 0,
-          size: 100,
+          page: currentPage - 1, // 페이지는 0
+          size: itemsPerPage,
         },
       });
-      setTest(response.data.suppliers);
+      setData(response.data.suppliers);
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching data:", error);
+      setLoading(false);
     }
   };
 
+  // 모달 열릴 때 스크롤 방지
   useEffect(() => {
-    API();
-  }, []);
+    if (isModalOpen || isDetailModalOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
 
-  console.log(test);
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [isModalOpen, isDetailModalOpen]);
 
-  //API TEST************************************
-
-  const applyFilter = () => {
-    const result =
-      searchText.trim() === ""
-        ? data
-        : data.filter((item) => {
-            if (searchCategory === "all") {
-              return (
-                item.code.includes(searchText) ||
-                item.name.includes(searchText) ||
-                item.contact.includes(searchText) ||
-                item.manager.includes(searchText) ||
-                item.email.includes(searchText) ||
-                item.address.includes(searchText)
-              );
-            } else if (searchCategory === "code") {
-              return item.code.includes(searchText);
-            } else if (searchCategory === "name") {
-              return item.name.includes(searchText);
-            } else if (searchCategory === "address") {
-              return item.address.includes(searchText);
-            }
-            return false;
-          });
-    setFilteredData(result);
-    setCurrentPage(1);
+  //검색 API 로직
+  const fetchFilteredData = async () => {
+    try {
+      const params: any = {};
+      if (searchCategory === "code") {
+        params.code = searchText;
+      } else if (searchCategory === "companyName") {
+        params.companyName = searchText;
+      } else if (searchCategory === "all") {
+        params.query = searchText;
+      }
+      const response = await axios.get("/api/suppliers/search", { params });
+      setData(response.data.suppliers);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching filtered data:", error);
+      setLoading(false);
+    }
   };
+
+  //최초 렌더링 시 데이터 FETCH
+  useEffect(() => {
+    fetchData();
+    console.log("fetch data");
+  }, []);
 
   const columns: ColumnsType<Supplier> = [
     {
@@ -155,20 +144,21 @@ const SupplierList = () => {
     },
     {
       title: "상호명",
-      dataIndex: "name",
-      key: "name",
-      sorter: (a, b) => a.name.localeCompare(b.name),
+      dataIndex: "companyName",
+      key: "companyName",
+      sorter: (a, b) =>
+        (a.companyName || "").localeCompare(b.companyName || ""),
       sortDirections: ["ascend", "descend"],
     },
     {
       title: "연락처",
-      dataIndex: "contact",
-      key: "contact",
+      dataIndex: "phoneNumber",
+      key: "phoneNumber",
     },
     {
       title: "담당자",
-      dataIndex: "manager",
-      key: "manager",
+      dataIndex: "representative",
+      key: "representative",
     },
     {
       title: "이메일",
@@ -183,14 +173,15 @@ const SupplierList = () => {
     },
     {
       title: "사용 언어",
-      dataIndex: "language",
-      key: "language",
+      dataIndex: "communicationLanguage",
+      key: "communicationLanguage",
     },
     {
       title: "수정된 날짜",
-      dataIndex: "date",
-      key: "date",
-      sorter: (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+      dataIndex: "modifiedAt",
+      key: "modifiedAt",
+      sorter: (a, b) =>
+        new Date(a.modifiedAt).getTime() - new Date(b.modifiedAt).getTime(),
       sortDirections: ["ascend", "descend"],
     },
   ];
@@ -212,7 +203,8 @@ const SupplierList = () => {
     setIsDetailModalOpen(false);
   };
 
-  const paginatedData = filteredData.slice(
+  //한 페이지에 보일 데이터
+  const paginatedData = data.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
@@ -235,16 +227,15 @@ const SupplierList = () => {
             >
               <Option value="all">통합검색</Option>
               <Option value="code">코드</Option>
-              <Option value="name">상호명</Option>
-              <Option value="address">주소</Option>
+              <Option value="companyName">상호명</Option>
             </Select>
             <Input
               placeholder="검색..."
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
-              onPressEnter={applyFilter}
+              onPressEnter={fetchFilteredData}
               style={{ width: 300, marginRight: 10 }}
-              suffix={<SearchOutlined onClick={applyFilter} />}
+              suffix={<SearchOutlined onClick={fetchFilteredData} />}
             />
           </SearchBar>
           <Button type="primary" onClick={openModal}>
@@ -265,7 +256,7 @@ const SupplierList = () => {
         <PaginationWrapper
           current={currentPage}
           pageSize={itemsPerPage}
-          total={filteredData.length}
+          total={data.length}
           onChange={handlePageChange}
           onShowSizeChange={handlePageSizeChange}
           showSizeChanger
@@ -282,12 +273,19 @@ const SupplierList = () => {
           }}
         />
       </Container>
-      {isModalOpen && <CreateModal category={category} onClose={closeModal} />}
+      {isModalOpen && (
+        <CreateModal
+          category={category}
+          onClose={closeModal}
+          onUpdate={fetchData}
+        />
+      )}
       {isDetailModalOpen && selectedSupplier && (
         <DetailModal
           category={category}
           company={selectedSupplier}
           onClose={closeDetailModal}
+          onUpdate={fetchData}
         />
       )}
     </>
