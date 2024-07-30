@@ -4,7 +4,7 @@ import { SearchOutlined, LeftOutlined, RightOutlined } from "@ant-design/icons";
 import CreateModal from "../components/ship/CreateModal";
 import type { ColumnsType } from "antd/es/table";
 import styled from "styled-components";
-import axios from "axios";
+import axios from "../api/axios";
 import DetailModal from "../components/ship/DetailModal";
 
 const Container = styled.div`
@@ -52,49 +52,43 @@ const PaginationWrapper = styled(Pagination)`
 
 const { Option } = Select;
 
-interface Customer {
+interface Vessel {
+  id: number;
   code: string;
-  shipname: string;
-  company: string;
-  callsign: string;
-  imonumber: string;
-  hullnumber: string;
-  shipyard: string;
-  shiptype: string;
-  remark: string;
-  enginetype1: string;
-  enginetype2: string;
+  vesselName: string;
+  vesselCompanyName: string;
+  imoNumber: number;
+  hullNumber: string;
+  shipYard: string;
 }
 
 const ShipList = () => {
-  const [data, setData] = useState<Customer[]>([]);
+  const [data, setData] = useState<Vessel[]>([]);
   const [searchText, setSearchText] = useState<string>("");
   const [searchCategory, setSearchCategory] = useState<string>("all");
-  const [filteredData, setFilteredData] = useState<Customer[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage, setItemsPerPage] = useState<number>(10);
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
-    null
-  );
+  const [selectedVessel, setSelectedVessel] = useState<Vessel | null>(null);
 
-  const category = "customer";
-
-  useEffect(() => {
-    fetch("/data/ship.json")
-      .then((response) => response.json())
-      .then((data: Customer[]) => {
-        setData(data);
-        setFilteredData(data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error loading data:", error);
-        setLoading(false);
+  //데이터 FETCH
+  const fetchData = async () => {
+    try {
+      const response = await axios.get("/api/vessels", {
+        params: {
+          page: currentPage - 1, // 페이지는 0
+          size: itemsPerPage,
+        },
       });
-  }, []);
+      setData(response.data.vessels);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setLoading(false);
+    }
+  };
 
   // 모달 열릴 때 스크롤 방지
   useEffect(() => {
@@ -109,39 +103,33 @@ const ShipList = () => {
     };
   }, [isModalOpen, isDetailModalOpen]);
 
-  const applyFilter = () => {
-    const result =
-      searchText.trim() === ""
-        ? data
-        : data.filter((item) => {
-            if (searchCategory === "all") {
-              return (
-                item.code.includes(searchText) ||
-                item.shipname.includes(searchText) ||
-                item.company.includes(searchText) ||
-                item.callsign.includes(searchText) ||
-                item.imonumber.includes(searchText) ||
-                item.hullnumber.includes(searchText) ||
-                item.shipyard.includes(searchText) ||
-                item.shiptype.includes(searchText) ||
-                item.remark.includes(searchText) ||
-                item.enginetype1.includes(searchText) ||
-                item.enginetype2.includes(searchText)
-              );
-            } else if (searchCategory === "code") {
-              return item.code.includes(searchText);
-            } else if (searchCategory === "shipname") {
-              return item.shipname.includes(searchText);
-            } else if (searchCategory === "company") {
-              return item.company.includes(searchText);
-            }
-            return false;
-          });
-    setFilteredData(result);
-    setCurrentPage(1);
+  //검색 API 로직
+  const fetchFilteredData = async () => {
+    try {
+      const params: any = {};
+      if (searchCategory === "code") {
+        params.code = searchText;
+      } else if (searchCategory === "vesselName") {
+        params.vesselName = searchText;
+      } else if (searchCategory === "all") {
+        params.query = searchText;
+      }
+      const response = await axios.get("/api/vessels/search", { params });
+      setData(response.data.vessels);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching filtered data:", error);
+      setLoading(false);
+    }
   };
 
-  const columns: ColumnsType<Customer> = [
+  //최초 렌더링 시 데이터 FETCH
+  useEffect(() => {
+    fetchData();
+    console.log("fetch data");
+  }, []);
+
+  const columns: ColumnsType<Vessel> = [
     {
       title: "코드",
       dataIndex: "code",
@@ -149,55 +137,31 @@ const ShipList = () => {
     },
     {
       title: "선명",
-      dataIndex: "shipname",
-      key: "shipname",
-      sorter: (a, b) => a.shipname.localeCompare(b.shipname),
+      dataIndex: "vesselName",
+      key: "vesselName",
+      sorter: (a, b) => a.vesselName.localeCompare(b.vesselName),
       sortDirections: ["ascend", "descend"],
     },
     {
       title: "선박회사",
-      dataIndex: "company",
-      key: "company",
+      dataIndex: "vesselCompanyName",
+      key: "vesselCompanyName",
     },
-    {
-      title: "호출부호",
-      dataIndex: "callsign",
-      key: "callsign",
-    },
+
     {
       title: "IMO No.",
-      dataIndex: "imonumber",
-      key: "imonumber",
+      dataIndex: "imoNumber",
+      key: "imoNumber",
     },
     {
       title: "HULL No.",
-      dataIndex: "hullnumber",
-      key: "hullnumber",
+      dataIndex: "hullNumber",
+      key: "hullNumber",
     },
     {
       title: "SHIPYARD",
-      dataIndex: "shipyard",
-      key: "shipyard",
-    },
-    {
-      title: "선박구분",
-      dataIndex: "shiptype",
-      key: "shiptype",
-    },
-    {
-      title: "비고",
-      dataIndex: "remark",
-      key: "remark",
-    },
-    {
-      title: "엔진타입1",
-      dataIndex: "enginetype1",
-      key: "enginetype1",
-    },
-    {
-      title: "엔진타입2",
-      dataIndex: "enginetype2",
-      key: "enginetype2",
+      dataIndex: "shipYard",
+      key: "shipYard",
     },
   ];
 
@@ -208,17 +172,17 @@ const ShipList = () => {
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
-  const openDetailModal = (category: Customer) => {
-    setSelectedCustomer(category);
+  const openDetailModal = (category: Vessel) => {
+    setSelectedVessel(category);
     setIsDetailModalOpen(true);
   };
 
   const closeDetailModal = () => {
-    setSelectedCustomer(null);
+    setSelectedVessel(null);
     setIsDetailModalOpen(false);
   };
 
-  const paginatedData = filteredData.slice(
+  const paginatedData = data.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
@@ -241,16 +205,15 @@ const ShipList = () => {
             >
               <Option value="all">통합검색</Option>
               <Option value="code">코드</Option>
-              <Option value="shipname">선명</Option>
-              <Option value="company">선박회사</Option>
+              <Option value="vesselName">선명</Option>
             </Select>
             <Input
               placeholder="검색..."
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
-              onPressEnter={applyFilter}
+              onPressEnter={fetchFilteredData}
               style={{ width: 300, marginRight: 10 }}
-              suffix={<SearchOutlined onClick={applyFilter} />}
+              suffix={<SearchOutlined onClick={fetchFilteredData} />}
             />
           </SearchBar>
           <Button type="primary" onClick={openModal}>
@@ -271,7 +234,7 @@ const ShipList = () => {
         <PaginationWrapper
           current={currentPage}
           pageSize={itemsPerPage}
-          total={filteredData.length}
+          total={data.length}
           onChange={handlePageChange}
           onShowSizeChange={handlePageSizeChange}
           showSizeChanger
@@ -288,12 +251,12 @@ const ShipList = () => {
           }}
         />
       </Container>
-      {isModalOpen && <CreateModal category={category} onClose={closeModal} />}
-      {isDetailModalOpen && selectedCustomer && (
+      {isModalOpen && <CreateModal onUpdate={fetchData} onClose={closeModal} />}
+      {isDetailModalOpen && selectedVessel && (
         <DetailModal
-          category={category}
-          company={selectedCustomer}
+          vessel={selectedVessel}
           onClose={closeDetailModal}
+          onUpdate={fetchData}
         />
       )}
     </>

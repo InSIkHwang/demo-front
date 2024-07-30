@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from "../../api/axios";
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 
@@ -22,8 +22,8 @@ const ModalContent = styled.div`
   width: 500px;
   max-width: 90%;
   position: relative;
-  overflow-y: scroll;
-  height: 600px;
+  overflow-y: auto;
+  max-height: 600px;
 `;
 
 const ModalTitle = styled.div`
@@ -85,25 +85,18 @@ const SubmitButton = styled.button<{ disabled: boolean }>`
 `;
 
 interface ModalProps {
-  category: string;
   onClose: () => void;
+  onUpdate: () => void;
 }
 
-const CreateModal = ({ category, onClose }: ModalProps) => {
-  const todayDate = new Date().toLocaleDateString("en-CA");
-
+const CreateModal = ({ onClose, onUpdate }: ModalProps) => {
   const [formData, setFormData] = useState({
     code: "",
-    shipname: "",
-    company: "",
-    callsign: "",
-    imonumber: "",
-    hullnumber: "",
-    shipyard: "",
-    shiptype: "",
-    remark: "",
-    enginetype1: "",
-    enginetype2: "",
+    vesselName: "",
+    vesselCompanyName: "",
+    imoNumber: undefined,
+    hullNumber: "",
+    shipYard: "",
   });
 
   const [isCodeUnique, setIsCodeUnique] = useState(true);
@@ -152,11 +145,26 @@ const CreateModal = ({ category, onClose }: ModalProps) => {
     checkCodeUnique();
   }, [formData.code]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!isCodeUnique) return; // 코드가 유효하지 않으면 제출하지 않음
+  const postCreate = async () => {
+    try {
+      const response = await axios.post(`/api/vessels`, {
+        code: formData.code,
+        vesselName: formData.vesselName,
+        vesselCompanyName: formData.vesselCompanyName,
+        imoNumber: Number(formData.imoNumber),
+        hullNumber: formData.hullNumber,
+        shipYard: formData.shipYard,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-    console.log("Form Data:", formData);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isCodeUnique) return;
+    await postCreate();
+    onUpdate();
     onClose();
   };
 
@@ -170,9 +178,7 @@ const CreateModal = ({ category, onClose }: ModalProps) => {
     <ModalBackdrop onClick={handleBackdropClick}>
       <ModalContent>
         <CloseButton onClick={onClose}>&times;</CloseButton>
-        <ModalTitle>
-          {category === "customer" ? "신규 매출처 등록" : "신규 매입처 등록"}
-        </ModalTitle>
+        <ModalTitle>신규 선박 등록</ModalTitle>
         <form onSubmit={handleSubmit}>
           <FormGroup>
             <Label htmlFor="code">코드:</Label>
@@ -189,99 +195,55 @@ const CreateModal = ({ category, onClose }: ModalProps) => {
             )}
           </FormGroup>
           <FormGroup>
-            <Label htmlFor="shipname">선명:</Label>
+            <Label htmlFor="vesselName">선명:</Label>
             <Input
-              id="shipname"
-              name="shipname"
-              value={formData.shipname}
+              id="vesselName"
+              name="vesselName"
+              value={formData.vesselName}
               onChange={handleChange}
               placeholder="BAS VESSEL1"
+              required
             />
           </FormGroup>
           <FormGroup>
-            <Label htmlFor="company">선박회사:</Label>
+            <Label htmlFor="vesselCompanyName">선박회사:</Label>
             <Input
-              id="company"
-              name="company"
-              value={formData.company}
+              id="vesselCompanyName"
+              name="vesselCompanyName"
+              value={formData.vesselCompanyName}
               onChange={handleChange}
               placeholder="BAS KOREA"
             />
           </FormGroup>
           <FormGroup>
-            <Label htmlFor="callsign">호출부호:</Label>
+            <Label htmlFor="imoNumber">IMO NO.:</Label>
             <Input
-              id="callsign"
-              name="callsign"
-              value={formData.callsign}
-              onChange={handleChange}
-              placeholder="VESSEL1"
-            />
-          </FormGroup>
-          <FormGroup>
-            <Label htmlFor="imonumber">IMO No.:</Label>
-            <Input
-              id="imonumber"
-              name="imonumber"
-              value={formData.imonumber}
+              id="imoNumber"
+              name="imoNumber"
+              value={formData.imoNumber}
               onChange={handleChange}
               placeholder="1234567"
+              type="number"
             />
           </FormGroup>
           <FormGroup>
-            <Label htmlFor="hullnumber">HULL No.:</Label>
+            <Label htmlFor="hullNumber">HULL No.:</Label>
             <Input
-              id="hullnumber"
-              name="hullnumber"
-              value={formData.hullnumber}
+              id="hullNumber"
+              name="hullNumber"
+              value={formData.hullNumber}
+              onChange={handleChange}
+              placeholder="V001"
+            />
+          </FormGroup>
+          <FormGroup>
+            <Label htmlFor="shipYard">SHIPYARD</Label>
+            <Input
+              id="shipYard"
+              name="shipYard"
+              value={formData.shipYard}
               onChange={handleChange}
               placeholder="B123"
-            />
-          </FormGroup>
-          <FormGroup>
-            <Label htmlFor="shipyard">SHIPYARD:</Label>
-            <Input
-              id="shipyard"
-              name="shipyard"
-              value={formData.shipyard}
-              onChange={handleChange}
-              placeholder="BAS KOREA (BUSAN)"
-            />
-          </FormGroup>
-          <FormGroup>
-            <Label htmlFor="shiptype">선박구분:</Label>
-            <Input
-              id="shiptype"
-              name="shiptype"
-              value={formData.shiptype}
-              onChange={handleChange}
-            />
-          </FormGroup>
-          <FormGroup>
-            <Label htmlFor="remark">비고:</Label>
-            <Input
-              id="remark"
-              name="remark"
-              value={formData.remark}
-              onChange={handleChange}
-            />
-          </FormGroup>
-          <FormGroup>
-            <Label htmlFor="enginetype1">엔진타입1:</Label>
-            <Input
-              id="enginetype1"
-              name="enginetype1"
-              value={formData.enginetype1}
-              onChange={handleChange}
-            />
-          </FormGroup>
-          <FormGroup>
-            <Label htmlFor="enginetype2">엔진타입2:</Label>
-            <Input
-              id="enginetype2"
-              name="enginetype2"
-              value={formData.enginetype2}
-              onChange={handleChange}
             />
           </FormGroup>
           <SubmitButton

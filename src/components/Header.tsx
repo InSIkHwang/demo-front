@@ -162,7 +162,7 @@ const Header = () => {
         </MenuItem>
         <SubMenu isOpen={isEstimateOpen}>
           <MenuItem
-            onClick={() => handleMenuItemClick(() => console.log("견적생성"))}
+            onClick={() => handleMenuItemClick(() => navigate("/makeinquiry"))}
           >
             견적생성
           </MenuItem>

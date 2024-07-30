@@ -44,16 +44,11 @@ const SubmitButton = styled.button`
 interface FormProps {
   formData: {
     code: string;
-    shipname: string;
-    company: string;
-    callsign: string;
-    imonumber: string;
-    hullnumber: string;
-    shipyard: string;
-    shiptype: string;
-    remark: string;
-    enginetype1: string;
-    enginetype2: string;
+    vesselName: string;
+    vesselCompanyName: string;
+    imoNumber: number;
+    hullNumber: string;
+    shipYard: string;
   };
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSubmit: (e: React.FormEvent) => void;
@@ -80,92 +75,47 @@ const Form = ({
       />
     </FormGroup>
     <FormGroup>
-      <Label htmlFor="name">선명:</Label>
+      <Label htmlFor="vesselName">선명:</Label>
       <Input
-        id="shipname"
-        name="shipname"
-        value={formData.shipname}
+        id="vesselName"
+        name="vesselName"
+        value={formData.vesselName}
         onChange={onChange}
       />
     </FormGroup>
     <FormGroup>
-      <Label htmlFor="company">선박회사:</Label>
+      <Label htmlFor="vesselCompanyName">선박회사:</Label>
       <Input
-        id="company"
-        name="company"
-        value={formData.company}
+        id="vesselCompanyName"
+        name="vesselCompanyName"
+        value={formData.vesselCompanyName}
         onChange={onChange}
       />
     </FormGroup>
     <FormGroup>
-      <Label htmlFor="callsign">호출부호:</Label>
+      <Label htmlFor="imoNumber">IMO No.:</Label>
       <Input
-        id="callsign"
-        name="callsign"
-        value={formData.callsign}
+        id="imoNumber"
+        name="imoNumber"
+        value={formData.imoNumber}
         onChange={onChange}
       />
     </FormGroup>
     <FormGroup>
-      <Label htmlFor="imonumber">IMO No.:</Label>
+      <Label htmlFor="hullNumber">HULL No.:</Label>
       <Input
-        id="imonumber"
-        name="imonumber"
-        value={formData.imonumber}
+        id="hullNumber"
+        name="hullNumber"
+        value={formData.hullNumber}
         onChange={onChange}
       />
     </FormGroup>
     <FormGroup>
-      <Label htmlFor="hullnumber">HULL No.:</Label>
+      <Label htmlFor="shipYard">SHIPYARD:</Label>
       <Input
-        id="hullnumber"
-        name="hullnumber"
-        value={formData.hullnumber}
-        onChange={onChange}
-      />
-    </FormGroup>
-    <FormGroup>
-      <Label htmlFor="shipyard">SHIPYARD:</Label>
-      <Input
-        id="shipyard"
-        name="shipyard"
-        value={formData.shipyard}
-        onChange={onChange}
-      />
-    </FormGroup>
-    <FormGroup>
-      <Label htmlFor="shiptype">선박구분:</Label>
-      <Input
-        id="shiptype"
-        name="shiptype"
-        value={formData.shiptype}
-        onChange={onChange}
-      />
-    </FormGroup>
-    <FormGroup>
-      <Label htmlFor="remark">비고:</Label>
-      <Input
-        id="remark"
-        name="remark"
-        value={formData.remark}
-        onChange={onChange}
-      />
-    </FormGroup>
-    <FormGroup>
-      <Label htmlFor="enginetype1">엔진타입1:</Label>
-      <Input
-        id="enginetype1"
-        name="enginetype1"
-        value={formData.enginetype1}
-        onChange={onChange}
-      />
-    </FormGroup>
-    <FormGroup>
-      <Label htmlFor="enginetype2">엔진타입2:</Label>
-      <Input
-        id="enginetype2"
-        name="enginetype2"
-        value={formData.enginetype2}
+        id="shipYard"
+        name="shipYard"
+        value={formData.shipYard}
         onChange={onChange}
       />
     </FormGroup>

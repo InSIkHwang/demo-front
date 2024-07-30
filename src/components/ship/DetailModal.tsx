@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import Form from "./Form";
+import axios from "../../api/axios";
 
 const ModalBackdrop = styled.div`
   position: fixed;
@@ -22,8 +23,8 @@ const ModalContent = styled.div`
   width: 500px;
   max-width: 90%;
   position: relative;
-  overflow-y: scroll;
-  height: 600px;
+  overflow-y: auto;
+  max-height: 600px;
 `;
 
 const ModalTitle = styled.div`
@@ -98,29 +99,25 @@ const DeleteButton = styled.button`
   }
 `;
 
-interface Company {
+interface Vessel {
+  id: number;
   code: string;
-  shipname: string;
-  company: string;
-  callsign: string;
-  imonumber: string;
-  hullnumber: string;
-  shipyard: string;
-  shiptype: string;
-  remark: string;
-  enginetype1: string;
-  enginetype2: string;
+  vesselName: string;
+  vesselCompanyName: string;
+  imoNumber: number;
+  hullNumber: string;
+  shipYard: string;
 }
 
 interface ModalProps {
-  category: string;
-  company: Company;
+  vessel: Vessel;
   onClose: () => void;
+  onUpdate: () => void;
 }
 
-const DetailModal = ({ category, company, onClose }: ModalProps) => {
+const DetailModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState(company);
+  const [formData, setFormData] = useState(vessel);
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
@@ -135,40 +132,62 @@ const DetailModal = ({ category, company, onClose }: ModalProps) => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  //데이터 수정 PUT API
+  const editData = async () => {
+    try {
+      const response = await axios.put(`/api/vessels/${formData.id}`, {
+        code: formData.code,
+        vesselName: formData.vesselName,
+        vesselCompanyName: formData.vesselCompanyName,
+        imoNumber: formData.imoNumber,
+        hullNumber: formData.hullNumber,
+        shipYard: formData.shipYard,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  //데이터 삭제 DELETE API
+  const deleteData = async () => {
+    try {
+      const response = await axios.delete(`/api/vessels/${formData.id}`);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  //수정 SUBMIT 비동기처리, PUT 처리 후 FETCH
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Updated Data:", formData);
+    await editData();
+    onUpdate();
     onClose();
   };
 
-  const handleDelete = () => {
+  //삭제 SUBMIT 비동기처리, DELETE 처리 후 FETCH
+  const handleDelete = async () => {
     if (window.confirm("정말 삭제하시겠습니까?")) {
-      console.log("Deleted Data:", formData);
+      await deleteData();
+      onUpdate();
       onClose();
     }
   };
 
   const readOnlyFields = {
     code: true, //read-only
-    shipname: !isEditing,
-    company: !isEditing,
-    callsign: !isEditing,
-    imonumber: !isEditing,
-    hullnumber: !isEditing,
-    shipyard: !isEditing,
-    shiptype: !isEditing,
-    remark: !isEditing,
-    enginetype1: !isEditing,
-    enginetype2: !isEditing,
+    vesselName: !isEditing,
+    vesselCompanyName: !isEditing,
+    imoNumber: !isEditing,
+    hullNumber: !isEditing,
+    shipYard: !isEditing,
   };
 
   return (
     <ModalBackdrop onClick={handleBackdropClick}>
       <ModalContent>
         <CloseButton onClick={onClose}>&times;</CloseButton>
-        <ModalTitle>
-          {category === "customer" ? "매출처 상세 정보" : "매입처 상세 정보"}
-        </ModalTitle>
+        <ModalTitle>선박 상세 정보</ModalTitle>
         {isEditing ? (
           <Form
             formData={formData}
@@ -185,43 +204,23 @@ const DetailModal = ({ category, company, onClose }: ModalProps) => {
             </DetailItem>
             <DetailItem>
               <PropName>선명</PropName>
-              <PropValue>{formData.shipname}</PropValue>
+              <PropValue>{formData.vesselName}</PropValue>
             </DetailItem>
             <DetailItem>
               <PropName>선박회사</PropName>
-              <PropValue>{formData.company}</PropValue>
-            </DetailItem>
-            <DetailItem>
-              <PropName>호출부호</PropName>
-              <PropValue>{formData.callsign}</PropValue>
+              <PropValue>{formData.vesselCompanyName}</PropValue>
             </DetailItem>
             <DetailItem>
               <PropName>IMO No.</PropName>
-              <PropValue>{formData.imonumber}</PropValue>
+              <PropValue>{formData.imoNumber}</PropValue>
             </DetailItem>
             <DetailItem>
               <PropName>HULL No.</PropName>
-              <PropValue>{formData.hullnumber}</PropValue>
+              <PropValue>{formData.hullNumber}</PropValue>
             </DetailItem>
             <DetailItem>
               <PropName>SHIPYARD</PropName>
-              <PropValue>{formData.shipyard}</PropValue>
-            </DetailItem>
-            <DetailItem>
-              <PropName>선박구분</PropName>
-              <PropValue>{formData.shiptype}</PropValue>
-            </DetailItem>
-            <DetailItem>
-              <PropName>비고</PropName>
-              <PropValue>{formData.remark}</PropValue>
-            </DetailItem>
-            <DetailItem>
-              <PropName>엔진타입1</PropName>
-              <PropValue>{formData.enginetype1}</PropValue>
-            </DetailItem>
-            <DetailItem>
-              <PropName>엔진타입2</PropName>
-              <PropValue>{formData.enginetype2}</PropValue>
+              <PropValue>{formData.shipYard}</PropValue>
             </DetailItem>
             <BtnWrap>
               <UpdateButton type="button" onClick={() => setIsEditing(true)}>

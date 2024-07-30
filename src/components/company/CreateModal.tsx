@@ -135,7 +135,7 @@ const CreateModal = ({ category, onClose, onUpdate }: ModalProps) => {
           ? `/api/customers/check-code/${formData.code}`
           : `/api/suppliers/check-code/${formData.code}`;
 
-      const response = await axios.get(endpoint);
+      const response = await axios.get(endpoint);      
 
       setIsCodeUnique(!response.data); // 응답 T/F를 반전시킴
     } catch (error) {
