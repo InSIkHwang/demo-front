@@ -1,20 +1,10 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import {
-  Form,
-  Input,
-  Button,
-  DatePicker,
-  Select,
-  message,
-  AutoComplete,
-  Tag,
-} from "antd";
-import moment from "moment";
+import { Button, message } from "antd";
 import axios from "../api/axios";
 import MakeInquiryTable from "../components/makeInquiry/MakeInquiryTable";
-
-const { Option } = Select;
+import InquiryForm from "./InquiryForm";
+import dayjs from "dayjs";
 
 const FormContainer = styled.div`
   position: relative;
@@ -34,15 +24,15 @@ const Title = styled.h1`
   color: #333;
 `;
 
-const InquiryItemForm = styled(Form.Item)`
-  margin-bottom: 8px;
-  margin-right: 10px;
-  flex: auto;
-`;
-
-const FormRow = styled.div`
-  display: flex;
-`;
+const createNewItem = (no: number) => ({
+  no,
+  itemType: "ITEM",
+  itemCode: "",
+  itemName: "",
+  qty: 0,
+  unit: "",
+  itemRemark: "",
+});
 
 interface Customer {
   id: number;
@@ -76,16 +66,6 @@ interface InquiryItem {
   itemRemark: string;
 }
 
-const createNewItem = (no: number): InquiryItem => ({
-  no,
-  itemType: "ITEM",
-  itemCode: "",
-  itemName: "",
-  qty: 0,
-  unit: "",
-  itemRemark: "",
-});
-
 const MakeInquiry = () => {
   const [items, setItems] = useState<InquiryItem[]>([createNewItem(1)]);
   const [itemCount, setItemCount] = useState(2);
@@ -115,8 +95,8 @@ const MakeInquiry = () => {
   >([]);
 
   const [formValues, setFormValues] = useState({
-    registerDate: moment().startOf("day"),
-    shippingDate: moment().startOf("day"),
+    registerDate: dayjs(),
+    shippingDate: dayjs(),
     customer: "",
     vesselName: "",
     refNumber: "",
@@ -210,8 +190,8 @@ const MakeInquiry = () => {
 
   const resetForm = () => {
     setFormValues({
-      registerDate: moment().startOf("day"),
-      shippingDate: moment().startOf("day"),
+      registerDate: dayjs(),
+      shippingDate: dayjs(),
       customer: "",
       vesselName: "",
       refNumber: "",
@@ -337,161 +317,33 @@ const MakeInquiry = () => {
   return (
     <FormContainer>
       <Title>견적요청서 작성</Title>
-      <Form layout="vertical" initialValues={formValues}>
-        <FormRow>
-          <InquiryItemForm
-            label="작성일자"
-            name="registerDate"
-            rules={[{ required: true, message: "Please select register date" }]}
-          >
-            <DatePicker
-              value={formValues.registerDate}
-              onChange={(date) => handleFormChange("registerDate", date!)}
-            />
-          </InquiryItemForm>
-          <InquiryItemForm
-            label="선적일자"
-            name="shippingDate"
-            rules={[{ required: true, message: "Please select shipping date" }]}
-          >
-            <DatePicker
-              value={formValues.shippingDate}
-              onChange={(date) => handleFormChange("shippingDate", date!)}
-            />
-          </InquiryItemForm>
-          <InquiryItemForm
-            label="매출처"
-            name="customer"
-            rules={[{ required: true, message: "Please enter customer" }]}
-          >
-            <AutoComplete
-              value={formValues.customer}
-              onChange={(value) => handleFormChange("customer", value)}
-              options={autoCompleteOptions}
-              style={{ width: "100%" }}
-              filterOption={(inputValue, option) =>
-                option!.value.toLowerCase().includes(inputValue.toLowerCase())
-              }
-            >
-              <Input />
-            </AutoComplete>
-          </InquiryItemForm>
-          <InquiryItemForm
-            label="선박명"
-            name="vesselName"
-            rules={[{ required: true, message: "Please enter vessel name" }]}
-          >
-            <AutoComplete
-              value={formValues.vesselName}
-              onChange={(value) => handleFormChange("vesselName", value)}
-              options={vesselNameList.map((name) => ({ value: name }))}
-              style={{ width: "100%" }}
-              filterOption={(inputValue, option) =>
-                option!.value.toLowerCase().includes(inputValue.toLowerCase())
-              }
-            >
-              <Input />
-            </AutoComplete>
-          </InquiryItemForm>
-          <InquiryItemForm
-            style={{ flex: "40%" }}
-            label="Ref No."
-            name="refNumber"
-            rules={[{ required: true, message: "Please enter ref number" }]}
-          >
-            <Input
-              value={formValues.refNumber}
-              onChange={(e) => handleFormChange("refNumber", e.target.value)}
-            />
-          </InquiryItemForm>
-        </FormRow>
-        <FormRow>
-          <InquiryItemForm
-            label="화폐"
-            name="currencyType"
-            rules={[{ required: true, message: "Please select currency type" }]}
-          >
-            <Select
-              value={formValues.currencyType}
-              onChange={(value) => handleFormChange("currencyType", value)}
-            >
-              {["USD", "EUR", "INR"].map((currency) => (
-                <Option key={currency} value={currency}>
-                  {currency}
-                </Option>
-              ))}
-            </Select>
-          </InquiryItemForm>
-          <InquiryItemForm
-            label="환율"
-            name="currency"
-            rules={[
-              {
-                required: true,
-                message: "Please enter currency exchange rate",
-              },
-            ]}
-          >
-            <Input
-              type="number"
-              value={formValues.currency}
-              onChange={(e) =>
-                handleFormChange("currency", parseFloat(e.target.value))
-              }
-            />
-          </InquiryItemForm>
-          <InquiryItemForm label="비고" name="remark" style={{ flex: "50%" }}>
-            <Input
-              value={formValues.remark}
-              onChange={(e) => handleFormChange("remark", e.target.value)}
-            />
-          </InquiryItemForm>
-        </FormRow>
-        <FormRow>
-          <InquiryItemForm label="의뢰처" name="supplierName">
-            <AutoComplete
-              value={formValues.supplierName}
-              onChange={(value) => handleFormChange("supplierName", value)}
-              onSearch={handleSupplierSearch}
-              onSelect={handleSupplierSelect}
-              options={supplierOptions}
-              style={{ width: "50%" }}
-              filterOption={(inputValue, option) =>
-                option!.value.toLowerCase().includes(inputValue.toLowerCase())
-              }
-            >
-              <Input />
-            </AutoComplete>
-            <div style={{ marginTop: 10 }}>
-              {selectedSuppliers.map((supplier) => (
-                <Tag
-                  key={supplier.id}
-                  closable
-                  onClose={() => handleTagClose(supplier.id)}
-                >
-                  {supplier.name}
-                </Tag>
-              ))}
-            </div>
-          </InquiryItemForm>
-        </FormRow>
-        <Button type="primary" onClick={addItem} style={{ margin: "20px 0" }}>
-          품목 추가
-        </Button>
-        <MakeInquiryTable
-          items={items}
-          handleInputChange={handleInputChange}
-          handleItemCodeChange={handleItemCodeChange}
-          itemCodeOptions={itemCodeOptions}
-        />
-        <Button
-          type="primary"
-          onClick={handleSubmit}
-          style={{ marginTop: "20px", float: "right" }}
-        >
-          저장하기
-        </Button>
-      </Form>
+      <InquiryForm
+        formValues={formValues}
+        autoCompleteOptions={autoCompleteOptions}
+        vesselNameList={vesselNameList}
+        supplierOptions={supplierOptions}
+        selectedSuppliers={selectedSuppliers}
+        handleFormChange={handleFormChange}
+        handleInputChange={handleInputChange}
+        handleItemCodeChange={handleItemCodeChange}
+        handleSupplierSearch={handleSupplierSearch}
+        handleSupplierSelect={handleSupplierSelect}
+        handleTagClose={handleTagClose}
+        addItem={addItem}
+      />
+      <MakeInquiryTable
+        items={items}
+        handleInputChange={handleInputChange}
+        handleItemCodeChange={handleItemCodeChange}
+        itemCodeOptions={itemCodeOptions}
+      />
+      <Button
+        type="primary"
+        onClick={handleSubmit}
+        style={{ marginTop: "20px", float: "right" }}
+      >
+        저장하기
+      </Button>
     </FormContainer>
   );
 };
