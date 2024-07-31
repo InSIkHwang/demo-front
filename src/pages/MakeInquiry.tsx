@@ -76,9 +76,7 @@ interface InquiryItem {
   itemRemark: string;
 }
 
-const MAX_REQUESTERS = 5;
-
-const createNewItem = (no: number, supplierCount: number): InquiryItem => ({
+const createNewItem = (no: number): InquiryItem => ({
   no,
   itemType: "ITEM",
   itemCode: "",
@@ -89,24 +87,21 @@ const createNewItem = (no: number, supplierCount: number): InquiryItem => ({
 });
 
 const MakeInquiry = () => {
-  const [items, setItems] = useState<InquiryItem[]>([createNewItem(1, 3)]);
+  const [items, setItems] = useState<InquiryItem[]>([createNewItem(1)]);
   const [itemCount, setItemCount] = useState(2);
   const [supplierCount, setSupplierCount] = useState(0);
   const [vesselList, setVesselList] = useState<
-    Array<{ id: number; vesselName: string }>
+    { id: number; vesselName: string }[]
   >([]);
-
   const [companyNameList, setCompanyNameList] = useState<string[]>([]);
   const [vesselNameList, setVesselNameList] = useState<string[]>([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(
     null
   );
   const [selectedVesselId, setSelectedVesselId] = useState<number | null>(null);
-
   const [autoCompleteOptions, setAutoCompleteOptions] = useState<
     { value: string }[]
   >([]);
-
   const [itemCodeOptions, setItemCodeOptions] = useState<{ value: string }[]>(
     []
   );
@@ -118,13 +113,6 @@ const MakeInquiry = () => {
   const [selectedSuppliers, setSelectedSuppliers] = useState<
     { id: number; name: string }[]
   >([]);
-
-  const itemTypeMap: Record<string, string> = {
-    "1": "MAKER",
-    "2": "TYPE",
-    "3": "DESC",
-    "4": "ITEM",
-  };
 
   const [formValues, setFormValues] = useState({
     registerDate: moment().startOf("day"),
@@ -148,7 +136,6 @@ const MakeInquiry = () => {
     const selectedVessel = vesselList.find(
       (vessel) => vessel.vesselName === formValues.vesselName
     );
-
     setSelectedVesselId(selectedVessel ? selectedVessel.id : null);
   }, [formValues.vesselName, vesselList]);
 
@@ -163,7 +150,7 @@ const MakeInquiry = () => {
   }, [companyNameList, formValues.customer]);
 
   const addItem = () => {
-    setItems([...items, createNewItem(itemCount, supplierCount)]);
+    setItems([...items, createNewItem(itemCount)]);
     setItemCount(itemCount + 1);
   };
 
@@ -174,9 +161,7 @@ const MakeInquiry = () => {
   ) => {
     setItems((prevItems) => {
       const newItems = [...prevItems];
-
       newItems[index] = { ...newItems[index], [field]: value };
-
       return newItems;
     });
   };
@@ -185,10 +170,7 @@ const MakeInquiry = () => {
     key: K,
     value: (typeof formValues)[K]
   ) => {
-    setFormValues((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
+    setFormValues((prev) => ({ ...prev, [key]: value }));
   };
 
   const handleSubmit = async () => {
@@ -196,7 +178,6 @@ const MakeInquiry = () => {
       const selectedVessel = vesselList.find(
         (vessel) => vessel.vesselName === formValues.vesselName
       );
-
       const requestData = {
         vesselId: selectedVessel ? selectedVessel.id : null,
         customerId: selectedCustomerId,
@@ -219,27 +200,30 @@ const MakeInquiry = () => {
       };
 
       await axios.post("/api/customer-inquiries", requestData);
-
       message.success("Inquiry submitted successfully!");
-      setFormValues({
-        registerDate: moment().startOf("day"),
-        shippingDate: moment().startOf("day"),
-        customer: "",
-        vesselName: "",
-        refNumber: "",
-        currencyType: "USD",
-        currency: 0,
-        remark: "",
-        supplierName: "",
-      });
-      setSelectedCustomerId(null);
-      setSelectedVesselId(null);
-      setItems([createNewItem(1, supplierCount)]);
-      setItemCount(2);
+      resetForm();
     } catch (error) {
       console.error("Error submitting inquiry:", error);
       message.error("Failed to submit inquiry. Please try again.");
     }
+  };
+
+  const resetForm = () => {
+    setFormValues({
+      registerDate: moment().startOf("day"),
+      shippingDate: moment().startOf("day"),
+      customer: "",
+      vesselName: "",
+      refNumber: "",
+      currencyType: "USD",
+      currency: 0,
+      remark: "",
+      supplierName: "",
+    });
+    setSelectedCustomerId(null);
+    setSelectedVesselId(null);
+    setItems([createNewItem(1)]);
+    setItemCount(2);
   };
 
   const searchCompanyName = async (customerName: string) => {
@@ -248,18 +232,15 @@ const MakeInquiry = () => {
         isExist: boolean;
         customerDetailResponse: Customer[];
       }>(`/api/customers/check-name?customerName=${customerName}`);
+      const { isExist, customerDetailResponse } = response.data;
 
-      if (response.data.isExist) {
+      if (isExist) {
         setCompanyNameList(
-          response.data.customerDetailResponse.map(
-            (customer) => customer.companyName
-          )
+          customerDetailResponse.map((customer) => customer.companyName)
         );
-
-        const selectedCustomer = response.data.customerDetailResponse.find(
+        const selectedCustomer = customerDetailResponse.find(
           (customer) => customer.companyName === customerName
         );
-
         if (selectedCustomer) {
           setSelectedCustomerId(selectedCustomer.id);
           setVesselNameList(
@@ -287,7 +268,6 @@ const MakeInquiry = () => {
       const response = await axios.get<{
         items: { itemId: number; itemCode: string; itemName: string }[];
       }>(`/api/items/search/itemCode?itemCode=${itemCode}`);
-
       const items = response.data.items;
       setItemCodeOptions(items.map((item) => ({ value: item.itemCode })));
 
@@ -296,13 +276,12 @@ const MakeInquiry = () => {
         return acc;
       }, {} as { [key: string]: string });
 
-      setItemNameMap(newItemNameMap);
-
       const newItemIdMap = items.reduce((acc, item) => {
         acc[item.itemCode] = item.itemId;
         return acc;
       }, {} as { [key: string]: number });
 
+      setItemNameMap(newItemNameMap);
       setItemIdMap(newItemIdMap);
 
       if (newItemNameMap[itemCode]) {
@@ -323,11 +302,8 @@ const MakeInquiry = () => {
       const response = await axios.get<{
         suppliers: { id: number; companyName: string }[];
       }>(`/api/suppliers/search?companyName=${value}`);
-
-      const suppliers = response.data.suppliers;
-
       setSupplierOptions(
-        suppliers.map((supplier) => ({
+        response.data.suppliers.map((supplier) => ({
           value: supplier.companyName,
           id: supplier.id,
         }))
@@ -342,15 +318,13 @@ const MakeInquiry = () => {
     option: { value: string; id: number }
   ) => {
     const supplier = { id: option.id, name: value };
-    // 현재 선택된 공급업체의 ID를 Set으로 변환
-    const currentIds = new Set(
-      selectedSuppliers.map((supplier) => supplier.id)
-    );
-
-    // 새로운 공급업체 ID가 Set에 없으면 추가
-    if (!currentIds.has(supplier.id)) {
-      setSelectedSuppliers((prev) => [...prev, supplier]);
-    }
+    setSelectedSuppliers((prev) => {
+      const existingIds = new Set(prev.map((s) => s.id));
+      if (!existingIds.has(supplier.id)) {
+        return [...prev, supplier];
+      }
+      return prev;
+    });
     handleFormChange("supplierName", "");
   };
 
