@@ -9,6 +9,7 @@ import {
   Table,
   message,
   AutoComplete,
+  Tag,
 } from "antd";
 import moment from "moment";
 import axios from "../api/axios";
@@ -77,12 +78,11 @@ interface InquiryItem {
   qty: number;
   unit: string;
   itemRemark: string;
-  supplierNameList: string[];
 }
 
 const MAX_REQUESTERS = 5;
 
-const createNewItem = (no: number, requesterCount: number): InquiryItem => ({
+const createNewItem = (no: number, supplierCount: number): InquiryItem => ({
   no,
   itemType: "ITEM",
   itemCode: "",
@@ -90,13 +90,12 @@ const createNewItem = (no: number, requesterCount: number): InquiryItem => ({
   qty: 0,
   unit: "",
   itemRemark: "",
-  supplierNameList: Array(requesterCount).fill(""),
 });
 
 const MakeInquiry = () => {
   const [items, setItems] = useState<InquiryItem[]>([createNewItem(1, 3)]);
   const [itemCount, setItemCount] = useState(2);
-  const [requesterCount, setRequesterCount] = useState(3);
+  const [supplierCount, setSupplierCount] = useState(0);
   const [vesselList, setVesselList] = useState<
     Array<{ id: number; vesselName: string }>
   >([]);
@@ -120,6 +119,9 @@ const MakeInquiry = () => {
   const [supplierOptions, setSupplierOptions] = useState<
     { value: string; id: number }[]
   >([]);
+  const [selectedSuppliers, setSelectedSuppliers] = useState<
+    { id: number; name: string }[]
+  >([]);
 
   const [formValues, setFormValues] = useState({
     registerDate: moment().startOf("day"),
@@ -130,6 +132,7 @@ const MakeInquiry = () => {
     currencyType: "USD",
     currency: 0,
     remark: "",
+    supplierName: "",
   });
 
   useEffect(() => {
@@ -157,7 +160,7 @@ const MakeInquiry = () => {
   }, [companyNameList, formValues.customer]);
 
   const addItem = () => {
-    setItems([...items, createNewItem(itemCount, requesterCount)]);
+    setItems([...items, createNewItem(itemCount, supplierCount)]);
     setItemCount(itemCount + 1);
   };
 
@@ -168,26 +171,11 @@ const MakeInquiry = () => {
   ) => {
     setItems((prevItems) => {
       const newItems = [...prevItems];
-      if (field.startsWith("supplierNameList")) {
-        const supplierIndex = parseInt(field.match(/\d+/)?.[0] || "0", 10);
-        newItems[index].supplierNameList[supplierIndex] = value as string;
-      } else {
-        newItems[index] = { ...newItems[index], [field]: value };
-      }
+
+      newItems[index] = { ...newItems[index], [field]: value };
+
       return newItems;
     });
-  };
-
-  const addRequesterField = () => {
-    if (requesterCount < MAX_REQUESTERS) {
-      setRequesterCount(requesterCount + 1);
-      setItems(
-        items.map((item) => ({
-          ...item,
-          supplierNameList: [...item.supplierNameList, ""],
-        }))
-      );
-    }
   };
 
   const handleKeyDown = (
@@ -311,25 +299,6 @@ const MakeInquiry = () => {
         />
       ),
     },
-    ...Array.from({ length: requesterCount }, (_, index) => ({
-      title: `의뢰처${index + 1}`,
-      dataIndex: `requester${index + 1}`,
-      key: `requester${index + 1}`,
-      width: 100,
-      render: (_: any, record: InquiryItem, itemIndex: number) => (
-        <AutoComplete
-          value={record.supplierNameList[index] || ""}
-          onChange={(value) => {
-            handleInputChange(itemIndex, `supplierNameList${index}`, value);
-            searchSupplierName(value, itemIndex);
-          }}
-          options={supplierOptions.map((option) => ({ value: option.value }))}
-          style={{ width: "100%" }}
-        >
-          <Input />
-        </AutoComplete>
-      ),
-    })),
   ];
 
   const handleSubmit = async () => {
@@ -355,13 +324,7 @@ const MakeInquiry = () => {
           qty: item.qty,
           unit: item.unit,
           itemType: item.itemType,
-          supplierIdList: item.supplierNameList
-            .map(
-              (supplierName) =>
-                supplierOptions.find((option) => option.value === supplierName)
-                  ?.id
-            )
-            .filter((id) => id !== undefined),
+          supplierIdList: selectedSuppliers.map((supplier) => supplier.id),
         })),
       };
 
@@ -377,10 +340,11 @@ const MakeInquiry = () => {
         currencyType: "USD",
         currency: 0,
         remark: "",
+        supplierName: "",
       });
       setSelectedCustomerId(null);
       setSelectedVesselId(null);
-      setItems([createNewItem(1, requesterCount)]);
+      setItems([createNewItem(1, supplierCount)]);
       setItemCount(2);
     } catch (error) {
       console.error("Error submitting inquiry:", error);
@@ -464,36 +428,46 @@ const MakeInquiry = () => {
     searchItemCode(value, index);
   };
 
-  const searchSupplierName = async (value: string, index: number) => {
+  const handleSupplierSearch = async (value: string) => {
     try {
       const response = await axios.get<{
         suppliers: { id: number; companyName: string }[];
       }>(`/api/suppliers/search?companyName=${value}`);
+
       const suppliers = response.data.suppliers;
+
       setSupplierOptions(
         suppliers.map((supplier) => ({
           value: supplier.companyName,
           id: supplier.id,
         }))
       );
-
-      // 공급업체 이름이 일치하는 경우 자동으로 추가
-      setItems(
-        items.map((item, itemIndex) => {
-          if (itemIndex === index) {
-            return {
-              ...item,
-              supplierNameList: item.supplierNameList.map((name, i) =>
-                i === index ? value : name
-              ),
-            };
-          }
-          return item;
-        })
-      );
     } catch (error) {
       console.error("Error fetching suppliers:", error);
     }
+  };
+
+  const handleSupplierSelect = (
+    value: string,
+    option: { value: string; id: number }
+  ) => {
+    const supplier = { id: option.id, name: value };
+    // 현재 선택된 공급업체의 ID를 Set으로 변환
+    const currentIds = new Set(
+      selectedSuppliers.map((supplier) => supplier.id)
+    );
+
+    // 새로운 공급업체 ID가 Set에 없으면 추가
+    if (!currentIds.has(supplier.id)) {
+      setSelectedSuppliers((prev) => [...prev, supplier]);
+    }
+    handleFormChange("supplierName", "");
+  };
+
+  const handleTagClose = (id: number) => {
+    setSelectedSuppliers((prev) =>
+      prev.filter((supplier) => supplier.id !== id)
+    );
   };
 
   return (
@@ -609,6 +583,34 @@ const MakeInquiry = () => {
             />
           </InquiryItemForm>
         </FormRow>
+        <FormRow>
+          <InquiryItemForm label="의뢰처" name="supplierName">
+            <AutoComplete
+              value={formValues.supplierName}
+              onChange={(value) => handleFormChange("supplierName", value)}
+              onSearch={handleSupplierSearch}
+              onSelect={handleSupplierSelect}
+              options={supplierOptions}
+              style={{ width: "50%" }}
+              filterOption={(inputValue, option) =>
+                option!.value.toLowerCase().includes(inputValue.toLowerCase())
+              }
+            >
+              <Input />
+            </AutoComplete>
+            <div style={{ marginTop: 10 }}>
+              {selectedSuppliers.map((supplier) => (
+                <Tag
+                  key={supplier.id}
+                  closable
+                  onClose={() => handleTagClose(supplier.id)}
+                >
+                  {supplier.name}
+                </Tag>
+              ))}
+            </div>
+          </InquiryItemForm>
+        </FormRow>
         <Button type="primary" onClick={addItem} style={{ margin: "20px 0" }}>
           품목 추가
         </Button>
@@ -618,9 +620,6 @@ const MakeInquiry = () => {
           pagination={false}
           rowKey="no"
         />
-        {requesterCount < MAX_REQUESTERS && (
-          <AddButton onClick={addRequesterField}>의뢰처 추가</AddButton>
-        )}
         <Button
           type="primary"
           onClick={handleSubmit}
