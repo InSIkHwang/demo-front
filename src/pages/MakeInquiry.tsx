@@ -71,21 +71,31 @@ interface Customer {
 
 interface InquiryItem {
   no: number;
-  itemId: number;
   itemType: string;
   itemCode: string;
   itemName: string;
   qty: number;
   unit: string;
   itemRemark: string;
-  supplierIdList: string[];
+  supplierNameList: string[];
 }
 
 const MAX_REQUESTERS = 5;
 
+const createNewItem = (no: number, requesterCount: number): InquiryItem => ({
+  no,
+  itemType: "ITEM",
+  itemCode: "",
+  itemName: "",
+  qty: 0,
+  unit: "",
+  itemRemark: "",
+  supplierNameList: Array(requesterCount).fill(""),
+});
+
 const MakeInquiry = () => {
-  const [items, setItems] = useState<InquiryItem[]>([]);
-  const [itemCount, setItemCount] = useState(1);
+  const [items, setItems] = useState<InquiryItem[]>([createNewItem(1, 3)]);
+  const [itemCount, setItemCount] = useState(2);
   const [requesterCount, setRequesterCount] = useState(3);
   const [vesselList, setVesselList] = useState<
     Array<{ id: number; vesselName: string }>
@@ -102,6 +112,15 @@ const MakeInquiry = () => {
     { value: string }[]
   >([]);
 
+  const [itemCodeOptions, setItemCodeOptions] = useState<{ value: string }[]>(
+    []
+  );
+  const [itemNameMap, setItemNameMap] = useState<{ [key: string]: string }>({});
+  const [itemIdMap, setItemIdMap] = useState<{ [key: string]: number }>({});
+  const [supplierOptions, setSupplierOptions] = useState<
+    { value: string; id: number }[]
+  >([]);
+
   const [formValues, setFormValues] = useState({
     registerDate: moment().startOf("day"),
     shippingDate: moment().startOf("day"),
@@ -113,31 +132,35 @@ const MakeInquiry = () => {
     remark: "",
   });
 
-  // Initialize items with default values
-  const initializeItems = () => {
-    setItems([createNewItem()]);
-  };
+  useEffect(() => {
+    if (formValues.customer) {
+      searchCompanyName(formValues.customer);
+    }
+  }, [formValues.customer]);
 
-  // Create a new inquiry item with default values
-  const createNewItem = (): InquiryItem => ({
-    no: itemCount,
-    itemId: 0,
-    itemType: "ITEM",
-    itemCode: "",
-    itemName: "",
-    qty: 0,
-    unit: "",
-    itemRemark: "",
-    supplierIdList: Array(requesterCount).fill(""),
-  });
+  useEffect(() => {
+    const selectedVessel = vesselList.find(
+      (vessel) => vessel.vesselName === formValues.vesselName
+    );
 
-  // Add a new inquiry item
+    setSelectedVesselId(selectedVessel ? selectedVessel.id : null);
+  }, [formValues.vesselName, vesselList]);
+
+  useEffect(() => {
+    setAutoCompleteOptions(
+      companyNameList
+        .filter((name) =>
+          name.toLowerCase().includes(formValues.customer.toLowerCase())
+        )
+        .map((name) => ({ value: name }))
+    );
+  }, [companyNameList, formValues.customer]);
+
   const addItem = () => {
-    setItems([...items, createNewItem()]);
+    setItems([...items, createNewItem(itemCount, requesterCount)]);
     setItemCount(itemCount + 1);
   };
 
-  // 항목 필드 업데이트
   const handleInputChange = (
     index: number,
     field: string,
@@ -145,10 +168,9 @@ const MakeInquiry = () => {
   ) => {
     setItems((prevItems) => {
       const newItems = [...prevItems];
-      if (field.startsWith("supplierIdList")) {
-        // supplierIdList 변경 처리
+      if (field.startsWith("supplierNameList")) {
         const supplierIndex = parseInt(field.match(/\d+/)?.[0] || "0", 10);
-        newItems[index].supplierIdList[supplierIndex] = value as string;
+        newItems[index].supplierNameList[supplierIndex] = value as string;
       } else {
         newItems[index] = { ...newItems[index], [field]: value };
       }
@@ -156,20 +178,18 @@ const MakeInquiry = () => {
     });
   };
 
-  // Add a requester field
   const addRequesterField = () => {
     if (requesterCount < MAX_REQUESTERS) {
       setRequesterCount(requesterCount + 1);
       setItems(
         items.map((item) => ({
           ...item,
-          supplierIdList: [...item.supplierIdList, ""],
+          supplierNameList: [...item.supplierNameList, ""],
         }))
       );
     }
   };
 
-  // Handle keydown event to change item type
   const handleKeyDown = (
     e: React.KeyboardEvent<HTMLInputElement>,
     index: number
@@ -185,7 +205,6 @@ const MakeInquiry = () => {
     }
   };
 
-  // Update form field values
   const handleFormChange = <K extends keyof typeof formValues>(
     key: K,
     value: (typeof formValues)[K]
@@ -194,18 +213,8 @@ const MakeInquiry = () => {
       ...prev,
       [key]: value,
     }));
-
-    // Update auto-complete options if customer field changes
-    if (key === "customer" && typeof value === "string") {
-      setAutoCompleteOptions(
-        companyNameList
-          .filter((name) => name.toLowerCase().includes(value.toLowerCase()))
-          .map((name) => ({ value: name }))
-      );
-    }
   };
 
-  // Form columns for the table
   const columns = [
     {
       title: "No.",
@@ -214,28 +223,18 @@ const MakeInquiry = () => {
       render: (_: any, __: any, index: number) => <span>{index + 1}</span>,
     },
     {
-      title: "ID",
-      dataIndex: "itemId",
-      key: "itemId",
-      render: (text: number, record: InquiryItem, index: number) => (
-        <Input
-          value={text}
-          type="number"
-          onChange={(e) =>
-            handleInputChange(index, "itemId", parseInt(e.target.value))
-          }
-        />
-      ),
-    },
-    {
       title: "품목코드",
       dataIndex: "itemCode",
       key: "itemCode",
       render: (text: string, record: InquiryItem, index: number) => (
-        <Input
+        <AutoComplete
           value={text}
-          onChange={(e) => handleInputChange(index, "itemCode", e.target.value)}
-        />
+          onChange={(value) => handleItemCodeChange(index, value)}
+          options={itemCodeOptions}
+          style={{ width: "100%" }}
+        >
+          <Input />
+        </AutoComplete>
       ),
     },
     {
@@ -318,32 +317,30 @@ const MakeInquiry = () => {
       key: `requester${index + 1}`,
       width: 100,
       render: (_: any, record: InquiryItem, itemIndex: number) => (
-        <Input
-          value={record.supplierIdList[index] || ""}
-          onChange={(e) =>
-            handleInputChange(
-              itemIndex,
-              `supplierIdList[${index}]`,
-              e.target.value
-            )
-          }
-        />
+        <AutoComplete
+          value={record.supplierNameList[index] || ""}
+          onChange={(value) => {
+            handleInputChange(itemIndex, `supplierNameList${index}`, value);
+            searchSupplierName(value, itemIndex);
+          }}
+          options={supplierOptions.map((option) => ({ value: option.value }))}
+          style={{ width: "100%" }}
+        >
+          <Input />
+        </AutoComplete>
       ),
     })),
   ];
 
-  // Submit form data
   const handleSubmit = async () => {
     try {
-      // 선박명에 해당하는 ID 찾기
       const selectedVessel = vesselList.find(
         (vessel) => vessel.vesselName === formValues.vesselName
       );
-      setSelectedVesselId(selectedVessel ? selectedVessel.id : null);
 
       const requestData = {
-        vesselId: selectedVesselId, // 최종적으로 선택된 선박 ID
-        customerId: selectedCustomerId, // 기본값을 사용할 수 있습니다.
+        vesselId: selectedVessel ? selectedVessel.id : null,
+        customerId: selectedCustomerId,
         refNumber: formValues.refNumber,
         registerDate: formValues.registerDate.format("YYYY-MM-DD"),
         shippingDate: formValues.shippingDate.format("YYYY-MM-DD"),
@@ -351,20 +348,25 @@ const MakeInquiry = () => {
         currencyType: formValues.currencyType,
         currency: parseFloat(formValues.currency as any),
         inquiryItemDetails: items.map((item) => ({
-          itemId: item.itemId,
+          itemId: itemIdMap[item.itemCode] || null,
           itemCode: item.itemCode,
           itemName: item.itemName,
           itemRemark: item.itemRemark,
           qty: item.qty,
           unit: item.unit,
           itemType: item.itemType,
-          supplierIdList: item.supplierIdList
-            .map((supplierId) => parseInt(supplierId, 10))
-            .filter((supplierId) => !isNaN(supplierId)),
+          supplierIdList: item.supplierNameList
+            .map(
+              (supplierName) =>
+                supplierOptions.find((option) => option.value === supplierName)
+                  ?.id
+            )
+            .filter((id) => id !== undefined),
         })),
       };
 
       await axios.post("/api/customer-inquiries", requestData);
+
       message.success("Inquiry submitted successfully!");
       setFormValues({
         registerDate: moment().startOf("day"),
@@ -378,61 +380,121 @@ const MakeInquiry = () => {
       });
       setSelectedCustomerId(null);
       setSelectedVesselId(null);
-      initializeItems();
+      setItems([createNewItem(1, requesterCount)]);
+      setItemCount(2);
     } catch (error) {
       console.error("Error submitting inquiry:", error);
       message.error("Failed to submit inquiry. Please try again.");
     }
   };
 
-  // Fetch company names based on customer input
-  const SearchCompanyName = async () => {
+  const searchCompanyName = async (customerName: string) => {
     try {
-      const response = await axios.get<{ customers: Customer[] }>(
-        `/api/customers/search?companyName=${formValues.customer}`
-      );
+      const response = await axios.get<{
+        isExist: boolean;
+        customerDetailResponse: Customer[];
+      }>(`/api/customers/check-name?customerName=${customerName}`);
 
-      setCompanyNameList(
-        response.data.customers.map((customer) => customer.companyName)
-      );
-
-      // 매출처 선택 시 선박 목록 업데이트
-      const selectedCustomer = response.data.customers.find(
-        (customer) => customer.companyName === formValues.customer
-      );
-      if (selectedCustomer) {
-        setSelectedCustomerId(selectedCustomer.id);
-        // 저장할 수 있도록 선박 목록을 상태에 저장합니다
-        setVesselNameList(
-          selectedCustomer.vesselList.map((vessel) => vessel.vesselName)
+      if (response.data.isExist) {
+        setCompanyNameList(
+          response.data.customerDetailResponse.map(
+            (customer) => customer.companyName
+          )
         );
-        // 선박 목록을 상태로 저장
-        setVesselList(selectedCustomer.vesselList);
+
+        const selectedCustomer = response.data.customerDetailResponse.find(
+          (customer) => customer.companyName === customerName
+        );
+
+        if (selectedCustomer) {
+          setSelectedCustomerId(selectedCustomer.id);
+          setVesselNameList(
+            selectedCustomer.vesselList.map((vessel) => vessel.vesselName)
+          );
+          setVesselList(selectedCustomer.vesselList);
+        } else {
+          setSelectedCustomerId(null);
+          setVesselNameList([]);
+          setVesselList([]);
+        }
       } else {
+        setCompanyNameList([]);
         setSelectedCustomerId(null);
         setVesselNameList([]);
-        setVesselList([]); // 선박 목록도 초기화
+        setVesselList([]);
       }
     } catch (error) {
-      console.error("Error fetching filtered data:", error);
+      console.error("Error fetching company name:", error);
     }
   };
 
-  useEffect(() => {
-    if (formValues.customer) {
-      SearchCompanyName();
-    }
-  }, [formValues.customer]);
+  const searchItemCode = async (itemCode: string, index: number) => {
+    try {
+      const response = await axios.get<{
+        items: { itemId: number; itemCode: string; itemName: string }[];
+      }>(`/api/items/search/itemCode?itemCode=${itemCode}`);
 
-  useEffect(() => {
-    setAutoCompleteOptions(
-      companyNameList
-        .filter((name) =>
-          name.toLowerCase().includes(formValues.customer.toLowerCase())
-        )
-        .map((name) => ({ value: name }))
-    );
-  }, [companyNameList, formValues.customer]);
+      const items = response.data.items;
+      setItemCodeOptions(items.map((item) => ({ value: item.itemCode })));
+
+      const newItemNameMap = items.reduce((acc, item) => {
+        acc[item.itemCode] = item.itemName;
+        return acc;
+      }, {} as { [key: string]: string });
+
+      setItemNameMap(newItemNameMap);
+
+      const newItemIdMap = items.reduce((acc, item) => {
+        acc[item.itemCode] = item.itemId;
+        return acc;
+      }, {} as { [key: string]: number });
+
+      setItemIdMap(newItemIdMap);
+
+      if (newItemNameMap[itemCode]) {
+        handleInputChange(index, "itemName", newItemNameMap[itemCode]);
+      }
+    } catch (error) {
+      console.error("Error fetching item codes:", error);
+    }
+  };
+
+  const handleItemCodeChange = (index: number, value: string) => {
+    handleInputChange(index, "itemCode", value);
+    searchItemCode(value, index);
+  };
+
+  const searchSupplierName = async (value: string, index: number) => {
+    try {
+      const response = await axios.get<{
+        suppliers: { id: number; companyName: string }[];
+      }>(`/api/suppliers/search?companyName=${value}`);
+      const suppliers = response.data.suppliers;
+      setSupplierOptions(
+        suppliers.map((supplier) => ({
+          value: supplier.companyName,
+          id: supplier.id,
+        }))
+      );
+
+      // 공급업체 이름이 일치하는 경우 자동으로 추가
+      setItems(
+        items.map((item, itemIndex) => {
+          if (itemIndex === index) {
+            return {
+              ...item,
+              supplierNameList: item.supplierNameList.map((name, i) =>
+                i === index ? value : name
+              ),
+            };
+          }
+          return item;
+        })
+      );
+    } catch (error) {
+      console.error("Error fetching suppliers:", error);
+    }
+  };
 
   return (
     <FormContainer>
@@ -493,7 +555,6 @@ const MakeInquiry = () => {
               <Input />
             </AutoComplete>
           </InquiryItemForm>
-
           <InquiryItemForm
             style={{ flex: "40%" }}
             label="Ref No."

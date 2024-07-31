@@ -157,7 +157,7 @@ const CreateModal = ({ category, onClose, onUpdate }: ModalProps) => {
       const response = await axios.post(endpoint, {
         code: formData.code,
         companyName: formData.name,
-        phoneNumber: formData.contact,
+        contact: formData.contact,
         representative: formData.manager,
         email: formData.email,
         address: formData.address,
