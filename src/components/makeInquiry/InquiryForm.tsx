@@ -9,7 +9,8 @@ import {
   Tag,
 } from "antd";
 import styled from "styled-components";
-import CreateModal from "../company/CreateModal";
+import CreateCompanyModal from "../company/CreateCompanyModal";
+import CreateVesselModal from "../vessel/CreateVesselModal";
 const { Option } = Select;
 
 const InquiryItemForm = styled(Form.Item)`
@@ -58,6 +59,7 @@ interface InquiryFormProps {
   handleTagClose: (id: number) => void;
   addItem: () => void;
   customerUnreg: boolean;
+  vesselUnreg: boolean;
 }
 
 const InquiryForm: React.FC<InquiryFormProps> = ({
@@ -74,185 +76,216 @@ const InquiryForm: React.FC<InquiryFormProps> = ({
   handleTagClose,
   addItem,
   customerUnreg,
+  vesselUnreg,
 }) => {
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isCustomerModalOpen, setIsCustomerModalOpen] =
+    useState<boolean>(false);
+  const [isVesselModalOpen, setIsVesselModalOpen] = useState<boolean>(false);
 
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
+  const openCustomerModal = () => setIsCustomerModalOpen(true);
+  const closeCustomerModal = () => setIsCustomerModalOpen(false);
+  const openVesselModal = () => setIsVesselModalOpen(true);
+  const closeVesselModal = () => setIsVesselModalOpen(false);
 
   const customerValue = formValues.customer.trim();
-  let validationStatus:
+  const vesselValue = formValues.vesselName.trim();
+  let customerValidationStatus:
     | "success"
     | "error"
     | "warning"
     | "validating"
     | undefined;
-  let helpMessage: string | undefined;
+  let customerhelpMessage: string | undefined;
 
   if (customerUnreg) {
     if (customerValue === "") {
-      validationStatus = "error";
-      helpMessage = "Please enter a customer";
+      customerValidationStatus = "error";
+      customerhelpMessage = "Please enter a customer";
     } else {
-      validationStatus = "error";
-      helpMessage = "등록되지 않은 매출처입니다";
+      customerValidationStatus = "error";
+      customerhelpMessage = "등록되지 않은 매출처입니다.";
     }
   }
-  if (customerUnreg) {
-    if (customerValue === "") {
-      validationStatus = "error";
-      helpMessage = "Please enter a customer";
+
+  let vesselValidationStatus:
+    | "success"
+    | "error"
+    | "warning"
+    | "validating"
+    | undefined;
+  let vesselhelpMessage: string | undefined;
+
+  if (vesselUnreg) {
+    if (vesselValue === "") {
+      vesselValidationStatus = "error";
+      vesselhelpMessage = "Please enter a vessel";
     } else {
-      validationStatus = "error";
-      helpMessage = "등록되지 않은 매출처입니다";
+      vesselValidationStatus = "error";
+      vesselhelpMessage = "등록되지 않은 선박입니다.";
     }
   }
 
   return (
-    <Form layout="vertical" initialValues={formValues}>
-      <FormRow>
-        <InquiryItemForm
-          label="작성일자"
-          name="registerDate"
-          rules={[{ required: true, message: "Please select register date" }]}
-        >
-          <DatePicker
-            value={formValues.registerDate}
-            onChange={(date) => handleFormChange("registerDate", date!)}
-          />
-        </InquiryItemForm>
-        <InquiryItemForm
-          label="선적일자"
-          name="shippingDate"
-          rules={[{ required: true, message: "Please select shipping date" }]}
-        >
-          <DatePicker
-            value={formValues.shippingDate}
-            onChange={(date) => handleFormChange("shippingDate", date!)}
-          />
-        </InquiryItemForm>
-        <InquiryItemForm
-          label="매출처"
-          name="customer"
-          validateStatus={validationStatus}
-          help={helpMessage}
-          rules={[{ required: true, message: "Please enter customer" }]}
-        >
-          <Button
-            type="primary"
-            style={{ position: "absolute", top: "-35px", right: "0" }}
-            onClick={openModal}
+    <>
+      <Form layout="vertical" initialValues={formValues}>
+        <FormRow>
+          <InquiryItemForm
+            label="작성일자"
+            name="registerDate"
+            rules={[{ required: true, message: "Please select register date" }]}
           >
-            등록
-          </Button>
-          <AutoComplete
-            value={formValues.customer}
-            onChange={(value) => handleFormChange("customer", value)}
-            options={autoCompleteOptions}
-            style={{ width: "100%" }}
-            filterOption={(inputValue, option) =>
-              option!.value.toLowerCase().includes(inputValue.toLowerCase())
-            }
+            <DatePicker
+              value={formValues.registerDate}
+              onChange={(date) => handleFormChange("registerDate", date!)}
+            />
+          </InquiryItemForm>
+          <InquiryItemForm
+            label="선적일자"
+            name="shippingDate"
+            rules={[{ required: true, message: "Please select shipping date" }]}
           >
-            <Input />
-          </AutoComplete>
-        </InquiryItemForm>
-
-        <InquiryItemForm
-          label="선박명"
-          name="vesselName"
-          rules={[{ required: true, message: "Please enter vessel name" }]}
-        >
-          <AutoComplete
-            value={formValues.vesselName}
-            onChange={(value) => handleFormChange("vesselName", value)}
-            options={vesselNameList.map((name) => ({ value: name }))}
-            style={{ width: "100%" }}
-            filterOption={(inputValue, option) =>
-              option!.value.toLowerCase().includes(inputValue.toLowerCase())
-            }
+            <DatePicker
+              value={formValues.shippingDate}
+              onChange={(date) => handleFormChange("shippingDate", date!)}
+            />
+          </InquiryItemForm>
+          <InquiryItemForm
+            label="매출처"
+            name="customer"
+            validateStatus={customerValidationStatus}
+            help={customerhelpMessage}
+            rules={[{ required: true, message: "Please enter customer" }]}
           >
-            <Input />
-          </AutoComplete>
-        </InquiryItemForm>
-        <InquiryItemForm
-          style={{ flex: "40%" }}
-          label="Ref No."
-          name="refNumber"
-          rules={[{ required: true, message: "Please enter ref number" }]}
-        >
-          <Input
-            value={formValues.refNumber}
-            onChange={(e) => handleFormChange("refNumber", e.target.value)}
-          />
-        </InquiryItemForm>
-      </FormRow>
-      <FormRow>
-        <InquiryItemForm
-          label="화폐"
-          name="currencyType"
-          rules={[{ required: true, message: "Please select currency type" }]}
-        >
-          <Select
-            value={formValues.currencyType}
-            onChange={(value) => handleFormChange("currencyType", value)}
-          >
-            {["USD", "EUR", "INR"].map((currency) => (
-              <Option key={currency} value={currency}>
-                {currency}
-              </Option>
-            ))}
-          </Select>
-        </InquiryItemForm>
-        <InquiryItemForm
-          label="환율"
-          name="currency"
-          rules={[
-            {
-              required: true,
-              message: "Please enter currency exchange rate",
-            },
-          ]}
-        >
-          <Input
-            type="number"
-            value={formValues.currency}
-            onChange={(e) =>
-              handleFormChange("currency", parseFloat(e.target.value))
-            }
-          />
-        </InquiryItemForm>
-        <InquiryItemForm label="비고" name="remark" style={{ flex: "50%" }}>
-          <Input
-            value={formValues.remark}
-            onChange={(e) => handleFormChange("remark", e.target.value)}
-          />
-        </InquiryItemForm>
-      </FormRow>
-      <FormRow>
-        <div style={{ marginTop: 10 }}>
-          {selectedSuppliers.map((supplier) => (
-            <Tag
-              key={supplier.id}
-              closable
-              onClose={() => handleTagClose(supplier.id)}
+            <Button
+              type="primary"
+              style={{ position: "absolute", top: "-35px", right: "0" }}
+              onClick={openCustomerModal}
             >
-              {supplier.name}
-            </Tag>
-          ))}
-        </div>
-      </FormRow>
-      <Button type="primary" onClick={addItem} style={{ margin: "20px 0" }}>
-        품목 추가
-      </Button>
-      {isModalOpen && (
-        <CreateModal
+              등록
+            </Button>
+            <AutoComplete
+              value={formValues.customer}
+              onChange={(value) => handleFormChange("customer", value)}
+              options={autoCompleteOptions}
+              style={{ width: "100%" }}
+              filterOption={(inputValue, option) =>
+                option!.value.toLowerCase().includes(inputValue.toLowerCase())
+              }
+            >
+              <Input />
+            </AutoComplete>
+          </InquiryItemForm>
+          <InquiryItemForm
+            label="선박명"
+            name="vesselName"
+            validateStatus={vesselValidationStatus}
+            help={vesselhelpMessage}
+            rules={[{ required: true, message: "Please enter vessel name" }]}
+          >
+            <Button
+              type="primary"
+              style={{ position: "absolute", top: "-35px", right: "0" }}
+              onClick={openVesselModal}
+            >
+              등록
+            </Button>
+            <AutoComplete
+              value={formValues.vesselName}
+              onChange={(value) => handleFormChange("vesselName", value)}
+              options={vesselNameList.map((name) => ({ value: name }))}
+              style={{ width: "100%" }}
+              filterOption={(inputValue, option) =>
+                option!.value.toLowerCase().includes(inputValue.toLowerCase())
+              }
+            >
+              <Input />
+            </AutoComplete>
+          </InquiryItemForm>
+          <InquiryItemForm
+            style={{ flex: "40%" }}
+            label="Ref No."
+            name="refNumber"
+            rules={[{ required: true, message: "Please enter ref number" }]}
+          >
+            <Input
+              value={formValues.refNumber}
+              onChange={(e) => handleFormChange("refNumber", e.target.value)}
+            />
+          </InquiryItemForm>
+        </FormRow>
+        <FormRow>
+          <InquiryItemForm
+            label="화폐"
+            name="currencyType"
+            rules={[{ required: true, message: "Please select currency type" }]}
+          >
+            <Select
+              value={formValues.currencyType}
+              onChange={(value) => handleFormChange("currencyType", value)}
+            >
+              {["USD", "EUR", "INR"].map((currency) => (
+                <Option key={currency} value={currency}>
+                  {currency}
+                </Option>
+              ))}
+            </Select>
+          </InquiryItemForm>
+          <InquiryItemForm
+            label="환율"
+            name="currency"
+            rules={[
+              {
+                required: true,
+                message: "Please enter currency exchange rate",
+              },
+            ]}
+          >
+            <Input
+              type="number"
+              value={formValues.currency}
+              onChange={(e) =>
+                handleFormChange("currency", parseFloat(e.target.value))
+              }
+            />
+          </InquiryItemForm>
+          <InquiryItemForm label="비고" name="remark" style={{ flex: "50%" }}>
+            <Input
+              value={formValues.remark}
+              onChange={(e) => handleFormChange("remark", e.target.value)}
+            />
+          </InquiryItemForm>
+        </FormRow>
+        <FormRow>
+          <div style={{ marginTop: 10 }}>
+            {selectedSuppliers.map((supplier) => (
+              <Tag
+                key={supplier.id}
+                closable
+                onClose={() => handleTagClose(supplier.id)}
+              >
+                {supplier.name}
+              </Tag>
+            ))}
+          </div>
+        </FormRow>
+        <Button type="primary" onClick={addItem} style={{ margin: "20px 0" }}>
+          품목 추가
+        </Button>
+      </Form>{" "}
+      {isCustomerModalOpen && (
+        <CreateCompanyModal
           category={"customer"}
-          onClose={closeModal}
-          onUpdate={closeModal}
+          onClose={closeCustomerModal}
+          onUpdate={closeCustomerModal}
         />
       )}
-    </Form>
+      {isVesselModalOpen && (
+        <CreateVesselModal
+          onClose={closeVesselModal}
+          onUpdate={closeVesselModal}
+        />
+      )}
+    </>
   );
 };
 

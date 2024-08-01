@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Table, Input, Button as AntButton, Select, Pagination } from "antd";
 import { SearchOutlined, LeftOutlined, RightOutlined } from "@ant-design/icons";
-import CreateModal from "../components/ship/CreateModal";
+import CreateVesselModal from "../components/vessel/CreateVesselModal";
 import type { ColumnsType } from "antd/es/table";
 import styled from "styled-components";
 import axios from "../api/axios";
-import DetailModal from "../components/ship/DetailModal";
+import DetailVesselModal from "../components/vessel/DetailVesselModal";
 
 const Container = styled.div`
   position: relative;
@@ -68,7 +68,8 @@ const ShipList = () => {
   const [searchCategory, setSearchCategory] = useState<string>("all");
   const [loading, setLoading] = useState<boolean>(true);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
+  const [isDetailVesselModalOpen, setIsDetailVesselModalOpen] =
+    useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage, setItemsPerPage] = useState<number>(10);
   const [selectedVessel, setSelectedVessel] = useState<Vessel | null>(null);
@@ -92,7 +93,7 @@ const ShipList = () => {
 
   // 모달 열릴 때 스크롤 방지
   useEffect(() => {
-    if (isModalOpen || isDetailModalOpen) {
+    if (isModalOpen || isDetailVesselModalOpen) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "auto";
@@ -101,7 +102,7 @@ const ShipList = () => {
     return () => {
       document.body.style.overflow = "auto";
     };
-  }, [isModalOpen, isDetailModalOpen]);
+  }, [isModalOpen, isDetailVesselModalOpen]);
 
   //검색 API 로직
   const fetchFilteredData = async () => {
@@ -172,14 +173,14 @@ const ShipList = () => {
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
-  const openDetailModal = (category: Vessel) => {
+  const openDetailVesselModal = (category: Vessel) => {
     setSelectedVessel(category);
-    setIsDetailModalOpen(true);
+    setIsDetailVesselModalOpen(true);
   };
 
-  const closeDetailModal = () => {
+  const closeDetailVesselModal = () => {
     setSelectedVessel(null);
-    setIsDetailModalOpen(false);
+    setIsDetailVesselModalOpen(false);
   };
 
   const paginatedData = data.slice(
@@ -227,7 +228,7 @@ const ShipList = () => {
           loading={loading}
           rowKey="code"
           onRow={(record) => ({
-            onClick: () => openDetailModal(record),
+            onClick: () => openDetailVesselModal(record),
           })}
           style={{ cursor: "pointer" }}
         />
@@ -251,11 +252,13 @@ const ShipList = () => {
           }}
         />
       </Container>
-      {isModalOpen && <CreateModal onUpdate={fetchData} onClose={closeModal} />}
-      {isDetailModalOpen && selectedVessel && (
-        <DetailModal
+      {isModalOpen && (
+        <CreateVesselModal onUpdate={fetchData} onClose={closeModal} />
+      )}
+      {isDetailVesselModalOpen && selectedVessel && (
+        <DetailVesselModal
           vessel={selectedVessel}
-          onClose={closeDetailModal}
+          onClose={closeDetailVesselModal}
           onUpdate={fetchData}
         />
       )}

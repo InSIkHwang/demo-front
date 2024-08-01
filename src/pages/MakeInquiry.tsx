@@ -68,6 +68,21 @@ interface InquiryItem {
   itemRemark: string;
 }
 
+interface Item {
+  itemId: number;
+  itemCode: string;
+  itemName: string;
+  supplierList: {
+    id: number;
+    code: string;
+    companyName: string;
+    phoneNumber: string;
+    representative: string;
+    email: string;
+    communicationLanguage: string;
+  }[];
+}
+
 const MakeInquiry = () => {
   const [items, setItems] = useState<InquiryItem[]>([createNewItem(1)]);
   const [itemCount, setItemCount] = useState(2);
@@ -270,38 +285,43 @@ const MakeInquiry = () => {
 
   const searchItemCode = async (itemCode: string, index: number) => {
     try {
-      const response = await axios.get<{
-        items: {
-          itemId: number;
-          itemCode: string;
-          itemName: string;
-          supplierId: number;
-          supplierName: string;
-          supplierCode: string;
-          supplierEmail: string;
-        }[];
-      }>(`/api/item-supplier?itemCode=${itemCode}`);
-      const items = response.data.items;
-      console.log(items);
+      const response = await axios.get<{ items: Item | Item[] }>(
+        `/api/item-supplier?itemCode=${itemCode}`
+      );
+      // Convert items to an array if it is not already
+      const items = Array.isArray(response.data.items)
+        ? response.data.items
+        : [response.data.items];
 
-      // Update item code options
+      const newItemNameMap = items.reduce<{ [key: string]: string }>(
+        (acc, item) => {
+          acc[item.itemCode] = item.itemName;
+          return acc;
+        },
+        {}
+      );
+
+      const newItemIdMap = items.reduce<{ [key: string]: number }>(
+        (acc, item) => {
+          acc[item.itemCode] = item.itemId;
+          return acc;
+        },
+        {}
+      );
+
+      // Extract suppliers from items and update the supplier options
+      const newSupplierOptions = items.flatMap((item) =>
+        item.supplierList.map((supplier) => ({
+          value: supplier.companyName,
+          id: supplier.id,
+        }))
+      );
+
       setItemCodeOptions(items.map((item) => ({ value: item.itemCode })));
-
-      // Update item name map and item id map
-      const newItemNameMap = items.reduce((acc, item) => {
-        acc[item.itemCode] = item.itemName;
-        return acc;
-      }, {} as { [key: string]: string });
-
-      const newItemIdMap = items.reduce((acc, item) => {
-        acc[item.itemCode] = item.itemId;
-        return acc;
-      }, {} as { [key: string]: number });
-
       setItemNameMap(newItemNameMap);
       setItemIdMap(newItemIdMap);
+      setSupplierOptions(newSupplierOptions);
 
-      // Update item name if item code found
       if (newItemNameMap[itemCode]) {
         handleInputChange(index, "itemName", newItemNameMap[itemCode]);
       }
@@ -353,6 +373,7 @@ const MakeInquiry = () => {
         handleTagClose={handleTagClose}
         addItem={addItem}
         customerUnreg={!selectedCustomerId}
+        vesselUnreg={!selectedVesselId}
       />
       <MakeInquiryTable
         items={items}

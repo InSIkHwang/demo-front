@@ -88,7 +88,7 @@ interface ModalProps {
   onUpdate: () => void;
 }
 
-const CreateModal = ({ category, onClose, onUpdate }: ModalProps) => {
+const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
   const todayDate = new Date().toLocaleDateString("en-CA");
 
   const [formData, setFormData] = useState({
@@ -280,4 +280,4 @@ const CreateModal = ({ category, onClose, onUpdate }: ModalProps) => {
   );
 };
 
-export default CreateModal;
+export default CreateCompanyModal;

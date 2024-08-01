@@ -116,7 +116,12 @@ interface ModalProps {
   onUpdate: () => void;
 }
 
-const DetailModal = ({ category, company, onClose, onUpdate }: ModalProps) => {
+const DetailCompanyModal = ({
+  category,
+  company,
+  onClose,
+  onUpdate,
+}: ModalProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(company);
 
@@ -259,4 +264,4 @@ const DetailModal = ({ category, company, onClose, onUpdate }: ModalProps) => {
   );
 };
 
-export default DetailModal;
+export default DetailCompanyModal;

@@ -65,7 +65,7 @@ interface ModalProps {
   onUpdate: () => void;
 }
 
-const CreateModal = ({ onClose, onUpdate }: ModalProps) => {
+const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
   const [formData, setFormData] = useState({
     code: "",
     vesselName: "",
@@ -78,9 +78,13 @@ const CreateModal = ({ onClose, onUpdate }: ModalProps) => {
   });
 
   const [isCodeUnique, setIsCodeUnique] = useState(true);
-  const [isCheckingCode, setIsCheckingCode] = useState(false);
   const [customerSuggestions, setCustomerSuggestions] = useState<any[]>([]);
   const [isCustomerLoading, setIsCustomerLoading] = useState(false);
+  const [customerError, setCustomerError] = useState<string | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<{
+    companyName: string;
+    id: number;
+  } | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -106,7 +110,6 @@ const CreateModal = ({ onClose, onUpdate }: ModalProps) => {
       setIsCodeUnique(true);
       return;
     }
-    setIsCheckingCode(true);
     try {
       const response = await axios.get(
         `/api/vessels/check-code/${formData.code}`
@@ -115,8 +118,6 @@ const CreateModal = ({ onClose, onUpdate }: ModalProps) => {
     } catch (error) {
       console.error("Error checking code unique:", error);
       setIsCodeUnique(true); // 오류 발생 시 기본적으로 유효한 코드로 처리
-    } finally {
-      setIsCheckingCode(false);
     }
   }, 200);
 
@@ -148,13 +149,18 @@ const CreateModal = ({ onClose, onUpdate }: ModalProps) => {
   };
 
   const handleSelectCustomer = (value: string, option: any) => {
-    const selectedCustomer = option as any;
+    const selected = option as any;
     setFormData({
       ...formData,
-      customerName: selectedCustomer.companyName,
-      customerId: selectedCustomer.id,
+      customerName: selected.companyName,
+      customerId: selected.id,
+    });
+    setSelectedCustomer({
+      companyName: selected.companyName,
+      id: selected.id,
     });
     setCustomerSuggestions([]);
+    setCustomerError(null); // Clear any previous error when a customer is selected
   };
 
   const postCreate = async () => {
@@ -175,6 +181,17 @@ const CreateModal = ({ onClose, onUpdate }: ModalProps) => {
 
   const handleSubmit = async (values: any) => {
     if (!isCodeUnique) return;
+
+    if (formData.customerId === undefined) {
+      setCustomerError("매출처를 선택하세요.");
+      return;
+    }
+
+    if (selectedCustomer && selectedCustomer.id !== formData.customerId) {
+      setCustomerError("유효하지 않은 매출처.");
+      return;
+    }
+
     await postCreate();
     onUpdate();
     onClose();
@@ -196,8 +213,21 @@ const CreateModal = ({ onClose, onUpdate }: ModalProps) => {
             <Form.Item
               label="코드:"
               name="code"
+              validateStatus={
+                formData.code === ""
+                  ? "error"
+                  : !isCodeUnique
+                  ? "error"
+                  : "success"
+              }
+              help={
+                formData.code === ""
+                  ? "코드를 입력하세요!"
+                  : !isCodeUnique
+                  ? "유효하지 않은 코드입니다."
+                  : ""
+              }
               rules={[{ required: true, message: "코드를 입력하세요!" }]}
-              help={!isCodeUnique ? "이미 등록된 코드입니다." : ""}
             >
               <Input
                 name="code"
@@ -207,6 +237,7 @@ const CreateModal = ({ onClose, onUpdate }: ModalProps) => {
               />
             </Form.Item>
           </FormGroup>
+
           <FormGroup>
             <Form.Item
               label="선명:"
@@ -222,11 +253,7 @@ const CreateModal = ({ onClose, onUpdate }: ModalProps) => {
             </Form.Item>
           </FormGroup>
           <FormGroup>
-            <Form.Item
-              label="선박회사:"
-              name="vesselCompanyName"
-              rules={[{ required: true, message: "선박회사를 입력하세요!" }]}
-            >
+            <Form.Item label="선박회사:" name="vesselCompanyName">
               <Input
                 name="vesselCompanyName"
                 value={formData.vesselCompanyName}
@@ -236,11 +263,7 @@ const CreateModal = ({ onClose, onUpdate }: ModalProps) => {
             </Form.Item>
           </FormGroup>
           <FormGroup>
-            <Form.Item
-              label="IMO NO.:"
-              name="imoNumber"
-              rules={[{ required: true, message: "IMO NO.을 입력하세요!" }]}
-            >
+            <Form.Item label="IMO NO.:" name="imoNumber">
               <Input
                 name="imoNumber"
                 value={formData.imoNumber}
@@ -251,11 +274,7 @@ const CreateModal = ({ onClose, onUpdate }: ModalProps) => {
             </Form.Item>
           </FormGroup>
           <FormGroup>
-            <Form.Item
-              label="HULL No.:"
-              name="hullNumber"
-              rules={[{ required: true, message: "HULL No.을 입력하세요!" }]}
-            >
+            <Form.Item label="HULL No.:" name="hullNumber">
               <Input
                 name="hullNumber"
                 value={formData.hullNumber}
@@ -265,11 +284,7 @@ const CreateModal = ({ onClose, onUpdate }: ModalProps) => {
             </Form.Item>
           </FormGroup>
           <FormGroup>
-            <Form.Item
-              label="SHIPYARD:"
-              name="shipYard"
-              rules={[{ required: true, message: "SHIPYARD를 입력하세요!" }]}
-            >
+            <Form.Item label="SHIPYARD:" name="shipYard">
               <Input
                 name="shipYard"
                 value={formData.shipYard}
@@ -280,9 +295,9 @@ const CreateModal = ({ onClose, onUpdate }: ModalProps) => {
           </FormGroup>
           <FormGroup>
             <Form.Item
-              label="고객명:"
+              label="매출처명:"
               name="customerName"
-              rules={[{ required: true, message: "고객명을 입력하세요!" }]}
+              rules={[{ required: true, message: "매출처를 선택하세요!" }]}
             >
               <AutoComplete
                 onSearch={handleSearch}
@@ -303,13 +318,19 @@ const CreateModal = ({ onClose, onUpdate }: ModalProps) => {
               >
                 <Input />
               </AutoComplete>
+              {customerError && <ErrorMessage>{customerError}</ErrorMessage>}
             </Form.Item>
           </FormGroup>
           <FormGroup>
+            <h1>선택된 매출처: {selectedCustomer?.companyName}</h1>
             <SubmitButton
               type="primary"
               htmlType="submit"
-              disabled={!isCodeUnique || isCheckingCode}
+              disabled={
+                formData.customerId === undefined ||
+                !isCodeUnique ||
+                selectedCustomer?.companyName !== formData.customerName
+              }
             >
               등록
             </SubmitButton>
@@ -320,4 +341,4 @@ const CreateModal = ({ onClose, onUpdate }: ModalProps) => {
   );
 };
 
-export default CreateModal;
+export default CreateVesselModal;

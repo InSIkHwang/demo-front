@@ -115,7 +115,7 @@ interface ModalProps {
   onUpdate: () => void;
 }
 
-const DetailModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
+const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(vessel);
 
@@ -237,4 +237,4 @@ const DetailModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
   );
 };
 
-export default DetailModal;
+export default DetailVesselModal;

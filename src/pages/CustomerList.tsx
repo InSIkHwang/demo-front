@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Table, Input, Button as AntButton, Select, Pagination } from "antd";
 import { SearchOutlined, LeftOutlined, RightOutlined } from "@ant-design/icons";
-import CreateModal from "../components/company/CreateModal";
+import CreateCompanyModal from "../components/company/CreateCompanyModal";
 import type { ColumnsType } from "antd/es/table";
 import styled from "styled-components";
-import DetailModal from "../components/company/DetailModal";
+import DetailCompanyModal from "../components/company/DetailCompanyModal";
 import axios from "../api/axios";
 
 const Container = styled.div`
@@ -71,7 +71,8 @@ const CustomerList = () => {
   const [searchCategory, setSearchCategory] = useState<string>("all");
   const [loading, setLoading] = useState<boolean>(true);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
+  const [isDetailCompanyModalOpen, setIsDetailCompanyModalOpen] =
+    useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage, setItemsPerPage] = useState<number>(10);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
@@ -103,7 +104,7 @@ const CustomerList = () => {
 
   // 모달 열릴 때 스크롤 방지
   useEffect(() => {
-    if (isModalOpen || isDetailModalOpen) {
+    if (isModalOpen || isDetailCompanyModalOpen) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "auto";
@@ -112,7 +113,7 @@ const CustomerList = () => {
     return () => {
       document.body.style.overflow = "auto";
     };
-  }, [isModalOpen, isDetailModalOpen]);
+  }, [isModalOpen, isDetailCompanyModalOpen]);
 
   //검색 API 로직
   const fetchFilteredData = async () => {
@@ -195,14 +196,14 @@ const CustomerList = () => {
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
-  const openDetailModal = (category: Customer) => {
+  const openDetailCompanyModal = (category: Customer) => {
     setSelectedCustomer(category);
-    setIsDetailModalOpen(true);
+    setIsDetailCompanyModalOpen(true);
   };
 
-  const closeDetailModal = () => {
+  const closeDetailCompanyModal = () => {
     setSelectedCustomer(null);
-    setIsDetailModalOpen(false);
+    setIsDetailCompanyModalOpen(false);
   };
 
   //한 페이지에 보일 데이터
@@ -251,7 +252,7 @@ const CustomerList = () => {
           loading={loading}
           rowKey="code"
           onRow={(record) => ({
-            onClick: () => openDetailModal(record),
+            onClick: () => openDetailCompanyModal(record),
           })}
           style={{ cursor: "pointer" }}
         />
@@ -276,17 +277,17 @@ const CustomerList = () => {
         />
       </Container>
       {isModalOpen && (
-        <CreateModal
+        <CreateCompanyModal
           category={category}
           onClose={closeModal}
           onUpdate={fetchData}
         />
       )}
-      {isDetailModalOpen && selectedCustomer && (
-        <DetailModal
+      {isDetailCompanyModalOpen && selectedCustomer && (
+        <DetailCompanyModal
           category={category}
           company={selectedCustomer}
-          onClose={closeDetailModal}
+          onClose={closeDetailCompanyModal}
           onUpdate={fetchData}
         />
       )}
