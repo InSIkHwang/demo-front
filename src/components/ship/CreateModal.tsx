@@ -1,6 +1,8 @@
 import axios from "../../api/axios";
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
+import { AutoComplete, Input, Button, Form } from "antd";
+import "antd/dist/reset.css"; // Make sure to include Ant Design styles
 
 const ModalBackdrop = styled.div`
   position: fixed;
@@ -47,41 +49,15 @@ const FormGroup = styled.div`
   margin-bottom: 15px;
 `;
 
-const Label = styled.label`
-  display: block;
-  margin-bottom: 5px;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 8px 0;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-`;
-
 const ErrorMessage = styled.div`
   color: red;
   font-size: 12px;
   margin-top: 5px;
 `;
 
-const SubmitButton = styled.button<{ disabled: boolean }>`
-  padding: 10px 20px;
-  font-size: 16px;
-  border: none;
-  background-color: #1976d2;
-  color: white;
-  border-radius: 4px;
-  cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
+const SubmitButton = styled(Button)`
   display: block;
   margin-left: auto;
-  transition: background-color 0.3s, opacity 0.3s;
-
-  opacity: ${({ disabled }) => (disabled ? 0.5 : 1)};
-
-  &:hover {
-    background-color: ${({ disabled }) => (disabled ? "#1976d2" : "#1560ac")};
-  }
 `;
 
 interface ModalProps {
@@ -97,10 +73,14 @@ const CreateModal = ({ onClose, onUpdate }: ModalProps) => {
     imoNumber: undefined,
     hullNumber: "",
     shipYard: "",
+    customerName: "",
+    customerId: undefined,
   });
 
   const [isCodeUnique, setIsCodeUnique] = useState(true);
   const [isCheckingCode, setIsCheckingCode] = useState(false);
+  const [customerSuggestions, setCustomerSuggestions] = useState<any[]>([]);
+  const [isCustomerLoading, setIsCustomerLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -120,7 +100,7 @@ const CreateModal = ({ onClose, onUpdate }: ModalProps) => {
     };
   };
 
-  //중복 코드 체크 로직
+  // 중복 코드 체크 로직
   const checkCodeUnique = debounce(async () => {
     if (formData.code.trim() === "") {
       setIsCodeUnique(true);
@@ -131,7 +111,6 @@ const CreateModal = ({ onClose, onUpdate }: ModalProps) => {
       const response = await axios.get(
         `/api/vessels/check-code/${formData.code}`
       );
-
       setIsCodeUnique(!response.data); // 응답을 반전시켜서 코드 유무 판단
     } catch (error) {
       console.error("Error checking code unique:", error);
@@ -145,23 +124,56 @@ const CreateModal = ({ onClose, onUpdate }: ModalProps) => {
     checkCodeUnique();
   }, [formData.code]);
 
+  // Fetch customer suggestions
+  const fetchCustomerSuggestions = async (customerName: string) => {
+    if (!customerName.trim()) {
+      setCustomerSuggestions([]);
+      return;
+    }
+    setIsCustomerLoading(true);
+    try {
+      const response = await axios.get(
+        `/api/customers/check-name?customerName=${customerName}`
+      );
+      setCustomerSuggestions(response.data.customerDetailResponse);
+    } catch (error) {
+      console.error("Error fetching customer suggestions:", error);
+    } finally {
+      setIsCustomerLoading(false);
+    }
+  };
+
+  const handleSearch = (value: string) => {
+    fetchCustomerSuggestions(value);
+  };
+
+  const handleSelectCustomer = (value: string, option: any) => {
+    const selectedCustomer = option as any;
+    setFormData({
+      ...formData,
+      customerName: selectedCustomer.companyName,
+      customerId: selectedCustomer.id,
+    });
+    setCustomerSuggestions([]);
+  };
+
   const postCreate = async () => {
     try {
-      const response = await axios.post(`/api/vessels`, {
+      await axios.post(`/api/vessels`, {
         code: formData.code,
         vesselName: formData.vesselName,
         vesselCompanyName: formData.vesselCompanyName,
         imoNumber: Number(formData.imoNumber),
         hullNumber: formData.hullNumber,
         shipYard: formData.shipYard,
+        customerId: formData.customerId,
       });
     } catch (error) {
       console.log(error);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (values: any) => {
     if (!isCodeUnique) return;
     await postCreate();
     onUpdate();
@@ -179,80 +191,130 @@ const CreateModal = ({ onClose, onUpdate }: ModalProps) => {
       <ModalContent>
         <CloseButton onClick={onClose}>&times;</CloseButton>
         <ModalTitle>신규 선박 등록</ModalTitle>
-        <form onSubmit={handleSubmit}>
+        <Form onFinish={handleSubmit}>
           <FormGroup>
-            <Label htmlFor="code">코드:</Label>
-            <Input
-              id="code"
+            <Form.Item
+              label="코드:"
               name="code"
-              value={formData.code}
-              onChange={handleChange}
-              placeholder="BAS"
-              required
-            />
-            {!isCodeUnique && (
-              <ErrorMessage>이미 등록된 코드입니다.</ErrorMessage>
-            )}
+              rules={[{ required: true, message: "코드를 입력하세요!" }]}
+              help={!isCodeUnique ? "이미 등록된 코드입니다." : ""}
+            >
+              <Input
+                name="code"
+                value={formData.code}
+                onChange={handleChange}
+                placeholder="BAS"
+              />
+            </Form.Item>
           </FormGroup>
           <FormGroup>
-            <Label htmlFor="vesselName">선명:</Label>
-            <Input
-              id="vesselName"
+            <Form.Item
+              label="선명:"
               name="vesselName"
-              value={formData.vesselName}
-              onChange={handleChange}
-              placeholder="BAS VESSEL1"
-              required
-            />
+              rules={[{ required: true, message: "선명을 입력하세요!" }]}
+            >
+              <Input
+                name="vesselName"
+                value={formData.vesselName}
+                onChange={handleChange}
+                placeholder="BAS VESSEL1"
+              />
+            </Form.Item>
           </FormGroup>
           <FormGroup>
-            <Label htmlFor="vesselCompanyName">선박회사:</Label>
-            <Input
-              id="vesselCompanyName"
+            <Form.Item
+              label="선박회사:"
               name="vesselCompanyName"
-              value={formData.vesselCompanyName}
-              onChange={handleChange}
-              placeholder="BAS KOREA"
-            />
+              rules={[{ required: true, message: "선박회사를 입력하세요!" }]}
+            >
+              <Input
+                name="vesselCompanyName"
+                value={formData.vesselCompanyName}
+                onChange={handleChange}
+                placeholder="BAS KOREA"
+              />
+            </Form.Item>
           </FormGroup>
           <FormGroup>
-            <Label htmlFor="imoNumber">IMO NO.:</Label>
-            <Input
-              id="imoNumber"
+            <Form.Item
+              label="IMO NO.:"
               name="imoNumber"
-              value={formData.imoNumber}
-              onChange={handleChange}
-              placeholder="1234567"
-              type="number"
-            />
+              rules={[{ required: true, message: "IMO NO.을 입력하세요!" }]}
+            >
+              <Input
+                name="imoNumber"
+                value={formData.imoNumber}
+                onChange={handleChange}
+                placeholder="1234567"
+                type="number"
+              />
+            </Form.Item>
           </FormGroup>
           <FormGroup>
-            <Label htmlFor="hullNumber">HULL No.:</Label>
-            <Input
-              id="hullNumber"
+            <Form.Item
+              label="HULL No.:"
               name="hullNumber"
-              value={formData.hullNumber}
-              onChange={handleChange}
-              placeholder="V001"
-            />
+              rules={[{ required: true, message: "HULL No.을 입력하세요!" }]}
+            >
+              <Input
+                name="hullNumber"
+                value={formData.hullNumber}
+                onChange={handleChange}
+                placeholder="V001"
+              />
+            </Form.Item>
           </FormGroup>
           <FormGroup>
-            <Label htmlFor="shipYard">SHIPYARD</Label>
-            <Input
-              id="shipYard"
+            <Form.Item
+              label="SHIPYARD:"
               name="shipYard"
-              value={formData.shipYard}
-              onChange={handleChange}
-              placeholder="B123"
-            />
+              rules={[{ required: true, message: "SHIPYARD를 입력하세요!" }]}
+            >
+              <Input
+                name="shipYard"
+                value={formData.shipYard}
+                onChange={handleChange}
+                placeholder="B123"
+              />
+            </Form.Item>
           </FormGroup>
-          <SubmitButton
-            type="submit"
-            disabled={!isCodeUnique || isCheckingCode}
-          >
-            등록
-          </SubmitButton>
-        </form>
+          <FormGroup>
+            <Form.Item
+              label="고객명:"
+              name="customerName"
+              rules={[{ required: true, message: "고객명을 입력하세요!" }]}
+            >
+              <AutoComplete
+                onSearch={handleSearch}
+                onSelect={handleSelectCustomer}
+                value={formData.customerName}
+                placeholder="Customer Name"
+                options={customerSuggestions.map((customer) => ({
+                  value: customer.companyName,
+                  label: customer.companyName,
+                  companyName: customer.companyName,
+                  id: customer.id,
+                }))}
+                filterOption={(inputValue, option) =>
+                  (option?.value as string)
+                    .toUpperCase()
+                    .includes(inputValue.toUpperCase())
+                }
+              >
+                <Input />
+              </AutoComplete>
+            </Form.Item>
+          </FormGroup>
+          <FormGroup>
+            <SubmitButton
+              type="primary"
+              htmlType="submit"
+              disabled={!isCodeUnique || isCheckingCode}
+            >
+              등록
+            </SubmitButton>
+          </FormGroup>
+        </Form>
       </ModalContent>
     </ModalBackdrop>
   );
