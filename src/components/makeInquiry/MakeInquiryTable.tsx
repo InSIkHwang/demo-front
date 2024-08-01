@@ -1,6 +1,5 @@
 import React from "react";
 import { Table, AutoComplete, Input, Select } from "antd";
-import styled from "styled-components";
 
 const { Option } = Select;
 
@@ -102,11 +101,11 @@ const MakeInquiryTable = ({
       key: "qty",
       render: (text: number, record: InquiryItem, index: number) => (
         <Input
-          type="number"
           value={text}
-          onChange={(e) =>
-            handleInputChange(index, "qty", parseInt(e.target.value))
-          }
+          onChange={(e) => {
+            const value = parseInt(e.target.value, 10);
+            handleInputChange(index, "qty", isNaN(value) ? 0 : value);
+          }}
         />
       ),
       width: 80,

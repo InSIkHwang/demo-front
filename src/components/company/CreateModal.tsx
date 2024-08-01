@@ -135,8 +135,7 @@ const CreateModal = ({ category, onClose, onUpdate }: ModalProps) => {
           ? `/api/customers/check-code/${formData.code}`
           : `/api/suppliers/check-code/${formData.code}`;
 
-      const response = await axios.get(endpoint);      
-
+      const response = await axios.get(endpoint);
       setIsCodeUnique(!response.data); // 응답 T/F를 반전시킴
     } catch (error) {
       console.error("Error checking code unique:", error);
@@ -157,23 +156,22 @@ const CreateModal = ({ category, onClose, onUpdate }: ModalProps) => {
       const response = await axios.post(endpoint, {
         code: formData.code,
         companyName: formData.name,
-        contact: formData.contact,
+        phoneNumber: formData.contact,
         representative: formData.manager,
         email: formData.email,
         address: formData.address,
         communicationLanguage: formData.language,
       });
+      console.log("POST request successful:", response);
     } catch (error) {
-      console.log(error);
+      console.error("Error posting data:", error);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handlePostClick = async () => {
     if (!isCodeUnique) return; // 코드가 유효하지 않으면 제출하지 않음
     await postCreate();
     onUpdate();
-    onClose();
   };
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -193,7 +191,7 @@ const CreateModal = ({ category, onClose, onUpdate }: ModalProps) => {
             ? "신규 매입처 등록"
             : "등록"}
         </ModalTitle>
-        <form onSubmit={handleSubmit}>
+        <div>
           <FormGroup>
             <Label htmlFor="code">코드:</Label>
             <Input
@@ -270,12 +268,13 @@ const CreateModal = ({ category, onClose, onUpdate }: ModalProps) => {
             />
           </FormGroup>
           <SubmitButton
-            type="submit"
+            type="button" // 타입을 button으로 변경
             disabled={!isCodeUnique || isCheckingCode}
+            onClick={handlePostClick} // 클릭 시 POST 요청 처리
           >
             등록
           </SubmitButton>
-        </form>
+        </div>
       </ModalContent>
     </ModalBackdrop>
   );

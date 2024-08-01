@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { Button, message } from "antd";
+import { Button, message, Modal } from "antd";
 import axios from "../api/axios";
 import MakeInquiryTable from "../components/makeInquiry/MakeInquiryTable";
-import InquiryForm from "./InquiryForm";
+import InquiryForm from "../components/makeInquiry/InquiryForm";
 import dayjs from "dayjs";
 
+// Define styles
 const FormContainer = styled.div`
   position: relative;
   top: 150px;
@@ -24,6 +25,7 @@ const Title = styled.h1`
   color: #333;
 `;
 
+// Define interfaces
 const createNewItem = (no: number) => ({
   no,
   itemType: "ITEM",
@@ -69,6 +71,7 @@ interface InquiryItem {
 const MakeInquiry = () => {
   const [items, setItems] = useState<InquiryItem[]>([createNewItem(1)]);
   const [itemCount, setItemCount] = useState(2);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [supplierCount, setSupplierCount] = useState(0);
   const [vesselList, setVesselList] = useState<
     { id: number; vesselName: string }[]
@@ -106,12 +109,14 @@ const MakeInquiry = () => {
     supplierName: "",
   });
 
+  // Effect to handle form customer changes
   useEffect(() => {
     if (formValues.customer) {
       searchCompanyName(formValues.customer);
     }
   }, [formValues.customer]);
 
+  // Effect to update vessel id based on vessel name
   useEffect(() => {
     const selectedVessel = vesselList.find(
       (vessel) => vessel.vesselName === formValues.vesselName
@@ -119,6 +124,7 @@ const MakeInquiry = () => {
     setSelectedVesselId(selectedVessel ? selectedVessel.id : null);
   }, [formValues.vesselName, vesselList]);
 
+  // Effect to update auto-complete options
   useEffect(() => {
     setAutoCompleteOptions(
       companyNameList
@@ -128,6 +134,25 @@ const MakeInquiry = () => {
         .map((name) => ({ value: name }))
     );
   }, [companyNameList, formValues.customer]);
+
+  // Effect to handle item ID map change and update selected suppliers
+  useEffect(() => {
+    const newSelectedSuppliers = Object.entries(itemIdMap).reduce(
+      (acc, [itemCode, itemId]) => {
+        const item = items.find((item) => item.itemCode === itemCode);
+        if (item) {
+          return [
+            ...acc,
+            { id: itemId, name: item.itemName }, // Add relevant details here
+          ];
+        }
+        return acc;
+      },
+      [] as { id: number; name: string }[]
+    );
+
+    setSelectedSuppliers(newSelectedSuppliers);
+  }, [itemIdMap, items]);
 
   const addItem = () => {
     setItems([...items, createNewItem(itemCount)]);
@@ -246,11 +271,23 @@ const MakeInquiry = () => {
   const searchItemCode = async (itemCode: string, index: number) => {
     try {
       const response = await axios.get<{
-        items: { itemId: number; itemCode: string; itemName: string }[];
-      }>(`/api/items/search/itemCode?itemCode=${itemCode}`);
+        items: {
+          itemId: number;
+          itemCode: string;
+          itemName: string;
+          supplierId: number;
+          supplierName: string;
+          supplierCode: string;
+          supplierEmail: string;
+        }[];
+      }>(`/api/item-supplier?itemCode=${itemCode}`);
       const items = response.data.items;
+      console.log(items);
+
+      // Update item code options
       setItemCodeOptions(items.map((item) => ({ value: item.itemCode })));
 
+      // Update item name map and item id map
       const newItemNameMap = items.reduce((acc, item) => {
         acc[item.itemCode] = item.itemName;
         return acc;
@@ -264,11 +301,12 @@ const MakeInquiry = () => {
       setItemNameMap(newItemNameMap);
       setItemIdMap(newItemIdMap);
 
+      // Update item name if item code found
       if (newItemNameMap[itemCode]) {
         handleInputChange(index, "itemName", newItemNameMap[itemCode]);
       }
     } catch (error) {
-      console.error("Error fetching item codes:", error);
+      console.error("Error fetching item codes and suppliers:", error);
     }
   };
 
@@ -277,34 +315,18 @@ const MakeInquiry = () => {
     searchItemCode(value, index);
   };
 
-  const handleSupplierSearch = async (value: string) => {
-    try {
-      const response = await axios.get<{
-        suppliers: { id: number; companyName: string }[];
-      }>(`/api/suppliers/search?companyName=${value}`);
-      setSupplierOptions(
-        response.data.suppliers.map((supplier) => ({
-          value: supplier.companyName,
-          id: supplier.id,
-        }))
-      );
-    } catch (error) {
-      console.error("Error fetching suppliers:", error);
-    }
-  };
-
   const handleSupplierSelect = (
     value: string,
     option: { value: string; id: number }
   ) => {
-    const supplier = { id: option.id, name: value };
     setSelectedSuppliers((prev) => {
-      const existingIds = new Set(prev.map((s) => s.id));
-      if (!existingIds.has(supplier.id)) {
-        return [...prev, supplier];
-      }
-      return prev;
+      const existingSuppliers = new Map(prev.map((s) => [s.id, s]));
+
+      existingSuppliers.set(option.id, { id: option.id, name: value });
+
+      return Array.from(existingSuppliers.values());
     });
+
     handleFormChange("supplierName", "");
   };
 
@@ -326,10 +348,11 @@ const MakeInquiry = () => {
         handleFormChange={handleFormChange}
         handleInputChange={handleInputChange}
         handleItemCodeChange={handleItemCodeChange}
-        handleSupplierSearch={handleSupplierSearch}
+        handleSupplierSearch={() => {}}
         handleSupplierSelect={handleSupplierSelect}
         handleTagClose={handleTagClose}
         addItem={addItem}
+        customerUnreg={!selectedCustomerId}
       />
       <MakeInquiryTable
         items={items}
@@ -337,6 +360,7 @@ const MakeInquiry = () => {
         handleItemCodeChange={handleItemCodeChange}
         itemCodeOptions={itemCodeOptions}
       />
+
       <Button
         type="primary"
         onClick={handleSubmit}

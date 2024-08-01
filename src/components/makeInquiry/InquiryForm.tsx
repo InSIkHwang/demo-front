@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Form,
   Input,
@@ -9,7 +9,7 @@ import {
   Tag,
 } from "antd";
 import styled from "styled-components";
-import moment from "moment";
+import CreateModal from "../company/CreateModal";
 const { Option } = Select;
 
 const InquiryItemForm = styled(Form.Item)`
@@ -57,6 +57,7 @@ interface InquiryFormProps {
   ) => void;
   handleTagClose: (id: number) => void;
   addItem: () => void;
+  customerUnreg: boolean;
 }
 
 const InquiryForm: React.FC<InquiryFormProps> = ({
@@ -72,7 +73,41 @@ const InquiryForm: React.FC<InquiryFormProps> = ({
   handleSupplierSelect,
   handleTagClose,
   addItem,
+  customerUnreg,
 }) => {
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+
+  const customerValue = formValues.customer.trim();
+  let validationStatus:
+    | "success"
+    | "error"
+    | "warning"
+    | "validating"
+    | undefined;
+  let helpMessage: string | undefined;
+
+  if (customerUnreg) {
+    if (customerValue === "") {
+      validationStatus = "error";
+      helpMessage = "Please enter a customer";
+    } else {
+      validationStatus = "error";
+      helpMessage = "등록되지 않은 매출처입니다";
+    }
+  }
+  if (customerUnreg) {
+    if (customerValue === "") {
+      validationStatus = "error";
+      helpMessage = "Please enter a customer";
+    } else {
+      validationStatus = "error";
+      helpMessage = "등록되지 않은 매출처입니다";
+    }
+  }
+
   return (
     <Form layout="vertical" initialValues={formValues}>
       <FormRow>
@@ -99,8 +134,17 @@ const InquiryForm: React.FC<InquiryFormProps> = ({
         <InquiryItemForm
           label="매출처"
           name="customer"
+          validateStatus={validationStatus}
+          help={helpMessage}
           rules={[{ required: true, message: "Please enter customer" }]}
         >
+          <Button
+            type="primary"
+            style={{ position: "absolute", top: "-35px", right: "0" }}
+            onClick={openModal}
+          >
+            등록
+          </Button>
           <AutoComplete
             value={formValues.customer}
             onChange={(value) => handleFormChange("customer", value)}
@@ -113,6 +157,7 @@ const InquiryForm: React.FC<InquiryFormProps> = ({
             <Input />
           </AutoComplete>
         </InquiryItemForm>
+
         <InquiryItemForm
           label="선박명"
           name="vesselName"
@@ -185,36 +230,28 @@ const InquiryForm: React.FC<InquiryFormProps> = ({
         </InquiryItemForm>
       </FormRow>
       <FormRow>
-        <InquiryItemForm label="의뢰처" name="supplierName">
-          <AutoComplete
-            value={formValues.supplierName}
-            onChange={(value) => handleFormChange("supplierName", value)}
-            onSearch={handleSupplierSearch}
-            onSelect={handleSupplierSelect}
-            options={supplierOptions}
-            style={{ width: "50%" }}
-            filterOption={(inputValue, option) =>
-              option!.value.toLowerCase().includes(inputValue.toLowerCase())
-            }
-          >
-            <Input />
-          </AutoComplete>
-          <div style={{ marginTop: 10 }}>
-            {selectedSuppliers.map((supplier) => (
-              <Tag
-                key={supplier.id}
-                closable
-                onClose={() => handleTagClose(supplier.id)}
-              >
-                {supplier.name}
-              </Tag>
-            ))}
-          </div>
-        </InquiryItemForm>
+        <div style={{ marginTop: 10 }}>
+          {selectedSuppliers.map((supplier) => (
+            <Tag
+              key={supplier.id}
+              closable
+              onClose={() => handleTagClose(supplier.id)}
+            >
+              {supplier.name}
+            </Tag>
+          ))}
+        </div>
       </FormRow>
       <Button type="primary" onClick={addItem} style={{ margin: "20px 0" }}>
         품목 추가
       </Button>
+      {isModalOpen && (
+        <CreateModal
+          category={"customer"}
+          onClose={closeModal}
+          onUpdate={closeModal}
+        />
+      )}
     </Form>
   );
 };
