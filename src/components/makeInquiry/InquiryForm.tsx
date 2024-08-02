@@ -21,9 +21,11 @@ const InquiryItemForm = styled(Form.Item)`
 
 const FormRow = styled.div`
   display: flex;
+  margin-bottom: 5px;
 `;
 
 interface FormValues {
+  docNumber: string;
   registerDate: any;
   shippingDate: any;
   customer: string;
@@ -103,7 +105,7 @@ const InquiryForm: React.FC<InquiryFormProps> = ({
       customerhelpMessage = "Please enter a customer";
     } else {
       customerValidationStatus = "error";
-      customerhelpMessage = "등록되지 않은 매출처입니다.";
+      customerhelpMessage = "신규 등록되지 않은 매출처입니다.";
     }
   }
 
@@ -121,7 +123,7 @@ const InquiryForm: React.FC<InquiryFormProps> = ({
       vesselhelpMessage = "Please enter a vessel";
     } else {
       vesselValidationStatus = "error";
-      vesselhelpMessage = "등록되지 않은 선박입니다.";
+      vesselhelpMessage = "신규 등록되지 않은 선박입니다.";
     }
   }
 
@@ -130,9 +132,21 @@ const InquiryForm: React.FC<InquiryFormProps> = ({
       <Form layout="vertical" initialValues={formValues}>
         <FormRow>
           <InquiryItemForm
+            label="문서번호"
+            name="docNumber"
+            style={{ maxWidth: 200 }}
+          >
+            <Input
+              value={formValues.docNumber}
+              readOnly
+              style={{ cursor: "default" }}
+            />
+          </InquiryItemForm>
+          <InquiryItemForm
             label="작성일자"
             name="registerDate"
             rules={[{ required: true, message: "Please select register date" }]}
+            style={{ maxWidth: 150 }}
           >
             <DatePicker
               value={formValues.registerDate}
@@ -143,77 +157,13 @@ const InquiryForm: React.FC<InquiryFormProps> = ({
             label="선적일자"
             name="shippingDate"
             rules={[{ required: true, message: "Please select shipping date" }]}
+            style={{ maxWidth: 150 }}
           >
             <DatePicker
               value={formValues.shippingDate}
               onChange={(date) => handleFormChange("shippingDate", date!)}
             />
           </InquiryItemForm>
-          <InquiryItemForm
-            label="매출처"
-            name="customer"
-            validateStatus={customerValidationStatus}
-            help={customerhelpMessage}
-            rules={[{ required: true, message: "Please enter customer" }]}
-          >
-            <Button
-              type="primary"
-              style={{ position: "absolute", top: "-35px", right: "0" }}
-              onClick={openCustomerModal}
-            >
-              등록
-            </Button>
-            <AutoComplete
-              value={formValues.customer}
-              onChange={(value) => handleFormChange("customer", value)}
-              options={autoCompleteOptions}
-              style={{ width: "100%" }}
-              filterOption={(inputValue, option) =>
-                option!.value.toLowerCase().includes(inputValue.toLowerCase())
-              }
-            >
-              <Input />
-            </AutoComplete>
-          </InquiryItemForm>
-          <InquiryItemForm
-            label="선박명"
-            name="vesselName"
-            validateStatus={vesselValidationStatus}
-            help={vesselhelpMessage}
-            rules={[{ required: true, message: "Please enter vessel name" }]}
-          >
-            <Button
-              type="primary"
-              style={{ position: "absolute", top: "-35px", right: "0" }}
-              onClick={openVesselModal}
-            >
-              등록
-            </Button>
-            <AutoComplete
-              value={formValues.vesselName}
-              onChange={(value) => handleFormChange("vesselName", value)}
-              options={vesselNameList.map((name) => ({ value: name }))}
-              style={{ width: "100%" }}
-              filterOption={(inputValue, option) =>
-                option!.value.toLowerCase().includes(inputValue.toLowerCase())
-              }
-            >
-              <Input />
-            </AutoComplete>
-          </InquiryItemForm>
-          <InquiryItemForm
-            style={{ flex: "40%" }}
-            label="Ref No."
-            name="refNumber"
-            rules={[{ required: true, message: "Please enter ref number" }]}
-          >
-            <Input
-              value={formValues.refNumber}
-              onChange={(e) => handleFormChange("refNumber", e.target.value)}
-            />
-          </InquiryItemForm>
-        </FormRow>
-        <FormRow>
           <InquiryItemForm
             label="화폐"
             name="currencyType"
@@ -248,6 +198,73 @@ const InquiryForm: React.FC<InquiryFormProps> = ({
               }
             />
           </InquiryItemForm>
+        </FormRow>
+        <FormRow>
+          <InquiryItemForm
+            label="매출처"
+            name="customer"
+            validateStatus={customerValidationStatus}
+            help={customerhelpMessage}
+            rules={[{ required: true, message: "Please enter customer" }]}
+          >
+            <Button
+              type="primary"
+              style={{ position: "absolute", top: "-35px", right: "0" }}
+              onClick={openCustomerModal}
+            >
+              신규 등록
+            </Button>
+            <AutoComplete
+              value={formValues.customer}
+              onChange={(value) => handleFormChange("customer", value)}
+              options={autoCompleteOptions}
+              style={{ width: "100%" }}
+              filterOption={(inputValue, option) =>
+                option!.value.toLowerCase().includes(inputValue.toLowerCase())
+              }
+            >
+              <Input />
+            </AutoComplete>
+          </InquiryItemForm>
+          <InquiryItemForm
+            label="선박명"
+            name="vesselName"
+            validateStatus={vesselValidationStatus}
+            help={vesselhelpMessage}
+            rules={[{ required: true, message: "Please enter vessel name" }]}
+          >
+            <Button
+              type="primary"
+              style={{ position: "absolute", top: "-35px", right: "0" }}
+              onClick={openVesselModal}
+            >
+              신규 등록
+            </Button>
+            <AutoComplete
+              value={formValues.vesselName}
+              onChange={(value) => handleFormChange("vesselName", value)}
+              options={vesselNameList.map((name) => ({ value: name }))}
+              style={{ width: "100%" }}
+              filterOption={(inputValue, option) =>
+                option!.value.toLowerCase().includes(inputValue.toLowerCase())
+              }
+            >
+              <Input />
+            </AutoComplete>
+          </InquiryItemForm>
+          <InquiryItemForm
+            style={{ flex: "20%" }}
+            label="Ref No."
+            name="refNumber"
+            rules={[{ required: true, message: "Please enter ref number" }]}
+          >
+            <Input
+              value={formValues.refNumber}
+              onChange={(e) => handleFormChange("refNumber", e.target.value)}
+            />
+          </InquiryItemForm>
+        </FormRow>
+        <FormRow>
           <InquiryItemForm label="비고" name="remark" style={{ flex: "50%" }}>
             <Input
               value={formValues.remark}

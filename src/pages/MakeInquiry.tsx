@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { Button, message, Modal } from "antd";
+import { Button, message } from "antd";
 import axios from "../api/axios";
 import MakeInquiryTable from "../components/makeInquiry/MakeInquiryTable";
 import InquiryForm from "../components/makeInquiry/InquiryForm";
@@ -75,6 +75,7 @@ interface Item {
   supplierList: {
     id: number;
     code: string;
+    itemId: number;
     companyName: string;
     phoneNumber: string;
     representative: string;
@@ -84,6 +85,7 @@ interface Item {
 }
 
 const MakeInquiry = () => {
+  const [docDataloading, setDocDataLoading] = useState(true);
   const [items, setItems] = useState<InquiryItem[]>([createNewItem(1)]);
   const [itemCount, setItemCount] = useState(2);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -106,13 +108,14 @@ const MakeInquiry = () => {
   const [itemNameMap, setItemNameMap] = useState<{ [key: string]: string }>({});
   const [itemIdMap, setItemIdMap] = useState<{ [key: string]: number }>({});
   const [supplierOptions, setSupplierOptions] = useState<
-    { value: string; id: number }[]
+    { value: string; id: number; itemId: number }[]
   >([]);
   const [selectedSuppliers, setSelectedSuppliers] = useState<
     { id: number; name: string }[]
   >([]);
 
   const [formValues, setFormValues] = useState({
+    docNumber: "",
     registerDate: dayjs(),
     shippingDate: dayjs(),
     customer: "",
@@ -123,6 +126,10 @@ const MakeInquiry = () => {
     remark: "",
     supplierName: "",
   });
+
+  useEffect(() => {
+    loadDocData();
+  }, []);
 
   // Effect to handle form customer changes
   useEffect(() => {
@@ -150,24 +157,36 @@ const MakeInquiry = () => {
     );
   }, [companyNameList, formValues.customer]);
 
-  // Effect to handle item ID map change and update selected suppliers
   useEffect(() => {
-    const newSelectedSuppliers = Object.entries(itemIdMap).reduce(
-      (acc, [itemCode, itemId]) => {
-        const item = items.find((item) => item.itemCode === itemCode);
-        if (item) {
-          return [
-            ...acc,
-            { id: itemId, name: item.itemName }, // Add relevant details here
-          ];
-        }
-        return acc;
-      },
-      [] as { id: number; name: string }[]
+    // 고유한 공급업체 ID를 수집할 세트 생성
+    const selectedSupplierIds = new Set<number>();
+
+    // items를 순회하면서 관련된 공급업체 ID를 추출
+    items.forEach((item) => {
+      const supplierIds = supplierOptions
+        .filter((option) => itemIdMap[item.itemCode] === option.itemId) // itemId를 비교
+        .map((option) => option.id);
+
+      supplierIds.forEach((id) => selectedSupplierIds.add(id));
+    });
+
+    // supplierOptions에서 선택된 공급업체 ID에 해당하는 옵션만 필터링
+    const newSelectedSuppliers = supplierOptions
+      .filter((option) => selectedSupplierIds.has(option.id))
+      .map((supplier) => ({
+        id: supplier.id,
+        name: supplier.value,
+      }));
+
+    // 중복 제거
+    const uniqueSuppliers = Array.from(
+      new Map(
+        newSelectedSuppliers.map((supplier) => [supplier.id, supplier])
+      ).values()
     );
 
-    setSelectedSuppliers(newSelectedSuppliers);
-  }, [itemIdMap, items]);
+    setSelectedSuppliers(uniqueSuppliers);
+  }, [itemIdMap, items, supplierOptions]);
 
   const addItem = () => {
     setItems([...items, createNewItem(itemCount)]);
@@ -192,6 +211,46 @@ const MakeInquiry = () => {
   ) => {
     setFormValues((prev) => ({ ...prev, [key]: value }));
   };
+
+  const loadDocData = async () => {
+    try {
+      const response = await axios.post<{
+        docNumber: string;
+        registerDate: string;
+        shippingDate: string;
+        currencyType: string;
+        currencyValue: number;
+        inquiryType: string;
+        documentStatus: string;
+        docManagerName: string;
+      }>(`/api/customer-inquiries/create/doc-number`);
+      const {
+        docNumber,
+        registerDate,
+        shippingDate,
+        currencyType,
+        currencyValue,
+      } = response.data;
+
+      // Update formValues state
+      setFormValues((prev) => ({
+        ...prev,
+        docNumber,
+        registerDate: dayjs(registerDate),
+        shippingDate: dayjs(shippingDate),
+        currencyType,
+        currency: currencyValue,
+      }));
+    } catch (error) {
+      console.error("Error docDataloading document data:", error);
+    } finally {
+      setDocDataLoading(false); // Set docDataloading to false after data is fetched
+    }
+  };
+
+  if (docDataloading) {
+    return <div>docDataLoading...</div>; // Show docDataloading state while data is being fetched
+  }
 
   const handleSubmit = async () => {
     try {
@@ -219,7 +278,10 @@ const MakeInquiry = () => {
         })),
       };
 
-      await axios.post("/api/customer-inquiries", requestData);
+      await axios.post(
+        `/api/customer-inquiries?${formValues.docNumber}`,
+        requestData
+      );
       message.success("Inquiry submitted successfully!");
       resetForm();
     } catch (error) {
@@ -230,6 +292,7 @@ const MakeInquiry = () => {
 
   const resetForm = () => {
     setFormValues({
+      docNumber: "",
       registerDate: dayjs(),
       shippingDate: dayjs(),
       customer: "",
@@ -286,13 +349,15 @@ const MakeInquiry = () => {
   const searchItemCode = async (itemCode: string, index: number) => {
     try {
       const response = await axios.get<{ items: Item | Item[] }>(
-        `/api/item-supplier?itemCode=${itemCode}`
+        `/api/items/search/itemCode?itemCode=${itemCode}`
       );
+
       // Convert items to an array if it is not already
       const items = Array.isArray(response.data.items)
         ? response.data.items
         : [response.data.items];
 
+      // Map to store item names and IDs
       const newItemNameMap = items.reduce<{ [key: string]: string }>(
         (acc, item) => {
           acc[item.itemCode] = item.itemName;
@@ -314,13 +379,24 @@ const MakeInquiry = () => {
         item.supplierList.map((supplier) => ({
           value: supplier.companyName,
           id: supplier.id,
+          itemId: supplier.itemId, // Include itemId for filtering later
         }))
       );
 
       setItemCodeOptions(items.map((item) => ({ value: item.itemCode })));
       setItemNameMap(newItemNameMap);
       setItemIdMap(newItemIdMap);
-      setSupplierOptions(newSupplierOptions);
+
+      // Update supplier options
+      setSupplierOptions((prevOptions) => [
+        ...prevOptions,
+        ...newSupplierOptions.filter(
+          (newSupplier) =>
+            !prevOptions.some(
+              (existingSupplier) => existingSupplier.id === newSupplier.id
+            )
+        ),
+      ]);
 
       if (newItemNameMap[itemCode]) {
         handleInputChange(index, "itemName", newItemNameMap[itemCode]);
