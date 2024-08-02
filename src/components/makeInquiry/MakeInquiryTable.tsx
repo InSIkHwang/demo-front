@@ -7,7 +7,7 @@ interface MakeInquiryTableProps {
   items: InquiryItem[];
   handleInputChange: (index: number, key: string, value: any) => void;
   handleItemCodeChange: (index: number, value: string) => void;
-  itemCodeOptions: { value: string }[]; // Update this line
+  itemCodeOptions: { value: string }[];
 }
 
 interface InquiryItem {
@@ -45,6 +45,7 @@ const MakeInquiryTable = ({
       dataIndex: "no",
       key: "no",
       render: (_: any, __: any, index: number) => <span>{index + 1}</span>,
+      width: 50,
     },
     {
       title: "품목코드",
@@ -60,6 +61,7 @@ const MakeInquiryTable = ({
           <Input />
         </AutoComplete>
       ),
+      width: 150,
     },
     {
       title: "OPT",
@@ -81,7 +83,7 @@ const MakeInquiryTable = ({
           ))}
         </Select>
       ),
-      width: 80,
+      width: 100,
     },
     {
       title: "품명",
@@ -108,7 +110,7 @@ const MakeInquiryTable = ({
           }}
         />
       ),
-      width: 80,
+      width: 100,
     },
     {
       title: "단위",
@@ -120,7 +122,7 @@ const MakeInquiryTable = ({
           onChange={(e) => handleInputChange(index, "unit", e.target.value)}
         />
       ),
-      width: 80,
+      width: 100,
     },
     {
       title: "비고",

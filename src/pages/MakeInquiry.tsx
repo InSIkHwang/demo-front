@@ -25,7 +25,7 @@ const Title = styled.h1`
   color: #333;
 `;
 
-// Define interfaces
+// Define interfaces and constants
 const createNewItem = (no: number) => ({
   no,
   itemType: "ITEM",
@@ -85,11 +85,10 @@ interface Item {
 }
 
 const MakeInquiry = () => {
+  // State hooks
   const [docDataloading, setDocDataLoading] = useState(true);
   const [items, setItems] = useState<InquiryItem[]>([createNewItem(1)]);
   const [itemCount, setItemCount] = useState(2);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [supplierCount, setSupplierCount] = useState(0);
   const [vesselList, setVesselList] = useState<
     { id: number; vesselName: string }[]
   >([]);
@@ -113,6 +112,9 @@ const MakeInquiry = () => {
   const [selectedSuppliers, setSelectedSuppliers] = useState<
     { id: number; name: string }[]
   >([]);
+  const [selectedSupplierTag, setSelectedSupplierTag] = useState<
+    { id: number; name: string }[]
+  >([]);
 
   const [formValues, setFormValues] = useState({
     docNumber: "",
@@ -127,6 +129,7 @@ const MakeInquiry = () => {
     supplierName: "",
   });
 
+  // Effect to load document data
   useEffect(() => {
     loadDocData();
   }, []);
@@ -138,7 +141,7 @@ const MakeInquiry = () => {
     }
   }, [formValues.customer]);
 
-  // Effect to update vessel id based on vessel name
+  // Effect to update vessel ID based on vessel name
   useEffect(() => {
     const selectedVessel = vesselList.find(
       (vessel) => vessel.vesselName === formValues.vesselName
@@ -157,37 +160,40 @@ const MakeInquiry = () => {
     );
   }, [companyNameList, formValues.customer]);
 
+  // Effect to update selected suppliers based on item selections
   useEffect(() => {
-    // 고유한 공급업체 ID를 수집할 세트 생성
-    const selectedSupplierIds = new Set<number>();
+    const selectedSupplierIds = new Set<number>(
+      selectedSuppliers.map((supplier) => supplier.id)
+    );
 
-    // items를 순회하면서 관련된 공급업체 ID를 추출
     items.forEach((item) => {
       const supplierIds = supplierOptions
-        .filter((option) => itemIdMap[item.itemCode] === option.itemId) // itemId를 비교
+        .filter((option) => itemIdMap[item.itemCode] === option.itemId)
         .map((option) => option.id);
 
       supplierIds.forEach((id) => selectedSupplierIds.add(id));
     });
 
-    // supplierOptions에서 선택된 공급업체 ID에 해당하는 옵션만 필터링
     const newSelectedSuppliers = supplierOptions
       .filter((option) => selectedSupplierIds.has(option.id))
-      .map((supplier) => ({
-        id: supplier.id,
-        name: supplier.value,
-      }));
+      .map((supplier) => ({ id: supplier.id, name: supplier.value }));
 
-    // 중복 제거
     const uniqueSuppliers = Array.from(
       new Map(
         newSelectedSuppliers.map((supplier) => [supplier.id, supplier])
       ).values()
     );
 
-    setSelectedSuppliers(uniqueSuppliers);
+    setSelectedSuppliers((prev) => {
+      const prevSupplierIds = new Set(prev.map((supplier) => supplier.id));
+      const updatedSuppliers = uniqueSuppliers.filter(
+        (supplier) => !prevSupplierIds.has(supplier.id)
+      );
+      return [...prev, ...updatedSuppliers];
+    });
   }, [itemIdMap, items, supplierOptions]);
 
+  // Handler functions
   const addItem = () => {
     setItems([...items, createNewItem(itemCount)]);
     setItemCount(itemCount + 1);
@@ -220,10 +226,8 @@ const MakeInquiry = () => {
         shippingDate: string;
         currencyType: string;
         currencyValue: number;
-        inquiryType: string;
-        documentStatus: string;
-        docManagerName: string;
-      }>(`/api/customer-inquiries/create/doc-number`);
+      }>("/api/customer-inquiries/create/doc-number");
+
       const {
         docNumber,
         registerDate,
@@ -232,7 +236,6 @@ const MakeInquiry = () => {
         currencyValue,
       } = response.data;
 
-      // Update formValues state
       setFormValues((prev) => ({
         ...prev,
         docNumber,
@@ -242,21 +245,19 @@ const MakeInquiry = () => {
         currency: currencyValue,
       }));
     } catch (error) {
-      console.error("Error docDataloading document data:", error);
+      console.error("Error loading document data:", error);
     } finally {
-      setDocDataLoading(false); // Set docDataloading to false after data is fetched
+      setDocDataLoading(false);
     }
   };
-
-  if (docDataloading) {
-    return <div>docDataLoading...</div>; // Show docDataloading state while data is being fetched
-  }
 
   const handleSubmit = async () => {
     try {
       const selectedVessel = vesselList.find(
         (vessel) => vessel.vesselName === formValues.vesselName
       );
+      console.log(selectedVessel);
+
       const requestData = {
         vesselId: selectedVessel ? selectedVessel.id : null,
         customerId: selectedCustomerId,
@@ -274,7 +275,7 @@ const MakeInquiry = () => {
           qty: item.qty,
           unit: item.unit,
           itemType: item.itemType,
-          supplierIdList: selectedSuppliers.map((supplier) => supplier.id),
+          supplierIdList: selectedSupplierTag.map((supplier) => supplier.id),
         })),
       };
 
@@ -315,6 +316,7 @@ const MakeInquiry = () => {
         isExist: boolean;
         customerDetailResponse: Customer[];
       }>(`/api/customers/check-name?customerName=${customerName}`);
+
       const { isExist, customerDetailResponse } = response.data;
 
       if (isExist) {
@@ -324,6 +326,7 @@ const MakeInquiry = () => {
         const selectedCustomer = customerDetailResponse.find(
           (customer) => customer.companyName === customerName
         );
+
         if (selectedCustomer) {
           setSelectedCustomerId(selectedCustomer.id);
           setVesselNameList(
@@ -351,13 +354,10 @@ const MakeInquiry = () => {
       const response = await axios.get<{ items: Item | Item[] }>(
         `/api/items/search/itemCode?itemCode=${itemCode}`
       );
-
-      // Convert items to an array if it is not already
       const items = Array.isArray(response.data.items)
         ? response.data.items
         : [response.data.items];
 
-      // Map to store item names and IDs
       const newItemNameMap = items.reduce<{ [key: string]: string }>(
         (acc, item) => {
           acc[item.itemCode] = item.itemName;
@@ -374,12 +374,11 @@ const MakeInquiry = () => {
         {}
       );
 
-      // Extract suppliers from items and update the supplier options
       const newSupplierOptions = items.flatMap((item) =>
         item.supplierList.map((supplier) => ({
           value: supplier.companyName,
           id: supplier.id,
-          itemId: supplier.itemId, // Include itemId for filtering later
+          itemId: supplier.itemId,
         }))
       );
 
@@ -387,7 +386,6 @@ const MakeInquiry = () => {
       setItemNameMap(newItemNameMap);
       setItemIdMap(newItemIdMap);
 
-      // Update supplier options
       setSupplierOptions((prevOptions) => [
         ...prevOptions,
         ...newSupplierOptions.filter(
@@ -417,12 +415,9 @@ const MakeInquiry = () => {
   ) => {
     setSelectedSuppliers((prev) => {
       const existingSuppliers = new Map(prev.map((s) => [s.id, s]));
-
       existingSuppliers.set(option.id, { id: option.id, name: value });
-
       return Array.from(existingSuppliers.values());
     });
-
     handleFormChange("supplierName", "");
   };
 
@@ -431,6 +426,10 @@ const MakeInquiry = () => {
       prev.filter((supplier) => supplier.id !== id)
     );
   };
+
+  if (docDataloading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <FormContainer>
@@ -450,6 +449,7 @@ const MakeInquiry = () => {
         addItem={addItem}
         customerUnreg={!selectedCustomerId}
         vesselUnreg={!selectedVesselId}
+        setSelectedSupplierTag={setSelectedSupplierTag}
       />
       <MakeInquiryTable
         items={items}
@@ -457,7 +457,6 @@ const MakeInquiry = () => {
         handleItemCodeChange={handleItemCodeChange}
         itemCodeOptions={itemCodeOptions}
       />
-
       <Button
         type="primary"
         onClick={handleSubmit}

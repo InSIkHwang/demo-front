@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { Dispatch, SetStateAction, useState } from "react";
 import {
   Form,
   Input,
@@ -7,6 +7,7 @@ import {
   Select,
   AutoComplete,
   Tag,
+  message,
 } from "antd";
 import styled from "styled-components";
 import CreateCompanyModal from "../company/CreateCompanyModal";
@@ -62,9 +63,12 @@ interface InquiryFormProps {
   addItem: () => void;
   customerUnreg: boolean;
   vesselUnreg: boolean;
+  setSelectedSupplierTag: Dispatch<
+    SetStateAction<{ id: number; name: string }[]>
+  >;
 }
 
-const InquiryForm: React.FC<InquiryFormProps> = ({
+const InquiryForm = ({
   formValues,
   autoCompleteOptions,
   vesselNameList,
@@ -79,10 +83,13 @@ const InquiryForm: React.FC<InquiryFormProps> = ({
   addItem,
   customerUnreg,
   vesselUnreg,
-}) => {
+  setSelectedSupplierTag,
+}: InquiryFormProps) => {
   const [isCustomerModalOpen, setIsCustomerModalOpen] =
     useState<boolean>(false);
   const [isVesselModalOpen, setIsVesselModalOpen] = useState<boolean>(false);
+
+  const [tagColors, setTagColors] = useState<{ [id: number]: string }>({});
 
   const openCustomerModal = () => setIsCustomerModalOpen(true);
   const closeCustomerModal = () => setIsCustomerModalOpen(false);
@@ -126,6 +133,38 @@ const InquiryForm: React.FC<InquiryFormProps> = ({
       vesselhelpMessage = "신규 등록되지 않은 선박입니다.";
     }
   }
+
+  const handleTagClick = (id: number) => {
+    setSelectedSupplierTag((prevTags) => {
+      const isAlreadySelected = prevTags.some((tag) => tag.id === id);
+      const currentTags = [...prevTags];
+
+      if (isAlreadySelected) {
+        // Remove the tag
+        setTagColors((prevColors) => ({
+          ...prevColors,
+          [id]: "#d9d9d9",
+        }));
+        return currentTags.filter((tag) => tag.id !== id);
+      } else {
+        // Add the tag
+        const newTag = supplierOptions.find((supplier) => supplier.id === id);
+        if (newTag) {
+          if (currentTags.length >= 5) {
+            // Limit to 5 tags
+            message.error("최대 5개의 의뢰처만 등록 가능합니다.");
+            return currentTags;
+          }
+          setTagColors((prevColors) => ({
+            ...prevColors,
+            [id]: "#1677ff",
+          }));
+          return [...currentTags, { id: newTag.id, name: newTag.value }];
+        }
+        return currentTags;
+      }
+    });
+  };
 
   return (
     <>
@@ -274,11 +313,16 @@ const InquiryForm: React.FC<InquiryFormProps> = ({
         </FormRow>
         <FormRow>
           <div style={{ marginTop: 10 }}>
+            <span>검색된 의뢰처 목록: </span>
             {selectedSuppliers.map((supplier) => (
               <Tag
                 key={supplier.id}
-                closable
-                onClose={() => handleTagClose(supplier.id)}
+                style={{
+                  borderColor: tagColors[supplier.id] || "default",
+                  cursor: "pointer",
+                }}
+                onClick={() => handleTagClick(supplier.id)}
+                onClose={() => handleTagClick(supplier.id)}
               >
                 {supplier.name}
               </Tag>
