@@ -112,7 +112,7 @@ const InquiryForm = ({
       customerhelpMessage = "Please enter a customer";
     } else {
       customerValidationStatus = "error";
-      customerhelpMessage = "신규 등록되지 않은 매출처입니다.";
+      customerhelpMessage = "등록되지 않은 매출처입니다.";
     }
   }
 
@@ -130,7 +130,7 @@ const InquiryForm = ({
       vesselhelpMessage = "Please enter a vessel";
     } else {
       vesselValidationStatus = "error";
-      vesselhelpMessage = "신규 등록되지 않은 선박입니다.";
+      vesselhelpMessage = "등록되지 않은 선박입니다.";
     }
   }
 
