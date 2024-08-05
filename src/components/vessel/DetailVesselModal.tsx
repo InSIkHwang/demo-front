@@ -107,6 +107,13 @@ interface Vessel {
   imoNumber: number;
   hullNumber: string;
   shipYard: string;
+  customer: {
+    id: number;
+    newCustomerId: string;
+    code: string;
+    companyName: string;
+    newCustomerName: string;
+  };
 }
 
 interface ModalProps {
@@ -118,6 +125,10 @@ interface ModalProps {
 const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(vessel);
+  const [selectedCustomer, setSelectedCustomer] = useState<{
+    companyName: string;
+    id: number;
+  } | null>(null);
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
@@ -132,32 +143,35 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
     });
   };
 
-  //데이터 수정 PUT API
+  // 데이터 수정 PUT API
   const editData = async () => {
     try {
-      const response = await axios.put(`/api/vessels/${formData.id}`, {
+      await axios.put(`/api/vessels/${formData.id}`, {
         code: formData.code,
         vesselName: formData.vesselName,
         vesselCompanyName: formData.vesselCompanyName,
         imoNumber: formData.imoNumber,
         hullNumber: formData.hullNumber,
         shipYard: formData.shipYard,
+        originCustomerId: formData.customer.id,
+        newCustomerId: selectedCustomer?.id,
       });
+      console.log(formData);
     } catch (error) {
       console.log(error);
     }
   };
 
-  //데이터 삭제 DELETE API
+  // 데이터 삭제 DELETE API
   const deleteData = async () => {
     try {
-      const response = await axios.delete(`/api/vessels/${formData.id}`);
+      await axios.delete(`/api/vessels/${formData.id}`);
     } catch (error) {
       console.log(error);
     }
   };
 
-  //수정 SUBMIT 비동기처리, PUT 처리 후 FETCH
+  // 수정 SUBMIT 비동기 처리, PUT 처리 후 FETCH
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await editData();
@@ -165,7 +179,7 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
     onClose();
   };
 
-  //삭제 SUBMIT 비동기처리, DELETE 처리 후 FETCH
+  // 삭제 SUBMIT 비동기 처리, DELETE 처리 후 FETCH
   const handleDelete = async () => {
     if (window.confirm("정말 삭제하시겠습니까?")) {
       await deleteData();
@@ -175,12 +189,13 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
   };
 
   const readOnlyFields = {
-    code: true, //read-only
+    code: true, // read-only
     vesselName: !isEditing,
     vesselCompanyName: !isEditing,
     imoNumber: !isEditing,
     hullNumber: !isEditing,
     shipYard: !isEditing,
+    customerCompanyName: true,
   };
 
   return (
@@ -191,8 +206,11 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
         {isEditing ? (
           <Form
             formData={formData}
+            setFormData={setFormData}
             onChange={handleChange}
             onSubmit={handleSubmit}
+            setSelectedCustomer={setSelectedCustomer}
+            selectedCustomer={selectedCustomer}
             readOnlyFields={readOnlyFields}
             isEditing={isEditing}
           />
@@ -221,6 +239,10 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
             <DetailItem>
               <PropName>SHIPYARD</PropName>
               <PropValue>{formData.shipYard}</PropValue>
+            </DetailItem>
+            <DetailItem>
+              <PropName>매출처</PropName>
+              <PropValue>{formData.customer?.companyName || "없음"}</PropValue>
             </DetailItem>
             <BtnWrap>
               <UpdateButton type="button" onClick={() => setIsEditing(true)}>

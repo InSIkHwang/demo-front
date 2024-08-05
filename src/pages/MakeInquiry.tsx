@@ -66,6 +66,7 @@ interface InquiryItem {
   qty: number;
   unit: string;
   itemRemark: string;
+  itemId?: number;
 }
 
 interface Item {
@@ -256,7 +257,6 @@ const MakeInquiry = () => {
       const selectedVessel = vesselList.find(
         (vessel) => vessel.vesselName === formValues.vesselName
       );
-      console.log(selectedVessel);
 
       const requestData = {
         vesselId: selectedVessel ? selectedVessel.id : null,
@@ -268,7 +268,7 @@ const MakeInquiry = () => {
         currencyType: formValues.currencyType,
         currency: parseFloat(formValues.currency as any),
         inquiryItemDetails: items.map((item) => ({
-          itemId: itemIdMap[item.itemCode] || null,
+          itemId: item.itemId || null,
           itemCode: item.itemCode,
           itemName: item.itemName,
           itemRemark: item.itemRemark,
@@ -280,7 +280,7 @@ const MakeInquiry = () => {
       };
 
       await axios.post(
-        `/api/customer-inquiries?${formValues.docNumber}`,
+        `/api/customer-inquiries?docNumber=${formValues.docNumber}`,
         requestData
       );
       message.success("Inquiry submitted successfully!");
@@ -399,6 +399,18 @@ const MakeInquiry = () => {
       if (newItemNameMap[itemCode]) {
         handleInputChange(index, "itemName", newItemNameMap[itemCode]);
       }
+
+      // Update itemId in the items array
+      setItems((prevItems) => {
+        const updatedItems = [...prevItems];
+        if (newItemIdMap[itemCode]) {
+          updatedItems[index] = {
+            ...updatedItems[index],
+            itemId: newItemIdMap[itemCode],
+          };
+        }
+        return updatedItems;
+      });
     } catch (error) {
       console.error("Error fetching item codes and suppliers:", error);
     }

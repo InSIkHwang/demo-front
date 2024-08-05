@@ -60,6 +60,13 @@ interface Vessel {
   imoNumber: number;
   hullNumber: string;
   shipYard: string;
+  customer: {
+    id: number;
+    newCustomerId: string;
+    code: string;
+    companyName: string;
+    newCustomerName: string;
+  };
 }
 
 const ShipList = () => {
@@ -127,7 +134,6 @@ const ShipList = () => {
   //최초 렌더링 시 데이터 FETCH
   useEffect(() => {
     fetchData();
-    console.log("fetch data");
   }, []);
 
   const columns: ColumnsType<Vessel> = [
@@ -163,6 +169,12 @@ const ShipList = () => {
       title: "SHIPYARD",
       dataIndex: "shipYard",
       key: "shipYard",
+    },
+    {
+      title: "매출처",
+      key: "customerName",
+      render: (text, record) =>
+        record.customer ? record.customer.companyName : "없음",
     },
   ];
 
