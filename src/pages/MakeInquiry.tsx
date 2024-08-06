@@ -6,6 +6,7 @@ import MakeInquiryTable from "../components/makeInquiry/MakeInquiryTable";
 import InquiryForm from "../components/makeInquiry/InquiryForm";
 import dayjs from "dayjs";
 import PDFDocument from "../components/makeInquiry/PDFDocument";
+import { Customer, InquiryItem, Item } from "../types/types";
 
 // Define styles
 const FormContainer = styled.div`
@@ -36,55 +37,6 @@ const createNewItem = (no: number) => ({
   unit: "",
   itemRemark: "",
 });
-
-interface Customer {
-  id: number;
-  code: string;
-  companyName: string;
-  phoneNumber: string;
-  representative: string;
-  email: string;
-  address: string;
-  country: string;
-  communicationLanguage: string;
-  modifiedAt: string;
-  vesselList: Array<{
-    id: number;
-    code: string;
-    vesselName: string;
-    vesselCompanyName: string;
-    imoNumber: number;
-    hullNumber: string;
-    shipYard: string;
-  }>;
-}
-
-interface InquiryItem {
-  no: number;
-  itemType: string;
-  itemCode: string;
-  itemName: string;
-  qty: number;
-  unit: string;
-  itemRemark: string;
-  itemId?: number;
-}
-
-interface Item {
-  itemId: number;
-  itemCode: string;
-  itemName: string;
-  supplierList: {
-    id: number;
-    code: string;
-    itemId: number;
-    companyName: string;
-    phoneNumber: string;
-    representative: string;
-    email: string;
-    communicationLanguage: string;
-  }[];
-}
 
 const MakeInquiry = () => {
   const [docDataloading, setDocDataLoading] = useState(true);

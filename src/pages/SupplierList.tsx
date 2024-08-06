@@ -6,6 +6,7 @@ import type { ColumnsType } from "antd/es/table";
 import styled from "styled-components";
 import DetailCompanyModal from "../components/company/DetailCompanyModal";
 import axios from "../api/axios";
+import { Supplier } from "../types/types";
 
 const Container = styled.div`
   position: relative;
@@ -52,18 +53,7 @@ const PaginationWrapper = styled(Pagination)`
 
 const { Option } = Select;
 
-interface Supplier {
-  id: number;
-  code: string;
-  companyName: string;
-  phoneNumber: string;
-  representative: string;
-  email: string;
-  address: string;
-  country: string;
-  communicationLanguage: string;
-  modifiedAt: string;
-}
+
 
 const SupplierList = () => {
   const [data, setData] = useState<Supplier[]>([]);

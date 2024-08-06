@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import Form from "./Form";
 import axios from "../../api/axios";
+import { Vessel } from "../../types/types";
 
 const ModalBackdrop = styled.div`
   position: fixed;
@@ -99,22 +100,6 @@ const DeleteButton = styled.button`
   }
 `;
 
-interface Vessel {
-  id: number;
-  code: string;
-  vesselName: string;
-  vesselCompanyName: string;
-  imoNumber: number;
-  hullNumber: string;
-  shipYard: string;
-  customer: {
-    id: number;
-    newCustomerId: string;
-    code: string;
-    companyName: string;
-    newCustomerName: string;
-  };
-}
 
 interface ModalProps {
   vessel: Vessel;

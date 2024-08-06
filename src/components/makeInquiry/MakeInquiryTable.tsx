@@ -1,6 +1,7 @@
 import React from "react";
 import { Table, AutoComplete, Input, Select, Button } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
+import { InquiryItem } from "../../types/types";
 
 const { Option } = Select;
 
@@ -10,17 +11,6 @@ interface MakeInquiryTableProps {
   handleItemCodeChange: (index: number, value: string) => void;
   itemCodeOptions: { value: string }[];
   handleDelete: (index: number) => void;
-}
-
-interface InquiryItem {
-  no: number;
-  itemType: string;
-  itemCode: string;
-  itemName: string;
-  qty: number;
-  unit: string;
-  itemRemark: string;
-  itemId?: number;
 }
 
 const MakeInquiryTable = ({

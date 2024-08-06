@@ -12,6 +12,7 @@ import {
 import dayjs from "dayjs";
 import malgunGothic from "../../assets/font/malgun.ttf";
 import logoUrl from "../../assets/logo/baskorea_logo-removebg.png";
+import { InquiryItem } from "../../types/types";
 
 // 한글 글꼴 등록
 Font.register({
@@ -28,16 +29,6 @@ interface FormValues {
   refNumber: string;
   currencyType: string;
   remark: string;
-}
-
-interface InquiryItem {
-  no: number;
-  itemType: string;
-  itemCode: string;
-  itemName: string;
-  qty: number;
-  unit: string;
-  itemRemark: string;
 }
 
 interface PDFDocumentProps {

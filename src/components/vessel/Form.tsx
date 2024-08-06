@@ -3,6 +3,7 @@ import React, { Dispatch, SetStateAction, useState } from "react";
 import styled from "styled-components";
 import { AutoComplete, Input } from "antd";
 import "antd/dist/reset.css";
+import { Vessel } from "../../types/types";
 
 const FormGroup = styled.div`
   margin-bottom: 15px;
@@ -30,22 +31,6 @@ const SubmitButton = styled.button`
   }
 `;
 
-interface Vessel {
-  id: number;
-  code: string;
-  vesselName: string;
-  vesselCompanyName: string;
-  imoNumber: number;
-  hullNumber: string;
-  shipYard: string;
-  customer: {
-    id: number;
-    newCustomerId: string;
-    code: string;
-    companyName: string;
-    newCustomerName: string;
-  };
-}
 
 interface FormProps {
   formData: Vessel;

@@ -6,6 +6,7 @@ import type { ColumnsType } from "antd/es/table";
 import styled from "styled-components";
 import axios from "../api/axios";
 import DetailVesselModal from "../components/vessel/DetailVesselModal";
+import { Vessel } from "../types/types";
 
 const Container = styled.div`
   position: relative;
@@ -52,22 +53,7 @@ const PaginationWrapper = styled(Pagination)`
 
 const { Option } = Select;
 
-interface Vessel {
-  id: number;
-  code: string;
-  vesselName: string;
-  vesselCompanyName: string;
-  imoNumber: number;
-  hullNumber: string;
-  shipYard: string;
-  customer: {
-    id: number;
-    newCustomerId: string;
-    code: string;
-    companyName: string;
-    newCustomerName: string;
-  };
-}
+
 
 const ShipList = () => {
   const [data, setData] = useState<Vessel[]>([]);
