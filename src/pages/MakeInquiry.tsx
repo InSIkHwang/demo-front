@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { Button, message, Select } from "antd";
-import axios from "../api/axios";
-import MakeInquiryTable from "../components/makeInquiry/MakeInquiryTable";
-import InquiryForm from "../components/makeInquiry/InquiryForm";
 import dayjs from "dayjs";
+import {
+  fetchDocData,
+  fetchCompanyNames,
+  fetchItemData,
+  submitInquiry,
+} from "../api/api";
+import InquiryForm from "../components/makeInquiry/InquiryForm";
+import MakeInquiryTable from "../components/makeInquiry/MakeInquiryTable";
 import PDFDocument from "../components/makeInquiry/PDFDocument";
 import { Customer, InquiryItem, Item } from "../types/types";
 
@@ -28,7 +33,7 @@ const Title = styled.h1`
 `;
 
 // Define interfaces and constants
-const createNewItem = (no: number) => ({
+const createNewItem = (no: number): InquiryItem => ({
   no,
   itemType: "ITEM",
   itemCode: "",
@@ -73,10 +78,6 @@ const MakeInquiry = () => {
     { id: number; name: string }[]
   >([]);
 
-  const togglePDFPreview = () => {
-    setShowPDFPreview((prev) => !prev);
-  };
-
   const [formValues, setFormValues] = useState({
     docNumber: "",
     registerDate: dayjs(),
@@ -90,19 +91,79 @@ const MakeInquiry = () => {
     supplierName: "",
   });
 
-  // Effect to load document data
+  const togglePDFPreview = () => {
+    setShowPDFPreview((prev) => !prev);
+  };
+
+  // Load document data
   useEffect(() => {
+    const loadDocData = async () => {
+      try {
+        const {
+          docNumber,
+          registerDate,
+          shippingDate,
+          currencyType,
+          currencyValue,
+        } = await fetchDocData();
+        setFormValues((prev) => ({
+          ...prev,
+          docNumber,
+          registerDate: dayjs(registerDate),
+          shippingDate: dayjs(shippingDate),
+          currencyType,
+          currency: currencyValue,
+        }));
+      } catch (error) {
+        console.error("Error loading document data:", error);
+      } finally {
+        setDocDataLoading(false);
+      }
+    };
     loadDocData();
   }, []);
 
-  // Effect to handle form customer changes
+  // Update auto-complete options when customer changes
   useEffect(() => {
     if (formValues.customer) {
+      const searchCompanyName = async (customerName: string) => {
+        try {
+          const { isExist, customerDetailResponse } = await fetchCompanyNames(
+            customerName
+          );
+          if (isExist) {
+            setCompanyNameList(
+              customerDetailResponse.map((customer) => customer.companyName)
+            );
+            const selectedCustomer = customerDetailResponse.find(
+              (customer) => customer.companyName === customerName
+            );
+            if (selectedCustomer) {
+              setSelectedCustomerId(selectedCustomer.id);
+              setVesselNameList(
+                selectedCustomer.vesselList.map((vessel) => vessel.vesselName)
+              );
+              setVesselList(selectedCustomer.vesselList);
+            } else {
+              setSelectedCustomerId(null);
+              setVesselNameList([]);
+              setVesselList([]);
+            }
+          } else {
+            setCompanyNameList([]);
+            setSelectedCustomerId(null);
+            setVesselNameList([]);
+            setVesselList([]);
+          }
+        } catch (error) {
+          console.error("Error fetching company name:", error);
+        }
+      };
       searchCompanyName(formValues.customer);
     }
   }, [formValues.customer]);
 
-  // Effect to update vessel ID based on vessel name
+  // Update vessel ID based on vessel name
   useEffect(() => {
     const selectedVessel = vesselList.find(
       (vessel) => vessel.vesselName === formValues.vesselName
@@ -110,7 +171,7 @@ const MakeInquiry = () => {
     setSelectedVesselId(selectedVessel ? selectedVessel.id : null);
   }, [formValues.vesselName, vesselList]);
 
-  // Effect to update auto-complete options
+  // Update auto-complete options
   useEffect(() => {
     setAutoCompleteOptions(
       companyNameList
@@ -121,7 +182,7 @@ const MakeInquiry = () => {
     );
   }, [companyNameList, formValues.customer]);
 
-  // Effect to update selected suppliers based on item selections
+  // Update selected suppliers based on item selections
   useEffect(() => {
     const selectedSupplierIds = new Set<number>(
       selectedSuppliers.map((supplier) => supplier.id)
@@ -162,17 +223,14 @@ const MakeInquiry = () => {
   };
 
   const handleDelete = (index: number) => {
-    // Remove the item at the specified index
     const newItems = items.filter((_, i) => i !== index);
-
-    // Reassign 'no' values to maintain sequential order
     const updatedItems = newItems.map((item, idx) => ({
       ...item,
       no: idx + 1,
     }));
-
     setItems(updatedItems);
   };
+
   const handleInputChange = (
     index: number,
     field: string,
@@ -192,45 +250,11 @@ const MakeInquiry = () => {
     setFormValues((prev) => ({ ...prev, [key]: value }));
   };
 
-  const loadDocData = async () => {
-    try {
-      const response = await axios.post<{
-        docNumber: string;
-        registerDate: string;
-        shippingDate: string;
-        currencyType: string;
-        currencyValue: number;
-      }>("/api/customer-inquiries/create/doc-number");
-
-      const {
-        docNumber,
-        registerDate,
-        shippingDate,
-        currencyType,
-        currencyValue,
-      } = response.data;
-
-      setFormValues((prev) => ({
-        ...prev,
-        docNumber,
-        registerDate: dayjs(registerDate),
-        shippingDate: dayjs(shippingDate),
-        currencyType,
-        currency: currencyValue,
-      }));
-    } catch (error) {
-      console.error("Error loading document data:", error);
-    } finally {
-      setDocDataLoading(false);
-    }
-  };
-
   const handleSubmit = async () => {
     try {
       const selectedVessel = vesselList.find(
         (vessel) => vessel.vesselName === formValues.vesselName
       );
-
       const requestData = {
         vesselId: selectedVessel ? selectedVessel.id : null,
         customerId: selectedCustomerId,
@@ -252,10 +276,7 @@ const MakeInquiry = () => {
         })),
       };
 
-      await axios.post(
-        `/api/customer-inquiries?docNumber=${formValues.docNumber}`,
-        requestData
-      );
+      await submitInquiry(formValues.docNumber, requestData);
       message.success("Inquiry submitted successfully!");
       resetForm();
     } catch (error) {
@@ -283,115 +304,70 @@ const MakeInquiry = () => {
     setItemCount(2);
   };
 
-  const searchCompanyName = async (customerName: string) => {
-    try {
-      const response = await axios.get<{
-        isExist: boolean;
-        customerDetailResponse: Customer[];
-      }>(`/api/customers/check-name?customerName=${customerName}`);
-
-      const { isExist, customerDetailResponse } = response.data;
-
-      if (isExist) {
-        setCompanyNameList(
-          customerDetailResponse.map((customer) => customer.companyName)
-        );
-        const selectedCustomer = customerDetailResponse.find(
-          (customer) => customer.companyName === customerName
-        );
-
-        if (selectedCustomer) {
-          setSelectedCustomerId(selectedCustomer.id);
-          setVesselNameList(
-            selectedCustomer.vesselList.map((vessel) => vessel.vesselName)
-          );
-          setVesselList(selectedCustomer.vesselList);
-        } else {
-          setSelectedCustomerId(null);
-          setVesselNameList([]);
-          setVesselList([]);
-        }
-      } else {
-        setCompanyNameList([]);
-        setSelectedCustomerId(null);
-        setVesselNameList([]);
-        setVesselList([]);
-      }
-    } catch (error) {
-      console.error("Error fetching company name:", error);
-    }
-  };
-
-  const searchItemCode = async (itemCode: string, index: number) => {
-    try {
-      const response = await axios.get<{ items: Item | Item[] }>(
-        `/api/items/search/itemCode?itemCode=${itemCode}`
-      );
-      const items = Array.isArray(response.data.items)
-        ? response.data.items
-        : [response.data.items];
-
-      const newItemNameMap = items.reduce<{ [key: string]: string }>(
-        (acc, item) => {
-          acc[item.itemCode] = item.itemName;
-          return acc;
-        },
-        {}
-      );
-
-      const newItemIdMap = items.reduce<{ [key: string]: number }>(
-        (acc, item) => {
-          acc[item.itemCode] = item.itemId;
-          return acc;
-        },
-        {}
-      );
-
-      const newSupplierOptions = items.flatMap((item) =>
-        item.supplierList.map((supplier) => ({
-          value: supplier.companyName,
-          id: supplier.id,
-          itemId: supplier.itemId,
-        }))
-      );
-
-      setItemCodeOptions(items.map((item) => ({ value: item.itemCode })));
-      setItemNameMap(newItemNameMap);
-      setItemIdMap(newItemIdMap);
-
-      setSupplierOptions((prevOptions) => [
-        ...prevOptions,
-        ...newSupplierOptions.filter(
-          (newSupplier) =>
-            !prevOptions.some(
-              (existingSupplier) => existingSupplier.id === newSupplier.id
-            )
-        ),
-      ]);
-
-      if (newItemNameMap[itemCode]) {
-        handleInputChange(index, "itemName", newItemNameMap[itemCode]);
-      }
-
-      // Update itemId in the items array
-      setItems((prevItems) => {
-        const updatedItems = [...prevItems];
-        if (newItemIdMap[itemCode]) {
-          updatedItems[index] = {
-            ...updatedItems[index],
-            itemId: newItemIdMap[itemCode],
-          };
-        }
-        return updatedItems;
-      });
-    } catch (error) {
-      console.error("Error fetching item codes and suppliers:", error);
-    }
-  };
-
   const handleItemCodeChange = (index: number, value: string) => {
     handleInputChange(index, "itemCode", value);
-    searchItemCode(value, index);
+    const searchItemCode = async () => {
+      try {
+        const { items } = await fetchItemData(value);
+        const itemArray = Array.isArray(items) ? items : [items];
+
+        const newItemNameMap = itemArray.reduce<{ [key: string]: string }>(
+          (acc, item) => {
+            acc[item.itemCode] = item.itemName;
+            return acc;
+          },
+          {}
+        );
+
+        const newItemIdMap = itemArray.reduce<{ [key: string]: number }>(
+          (acc, item) => {
+            acc[item.itemCode] = item.itemId;
+            return acc;
+          },
+          {}
+        );
+
+        const newSupplierOptions = itemArray.flatMap((item) =>
+          item.supplierList.map((supplier) => ({
+            value: supplier.companyName,
+            id: supplier.id,
+            itemId: supplier.itemId,
+          }))
+        );
+
+        setItemCodeOptions(itemArray.map((item) => ({ value: item.itemCode })));
+        setItemNameMap(newItemNameMap);
+        setItemIdMap(newItemIdMap);
+
+        setSupplierOptions((prevOptions) => [
+          ...prevOptions,
+          ...newSupplierOptions.filter(
+            (newSupplier) =>
+              !prevOptions.some(
+                (existingSupplier) => existingSupplier.id === newSupplier.id
+              )
+          ),
+        ]);
+
+        if (newItemNameMap[value]) {
+          handleInputChange(index, "itemName", newItemNameMap[value]);
+        }
+
+        if (newItemIdMap[value]) {
+          setItems((prevItems) => {
+            const updatedItems = [...prevItems];
+            updatedItems[index] = {
+              ...updatedItems[index],
+              itemId: newItemIdMap[value],
+            };
+            return updatedItems;
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching item codes and suppliers:", error);
+      }
+    };
+    searchItemCode();
   };
 
   const handleSupplierSelect = (
