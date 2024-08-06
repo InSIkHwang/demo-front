@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { Button, message } from "antd";
+import { Button, message, Select } from "antd";
 import axios from "../api/axios";
 import MakeInquiryTable from "../components/makeInquiry/MakeInquiryTable";
 import InquiryForm from "../components/makeInquiry/InquiryForm";
 import dayjs from "dayjs";
+import PDFDocument from "../components/makeInquiry/PDFDocument";
 
 // Define styles
 const FormContainer = styled.div`
@@ -86,7 +87,6 @@ interface Item {
 }
 
 const MakeInquiry = () => {
-  // State hooks
   const [docDataloading, setDocDataLoading] = useState(true);
   const [items, setItems] = useState<InquiryItem[]>([createNewItem(1)]);
   const [itemCount, setItemCount] = useState(2);
@@ -116,6 +116,14 @@ const MakeInquiry = () => {
   const [selectedSupplierTag, setSelectedSupplierTag] = useState<
     { id: number; name: string }[]
   >([]);
+  const [showPDFPreview, setShowPDFPreview] = useState(false);
+  const [pdfSupplierTag, setPdfSupplierTag] = useState<
+    { id: number; name: string }[]
+  >([]);
+
+  const togglePDFPreview = () => {
+    setShowPDFPreview((prev) => !prev);
+  };
 
   const [formValues, setFormValues] = useState({
     docNumber: "",
@@ -476,6 +484,48 @@ const MakeInquiry = () => {
       >
         저장하기
       </Button>
+      <Button
+        onClick={togglePDFPreview}
+        style={{ marginTop: "20px", float: "left" }}
+      >
+        {showPDFPreview ? "PDF 미리보기 닫기" : "PDF 미리보기"}
+      </Button>
+      <div
+        style={{
+          display: "flex",
+          marginTop: 20,
+          alignItems: "center",
+          paddingLeft: 20,
+        }}
+      >
+        <span>의뢰처: </span>
+        <Select
+          style={{ width: 200, float: "left", marginLeft: 10 }}
+          onChange={(value) => {
+            const selected = selectedSupplierTag.find(
+              (tag) => tag.name === value
+            );
+            if (selected) {
+              setPdfSupplierTag([selected]);
+            }
+          }}
+        >
+          {selectedSupplierTag.map((tag) => (
+            <Select.Option key={tag.id} value={tag.name}>
+              {tag.name}
+            </Select.Option>
+          ))}
+        </Select>
+      </div>
+      {showPDFPreview && (
+        <PDFDocument
+          formValues={formValues}
+          items={items}
+          selectedSupplierName={
+            pdfSupplierTag.length > 0 ? pdfSupplierTag[0].name : ""
+          }
+        />
+      )}
     </FormContainer>
   );
 };
