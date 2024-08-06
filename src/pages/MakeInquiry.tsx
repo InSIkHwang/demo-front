@@ -204,10 +204,23 @@ const MakeInquiry = () => {
 
   // Handler functions
   const addItem = () => {
-    setItems([...items, createNewItem(itemCount)]);
-    setItemCount(itemCount + 1);
+    const nextNo =
+      items.length > 0 ? Math.max(...items.map((item) => item.no)) + 1 : 1;
+    setItems([...items, createNewItem(nextNo)]);
   };
 
+  const handleDelete = (index: number) => {
+    // Remove the item at the specified index
+    const newItems = items.filter((_, i) => i !== index);
+
+    // Reassign 'no' values to maintain sequential order
+    const updatedItems = newItems.map((item, idx) => ({
+      ...item,
+      no: idx + 1,
+    }));
+
+    setItems(updatedItems);
+  };
   const handleInputChange = (
     index: number,
     field: string,
@@ -476,6 +489,7 @@ const MakeInquiry = () => {
         handleInputChange={handleInputChange}
         handleItemCodeChange={handleItemCodeChange}
         itemCodeOptions={itemCodeOptions}
+        handleDelete={handleDelete}
       />
       <Button
         type="primary"

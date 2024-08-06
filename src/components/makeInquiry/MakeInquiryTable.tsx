@@ -1,5 +1,6 @@
 import React from "react";
-import { Table, AutoComplete, Input, Select } from "antd";
+import { Table, AutoComplete, Input, Select, Button } from "antd";
+import { DeleteOutlined } from "@ant-design/icons";
 
 const { Option } = Select;
 
@@ -8,15 +9,18 @@ interface MakeInquiryTableProps {
   handleInputChange: (index: number, key: string, value: any) => void;
   handleItemCodeChange: (index: number, value: string) => void;
   itemCodeOptions: { value: string }[];
+  handleDelete: (index: number) => void;
 }
 
 interface InquiryItem {
-  itemCode: string;
+  no: number;
   itemType: string;
+  itemCode: string;
   itemName: string;
   qty: number;
   unit: string;
   itemRemark: string;
+  itemId?: number;
 }
 
 const MakeInquiryTable = ({
@@ -24,6 +28,7 @@ const MakeInquiryTable = ({
   handleInputChange,
   handleItemCodeChange,
   itemCodeOptions,
+  handleDelete,
 }: MakeInquiryTableProps) => {
   const handleKeyDown = (
     e: React.KeyboardEvent<HTMLInputElement>,
@@ -39,11 +44,10 @@ const MakeInquiryTable = ({
       handleInputChange(index, "itemType", itemTypeMap[e.key]);
     }
   };
+
   const columns = [
     {
       title: "No.",
-      dataIndex: "no",
-      key: "no",
       render: (_: any, __: any, index: number) => <span>{index + 1}</span>,
       width: 50,
     },
@@ -103,6 +107,7 @@ const MakeInquiryTable = ({
       key: "qty",
       render: (text: number, record: InquiryItem, index: number) => (
         <Input
+          type="number" // Ensure it's a number input
           value={text}
           onChange={(e) => {
             const value = parseInt(e.target.value, 10);
@@ -137,6 +142,18 @@ const MakeInquiryTable = ({
         />
       ),
     },
+    {
+      title: "Action",
+      key: "action",
+      render: (_: any, __: any, index: number) => (
+        <Button
+          icon={<DeleteOutlined />}
+          type="default" // Replace 'danger' with 'default' or another supported type
+          onClick={() => handleDelete(index)}
+        />
+      ),
+      width: 80,
+    },
   ];
 
   return (
@@ -144,7 +161,7 @@ const MakeInquiryTable = ({
       columns={columns}
       dataSource={items}
       pagination={false}
-      rowKey="no"
+      rowKey="no" // Use a unique key, adjust if necessary
     />
   );
 };

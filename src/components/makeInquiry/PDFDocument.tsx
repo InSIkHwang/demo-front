@@ -12,7 +12,6 @@ import {
 import dayjs from "dayjs";
 import malgunGothic from "../../assets/font/malgun.ttf";
 import logoUrl from "../../assets/logo/baskorea_logo-removebg.png";
-import { styled } from "styled-components";
 
 // 한글 글꼴 등록
 Font.register({
