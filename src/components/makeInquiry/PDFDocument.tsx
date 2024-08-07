@@ -37,6 +37,7 @@ interface PDFDocumentProps {
   selectedSupplierName: string;
 }
 
+// 스타일 정의
 const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
@@ -101,19 +102,29 @@ const styles = StyleSheet.create({
   },
 });
 
+// 번호를 결정하는 함수
+const getDisplayNo = (itemType: string, itemIndex: number) => {
+  if (itemType === "ITEM") {
+    return (itemIndex + 1).toString(); // 1-based index for ITEM type
+  }
+  switch (itemType) {
+    case "MAKER":
+      return "MAKER";
+    case "TYPE":
+      return "TYPE";
+    case "DESC":
+      return "DESC";
+    default:
+      return "";
+  }
+};
+
 const PDFDocument = ({
   formValues,
   items,
   selectedSupplierName,
 }: PDFDocumentProps) => {
-  // Determine MAKER and TYPE from items
-  const maker = items.find((item) => item.itemType === "MAKER");
-  const type = items.find((item) => item.itemType === "TYPE");
-
-  // Filter items that are either DESC or ITEM
-  const filteredItems = items.filter(
-    (item) => item.itemType === "DESC" || item.itemType === "ITEM"
-  );
+  let itemIndex = 0;
 
   return (
     <PDFViewer width="100%" height="600" style={{ margin: "20px 0" }}>
@@ -157,24 +168,6 @@ const PDFDocument = ({
             </View>
           </View>
           <View style={styles.table}>
-            {maker && (
-              <View style={styles.tableRow}>
-                <View style={styles.tableCol}>
-                  <Text style={[styles.tableCell, { textAlign: "left" }]}>
-                    MAKER: {maker.itemName}
-                  </Text>
-                </View>
-              </View>
-            )}
-            {type && (
-              <View style={styles.tableRow}>
-                <View style={styles.tableCol}>
-                  <Text style={[styles.tableCell, { textAlign: "left" }]}>
-                    TYPE: {type.itemName}
-                  </Text>
-                </View>
-              </View>
-            )}
             <View style={styles.tableRow}>
               <View style={styles.tableCol}>
                 <Text style={styles.tableCell}>NO.</Text>
@@ -195,28 +188,50 @@ const PDFDocument = ({
                 <Text style={styles.tableCell}>비고</Text>
               </View>
             </View>
-            {filteredItems.map((item) => (
-              <View style={styles.tableRow} key={item.no}>
-                <View style={styles.tableCol}>
-                  <Text style={styles.tableCell}>{item.no}</Text>
+            {items.map((item) => {
+              const isItemType = item.itemType === "ITEM";
+              if (isItemType) {
+                itemIndex += 1; // "ITEM" 타입일 때만 인덱스 증가
+              }
+
+              return (
+                <View style={styles.tableRow} key={item.no}>
+                  <View style={styles.tableCol}>
+                    <Text style={styles.tableCell}>
+                      {isItemType
+                        ? getDisplayNo(item.itemType, itemIndex - 1)
+                        : getDisplayNo(item.itemType, 0)}
+                    </Text>
+                  </View>
+                  {isItemType && (
+                    <>
+                      <View style={styles.tableCol}>
+                        <Text style={styles.tableCell}>{item.itemCode}</Text>
+                      </View>
+                      <View style={styles.tableCol}>
+                        <Text style={styles.tableCell}>{item.itemName}</Text>
+                      </View>
+                      <View style={styles.tableCol}>
+                        <Text style={styles.tableCell}>{item.qty}</Text>
+                      </View>
+                      <View style={styles.tableCol}>
+                        <Text style={styles.tableCell}>{item.unit}</Text>
+                      </View>
+                      <View style={styles.tableCol}>
+                        <Text style={styles.tableCell}>{item.itemRemark}</Text>
+                      </View>
+                    </>
+                  )}
+                  {!isItemType && (
+                    <>
+                      <View style={[styles.tableCol, { flex: 5.55 }]}>
+                        <Text style={styles.tableCell}>{item.itemName}</Text>
+                      </View>
+                    </>
+                  )}
                 </View>
-                <View style={styles.tableCol}>
-                  <Text style={styles.tableCell}>{item.itemCode}</Text>
-                </View>
-                <View style={styles.tableCol}>
-                  <Text style={styles.tableCell}>{item.itemName}</Text>
-                </View>
-                <View style={styles.tableCol}>
-                  <Text style={styles.tableCell}>{item.qty}</Text>
-                </View>
-                <View style={styles.tableCol}>
-                  <Text style={styles.tableCell}>{item.unit}</Text>
-                </View>
-                <View style={styles.tableCol}>
-                  <Text style={styles.tableCell}>{item.itemRemark}</Text>
-                </View>
-              </View>
-            ))}
+              );
+            })}
           </View>
         </Page>
       </Document>
