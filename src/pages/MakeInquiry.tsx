@@ -370,6 +370,8 @@ const MakeInquiry = () => {
     searchItemCode();
   };
 
+  console.log(selectedSupplierTag);
+
   const handleSupplierSelect = (
     value: string,
     option: { value: string; id: number }
@@ -411,6 +413,7 @@ const MakeInquiry = () => {
         customerUnreg={!selectedCustomerId}
         vesselUnreg={!selectedVesselId}
         setSelectedSupplierTag={setSelectedSupplierTag}
+        setSelectedSuppliers={setSelectedSuppliers}
       />
       <MakeInquiryTable
         items={items}

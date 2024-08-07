@@ -12,6 +12,9 @@ import {
 import styled from "styled-components";
 import CreateCompanyModal from "../company/CreateCompanyModal";
 import CreateVesselModal from "../vessel/CreateVesselModal";
+import { searchSupplier } from "../../api/api";
+import SupplierList from "../../pages/SupplierList";
+
 const { Option } = Select;
 
 const InquiryItemForm = styled(Form.Item)`
@@ -66,6 +69,9 @@ interface InquiryFormProps {
   setSelectedSupplierTag: Dispatch<
     SetStateAction<{ id: number; name: string }[]>
   >;
+  setSelectedSuppliers: Dispatch<
+    SetStateAction<{ id: number; name: string }[]>
+  >;
 }
 
 const InquiryForm = ({
@@ -84,12 +90,18 @@ const InquiryForm = ({
   customerUnreg,
   vesselUnreg,
   setSelectedSupplierTag,
+  setSelectedSuppliers,
 }: InquiryFormProps) => {
   const [isCustomerModalOpen, setIsCustomerModalOpen] =
     useState<boolean>(false);
   const [isVesselModalOpen, setIsVesselModalOpen] = useState<boolean>(false);
-
   const [tagColors, setTagColors] = useState<{ [id: number]: string }>({});
+  const [supplierSearch, setSupplierSearch] = useState<string>("");
+  const [supplierList, setSupplierList] = useState<
+    { name: string; id: number }[]
+  >([]);
+  const [autoSearchSupCompleteOptions, setAutoSearchSupCompleteOptions] =
+    useState<{ value: string }[]>([]);
 
   const openCustomerModal = () => setIsCustomerModalOpen(true);
   const closeCustomerModal = () => setIsCustomerModalOpen(false);
@@ -134,6 +146,33 @@ const InquiryForm = ({
     }
   }
 
+  const handleSearch = async (value: string) => {
+    setSupplierSearch(value);
+    if (value) {
+      try {
+        const data = await searchSupplier(value);
+        const options = data.suppliers.map((supplier) => ({
+          name: supplier.companyName,
+          id: supplier.id,
+        }));
+        setSupplierList(options);
+        setAutoSearchSupCompleteOptions(
+          options
+            .filter((supplier) =>
+              supplier.name.toLowerCase().includes(value.toLowerCase())
+            )
+            .map((supplier) => ({ value: supplier.name }))
+        );
+      } catch (error) {
+        message.error("검색 중 오류가 발생했습니다.");
+      }
+    } else {
+      setSupplierList([]);
+    }
+  };
+
+  console.log(selectedSuppliers);
+
   const handleTagClick = (id: number) => {
     setSelectedSupplierTag((prevTags) => {
       const isAlreadySelected = prevTags.some((tag) => tag.id === id);
@@ -148,7 +187,7 @@ const InquiryForm = ({
         return currentTags.filter((tag) => tag.id !== id);
       } else {
         // Add the tag
-        const newTag = supplierOptions.find((supplier) => supplier.id === id);
+        const newTag = selectedSuppliers.find((supplier) => supplier.id === id);
         if (newTag) {
           if (currentTags.length >= 5) {
             // Limit to 5 tags
@@ -159,11 +198,44 @@ const InquiryForm = ({
             ...prevColors,
             [id]: "#1677ff",
           }));
-          return [...currentTags, { id: newTag.id, name: newTag.value }];
+          return [...currentTags, { id: newTag.id, name: newTag.name }];
         }
         return currentTags;
       }
     });
+  };
+
+  const handleAddSupplier = () => {
+    const matchedSupplier = supplierList.find(
+      (supplier) => supplier.name.toLowerCase() === supplierSearch.toLowerCase()
+    );
+
+    if (matchedSupplier) {
+      // Check if the matchedSupplier already exists in selectedSuppliers
+      setSelectedSuppliers((prevSuppliers) => {
+        // If already exists, return the previous list
+        if (
+          prevSuppliers.some((supplier) => supplier.id === matchedSupplier.id)
+        ) {
+          message.warning("이미 추가된 의뢰처입니다.");
+          return prevSuppliers;
+        }
+
+        // If not exists, add it to the list
+        return [
+          ...prevSuppliers,
+          { id: matchedSupplier.id, name: matchedSupplier.name },
+        ];
+      });
+
+      // Optionally clear the search input
+      setSupplierSearch("");
+      setAutoSearchSupCompleteOptions([]);
+    } else {
+      message.warning(
+        "검색된 의뢰처 목록에서 일치하는 항목을 찾을 수 없습니다."
+      );
+    }
   };
 
   return (
@@ -312,17 +384,36 @@ const InquiryForm = ({
           </InquiryItemForm>
         </FormRow>
         <FormRow>
-          <div style={{ marginTop: 10 }}>
+          <div style={{ marginTop: 10, display: "flex", alignItems: "center" }}>
             <InquiryItemForm label="의뢰처 검색" name="searchSupplier">
-              <Input />
+              <AutoComplete
+                value={supplierSearch}
+                onChange={(value) => handleSearch(value)}
+                options={autoSearchSupCompleteOptions}
+                style={{ width: "100%" }}
+                filterOption={(inputValue, option) =>
+                  option!.value.toLowerCase().includes(inputValue.toLowerCase())
+                }
+              >
+                <Input />
+              </AutoComplete>
             </InquiryItemForm>
-            <span>검색된 의뢰처 목록: </span>
+            <Button
+              onClick={handleAddSupplier}
+              style={{ marginTop: 20, marginRight: 20 }}
+            >
+              추가
+            </Button>
+            <span style={{ marginTop: 20, marginRight: 10 }}>
+              검색된 의뢰처 목록:{" "}
+            </span>
             {selectedSuppliers.map((supplier) => (
               <Tag
                 key={supplier.id}
                 style={{
                   borderColor: tagColors[supplier.id] || "default",
                   cursor: "pointer",
+                  marginTop: 20,
                 }}
                 onClick={() => handleTagClick(supplier.id)}
                 onClose={() => handleTagClick(supplier.id)}
