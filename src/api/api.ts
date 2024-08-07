@@ -1,5 +1,5 @@
 import axios from "../api/axios";
-import { Customer, Item, Supplier } from "../types/types";
+import { Customer, Inquiry, Item, Supplier } from "../types/types";
 
 export const fetchDocData = async () => {
   const response = await axios.post<{
@@ -9,6 +9,15 @@ export const fetchDocData = async () => {
     currencyType: string;
     currencyValue: number;
   }>("/api/customer-inquiries/create/doc-number");
+
+  return response.data;
+};
+
+export const fetchInquiryList = async () => {
+  const response = await axios.get<{
+    totalCount: number;
+    customerInquiryList: Inquiry[];
+  }>("/api/customer-inquiries");
 
   return response.data;
 };

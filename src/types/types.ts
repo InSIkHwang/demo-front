@@ -76,3 +76,19 @@ export interface Item {
     communicationLanguage: string;
   }[];
 }
+
+export interface Inquiry {
+  customerInquiryId: number;
+  documentNumber: string;
+  registerDate: string;
+  shippingDate: string;
+  companyName: string;
+  refNumber: string;
+  currencyType: string;
+  currency: number;
+  vesselName: string;
+  remark: string;
+  docManager: string;
+  representative: string;
+  documentStatus: string;
+}
