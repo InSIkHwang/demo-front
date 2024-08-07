@@ -127,7 +127,6 @@ const CustomerList = () => {
   //최초 렌더링 시 데이터 FETCH
   useEffect(() => {
     fetchData();
-    console.log("fetch data");
   }, []);
 
   const columns: ColumnsType<Customer> = [

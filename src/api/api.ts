@@ -40,6 +40,14 @@ export const searchSupplier = async (companyName: string) => {
   return response.data;
 };
 
+export const inquiryDetail = async (inquiryId: number) => {
+  const response = await axios.get<{
+    inquiry: Inquiry;
+  }>(`/api/customer-inquiries/${inquiryId}`);
+
+  return response.data;
+};
+
 export const fetchItemData = async (itemCode: string) => {
   const response = await axios.get<{ items: Item | Item[] }>(
     `/api/items/search/itemCode?itemCode=${itemCode}`

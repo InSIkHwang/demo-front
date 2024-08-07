@@ -87,8 +87,32 @@ export interface Inquiry {
   currencyType: string;
   currency: number;
   vesselName: string;
-  remark: string;
-  docManager: string;
+  veeselHullNo: string;
+  docRemark: string;
+  docManger: string;
   representative: string;
   documentStatus: string;
+  pdfUrl: string | null;
+  inquiryType: string;
+  inquiryItems: [
+    {
+      itemId: number;
+      inquiryItemType: string;
+      itemCode: string;
+      itemName: string;
+      itemRemark: string;
+      qty: number;
+      unit: string;
+      suppliers: [
+        {
+          inquiryItemDetailId: number;
+          supplierId: number;
+          code: string;
+          companyName: string;
+          representative: string;
+          email: string;
+        }
+      ];
+    }
+  ];
 }

@@ -7,7 +7,7 @@ import styled from "styled-components";
 import DetailCompanyModal from "../components/company/DetailCompanyModal";
 import axios from "../api/axios";
 import { Customer, Inquiry } from "../types/types";
-import { fetchInquiryList } from "../api/api";
+import { fetchInquiryList, inquiryDetail } from "../api/api";
 
 const Container = styled.div`
   position: relative;
@@ -65,9 +65,10 @@ const InquiryList = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage, setItemsPerPage] = useState<number>(10);
   const [totalCount, setTotalCount] = useState<number>(0);
+  const [inquiryNum, setInquiryNum] = useState<number>(7);
 
   // 데이터 FETCH
-  const fetchData = async () => {
+  const fetchInquiryData = async () => {
     try {
       const response = await fetchInquiryList();
       setData(response.customerInquiryList);
@@ -79,8 +80,18 @@ const InquiryList = () => {
     }
   };
 
+  const fetchInquiryDetail = async () => {
+    try {
+      const response = await inquiryDetail(inquiryNum);
+      console.log(response);
+    } catch (error) {
+      console.error("데이터를 가져오는 중 오류가 발생했습니다:", error);
+    }
+  };
+
   useEffect(() => {
-    fetchData();
+    fetchInquiryData();
+    fetchInquiryDetail();
   }, []);
 
   const columns: ColumnsType<Inquiry> = [
@@ -161,7 +172,7 @@ const InquiryList = () => {
   return (
     <>
       <Container>
-        <Title>매출처 관리</Title>
+        <Title>견적 관리</Title>
         <TableHeader>
           <SearchBar>
             <Select defaultValue="all" style={{ width: 120, marginRight: 10 }}>
