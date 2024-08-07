@@ -8,6 +8,7 @@ import Footer from "./components/Footer";
 import SupplierList from "./pages/SupplierList";
 import ShipList from "./pages/ShipList";
 import MakeInquiry from "./pages/MakeInquiry";
+import InquiryList from "./pages/InquiryList";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/supplierlist" element={<SupplierList />}></Route>
         <Route path="/shiplist" element={<ShipList />}></Route>
         <Route path="/makeinquiry" element={<MakeInquiry />}></Route>
+        <Route path="/inquirylist" element={<InquiryList />}></Route>
       </Routes>
       <Footer />
     </BrowserRouter>

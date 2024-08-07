@@ -275,7 +275,6 @@ const MakeInquiry = () => {
           supplierIdList: selectedSupplierTag.map((supplier) => supplier.id),
         })),
       };
-
       await submitInquiry(formValues.docNumber, requestData);
       message.success("Inquiry submitted successfully!");
       resetForm();
@@ -369,8 +368,6 @@ const MakeInquiry = () => {
     };
     searchItemCode();
   };
-
-  console.log(selectedSupplierTag);
 
   const handleSupplierSelect = (
     value: string,

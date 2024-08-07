@@ -171,8 +171,6 @@ const InquiryForm = ({
     }
   };
 
-  console.log(selectedSuppliers);
-
   const handleTagClick = (id: number) => {
     setSelectedSupplierTag((prevTags) => {
       const isAlreadySelected = prevTags.some((tag) => tag.id === id);
@@ -445,3 +443,6 @@ const InquiryForm = ({
 };
 
 export default InquiryForm;
+
+
+

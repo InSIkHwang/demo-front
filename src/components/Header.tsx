@@ -167,7 +167,7 @@ const Header = () => {
             견적생성
           </MenuItem>
           <MenuItem
-            onClick={() => handleMenuItemClick(() => console.log("견적관리"))}
+            onClick={() => handleMenuItemClick(() => navigate("/inquirylist"))}
           >
             견적관리
           </MenuItem>
