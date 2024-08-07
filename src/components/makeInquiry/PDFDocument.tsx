@@ -55,6 +55,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: "center",
   },
+  headerMessage: {
+    fontSize: 12,
+    textAlign: "left",
+    padding: "10px 0",
+    borderBottom: "1px dotted #000",
+  },
   inquiryInfoWrap: {
     flexDirection: "row",
     marginBottom: 20,
@@ -90,8 +96,20 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: "#000",
   },
-  tableCol: {
-    flex: 1,
+  tableBigCol: {
+    flex: 3,
+    borderRightWidth: 1,
+    borderColor: "#000",
+    padding: 5,
+  },
+  tableMedCol: {
+    flex: 1.5,
+    borderRightWidth: 1,
+    borderColor: "#000",
+    padding: 5,
+  },
+  tableSmallCol: {
+    flex: 0.5,
     borderRightWidth: 1,
     borderColor: "#000",
     padding: 5,
@@ -124,6 +142,8 @@ const PDFDocument = ({
   items,
   selectedSupplierName,
 }: PDFDocumentProps) => {
+  const headerMessage =
+    "귀사의 무궁한 발전을 기원합니다.\n하기와 같이 견적서 외뢰하오니 빠른 회신 부탁드립니다.";
   let itemIndex = 0;
 
   return (
@@ -167,24 +187,27 @@ const PDFDocument = ({
               </Text>
             </View>
           </View>
+          <View style={styles.section}>
+            <Text style={styles.headerMessage}>{headerMessage}</Text>
+          </View>
           <View style={styles.table}>
             <View style={styles.tableRow}>
-              <View style={styles.tableCol}>
+              <View style={styles.tableSmallCol}>
                 <Text style={styles.tableCell}>NO.</Text>
               </View>
-              <View style={styles.tableCol}>
+              <View style={styles.tableMedCol}>
                 <Text style={styles.tableCell}>CODE</Text>
               </View>
-              <View style={styles.tableCol}>
+              <View style={styles.tableBigCol}>
                 <Text style={styles.tableCell}>DESCRIPTION</Text>
               </View>
-              <View style={styles.tableCol}>
+              <View style={styles.tableSmallCol}>
                 <Text style={styles.tableCell}>Q'TY</Text>
               </View>
-              <View style={styles.tableCol}>
+              <View style={styles.tableSmallCol}>
                 <Text style={styles.tableCell}>UNIT</Text>
               </View>
-              <View style={styles.tableCol}>
+              <View style={styles.tableMedCol}>
                 <Text style={styles.tableCell}>비고</Text>
               </View>
             </View>
@@ -196,7 +219,7 @@ const PDFDocument = ({
 
               return (
                 <View style={styles.tableRow} key={item.no}>
-                  <View style={styles.tableCol}>
+                  <View style={styles.tableSmallCol}>
                     <Text style={styles.tableCell}>
                       {isItemType
                         ? getDisplayNo(item.itemType, itemIndex - 1)
@@ -205,26 +228,26 @@ const PDFDocument = ({
                   </View>
                   {isItemType && (
                     <>
-                      <View style={styles.tableCol}>
+                      <View style={styles.tableMedCol}>
                         <Text style={styles.tableCell}>{item.itemCode}</Text>
                       </View>
-                      <View style={styles.tableCol}>
+                      <View style={styles.tableBigCol}>
                         <Text style={styles.tableCell}>{item.itemName}</Text>
                       </View>
-                      <View style={styles.tableCol}>
+                      <View style={styles.tableSmallCol}>
                         <Text style={styles.tableCell}>{item.qty}</Text>
                       </View>
-                      <View style={styles.tableCol}>
+                      <View style={styles.tableSmallCol}>
                         <Text style={styles.tableCell}>{item.unit}</Text>
                       </View>
-                      <View style={styles.tableCol}>
+                      <View style={styles.tableMedCol}>
                         <Text style={styles.tableCell}>{item.itemRemark}</Text>
                       </View>
                     </>
                   )}
                   {!isItemType && (
                     <>
-                      <View style={[styles.tableCol, { flex: 5.55 }]}>
+                      <View style={[styles.tableBigCol, { flex: 7.65 }]}>
                         <Text style={styles.tableCell}>{item.itemName}</Text>
                       </View>
                     </>
