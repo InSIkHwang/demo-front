@@ -313,6 +313,9 @@ const InquiryForm = ({
         </FormRow>
         <FormRow>
           <div style={{ marginTop: 10 }}>
+            <InquiryItemForm label="의뢰처 검색" name="searchSupplier">
+              <Input />
+            </InquiryItemForm>
             <span>검색된 의뢰처 목록: </span>
             {selectedSuppliers.map((supplier) => (
               <Tag
@@ -332,7 +335,7 @@ const InquiryForm = ({
         <Button type="primary" onClick={addItem} style={{ margin: "20px 0" }}>
           품목 추가
         </Button>
-      </Form>{" "}
+      </Form>
       {isCustomerModalOpen && (
         <CreateCompanyModal
           category={"customer"}

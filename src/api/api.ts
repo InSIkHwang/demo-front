@@ -1,5 +1,5 @@
 import axios from "../api/axios";
-import { Customer, Item } from "../types/types";
+import { Customer, Item, Supplier } from "../types/types";
 
 export const fetchDocData = async () => {
   const response = await axios.post<{
@@ -18,6 +18,15 @@ export const fetchCompanyNames = async (customerName: string) => {
     isExist: boolean;
     customerDetailResponse: Customer[];
   }>(`/api/customers/check-name?customerName=${customerName}`);
+
+  return response.data;
+};
+
+export const searchSupplier = async (companyName: string) => {
+  const response = await axios.get<{
+    totalCount: number;
+    suppliers: Supplier[];
+  }>(`/api/suppliers/search?companyName=${companyName}`);
 
   return response.data;
 };
