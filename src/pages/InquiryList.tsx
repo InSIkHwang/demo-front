@@ -1,13 +1,14 @@
+// src/pages/InquiryList.tsx
 import React, { useState, useEffect } from "react";
 import { Table, Input, Button as AntButton, Select, Pagination } from "antd";
 import { SearchOutlined, LeftOutlined, RightOutlined } from "@ant-design/icons";
-import CreateCompanyModal from "../components/company/CreateCompanyModal";
+
+import DetailInquiryModal from "../components/inquiryList/DetailInquiryModal";
 import type { ColumnsType } from "antd/es/table";
 import styled from "styled-components";
-import DetailCompanyModal from "../components/company/DetailCompanyModal";
 import axios from "../api/axios";
-import { Customer, Inquiry } from "../types/types";
-import { fetchInquiryList, inquiryDetail } from "../api/api";
+import { Inquiry } from "../types/types";
+import { fetchInquiryList } from "../api/api";
 
 const Container = styled.div`
   position: relative;
@@ -59,18 +60,21 @@ const InquiryList = () => {
   const [searchText, setSearchText] = useState<string>("");
   const [searchCategory, setSearchCategory] = useState<string>("all");
   const [loading, setLoading] = useState<boolean>(true);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
   const [isDetailCompanyModalOpen, setIsDetailCompanyModalOpen] =
     useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage, setItemsPerPage] = useState<number>(10);
   const [totalCount, setTotalCount] = useState<number>(0);
-  const [inquiryNum, setInquiryNum] = useState<number>(7);
+  const [selectedInquiryId, setSelectedInquiryId] = useState<number | null>(
+    null
+  );
 
   // 데이터 FETCH
   const fetchInquiryData = async () => {
     try {
       const response = await fetchInquiryList();
+
       setData(response.customerInquiryList);
       setTotalCount(response.totalCount);
       setLoading(false);
@@ -80,18 +84,8 @@ const InquiryList = () => {
     }
   };
 
-  const fetchInquiryDetail = async () => {
-    try {
-      const response = await inquiryDetail(inquiryNum);
-      console.log(response);
-    } catch (error) {
-      console.error("데이터를 가져오는 중 오류가 발생했습니다:", error);
-    }
-  };
-
   useEffect(() => {
     fetchInquiryData();
-    fetchInquiryDetail();
   }, []);
 
   const columns: ColumnsType<Inquiry> = [
@@ -154,6 +148,11 @@ const InquiryList = () => {
     },
   ];
 
+  const handleRowClick = (record: Inquiry) => {
+    setSelectedInquiryId(record.customerInquiryId);
+    setIsDetailCompanyModalOpen(true);
+  };
+
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
@@ -186,7 +185,9 @@ const InquiryList = () => {
               style={{ width: 300, marginRight: 10 }}
             />
           </SearchBar>
-          <Button type="primary">신규 등록</Button>
+          <Button type="primary" onClick={() => setIsCreateModalOpen(true)}>
+            신규 등록
+          </Button>
         </TableHeader>
         <Table
           columns={columns}
@@ -195,6 +196,9 @@ const InquiryList = () => {
           loading={loading}
           rowKey="customerInquiryId"
           style={{ cursor: "pointer" }}
+          onRow={(record) => ({
+            onClick: () => handleRowClick(record),
+          })}
         />
         <PaginationWrapper
           current={currentPage}
@@ -216,6 +220,13 @@ const InquiryList = () => {
           }}
         />
       </Container>
+      {selectedInquiryId !== null && (
+        <DetailInquiryModal
+          visible={isDetailCompanyModalOpen}
+          onClose={() => setIsDetailCompanyModalOpen(false)}
+          inquiryId={selectedInquiryId}
+        />
+      )}
     </>
   );
 };

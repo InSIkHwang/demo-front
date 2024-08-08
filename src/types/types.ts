@@ -77,6 +77,27 @@ export interface Item {
   }[];
 }
 
+//InquiryList
+export interface InquiryListSupplier {
+  inquiryItemDetailId: number;
+  supplierId: number;
+  code: string;
+  companyName: string;
+  representative: string;
+  email: string;
+}
+
+export interface InquiryListItem {
+  itemId: number;
+  inquiryItemType: string;
+  itemCode: string;
+  itemName: string;
+  itemRemark: string;
+  qty: number;
+  unit: string;
+  suppliers: InquiryListSupplier[];
+}
+
 export interface Inquiry {
   customerInquiryId: number;
   documentNumber: string;
@@ -94,25 +115,5 @@ export interface Inquiry {
   documentStatus: string;
   pdfUrl: string | null;
   inquiryType: string;
-  inquiryItems: [
-    {
-      itemId: number;
-      inquiryItemType: string;
-      itemCode: string;
-      itemName: string;
-      itemRemark: string;
-      qty: number;
-      unit: string;
-      suppliers: [
-        {
-          inquiryItemDetailId: number;
-          supplierId: number;
-          code: string;
-          companyName: string;
-          representative: string;
-          email: string;
-        }
-      ];
-    }
-  ];
+  inquiryItems: InquiryListItem[];
 }
