@@ -51,14 +51,14 @@ export interface Vessel {
 }
 
 export interface InquiryItem {
+  itemId?: number;
   no: number;
-  itemType: string;
+  itemType: "ITEM" | "MAKER" | "TYPE" | "DESC";
   itemCode: string;
   itemName: string;
+  itemRemark: string;
   qty: number;
   unit: string;
-  itemRemark: string;
-  itemId?: number;
 }
 
 export interface Item {

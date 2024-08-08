@@ -11,7 +11,15 @@ import {
 import InquiryForm from "../components/makeInquiry/InquiryForm";
 import MakeInquiryTable from "../components/makeInquiry/MakeInquiryTable";
 import PDFDocument from "../components/makeInquiry/PDFDocument";
-import { Customer, InquiryItem, Item } from "../types/types";
+import {
+  Customer,
+  Inquiry,
+  InquiryItem,
+  InquiryListItem,
+  InquiryListSupplier,
+  Item,
+} from "../types/types";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 // Define styles
 const FormContainer = styled.div`
@@ -44,8 +52,10 @@ const createNewItem = (no: number): InquiryItem => ({
 });
 
 const MakeInquiry = () => {
+  const { customerInquiryId } = useParams<{ customerInquiryId?: string }>();
+  const navigate = useNavigate();
   const [docDataloading, setDocDataLoading] = useState(true);
-  const [items, setItems] = useState<InquiryItem[]>([createNewItem(1)]);
+  const [items, setItems] = useState<InquiryItem[]>([]);
   const [itemCount, setItemCount] = useState(2);
   const [vesselList, setVesselList] = useState<
     { id: number; vesselName: string }[]
@@ -78,6 +88,9 @@ const MakeInquiry = () => {
     { id: number; name: string }[]
   >([]);
 
+  const location = useLocation();
+  const inquiryDetail = location.state?.inquiry as Inquiry;
+
   const [formValues, setFormValues] = useState({
     docNumber: "",
     registerDate: dayjs(),
@@ -90,6 +103,63 @@ const MakeInquiry = () => {
     remark: "",
     supplierName: "",
   });
+
+  useEffect(() => {
+    if (inquiryDetail) {
+      const {
+        documentNumber,
+        registerDate,
+        shippingDate,
+        companyName,
+        refNumber,
+        currencyType,
+        currency,
+        vesselName,
+        docRemark,
+        inquiryItems,
+      } = inquiryDetail;
+
+      setFormValues({
+        docNumber: documentNumber,
+        registerDate: dayjs(registerDate),
+        shippingDate: dayjs(shippingDate),
+        customer: companyName,
+        vesselName,
+        refNumber,
+        currencyType,
+        currency,
+        remark: docRemark || "",
+        supplierName: "",
+      });
+
+      setItems(
+        inquiryItems.map((item: InquiryListItem, index: number) => ({
+          itemId: item.itemId,
+          no: index + 1,
+          itemType: item.inquiryItemType ?? "ITEM", // 기본값 설정
+          itemCode: item.itemCode,
+          itemName: item.itemName,
+          itemRemark: item.itemRemark,
+          qty: item.qty,
+          unit: item.unit,
+        }))
+      );
+
+      const supplierMap = new Map<number, { id: number; name: string }>();
+
+      inquiryItems.forEach((item) => {
+        item.suppliers.forEach((supplier: InquiryListSupplier) => {
+          supplierMap.set(supplier.supplierId, {
+            id: supplier.supplierId,
+            name: supplier.companyName,
+          });
+        });
+      });
+
+      setSelectedSupplierTag(Array.from(supplierMap.values()));
+      setSelectedSuppliers(Array.from(supplierMap.values()));
+    }
+  }, [inquiryDetail]);
 
   const togglePDFPreview = () => {
     setShowPDFPreview((prev) => !prev);

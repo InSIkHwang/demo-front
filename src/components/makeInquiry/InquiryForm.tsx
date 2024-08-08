@@ -13,7 +13,6 @@ import styled from "styled-components";
 import CreateCompanyModal from "../company/CreateCompanyModal";
 import CreateVesselModal from "../vessel/CreateVesselModal";
 import { searchSupplier } from "../../api/api";
-import SupplierList from "../../pages/SupplierList";
 
 const { Option } = Select;
 

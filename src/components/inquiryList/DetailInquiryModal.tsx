@@ -3,6 +3,7 @@ import { Modal, Descriptions, Button, Table, Tag, Divider } from "antd";
 import { Inquiry, InquiryListSupplier } from "../../types/types";
 import axios from "../../api/axios";
 import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
 
 interface DetailInquiryModalProps {
   visible: boolean;
@@ -62,6 +63,7 @@ const DetailInquiryModal = ({
 }: DetailInquiryModalProps) => {
   const [inquiryDetail, setInquiryDetail] = useState<Inquiry | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchInquiryDetail = async () => {
@@ -81,6 +83,13 @@ const DetailInquiryModal = ({
       fetchInquiryDetail();
     }
   }, [visible, inquiryId]);
+
+  const handleEditClick = () => {
+    if (inquiryDetail) {
+      // `MakeInquiry` 페이지로 데이터를 넘기기 위해 state를 사용합니다.
+      navigate("/makeinquiry", { state: { inquiry: inquiryDetail } });
+    }
+  };
 
   const columns = [
     {
@@ -170,6 +179,9 @@ const DetailInquiryModal = ({
       visible={visible}
       onCancel={onClose}
       footer={[
+        <Button key="edit" onClick={handleEditClick}>
+          수정
+        </Button>,
         <Button key="close" onClick={onClose}>
           닫기
         </Button>,

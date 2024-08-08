@@ -59,3 +59,7 @@ export const fetchItemData = async (itemCode: string) => {
 export const submitInquiry = async (docNumber: string, data: any) => {
   await axios.post(`/api/customer-inquiries?docNumber=${docNumber}`, data);
 };
+
+export const editInquiry = async (inquiryId: number, data: any) => {
+  await axios.put(`/api/customer-inquiries/${inquiryId}`, data);
+};
