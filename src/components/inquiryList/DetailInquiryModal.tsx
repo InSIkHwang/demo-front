@@ -39,17 +39,28 @@ const StyledModal = styled(Modal)`
   .ant-descriptions-item-content {
     color: #666;
   }
+
+  .item-name-full-width {
+    td {
+      display: block;
+      width: 100%;
+    }
+  }
+
+  .ant-table-body {
+    max-height: 250px !important;
+  }
 `;
 
 const TagStyled = styled(Tag)`
   margin-right: 8px;
 `;
 
-const DetailInquiryModal: React.FC<DetailInquiryModalProps> = ({
+const DetailInquiryModal = ({
   visible,
   onClose,
   inquiryId,
-}) => {
+}: DetailInquiryModalProps) => {
   const [inquiryDetail, setInquiryDetail] = useState<Inquiry | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -76,17 +87,17 @@ const DetailInquiryModal: React.FC<DetailInquiryModalProps> = ({
 
   const columns = [
     {
-      title: "아이템 코드",
+      title: "품목 코드",
       dataIndex: "itemCode",
       key: "itemCode",
     },
     {
-      title: "아이템명",
+      title: "품명",
       dataIndex: "itemName",
       key: "itemName",
     },
     {
-      title: "아이템 설명",
+      title: "비고",
       dataIndex: "itemRemark",
       key: "itemRemark",
     },
@@ -101,7 +112,7 @@ const DetailInquiryModal: React.FC<DetailInquiryModalProps> = ({
       key: "unit",
     },
     {
-      title: "공급업체",
+      title: "의뢰처",
       dataIndex: "suppliers",
       key: "suppliers",
       render: (suppliers: InquiryListSupplier[]) => (
@@ -175,18 +186,18 @@ const DetailInquiryModal: React.FC<DetailInquiryModalProps> = ({
                   {inquiryDetail.documentStatus}
                 </TagStyled>
               </Descriptions.Item>
-              <Descriptions.Item label="문의 유형">
+              <Descriptions.Item label="견적 유형">
                 <TagStyled color="green">{inquiryDetail.inquiryType}</TagStyled>
               </Descriptions.Item>
             </Descriptions>
             <Divider />
-            <h3>아이템 목록</h3>
+            <h3>품목 목록</h3>
             <Table
               columns={columns}
               dataSource={inquiryDetail.inquiryItems}
               pagination={{ pageSize: 10 }}
               rowKey="itemId"
-              scroll={{ y: 300 }} // 300px 높이로 스크롤 가능하게 설정
+              scroll={{ y: 300 }}
               bordered
               size="small"
             />
