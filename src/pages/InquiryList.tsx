@@ -88,6 +88,19 @@ const InquiryList = () => {
     fetchInquiryData();
   }, []);
 
+  useEffect(() => {
+    if (isDetailCompanyModalOpen) {
+      document.body.style.overflow = "hidden"; // 모달이 열리면 스크롤 비활성화
+    } else {
+      document.body.style.overflow = ""; // 모달이 닫히면 기본값으로 복원
+    }
+
+    // 컴포넌트 언마운트 시 스크롤 상태 복원
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isDetailCompanyModalOpen]);
+
   const columns: ColumnsType<Inquiry> = [
     {
       title: "문서번호",
