@@ -88,6 +88,7 @@ export interface InquiryListSupplier {
 }
 
 export interface InquiryListItem {
+  itemDetailId: number;
   itemId: number;
   inquiryItemType?: "ITEM" | "MAKER" | "TYPE" | "DESC";
   itemCode: string;
@@ -115,5 +116,5 @@ export interface Inquiry {
   documentStatus: string;
   pdfUrl: string | null;
   inquiryType: string;
-  inquiryItems: InquiryListItem[];
+  inquiryItemDetails: InquiryListItem[];
 }

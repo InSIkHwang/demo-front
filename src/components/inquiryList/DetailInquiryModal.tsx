@@ -4,6 +4,7 @@ import { Inquiry, InquiryListSupplier } from "../../types/types";
 import axios from "../../api/axios";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
+import { fetchInquiryDetail } from "../../api/api";
 
 interface DetailInquiryModalProps {
   visible: boolean;
@@ -66,22 +67,21 @@ const DetailInquiryModal = ({
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchInquiryDetail = async () => {
-      try {
-        const response = await axios.get(
-          `/api/customer-inquiries/${inquiryId}`
-        );
-        setInquiryDetail(response.data);
-        setLoading(false);
-      } catch (error) {
-        console.error("상세 정보를 가져오는 중 오류가 발생했습니다:", error);
-        setLoading(false);
+    const fetchDetails = async () => {
+      if (visible) {
+        try {
+          const data = await fetchInquiryDetail(inquiryId);
+
+          setInquiryDetail(data);
+        } catch (error) {
+          console.error("상세 정보를 가져오는 중 오류가 발생했습니다:", error);
+        } finally {
+          setLoading(false);
+        }
       }
     };
 
-    if (visible) {
-      fetchInquiryDetail();
-    }
+    fetchDetails();
   }, [visible, inquiryId]);
 
   const handleEditClick = () => {
@@ -243,7 +243,7 @@ const DetailInquiryModal = ({
             <h3>품목 목록</h3>
             <Table
               columns={columns}
-              dataSource={inquiryDetail.inquiryItems}
+              dataSource={inquiryDetail.inquiryItemDetails}
               pagination={{ pageSize: 10 }}
               rowKey="itemId"
               scroll={{ y: 300 }}

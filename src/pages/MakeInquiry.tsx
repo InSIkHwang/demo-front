@@ -116,7 +116,7 @@ const MakeInquiry = () => {
         currency,
         vesselName,
         docRemark,
-        inquiryItems,
+        inquiryItemDetails,
       } = inquiryDetail;
 
       setFormValues({
@@ -133,7 +133,7 @@ const MakeInquiry = () => {
       });
 
       setItems(
-        inquiryItems.map((item: InquiryListItem, index: number) => ({
+        inquiryItemDetails.map((item: InquiryListItem, index: number) => ({
           itemId: item.itemId,
           no: index + 1,
           itemType: item.inquiryItemType ?? "ITEM", // 기본값 설정
@@ -147,7 +147,7 @@ const MakeInquiry = () => {
 
       const supplierMap = new Map<number, { id: number; name: string }>();
 
-      inquiryItems.forEach((item) => {
+      inquiryItemDetails.forEach((item) => {
         item.suppliers.forEach((supplier: InquiryListSupplier) => {
           supplierMap.set(supplier.supplierId, {
             id: supplier.supplierId,
