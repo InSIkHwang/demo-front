@@ -20,33 +20,27 @@ const StyledModal = styled(Modal)`
     border-bottom: none;
     padding: 5px 0;
   }
-
   .ant-modal-title {
     color: #fff;
     font-size: 18px;
     margin-left: 10px;
   }
-
   .ant-modal-footer {
     border-top: none;
   }
-
   .ant-descriptions-item-label {
     font-weight: 600;
     color: #333;
   }
-
   .ant-descriptions-item-content {
     color: #666;
   }
-
   .item-name-full-width {
     td {
       display: block;
       width: 100%;
     }
   }
-
   .ant-table-body {
     max-height: 250px !important;
   }
@@ -56,6 +50,11 @@ const TagStyled = styled(Tag)`
   margin-right: 8px;
 `;
 
+// Constants and utility functions
+const SPECIAL_ITEM_TYPES = ["MAKER", "TYPE", "DESC"];
+
+const isSpecialItemType = (type: string) => SPECIAL_ITEM_TYPES.includes(type);
+
 const DetailInquiryModal = ({
   visible,
   onClose,
@@ -63,8 +62,6 @@ const DetailInquiryModal = ({
 }: DetailInquiryModalProps) => {
   const [inquiryDetail, setInquiryDetail] = useState<Inquiry | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-
-  console.log(inquiryDetail);
 
   useEffect(() => {
     const fetchInquiryDetail = async () => {
@@ -90,40 +87,80 @@ const DetailInquiryModal = ({
       title: "품목 코드",
       dataIndex: "itemCode",
       key: "itemCode",
+      width: 150,
+      render: (text: string, record: any) => {
+        if (isSpecialItemType(record.inquiryItemType)) {
+          return null;
+        }
+        return text;
+      },
     },
     {
       title: "품명",
       dataIndex: "itemName",
       key: "itemName",
+      render: (text: string, record: any) => {
+        if (isSpecialItemType(record.inquiryItemType)) {
+          return <div>{text}</div>;
+        }
+        return text;
+      },
     },
     {
       title: "비고",
       dataIndex: "itemRemark",
       key: "itemRemark",
+      width: 150,
+      render: (text: string, record: any) => {
+        if (isSpecialItemType(record.inquiryItemType)) {
+          return null;
+        }
+        return text;
+      },
     },
     {
       title: "수량",
       dataIndex: "qty",
       key: "qty",
+      width: 50,
+      render: (text: string, record: any) => {
+        if (isSpecialItemType(record.inquiryItemType)) {
+          return null;
+        }
+        return text;
+      },
     },
     {
       title: "단위",
       dataIndex: "unit",
       key: "unit",
+      width: 50,
+      render: (text: string, record: any) => {
+        if (isSpecialItemType(record.inquiryItemType)) {
+          return null;
+        }
+        return text;
+      },
     },
     {
       title: "의뢰처",
       dataIndex: "suppliers",
       key: "suppliers",
-      render: (suppliers: InquiryListSupplier[]) => (
-        <>
-          {suppliers.map((supplier) => (
-            <div key={supplier.supplierId}>
-              <strong>{supplier.companyName}</strong> ({supplier.code}),
-            </div>
-          ))}
-        </>
-      ),
+      width: 200,
+      render: (suppliers: InquiryListSupplier[], record: any) => {
+        if (isSpecialItemType(record.inquiryItemType)) {
+          return null;
+        }
+        return (
+          <>
+            {suppliers.map((supplier) => (
+              <div key={supplier.supplierId}>
+                <strong>{supplier.companyName}</strong> ({supplier.code}),
+              </div>
+            ))}
+          </>
+        );
+      },
     },
   ];
 
@@ -163,9 +200,9 @@ const DetailInquiryModal = ({
               <Descriptions.Item label="통화">
                 {inquiryDetail.currencyType}
               </Descriptions.Item>
-              <Descriptions.Item label="환율">{`$${inquiryDetail.currency.toFixed(
-                0
-              )}`}</Descriptions.Item>
+              <Descriptions.Item label="환율">
+                {`$${inquiryDetail.currency.toFixed(0)}`}
+              </Descriptions.Item>
               <Descriptions.Item label="선명">
                 {inquiryDetail.vesselName}
               </Descriptions.Item>
