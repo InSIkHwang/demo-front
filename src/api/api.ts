@@ -26,7 +26,7 @@ export const fetchCompanyNames = async (customerName: string) => {
   const response = await axios.get<{
     isExist: boolean;
     customerDetailResponse: Customer[];
-  }>(`/api/customers/check-name?customerName=${customerName}`);
+  }>(`/api/customers/check-name?query=${customerName}`);
 
   return response.data;
 };

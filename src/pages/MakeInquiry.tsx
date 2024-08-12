@@ -92,7 +92,9 @@ const MakeInquiry = () => {
   const [docDataloading, setDocDataLoading] = useState(true);
   const [items, setItems] = useState<InquiryItem[]>([]);
   const [vesselList, setVesselList] = useState<VesselList[]>([]);
-  const [companyNameList, setCompanyNameList] = useState<string[]>([]);
+  const [companyNameList, setCompanyNameList] = useState<
+    { companyName: string; code: string }[]
+  >([]);
   const [vesselNameList, setVesselNameList] = useState<string[]>([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(
     null
@@ -216,9 +218,16 @@ const MakeInquiry = () => {
           customerName
         );
         if (isExist) {
-          setCompanyNameList(customerDetailResponse.map((c) => c.companyName));
+          // Map the response to include both companyName and code
+          setCompanyNameList(
+            customerDetailResponse.map((c) => ({
+              companyName: c.companyName,
+              code: c.code,
+            }))
+          );
+
           const selectedCustomer = customerDetailResponse.find(
-            (c) => c.companyName === customerName
+            (c) => c.companyName === customerName || c.code === customerName
           );
           if (selectedCustomer) {
             setSelectedCustomerId(selectedCustomer.id);
@@ -242,8 +251,13 @@ const MakeInquiry = () => {
       }
     };
 
-    if (formValues.customer) {
+    if (formValues.customer.trim() !== "") {
       searchCompanyName(formValues.customer);
+    } else {
+      setCompanyNameList([]);
+      setSelectedCustomerId(null);
+      setVesselNameList([]);
+      setVesselList([]);
     }
   }, [formValues.customer]);
 
@@ -255,13 +269,17 @@ const MakeInquiry = () => {
   }, [formValues.vesselName, vesselList]);
 
   useEffect(() => {
-    setAutoCompleteOptions(
-      companyNameList
-        .filter((name) =>
-          name.toLowerCase().includes(formValues.customer.toLowerCase())
-        )
-        .map((name) => ({ value: name }))
-    );
+    const searchTerm = formValues.customer.toLowerCase();
+
+    const filteredOptions = companyNameList
+      .filter(
+        (item) =>
+          item.companyName.toLowerCase().includes(searchTerm) ||
+          item.code.toLowerCase().includes(searchTerm)
+      )
+      .map((item) => ({ value: item.companyName }));
+
+    setAutoCompleteOptions(filteredOptions);
   }, [companyNameList, formValues.customer]);
 
   useEffect(() => {
@@ -402,6 +420,11 @@ const MakeInquiry = () => {
 
   const handleItemCodeChange = (index: number, value: string) => {
     handleInputChange(index, "itemCode", value);
+
+    if (value.trim() === "") {
+      return;
+    }
+
     const searchItemCode = async () => {
       try {
         const { items } = await fetchItemData(value);

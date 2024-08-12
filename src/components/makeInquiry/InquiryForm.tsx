@@ -335,9 +335,6 @@ const InquiryForm = ({
               onChange={(value) => handleFormChange("customer", value)}
               options={autoCompleteOptions}
               style={{ width: "100%" }}
-              filterOption={(inputValue, option) =>
-                option!.value.toLowerCase().includes(inputValue.toLowerCase())
-              }
             >
               <Input />
             </AutoComplete>
