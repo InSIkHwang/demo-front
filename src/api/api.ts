@@ -54,8 +54,19 @@ export const fetchItemData = async (itemCode: string) => {
   return response.data;
 };
 
-export const submitInquiry = async (docNumber: string, data: any) => {
-  await axios.post(`/api/customer-inquiries?docNumber=${docNumber}`, data);
+export const submitInquiry = async (
+  docNumber: string | null,
+  inquiryId: number | null,
+  data: any,
+  isEditMode: boolean
+) => {
+  if (isEditMode) {
+    // 수정 모드일 때 PUT 요청 사용
+    await axios.put(`/api/customer-inquiries/${inquiryId}`, data);
+  } else {
+    // 생성 모드일 때 POST 요청 사용
+    await axios.post(`/api/customer-inquiries?docNumber=${docNumber}`, data);
+  }
 };
 
 export const editInquiry = async (inquiryId: number, data: any) => {

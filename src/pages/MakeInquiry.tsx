@@ -12,16 +12,14 @@ import InquiryForm from "../components/makeInquiry/InquiryForm";
 import MakeInquiryTable from "../components/makeInquiry/MakeInquiryTable";
 import PDFDocument from "../components/makeInquiry/PDFDocument";
 import {
-  Customer,
   Inquiry,
   InquiryItem,
   InquiryListItem,
   InquiryListSupplier,
-  Item,
 } from "../types/types";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
-// Define styles
+// Styles
 const FormContainer = styled.div`
   position: relative;
   top: 150px;
@@ -40,7 +38,7 @@ const Title = styled.h1`
   color: #333;
 `;
 
-// Define interfaces and constants
+// Utility functions
 const createNewItem = (no: number): InquiryItem => ({
   no,
   itemType: "ITEM",
@@ -51,9 +49,26 @@ const createNewItem = (no: number): InquiryItem => ({
   itemRemark: "",
 });
 
+const getSupplierMap = (itemDetails: InquiryListItem[]) => {
+  const supplierMap = new Map<number, { id: number; name: string }>();
+  itemDetails.forEach((item) =>
+    item.suppliers.forEach((supplier) =>
+      supplierMap.set(supplier.supplierId, {
+        id: supplier.supplierId,
+        name: supplier.companyName,
+      })
+    )
+  );
+  return Array.from(supplierMap.values());
+};
+
 const MakeInquiry = () => {
+  const [isEditMode, setIsEditMode] = useState<boolean>(false);
   const { customerInquiryId } = useParams<{ customerInquiryId?: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const inquiryDetail = location.state?.inquiry as Inquiry;
+
   const [docDataloading, setDocDataLoading] = useState(true);
   const [items, setItems] = useState<InquiryItem[]>([]);
   const [itemCount, setItemCount] = useState(2);
@@ -88,9 +103,6 @@ const MakeInquiry = () => {
     { id: number; name: string }[]
   >([]);
 
-  const location = useLocation();
-  const inquiryDetail = location.state?.inquiry as Inquiry;
-
   const [formValues, setFormValues] = useState({
     docNumber: "",
     registerDate: dayjs(),
@@ -105,67 +117,70 @@ const MakeInquiry = () => {
   });
 
   useEffect(() => {
-    if (inquiryDetail) {
-      const {
-        documentNumber,
-        registerDate,
-        shippingDate,
-        companyName,
-        refNumber,
-        currencyType,
-        currency,
-        vesselName,
-        docRemark,
-        inquiryItemDetails,
-      } = inquiryDetail;
+    if (customerInquiryId) {
+      setIsEditMode(true);
+      if (inquiryDetail) {
+        const {
+          documentNumber,
+          registerDate,
+          shippingDate,
+          companyName,
+          refNumber,
+          currencyType,
+          currency,
+          vesselName,
+          docRemark,
+          inquiryItemDetails,
+        } = inquiryDetail;
 
-      setFormValues({
-        docNumber: documentNumber,
-        registerDate: dayjs(registerDate),
-        shippingDate: dayjs(shippingDate),
-        customer: companyName,
-        vesselName,
-        refNumber,
-        currencyType,
-        currency,
-        remark: docRemark || "",
-        supplierName: "",
-      });
-
-      setItems(
-        inquiryItemDetails.map((item: InquiryListItem, index: number) => ({
-          itemId: item.itemId,
-          no: index + 1,
-          itemType: item.inquiryItemType ?? "ITEM", // 기본값 설정
-          itemCode: item.itemCode,
-          itemName: item.itemName,
-          itemRemark: item.itemRemark,
-          qty: item.qty,
-          unit: item.unit,
-        }))
-      );
-
-      const supplierMap = new Map<number, { id: number; name: string }>();
-
-      inquiryItemDetails.forEach((item) => {
-        item.suppliers.forEach((supplier: InquiryListSupplier) => {
-          supplierMap.set(supplier.supplierId, {
-            id: supplier.supplierId,
-            name: supplier.companyName,
-          });
+        setFormValues({
+          docNumber: documentNumber,
+          registerDate: dayjs(registerDate),
+          shippingDate: dayjs(shippingDate),
+          customer: companyName,
+          vesselName,
+          refNumber,
+          currencyType,
+          currency,
+          remark: docRemark || "",
+          supplierName: "",
         });
-      });
 
-      setSelectedSupplierTag(Array.from(supplierMap.values()));
-      setSelectedSuppliers(Array.from(supplierMap.values()));
+        setItems(
+          inquiryItemDetails.map((item, index) => ({
+            itemId: item.itemId,
+            no: index + 1,
+            itemType: item.inquiryItemType ?? "ITEM",
+            itemCode: item.itemCode,
+            itemName: item.itemName,
+            itemRemark: item.itemRemark,
+            qty: item.qty,
+            unit: item.unit,
+          }))
+        );
+
+        setSelectedSupplierTag(getSupplierMap(inquiryItemDetails));
+        setSelectedSuppliers(getSupplierMap(inquiryItemDetails));
+      }
+    } else {
+      setIsEditMode(false);
+      // 문서 번호 초기화 및 기본 설정
+      setFormValues((prev) => ({
+        ...prev,
+        docNumber: "",
+        registerDate: dayjs(),
+        shippingDate: dayjs(),
+        customer: "",
+        vesselName: "",
+        refNumber: "",
+        currencyType: "USD",
+        currency: 0,
+        remark: "",
+        supplierName: "",
+      }));
     }
-  }, [inquiryDetail]);
+  }, [customerInquiryId, inquiryDetail]);
 
-  const togglePDFPreview = () => {
-    setShowPDFPreview((prev) => !prev);
-  };
-
-  // Load document data
   useEffect(() => {
     const loadDocData = async () => {
       try {
@@ -190,58 +205,60 @@ const MakeInquiry = () => {
         setDocDataLoading(false);
       }
     };
-    loadDocData();
-  }, []);
 
-  // Update auto-complete options when customer changes
+    if (!customerInquiryId) {
+      loadDocData();
+    } else {
+      // `customerInquiryId`가 있는 경우에는 로딩 상태를 종료하도록 설정
+      setDocDataLoading(false);
+    }
+  }, [customerInquiryId]);
+
   useEffect(() => {
-    if (formValues.customer) {
-      const searchCompanyName = async (customerName: string) => {
-        try {
-          const { isExist, customerDetailResponse } = await fetchCompanyNames(
-            customerName
+    const searchCompanyName = async (customerName: string) => {
+      try {
+        const { isExist, customerDetailResponse } = await fetchCompanyNames(
+          customerName
+        );
+        if (isExist) {
+          setCompanyNameList(customerDetailResponse.map((c) => c.companyName));
+          const selectedCustomer = customerDetailResponse.find(
+            (c) => c.companyName === customerName
           );
-          if (isExist) {
-            setCompanyNameList(
-              customerDetailResponse.map((customer) => customer.companyName)
+          if (selectedCustomer) {
+            setSelectedCustomerId(selectedCustomer.id);
+            setVesselNameList(
+              selectedCustomer.vesselList.map((v) => v.vesselName)
             );
-            const selectedCustomer = customerDetailResponse.find(
-              (customer) => customer.companyName === customerName
-            );
-            if (selectedCustomer) {
-              setSelectedCustomerId(selectedCustomer.id);
-              setVesselNameList(
-                selectedCustomer.vesselList.map((vessel) => vessel.vesselName)
-              );
-              setVesselList(selectedCustomer.vesselList);
-            } else {
-              setSelectedCustomerId(null);
-              setVesselNameList([]);
-              setVesselList([]);
-            }
+            setVesselList(selectedCustomer.vesselList);
           } else {
-            setCompanyNameList([]);
             setSelectedCustomerId(null);
             setVesselNameList([]);
             setVesselList([]);
           }
-        } catch (error) {
-          console.error("Error fetching company name:", error);
+        } else {
+          setCompanyNameList([]);
+          setSelectedCustomerId(null);
+          setVesselNameList([]);
+          setVesselList([]);
         }
-      };
+      } catch (error) {
+        console.error("Error fetching company name:", error);
+      }
+    };
+
+    if (formValues.customer) {
       searchCompanyName(formValues.customer);
     }
   }, [formValues.customer]);
 
-  // Update vessel ID based on vessel name
   useEffect(() => {
     const selectedVessel = vesselList.find(
-      (vessel) => vessel.vesselName === formValues.vesselName
+      (v) => v.vesselName === formValues.vesselName
     );
     setSelectedVesselId(selectedVessel ? selectedVessel.id : null);
   }, [formValues.vesselName, vesselList]);
 
-  // Update auto-complete options
   useEffect(() => {
     setAutoCompleteOptions(
       companyNameList
@@ -252,10 +269,9 @@ const MakeInquiry = () => {
     );
   }, [companyNameList, formValues.customer]);
 
-  // Update selected suppliers based on item selections
   useEffect(() => {
     const selectedSupplierIds = new Set<number>(
-      selectedSuppliers.map((supplier) => supplier.id)
+      selectedSuppliers.map((s) => s.id)
     );
 
     items.forEach((item) => {
@@ -270,22 +286,14 @@ const MakeInquiry = () => {
       .filter((option) => selectedSupplierIds.has(option.id))
       .map((supplier) => ({ id: supplier.id, name: supplier.value }));
 
-    const uniqueSuppliers = Array.from(
-      new Map(
-        newSelectedSuppliers.map((supplier) => [supplier.id, supplier])
-      ).values()
-    );
-
-    setSelectedSuppliers((prev) => {
-      const prevSupplierIds = new Set(prev.map((supplier) => supplier.id));
-      const updatedSuppliers = uniqueSuppliers.filter(
-        (supplier) => !prevSupplierIds.has(supplier.id)
-      );
-      return [...prev, ...updatedSuppliers];
-    });
+    setSelectedSuppliers((prev) => [
+      ...prev,
+      ...Array.from(
+        new Map(newSelectedSuppliers.map((s) => [s.id, s])).values()
+      ),
+    ]);
   }, [itemIdMap, items, supplierOptions]);
 
-  // Handler functions
   const addItem = () => {
     const nextNo =
       items.length > 0 ? Math.max(...items.map((item) => item.no)) + 1 : 1;
@@ -293,11 +301,9 @@ const MakeInquiry = () => {
   };
 
   const handleDelete = (index: number) => {
-    const newItems = items.filter((_, i) => i !== index);
-    const updatedItems = newItems.map((item, idx) => ({
-      ...item,
-      no: idx + 1,
-    }));
+    const updatedItems = items
+      .filter((_, i) => i !== index)
+      .map((item, idx) => ({ ...item, no: idx + 1 }));
     setItems(updatedItems);
   };
 
@@ -317,24 +323,28 @@ const MakeInquiry = () => {
     key: K,
     value: (typeof formValues)[K]
   ) => {
-    setFormValues((prev) => ({ ...prev, [key]: value }));
+    if (key !== "docNumber" || !isEditMode) {
+      // 문서 번호는 수정 불가능, 수정 모드에서는 비활성화
+      setFormValues((prev) => ({ ...prev, [key]: value }));
+    }
   };
 
   const handleSubmit = async () => {
     try {
       const selectedVessel = vesselList.find(
-        (vessel) => vessel.vesselName === formValues.vesselName
+        (v) => v.vesselName === formValues.vesselName
       );
-      const requestData = {
-        vesselId: selectedVessel ? selectedVessel.id : null,
-        customerId: selectedCustomerId,
-        refNumber: formValues.refNumber,
-        registerDate: formValues.registerDate.format("YYYY-MM-DD"),
-        shippingDate: formValues.shippingDate.format("YYYY-MM-DD"),
-        remark: formValues.remark,
-        currencyType: formValues.currencyType,
-        currency: parseFloat(formValues.currency as any),
-        inquiryItemDetails: items.map((item) => ({
+
+      // Map through items and find the corresponding itemDetailId
+      const inquiryItemDetails = items.map((item) => {
+        const matchingItemDetail = inquiryDetail?.inquiryItemDetails.find(
+          (detail) => detail.itemId === item.itemId
+        );
+
+        return {
+          itemDetailId: matchingItemDetail
+            ? matchingItemDetail.itemDetailId
+            : null,
           itemId: item.itemId || null,
           itemCode: item.itemCode,
           itemName: item.itemName,
@@ -343,9 +353,35 @@ const MakeInquiry = () => {
           unit: item.unit,
           itemType: item.itemType,
           supplierIdList: selectedSupplierTag.map((supplier) => supplier.id),
-        })),
+        };
+      });
+
+      const requestData = {
+        documentNumber: formValues.docNumber,
+        vesselId: selectedVessel ? selectedVessel.id : null,
+        customerId: selectedCustomerId,
+        refNumber: formValues.refNumber,
+        registerDate: formValues.registerDate.format("YYYY-MM-DD"),
+        shippingDate: formValues.shippingDate.format("YYYY-MM-DD"),
+        remark: formValues.remark,
+        currencyType: formValues.currencyType,
+        currency: parseFloat(formValues.currency as any),
+        inquiryItemDetails,
       };
-      await submitInquiry(formValues.docNumber, requestData);
+
+      console.log(requestData);
+
+      // Modify documentNumber for edit mode
+      if (isEditMode) {
+        requestData.documentNumber = formValues.docNumber;
+      }
+
+      await submitInquiry(
+        formValues.docNumber,
+        Number(customerInquiryId),
+        requestData,
+        isEditMode
+      );
       message.success("Inquiry submitted successfully!");
       resetForm();
     } catch (error) {
@@ -497,7 +533,7 @@ const MakeInquiry = () => {
         저장하기
       </Button>
       <Button
-        onClick={togglePDFPreview}
+        onClick={() => setShowPDFPreview((prev) => !prev)}
         style={{ marginTop: "20px", float: "left" }}
       >
         {showPDFPreview ? "PDF 미리보기 닫기" : "PDF 미리보기"}

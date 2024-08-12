@@ -144,6 +144,17 @@ const InquiryForm = ({
       vesselhelpMessage = "등록되지 않은 선박입니다.";
     }
   }
+  const removeDuplicates = (arr: { id: number; name: string }[]) => {
+    const uniqueIds = new Set<number>();
+    return arr.filter((item) => {
+      if (uniqueIds.has(item.id)) {
+        return false;
+      } else {
+        uniqueIds.add(item.id);
+        return true;
+      }
+    });
+  };
 
   const handleSearch = async (value: string) => {
     setSupplierSearch(value);
@@ -202,23 +213,24 @@ const InquiryForm = ({
     });
   };
 
+  const uniqueSuppliers = removeDuplicates(selectedSuppliers);
+
   const handleAddSupplier = () => {
     const matchedSupplier = supplierList.find(
       (supplier) => supplier.name.toLowerCase() === supplierSearch.toLowerCase()
     );
 
     if (matchedSupplier) {
-      // Check if the matchedSupplier already exists in selectedSuppliers
       setSelectedSuppliers((prevSuppliers) => {
-        // If already exists, return the previous list
-        if (
-          prevSuppliers.some((supplier) => supplier.id === matchedSupplier.id)
-        ) {
+        const supplierExists = prevSuppliers.some(
+          (supplier) => supplier.id === matchedSupplier.id
+        );
+
+        if (supplierExists) {
           message.warning("이미 추가된 의뢰처입니다.");
           return prevSuppliers;
         }
 
-        // If not exists, add it to the list
         return [
           ...prevSuppliers,
           { id: matchedSupplier.id, name: matchedSupplier.name },
@@ -404,7 +416,7 @@ const InquiryForm = ({
             <span style={{ marginTop: 20, marginRight: 10 }}>
               검색된 의뢰처 목록:{" "}
             </span>
-            {selectedSuppliers.map((supplier) => (
+            {uniqueSuppliers.map((supplier) => (
               <Tag
                 key={supplier.id}
                 style={{
@@ -442,6 +454,3 @@ const InquiryForm = ({
 };
 
 export default InquiryForm;
-
-
-

@@ -86,8 +86,8 @@ const DetailInquiryModal = ({
 
   const handleEditClick = () => {
     if (inquiryDetail) {
-      // `MakeInquiry` 페이지로 데이터를 넘기기 위해 state를 사용합니다.
-      navigate("/makeinquiry", { state: { inquiry: inquiryDetail } });
+      const path = inquiryId ? `/makeinquiry/${inquiryId}` : "/makeinquiry";
+      navigate(path, { state: { inquiry: inquiryDetail } });
     }
   };
 

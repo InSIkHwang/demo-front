@@ -20,6 +20,10 @@ function App() {
         <Route path="/supplierlist" element={<SupplierList />}></Route>
         <Route path="/shiplist" element={<ShipList />}></Route>
         <Route path="/makeinquiry" element={<MakeInquiry />}></Route>
+        <Route
+          path="/makeinquiry/:customerInquiryId"
+          element={<MakeInquiry />}
+        />
         <Route path="/inquirylist" element={<InquiryList />}></Route>
       </Routes>
       <Footer />
