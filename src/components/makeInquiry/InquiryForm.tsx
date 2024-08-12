@@ -91,11 +91,10 @@ const InquiryForm = ({
   setSelectedSupplierTag,
   setSelectedSuppliers,
 }: InquiryFormProps) => {
-  const [isCustomerModalOpen, setIsCustomerModalOpen] =
-    useState<boolean>(false);
-  const [isVesselModalOpen, setIsVesselModalOpen] = useState<boolean>(false);
+  const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
+  const [isVesselModalOpen, setIsVesselModalOpen] = useState(false);
   const [tagColors, setTagColors] = useState<{ [id: number]: string }>({});
-  const [supplierSearch, setSupplierSearch] = useState<string>("");
+  const [supplierSearch, setSupplierSearch] = useState("");
   const [supplierList, setSupplierList] = useState<
     { name: string; id: number }[]
   >([]);
@@ -107,43 +106,37 @@ const InquiryForm = ({
   const openVesselModal = () => setIsVesselModalOpen(true);
   const closeVesselModal = () => setIsVesselModalOpen(false);
 
-  const customerValue = formValues.customer.trim();
-  const vesselValue = formValues.vesselName.trim();
-  let customerValidationStatus:
-    | "success"
-    | "error"
-    | "warning"
-    | "validating"
-    | undefined;
-  let customerhelpMessage: string | undefined;
-
-  if (customerUnreg) {
-    if (customerValue === "") {
-      customerValidationStatus = "error";
-      customerhelpMessage = "Please enter a customer";
-    } else {
-      customerValidationStatus = "error";
-      customerhelpMessage = "등록되지 않은 매출처입니다.";
+  const validateCustomer = () => {
+    if (customerUnreg) {
+      if (formValues.customer.trim() === "") {
+        return {
+          status: "error" as "error",
+          message: "Please enter a customer",
+        };
+      } else {
+        return {
+          status: "error" as "error",
+          message: "등록되지 않은 매출처입니다.",
+        };
+      }
     }
-  }
+    return { status: undefined, message: undefined };
+  };
 
-  let vesselValidationStatus:
-    | "success"
-    | "error"
-    | "warning"
-    | "validating"
-    | undefined;
-  let vesselhelpMessage: string | undefined;
-
-  if (vesselUnreg) {
-    if (vesselValue === "") {
-      vesselValidationStatus = "error";
-      vesselhelpMessage = "Please enter a vessel";
-    } else {
-      vesselValidationStatus = "error";
-      vesselhelpMessage = "등록되지 않은 선박입니다.";
+  const validateVessel = () => {
+    if (vesselUnreg) {
+      if (formValues.vesselName.trim() === "") {
+        return { status: "error" as "error", message: "Please enter a vessel" };
+      } else {
+        return {
+          status: "error" as "error",
+          message: "등록되지 않은 선박입니다.",
+        };
+      }
     }
-  }
+    return { status: undefined, message: undefined };
+  };
+
   const removeDuplicates = (arr: { id: number; name: string }[]) => {
     const uniqueIds = new Set<number>();
     return arr.filter((item) => {
@@ -187,18 +180,15 @@ const InquiryForm = ({
       const currentTags = [...prevTags];
 
       if (isAlreadySelected) {
-        // Remove the tag
         setTagColors((prevColors) => ({
           ...prevColors,
           [id]: "#d9d9d9",
         }));
         return currentTags.filter((tag) => tag.id !== id);
       } else {
-        // Add the tag
         const newTag = selectedSuppliers.find((supplier) => supplier.id === id);
         if (newTag) {
           if (currentTags.length >= 5) {
-            // Limit to 5 tags
             message.error("최대 5개의 의뢰처만 등록 가능합니다.");
             return currentTags;
           }
@@ -237,7 +227,6 @@ const InquiryForm = ({
         ];
       });
 
-      // Optionally clear the search input
       setSupplierSearch("");
       setAutoSearchSupCompleteOptions([]);
     } else {
@@ -323,8 +312,8 @@ const InquiryForm = ({
           <InquiryItemForm
             label="매출처"
             name="customer"
-            validateStatus={customerValidationStatus}
-            help={customerhelpMessage}
+            validateStatus={validateCustomer().status}
+            help={validateCustomer().message}
             rules={[{ required: true, message: "Please enter customer" }]}
           >
             <Button
@@ -349,8 +338,8 @@ const InquiryForm = ({
           <InquiryItemForm
             label="선박명"
             name="vesselName"
-            validateStatus={vesselValidationStatus}
-            help={vesselhelpMessage}
+            validateStatus={validateVessel().status}
+            help={validateVessel().message}
             rules={[{ required: true, message: "Please enter vessel name" }]}
           >
             <Button
