@@ -7,6 +7,7 @@ import { fetchInquiryList } from "../api/api";
 import DetailInquiryModal from "../components/inquiryList/DetailInquiryModal";
 import type { ColumnsType } from "antd/es/table";
 import { Inquiry } from "../types/types";
+import { useNavigate } from "react-router-dom";
 
 // Styled Components
 const Container = styled.div`
@@ -140,6 +141,7 @@ const useInquiryData = () => {
 
 // InquiryList Component
 const InquiryList = () => {
+  const navigate = useNavigate();
   const { data, totalCount, loading } = useInquiryData();
   const [searchText, setSearchText] = useState<string>("");
   const [searchCategory, setSearchCategory] = useState<string>("all");
@@ -148,7 +150,6 @@ const InquiryList = () => {
   const [selectedInquiryId, setSelectedInquiryId] = useState<number | null>(
     null
   );
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
   const [isDetailCompanyModalOpen, setIsDetailCompanyModalOpen] =
     useState<boolean>(false);
 
@@ -205,7 +206,12 @@ const InquiryList = () => {
               style={{ width: 300, marginRight: 10 }}
             />
           </SearchBar>
-          <Button type="primary" onClick={() => setIsCreateModalOpen(true)}>
+          <Button
+            type="primary"
+            onClick={() => {
+              navigate("/makeinquiry");
+            }}
+          >
             신규 등록
           </Button>
         </TableHeader>

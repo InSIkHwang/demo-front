@@ -1,7 +1,18 @@
 import React, { useState } from "react";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import Form from "./Form";
 import axios from "../../api/axios";
+
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+`;
 
 const ModalBackdrop = styled.div`
   position: fixed;
@@ -13,87 +24,103 @@ const ModalBackdrop = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10;
+  z-index: 1000;
 `;
 
 const ModalContent = styled.div`
-  background: white;
+  background: #ffffff;
   padding: 30px;
-  border-radius: 8px;
-  width: 500px;
-  max-width: 90%;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 700px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
   position: relative;
+  animation: ${fadeIn} 0.3s ease-out;
 `;
 
-const ModalTitle = styled.div`
-  text-align: center;
-  font-size: 16px;
+const ModalTitle = styled.h2`
+  font-size: 20px;
   font-weight: 700;
-  padding: 15px;
+  margin-bottom: 20px;
+  text-align: center;
+  color: #333;
 `;
 
 const CloseButton = styled.button`
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 15px;
+  right: 15px;
   border: none;
   background: transparent;
-  font-size: 32px;
+  font-size: 28px;
+  color: #333;
   cursor: pointer;
+  transition: color 0.3s;
+
+  &:hover {
+    color: #e74c3c;
+  }
 `;
 
 const DetailItem = styled.div`
-  padding: 10px 0;
-  border-top: 1px solid #ccc;
+  padding: 15px 0;
   display: flex;
+  border-bottom: 1px solid #eee;
+  align-items: center;
+
+  &:last-child {
+    border-bottom: none;
+  }
 `;
 
 const PropName = styled.span`
-  font-weight: 700;
-  text-align: center;
-  width: 90px;
-  border-right: 1px solid #ccc;
+  font-weight: 600;
+  width: 150px;
+  color: #555;
 `;
 
 const PropValue = styled.span`
-  padding-left: 10px;
+  color: #333;
+  flex: 1;
+  word-break: break-word;
 `;
 
 const BtnWrap = styled.div`
   display: flex;
-  margin-top: 30px;
-  justify-content: space-around;
+  justify-content: flex-end;
+  margin-top: 20px;
 `;
 
 const UpdateButton = styled.button`
-  padding: 10px 20px;
+  padding: 12px 24px;
   font-size: 16px;
   border: none;
-  background-color: #1976d2;
+  background-color: #1677ff;
   color: white;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
-  display: block;
-  transition: background-color 0.3s;
+  margin-right: 10px;
+  transition: background-color 0.3s, transform 0.3s;
 
   &:hover {
-    background-color: #1560ac;
+    background-color: #1976d2;
+    transform: scale(1.05);
   }
 `;
 
 const DeleteButton = styled.button`
-  padding: 10px 20px;
+  padding: 12px 24px;
   font-size: 16px;
   border: none;
-  background-color: #d62626;
+  background-color: #e74c3c;
   color: white;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
-  display: block;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s, transform 0.3s;
 
   &:hover {
-    background-color: #bb2121;
+    background-color: #c0392b;
+    transform: scale(1.05);
   }
 `;
 
@@ -131,7 +158,7 @@ const DetailCompanyModal = ({
     }
   };
 
-  //수정폼 데이터 입력 처리
+  // 수정폼 데이터 입력 처리
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
@@ -139,41 +166,33 @@ const DetailCompanyModal = ({
     });
   };
 
-  //데이터 수정 PUT API
+  // 데이터 수정 PUT API
   const editData = async () => {
     try {
       const endpoint =
         category === "customer"
           ? `/api/customers/${formData.id}`
           : `/api/suppliers/${formData.id}`;
-      const response = await axios.put(endpoint, {
-        code: formData.code,
-        companyName: formData.companyName,
-        phoneNumber: formData.phoneNumber,
-        representative: formData.representative,
-        email: formData.email,
-        address: formData.address,
-        communicationLanguage: formData.communicationLanguage,
-      });
+      await axios.put(endpoint, formData);
     } catch (error) {
       console.log(error);
     }
   };
 
-  //데이터 삭제 DELETE API
+  // 데이터 삭제 DELETE API
   const deleteData = async () => {
     try {
       const endpoint =
         category === "customer"
           ? `/api/customers/${formData.id}`
           : `/api/suppliers/${formData.id}`;
-      const response = await axios.delete(endpoint);
+      await axios.delete(endpoint);
     } catch (error) {
       console.log(error);
     }
   };
 
-  //수정 SUBMIT 비동기처리, PUT 처리 후 FETCH
+  // 수정 SUBMIT 비동기 처리, PUT 처리 후 FETCH
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await editData();
@@ -181,7 +200,7 @@ const DetailCompanyModal = ({
     onClose();
   };
 
-  //삭제 SUBMIT 비동기처리, DELETE 처리 후 FETCH
+  // 삭제 SUBMIT 비동기 처리, DELETE 처리 후 FETCH
   const handleDelete = async () => {
     if (window.confirm("정말 삭제하시겠습니까?")) {
       await deleteData();
@@ -191,7 +210,7 @@ const DetailCompanyModal = ({
   };
 
   const readOnlyFields = {
-    code: true, //read-only
+    code: true, // read-only
     companyName: !isEditing,
     phoneNumber: !isEditing,
     representative: !isEditing,
@@ -217,7 +236,7 @@ const DetailCompanyModal = ({
           />
         ) : (
           <>
-            <DetailItem style={{ borderTop: "none" }}>
+            <DetailItem>
               <PropName>코드</PropName>
               <PropValue>{formData.code}</PropValue>
             </DetailItem>
