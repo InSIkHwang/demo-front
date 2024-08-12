@@ -2,14 +2,13 @@
 import React, { useState, useEffect } from "react";
 import { Table, Input, Button as AntButton, Select, Pagination } from "antd";
 import { SearchOutlined, LeftOutlined, RightOutlined } from "@ant-design/icons";
-
+import styled from "styled-components";
+import { fetchInquiryList } from "../api/api";
 import DetailInquiryModal from "../components/inquiryList/DetailInquiryModal";
 import type { ColumnsType } from "antd/es/table";
-import styled from "styled-components";
-import axios from "../api/axios";
 import { Inquiry } from "../types/types";
-import { fetchInquiryList } from "../api/api";
 
+// Styled Components
 const Container = styled.div`
   position: relative;
   top: 150px;
@@ -53,33 +52,81 @@ const PaginationWrapper = styled(Pagination)`
   justify-content: center;
 `;
 
-const { Option } = Select;
+// Columns Definition
+const columns: ColumnsType<Inquiry> = [
+  {
+    title: "문서번호",
+    dataIndex: "documentNumber",
+    key: "documentNumber",
+    width: 130,
+  },
+  {
+    title: "등록 날짜",
+    dataIndex: "registerDate",
+    key: "registerDate",
+    sorter: (a, b) =>
+      new Date(a.registerDate).getTime() - new Date(b.registerDate).getTime(),
+    sortDirections: ["ascend", "descend"],
+  },
+  {
+    title: "선적 날짜",
+    dataIndex: "shippingDate",
+    key: "shippingDate",
+  },
+  {
+    title: "매출처명",
+    dataIndex: "companyName",
+    key: "companyName",
+    sorter: (a, b) => a.companyName.localeCompare(b.companyName),
+    sortDirections: ["ascend", "descend"],
+  },
+  {
+    title: "REF NO.",
+    dataIndex: "refNumber",
+    key: "refNumber",
+  },
+  {
+    title: "통화",
+    dataIndex: "currencyType",
+    key: "currencyType",
+  },
+  {
+    title: "환율",
+    dataIndex: "currency",
+    key: "currency",
+    render: (text) => `$${text.toFixed(0)}`,
+  },
+  {
+    title: "선명",
+    dataIndex: "vesselName",
+    key: "vesselName",
+  },
+  {
+    title: "비고",
+    dataIndex: "remark",
+    key: "remark",
+  },
+  {
+    title: "문서 상태",
+    dataIndex: "documentStatus",
+    key: "documentStatus",
+  },
+];
 
-const InquiryList = () => {
+// Custom Hook for Inquiry List
+const useInquiryData = () => {
   const [data, setData] = useState<Inquiry[]>([]);
-  const [searchText, setSearchText] = useState<string>("");
-  const [searchCategory, setSearchCategory] = useState<string>("all");
-  const [loading, setLoading] = useState<boolean>(true);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
-  const [isDetailCompanyModalOpen, setIsDetailCompanyModalOpen] =
-    useState<boolean>(false);
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [itemsPerPage, setItemsPerPage] = useState<number>(10);
   const [totalCount, setTotalCount] = useState<number>(0);
-  const [selectedInquiryId, setSelectedInquiryId] = useState<number | null>(
-    null
-  );
+  const [loading, setLoading] = useState<boolean>(true);
 
-  // 데이터 FETCH
   const fetchInquiryData = async () => {
     try {
       const response = await fetchInquiryList();
-
       setData(response.customerInquiryList);
       setTotalCount(response.totalCount);
-      setLoading(false);
     } catch (error) {
       console.error("데이터를 가져오는 중 오류가 발생했습니다:", error);
+    } finally {
       setLoading(false);
     }
   };
@@ -88,78 +135,39 @@ const InquiryList = () => {
     fetchInquiryData();
   }, []);
 
+  return { data, totalCount, loading };
+};
+
+// InquiryList Component
+const InquiryList = () => {
+  const { data, totalCount, loading } = useInquiryData();
+  const [searchText, setSearchText] = useState<string>("");
+  const [searchCategory, setSearchCategory] = useState<string>("all");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(10);
+  const [selectedInquiryId, setSelectedInquiryId] = useState<number | null>(
+    null
+  );
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
+  const [isDetailCompanyModalOpen, setIsDetailCompanyModalOpen] =
+    useState<boolean>(false);
+
   useEffect(() => {
     if (isDetailCompanyModalOpen) {
-      document.body.style.overflow = "hidden"; // 모달이 열리면 스크롤 비활성화
+      document.body.style.overflow = "hidden"; // Disable scroll when modal is open
     } else {
-      document.body.style.overflow = ""; // 모달이 닫히면 기본값으로 복원
+      document.body.style.overflow = ""; // Restore scroll when modal is closed
     }
 
-    // 컴포넌트 언마운트 시 스크롤 상태 복원
     return () => {
-      document.body.style.overflow = "";
+      document.body.style.overflow = ""; // Ensure scroll is restored on unmount
     };
   }, [isDetailCompanyModalOpen]);
 
-  const columns: ColumnsType<Inquiry> = [
-    {
-      title: "문서번호",
-      dataIndex: "documentNumber",
-      key: "documentNumber",
-      width: 130,
-    },
-    {
-      title: "등록 날짜",
-      dataIndex: "registerDate",
-      key: "registerDate",
-      sorter: (a, b) =>
-        new Date(a.registerDate).getTime() - new Date(b.registerDate).getTime(),
-      sortDirections: ["ascend", "descend"],
-    },
-    {
-      title: "선적 날짜",
-      dataIndex: "shippingDate",
-      key: "shippingDate",
-    },
-    {
-      title: "매출처명",
-      dataIndex: "companyName",
-      key: "companyName",
-      sorter: (a, b) => a.companyName.localeCompare(b.companyName),
-      sortDirections: ["ascend", "descend"],
-    },
-    {
-      title: "REF NO.",
-      dataIndex: "refNumber",
-      key: "refNumber",
-    },
-    {
-      title: "통화",
-      dataIndex: "currencyType",
-      key: "currencyType",
-    },
-    {
-      title: "환율",
-      dataIndex: "currency",
-      key: "currency",
-      render: (text) => `$${text.toFixed(0)}`,
-    },
-    {
-      title: "선명",
-      dataIndex: "vesselName",
-      key: "vesselName",
-    },
-    {
-      title: "비고",
-      dataIndex: "remark",
-      key: "remark",
-    },
-    {
-      title: "문서 상태",
-      dataIndex: "documentStatus",
-      key: "documentStatus",
-    },
-  ];
+  const paginatedData = data.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const handleRowClick = (record: Inquiry) => {
     setSelectedInquiryId(record.customerInquiryId);
@@ -169,12 +177,6 @@ const InquiryList = () => {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
-
-  // 한 페이지에 보일 데이터
-  const paginatedData = data.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
 
   const handlePageSizeChange = (current: number, size: number) => {
     setItemsPerPage(size);
@@ -187,14 +189,19 @@ const InquiryList = () => {
         <Title>견적 관리</Title>
         <TableHeader>
           <SearchBar>
-            <Select defaultValue="all" style={{ width: 120, marginRight: 10 }}>
-              <Option value="all">통합검색</Option>
-              <Option value="code">코드</Option>
-              <Option value="companyName">상호명</Option>
+            <Select
+              defaultValue="all"
+              style={{ width: 120, marginRight: 10 }}
+              onChange={(value) => setSearchCategory(value)}
+            >
+              <Select.Option value="all">통합검색</Select.Option>
+              <Select.Option value="code">코드</Select.Option>
+              <Select.Option value="companyName">상호명</Select.Option>
             </Select>
             <Input
               placeholder="검색..."
               value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
               style={{ width: 300, marginRight: 10 }}
             />
           </SearchBar>
