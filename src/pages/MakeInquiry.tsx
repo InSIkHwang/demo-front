@@ -60,13 +60,17 @@ const createNewItem = (no: number): InquiryItem => ({
 
 const getSupplierMap = (
   itemDetails: InquiryListItem[]
-): { id: number; name: string }[] => {
-  const supplierMap = new Map<number, { id: number; name: string }>();
+): { id: number; name: string; code: string }[] => {
+  const supplierMap = new Map<
+    number,
+    { id: number; name: string; code: string }
+  >();
   itemDetails.forEach((item) =>
     item.suppliers.forEach((supplier) =>
       supplierMap.set(supplier.supplierId, {
         id: supplier.supplierId,
         name: supplier.companyName,
+        code: supplier.code,
       })
     )
   );
@@ -100,13 +104,13 @@ const MakeInquiry = () => {
   const [itemNameMap, setItemNameMap] = useState<{ [key: string]: string }>({});
   const [itemIdMap, setItemIdMap] = useState<{ [key: string]: number }>({});
   const [supplierOptions, setSupplierOptions] = useState<
-    { value: string; id: number; itemId: number }[]
+    { value: string; id: number; itemId: number; code: string }[]
   >([]);
   const [selectedSuppliers, setSelectedSuppliers] = useState<
-    { id: number; name: string }[]
+    { id: number; name: string; code: string }[]
   >([]);
   const [selectedSupplierTag, setSelectedSupplierTag] = useState<
-    { id: number; name: string }[]
+    { id: number; name: string; code: string }[]
   >([]);
   const [showPDFPreview, setShowPDFPreview] = useState(false);
   const [pdfSupplierTag, setPdfSupplierTag] = useState<
@@ -271,7 +275,11 @@ const MakeInquiry = () => {
 
     const newSelectedSuppliers = supplierOptions
       .filter((option) => selectedSupplierIds.has(option.id))
-      .map((supplier) => ({ id: supplier.id, name: supplier.value }));
+      .map((supplier) => ({
+        id: supplier.id,
+        name: supplier.value,
+        code: supplier.code,
+      }));
 
     setSelectedSuppliers((prev) => [
       ...prev,
@@ -416,6 +424,7 @@ const MakeInquiry = () => {
             value: supplier.companyName,
             id: supplier.id,
             itemId: supplier.itemId,
+            code: supplier.code,
           }))
         );
 
@@ -456,11 +465,15 @@ const MakeInquiry = () => {
 
   const handleSupplierSelect = (
     value: string,
-    option: { value: string; id: number }
+    option: { value: string; id: number; code: string }
   ) => {
     setSelectedSuppliers((prev) => {
       const existingSuppliers = new Map(prev.map((s) => [s.id, s]));
-      existingSuppliers.set(option.id, { id: option.id, name: value });
+      existingSuppliers.set(option.id, {
+        id: option.id,
+        name: value,
+        code: option.code,
+      });
       return Array.from(existingSuppliers.values());
     });
     handleFormChange("supplierName", "");

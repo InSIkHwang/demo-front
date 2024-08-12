@@ -44,8 +44,8 @@ interface InquiryFormProps {
   formValues: FormValues;
   autoCompleteOptions: { value: string }[];
   vesselNameList: string[];
-  supplierOptions: { value: string; id: number }[];
-  selectedSuppliers: { id: number; name: string }[];
+  supplierOptions: { value: string; id: number; code: string }[];
+  selectedSuppliers: { id: number; name: string; code: string }[];
   handleFormChange: <K extends keyof FormValues>(
     key: K,
     value: FormValues[K]
@@ -59,17 +59,17 @@ interface InquiryFormProps {
   handleSupplierSearch: (value: string) => void;
   handleSupplierSelect: (
     value: string,
-    option: { value: string; id: number }
+    option: { value: string; id: number; code: string }
   ) => void;
   handleTagClose: (id: number) => void;
   addItem: () => void;
   customerUnreg: boolean;
   vesselUnreg: boolean;
   setSelectedSupplierTag: Dispatch<
-    SetStateAction<{ id: number; name: string }[]>
+    SetStateAction<{ id: number; name: string; code: string }[]>
   >;
   setSelectedSuppliers: Dispatch<
-    SetStateAction<{ id: number; name: string }[]>
+    SetStateAction<{ id: number; name: string; code: string }[]>
   >;
 }
 
@@ -96,7 +96,7 @@ const InquiryForm = ({
   const [tagColors, setTagColors] = useState<{ [id: number]: string }>({});
   const [supplierSearch, setSupplierSearch] = useState("");
   const [supplierList, setSupplierList] = useState<
-    { name: string; id: number }[]
+    { name: string; id: number; code: string }[]
   >([]);
   const [autoSearchSupCompleteOptions, setAutoSearchSupCompleteOptions] =
     useState<{ value: string }[]>([]);
@@ -137,7 +137,9 @@ const InquiryForm = ({
     return { status: undefined, message: undefined };
   };
 
-  const removeDuplicates = (arr: { id: number; name: string }[]) => {
+  const removeDuplicates = (
+    arr: { id: number; name: string; code: string }[]
+  ) => {
     const uniqueIds = new Set<number>();
     return arr.filter((item) => {
       if (uniqueIds.has(item.id)) {
@@ -157,6 +159,7 @@ const InquiryForm = ({
         const options = data.suppliers.map((supplier) => ({
           name: supplier.companyName,
           id: supplier.id,
+          code: supplier.code,
         }));
         setSupplierList(options);
         setAutoSearchSupCompleteOptions(
@@ -196,7 +199,7 @@ const InquiryForm = ({
             ...prevColors,
             [id]: "#1677ff",
           }));
-          return [...currentTags, { id: newTag.id, name: newTag.name }];
+          return [...currentTags, newTag];
         }
         return currentTags;
       }
@@ -223,7 +226,11 @@ const InquiryForm = ({
 
         return [
           ...prevSuppliers,
-          { id: matchedSupplier.id, name: matchedSupplier.name },
+          {
+            id: matchedSupplier.id,
+            name: matchedSupplier.name,
+            code: matchedSupplier.code,
+          },
         ];
       });
 
@@ -416,7 +423,7 @@ const InquiryForm = ({
                 onClick={() => handleTagClick(supplier.id)}
                 onClose={() => handleTagClick(supplier.id)}
               >
-                {supplier.name}
+                {supplier.code}
               </Tag>
             ))}
           </div>
