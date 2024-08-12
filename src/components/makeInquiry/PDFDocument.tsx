@@ -12,7 +12,7 @@ import {
 import dayjs from "dayjs";
 import malgunGothic from "../../assets/font/malgun.ttf";
 import logoUrl from "../../assets/logo/baskorea_logo-removebg.png";
-import { InquiryItem } from "../../types/types";
+import { InquiryItem, VesselList } from "../../types/types";
 
 // 한글 글꼴 등록
 Font.register({
@@ -35,6 +35,7 @@ interface PDFDocumentProps {
   formValues: FormValues;
   items: InquiryItem[];
   selectedSupplierName: string;
+  vesselInfo: VesselList | null;
 }
 
 // 스타일 정의
@@ -141,10 +142,13 @@ const PDFDocument = ({
   formValues,
   items,
   selectedSupplierName,
+  vesselInfo,
 }: PDFDocumentProps) => {
   const headerMessage =
     "귀사의 무궁한 발전을 기원합니다.\n하기와 같이 견적서 외뢰하오니 빠른 회신 부탁드립니다.";
   let itemIndex = 0;
+
+  console.log(vesselInfo);
 
   return (
     <PDFViewer width="100%" height="600" style={{ margin: "20px 0" }}>
@@ -172,8 +176,14 @@ const PDFDocument = ({
               <Text style={styles.inquiryInfoText}>
                 MESSRS: {selectedSupplierName}
               </Text>
-              <Text style={styles.inquiryInfoText}>
+              <Text style={[styles.inquiryInfoText, { marginBottom: 10 }]}>
                 VESSEL: {formValues.vesselName}
+              </Text>
+              <Text style={styles.inquiryInfoText}>
+                IMO NO: {vesselInfo?.imoNumber}
+              </Text>
+              <Text style={styles.inquiryInfoText}>
+                HULL NO: {vesselInfo?.hullNumber}
               </Text>
             </View>
             <View

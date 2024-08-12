@@ -12,7 +12,12 @@ import {
 import InquiryForm from "../components/makeInquiry/InquiryForm";
 import MakeInquiryTable from "../components/makeInquiry/MakeInquiryTable";
 import PDFDocument from "../components/makeInquiry/PDFDocument";
-import { Inquiry, InquiryItem, InquiryListItem } from "../types/types";
+import {
+  Inquiry,
+  InquiryItem,
+  InquiryListItem,
+  VesselList,
+} from "../types/types";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 // Styles
@@ -86,15 +91,14 @@ const MakeInquiry = () => {
 
   const [docDataloading, setDocDataLoading] = useState(true);
   const [items, setItems] = useState<InquiryItem[]>([]);
-  const [vesselList, setVesselList] = useState<
-    { id: number; vesselName: string }[]
-  >([]);
+  const [vesselList, setVesselList] = useState<VesselList[]>([]);
   const [companyNameList, setCompanyNameList] = useState<string[]>([]);
   const [vesselNameList, setVesselNameList] = useState<string[]>([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(
     null
   );
-  const [selectedVesselId, setSelectedVesselId] = useState<number | null>(null);
+  const [selectedVessel, setSelectedVessel] = useState<VesselList | null>(null);
+
   const [autoCompleteOptions, setAutoCompleteOptions] = useState<
     { value: string }[]
   >([]);
@@ -247,7 +251,7 @@ const MakeInquiry = () => {
     const selectedVessel = vesselList.find(
       (v) => v.vesselName === formValues.vesselName
     );
-    setSelectedVesselId(selectedVessel ? selectedVessel.id : null);
+    setSelectedVessel(selectedVessel ?? null);
   }, [formValues.vesselName, vesselList]);
 
   useEffect(() => {
@@ -506,7 +510,7 @@ const MakeInquiry = () => {
         handleTagClose={handleTagClose}
         addItem={addItem}
         customerUnreg={!selectedCustomerId}
-        vesselUnreg={!selectedVesselId}
+        vesselUnreg={!selectedVessel?.id}
         setSelectedSupplierTag={setSelectedSupplierTag}
         setSelectedSuppliers={setSelectedSuppliers}
       />
@@ -564,6 +568,7 @@ const MakeInquiry = () => {
           selectedSupplierName={
             pdfSupplierTag.length > 0 ? pdfSupplierTag[0].name : ""
           }
+          vesselInfo={selectedVessel}
         />
       )}
     </FormContainer>

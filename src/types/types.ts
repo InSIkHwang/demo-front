@@ -9,15 +9,17 @@ export interface Customer {
   country: string;
   communicationLanguage: string;
   modifiedAt: string;
-  vesselList: Array<{
-    id: number;
-    code: string;
-    vesselName: string;
-    vesselCompanyName: string;
-    imoNumber: number;
-    hullNumber: string;
-    shipYard: string;
-  }>;
+  vesselList: VesselList[];
+}
+
+export interface VesselList {
+  id: number;
+  code: string;
+  vesselName: string;
+  vesselCompanyName: string;
+  imoNumber: number;
+  hullNumber: string;
+  shipYard: string;
 }
 
 export interface Supplier {
