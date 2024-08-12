@@ -60,15 +60,36 @@ export const submitInquiry = async (
   data: any,
   isEditMode: boolean
 ) => {
-  if (isEditMode) {
-    // 수정 모드일 때 PUT 요청 사용
-    await axios.put(`/api/customer-inquiries/${inquiryId}`, data);
-  } else {
-    // 생성 모드일 때 POST 요청 사용
-    await axios.post(`/api/customer-inquiries?docNumber=${docNumber}`, data);
+  try {
+    let response;
+
+    if (isEditMode) {
+      // 수정 모드일 때 PUT 요청 사용
+      response = await axios.put(`/api/customer-inquiries/${inquiryId}`, data);
+
+      // 응답을 반환
+      return inquiryId;
+    } else {
+      // 생성 모드일 때 POST 요청 사용
+      response = await axios.post(
+        `/api/customer-inquiries?docNumber=${docNumber}`,
+        data
+      );
+
+      // 응답을 반환
+      return response.data.inquiryId;
+    }
+  } catch (error) {
+    // 에러를 처리하거나 다시 던짐
+    console.error("Error in submitInquiry:", error);
+    throw error;
   }
 };
 
 export const editInquiry = async (inquiryId: number, data: any) => {
   await axios.put(`/api/customer-inquiries/${inquiryId}`, data);
+};
+
+export const deleteInquiry = async (inquiryId: number) => {
+  await axios.delete(`/api/customer-inquiries/${inquiryId}`);
 };

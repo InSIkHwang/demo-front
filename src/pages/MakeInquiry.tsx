@@ -7,16 +7,12 @@ import {
   fetchCompanyNames,
   fetchItemData,
   submitInquiry,
+  fetchInquiryDetail,
 } from "../api/api";
 import InquiryForm from "../components/makeInquiry/InquiryForm";
 import MakeInquiryTable from "../components/makeInquiry/MakeInquiryTable";
 import PDFDocument from "../components/makeInquiry/PDFDocument";
-import {
-  Inquiry,
-  InquiryItem,
-  InquiryListItem,
-  InquiryListSupplier,
-} from "../types/types";
+import { Inquiry, InquiryItem, InquiryListItem } from "../types/types";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 // Styles
@@ -361,25 +357,35 @@ const MakeInquiry = () => {
         requestData.documentNumber = formValues.docNumber;
       }
 
-      await submitInquiry(
+      // Submit the inquiry and get the response
+      const response = await submitInquiry(
         formValues.docNumber,
         Number(customerInquiryId),
         requestData,
         isEditMode
       );
-      message.success("Inquiry submitted successfully!");
-      resetForm();
-    } catch (error) {
-      console.error("Error submitting inquiry:", error);
-      message.error("Failed to submit inquiry. Please try again.");
-    }
-  };
 
-  const resetForm = () => {
-    setFormValues(INITIAL_FORM_VALUES);
-    setSelectedCustomerId(null);
-    setSelectedVesselId(null);
-    setItems([createNewItem(1)]);
+      message.success("성공적으로 저장 되었습니다!");
+
+      if (isEditMode) {
+        const newInquiryDetail = await fetchInquiryDetail(
+          Number(customerInquiryId)
+        );
+
+        navigate(`/makeinquiry/${response}`, {
+          state: { inquiry: newInquiryDetail },
+        });
+      } else {
+        const newInquiryDetail = await fetchInquiryDetail(Number(response));
+
+        navigate(`/makeinquiry/${response}`, {
+          state: { inquiry: newInquiryDetail },
+        });
+      }
+    } catch (error) {
+      console.error("견적서 저장 중 오류 발생:", error);
+      message.error("다시 시도해 주세요");
+    }
   };
 
   const handleItemCodeChange = (index: number, value: string) => {

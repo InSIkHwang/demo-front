@@ -1,10 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { Modal, Descriptions, Button, Table, Tag, Divider } from "antd";
+import {
+  Modal,
+  Descriptions,
+  Button,
+  Table,
+  Tag,
+  Divider,
+  message,
+} from "antd";
 import { Inquiry, InquiryListSupplier } from "../../types/types";
 import axios from "../../api/axios";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import { fetchInquiryDetail } from "../../api/api";
+import { deleteInquiry, fetchInquiryDetail } from "../../api/api";
 
 interface DetailInquiryModalProps {
   visible: boolean;
@@ -71,7 +79,6 @@ const DetailInquiryModal = ({
       if (visible) {
         try {
           const data = await fetchInquiryDetail(inquiryId);
-
           setInquiryDetail(data);
         } catch (error) {
           console.error("상세 정보를 가져오는 중 오류가 발생했습니다:", error);
@@ -89,6 +96,25 @@ const DetailInquiryModal = ({
       const path = inquiryId ? `/makeinquiry/${inquiryId}` : "/makeinquiry";
       navigate(path, { state: { inquiry: inquiryDetail } });
     }
+  };
+
+  const handleDeleteClick = () => {
+    Modal.confirm({
+      title: "삭제 확인",
+      content: "정말로 이 견적서를 삭제하시겠습니까?",
+      okText: "삭제",
+      cancelText: "취소",
+      onOk: async () => {
+        try {
+          await deleteInquiry(inquiryId);
+          message.success("견적서가 성공적으로 삭제되었습니다.");
+          onClose();
+        } catch (error) {
+          console.error("견적서 삭제 중 오류가 발생했습니다:", error);
+          message.error("견적서 삭제에 실패했습니다. 다시 시도해 주세요.");
+        }
+      },
+    });
   };
 
   const columns = [
@@ -160,12 +186,15 @@ const DetailInquiryModal = ({
         if (isSpecialItemType(record.inquiryItemType)) {
           return null;
         }
+
+        if (!suppliers) {
+          return <div>No suppliers available</div>;
+        }
+
         return (
           <>
             {suppliers.map((supplier) => (
-              <div key={supplier.supplierId}>
-                <strong>{supplier.companyName}</strong> ({supplier.code}),
-              </div>
+              <div key={supplier.supplierId}>{supplier.code},</div>
             ))}
           </>
         );
@@ -181,6 +210,9 @@ const DetailInquiryModal = ({
       footer={[
         <Button key="edit" onClick={handleEditClick}>
           수정
+        </Button>,
+        <Button key="delete" danger onClick={handleDeleteClick}>
+          삭제
         </Button>,
         <Button key="close" onClick={onClose}>
           닫기
