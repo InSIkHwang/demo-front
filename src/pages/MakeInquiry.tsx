@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import { Button, message, Select } from "antd";
 import dayjs from "dayjs";
@@ -38,7 +38,20 @@ const Title = styled.h1`
   color: #333;
 `;
 
-// Utility functions
+// Constants
+const INITIAL_FORM_VALUES = {
+  docNumber: "",
+  registerDate: dayjs(),
+  shippingDate: dayjs(),
+  customer: "",
+  vesselName: "",
+  refNumber: "",
+  currencyType: "USD",
+  currency: 0,
+  remark: "",
+  supplierName: "",
+};
+
 const createNewItem = (no: number): InquiryItem => ({
   no,
   itemType: "ITEM",
@@ -49,7 +62,9 @@ const createNewItem = (no: number): InquiryItem => ({
   itemRemark: "",
 });
 
-const getSupplierMap = (itemDetails: InquiryListItem[]) => {
+const getSupplierMap = (
+  itemDetails: InquiryListItem[]
+): { id: number; name: string }[] => {
   const supplierMap = new Map<number, { id: number; name: string }>();
   itemDetails.forEach((item) =>
     item.suppliers.forEach((supplier) =>
@@ -71,7 +86,6 @@ const MakeInquiry = () => {
 
   const [docDataloading, setDocDataLoading] = useState(true);
   const [items, setItems] = useState<InquiryItem[]>([]);
-  const [itemCount, setItemCount] = useState(2);
   const [vesselList, setVesselList] = useState<
     { id: number; vesselName: string }[]
   >([]);
@@ -103,18 +117,32 @@ const MakeInquiry = () => {
     { id: number; name: string }[]
   >([]);
 
-  const [formValues, setFormValues] = useState({
-    docNumber: "",
-    registerDate: dayjs(),
-    shippingDate: dayjs(),
-    customer: "",
-    vesselName: "",
-    refNumber: "",
-    currencyType: "USD",
-    currency: 0,
-    remark: "",
-    supplierName: "",
-  });
+  const [formValues, setFormValues] = useState(INITIAL_FORM_VALUES);
+
+  // Load document data
+  const loadDocData = useCallback(async () => {
+    try {
+      const {
+        docNumber,
+        registerDate,
+        shippingDate,
+        currencyType,
+        currencyValue,
+      } = await fetchDocData();
+      setFormValues((prev) => ({
+        ...prev,
+        docNumber,
+        registerDate: dayjs(registerDate),
+        shippingDate: dayjs(shippingDate),
+        currencyType,
+        currency: currencyValue,
+      }));
+    } catch (error) {
+      console.error("Error loading document data:", error);
+    } finally {
+      setDocDataLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (customerInquiryId) {
@@ -159,60 +187,23 @@ const MakeInquiry = () => {
           }))
         );
 
-        setSelectedSupplierTag(getSupplierMap(inquiryItemDetails));
-        setSelectedSuppliers(getSupplierMap(inquiryItemDetails));
+        const suppliers = getSupplierMap(inquiryItemDetails);
+        setSelectedSupplierTag(suppliers);
+        setSelectedSuppliers(suppliers);
       }
     } else {
       setIsEditMode(false);
-      // 문서 번호 초기화 및 기본 설정
-      setFormValues((prev) => ({
-        ...prev,
-        docNumber: "",
-        registerDate: dayjs(),
-        shippingDate: dayjs(),
-        customer: "",
-        vesselName: "",
-        refNumber: "",
-        currencyType: "USD",
-        currency: 0,
-        remark: "",
-        supplierName: "",
-      }));
+      setFormValues(INITIAL_FORM_VALUES);
     }
   }, [customerInquiryId, inquiryDetail]);
 
   useEffect(() => {
-    const loadDocData = async () => {
-      try {
-        const {
-          docNumber,
-          registerDate,
-          shippingDate,
-          currencyType,
-          currencyValue,
-        } = await fetchDocData();
-        setFormValues((prev) => ({
-          ...prev,
-          docNumber,
-          registerDate: dayjs(registerDate),
-          shippingDate: dayjs(shippingDate),
-          currencyType,
-          currency: currencyValue,
-        }));
-      } catch (error) {
-        console.error("Error loading document data:", error);
-      } finally {
-        setDocDataLoading(false);
-      }
-    };
-
     if (!customerInquiryId) {
       loadDocData();
     } else {
-      // `customerInquiryId`가 있는 경우에는 로딩 상태를 종료하도록 설정
       setDocDataLoading(false);
     }
-  }, [customerInquiryId]);
+  }, [customerInquiryId, loadDocData]);
 
   useEffect(() => {
     const searchCompanyName = async (customerName: string) => {
@@ -324,7 +315,6 @@ const MakeInquiry = () => {
     value: (typeof formValues)[K]
   ) => {
     if (key !== "docNumber" || !isEditMode) {
-      // 문서 번호는 수정 불가능, 수정 모드에서는 비활성화
       setFormValues((prev) => ({ ...prev, [key]: value }));
     }
   };
@@ -334,8 +324,6 @@ const MakeInquiry = () => {
       const selectedVessel = vesselList.find(
         (v) => v.vesselName === formValues.vesselName
       );
-
-      // Map through items and find the corresponding itemDetailId
       const inquiryItemDetails = items.map((item) => {
         const matchingItemDetail = inquiryDetail?.inquiryItemDetails.find(
           (detail) => detail.itemId === item.itemId
@@ -369,9 +357,6 @@ const MakeInquiry = () => {
         inquiryItemDetails,
       };
 
-      console.log(requestData);
-
-      // Modify documentNumber for edit mode
       if (isEditMode) {
         requestData.documentNumber = formValues.docNumber;
       }
@@ -391,22 +376,10 @@ const MakeInquiry = () => {
   };
 
   const resetForm = () => {
-    setFormValues({
-      docNumber: "",
-      registerDate: dayjs(),
-      shippingDate: dayjs(),
-      customer: "",
-      vesselName: "",
-      refNumber: "",
-      currencyType: "USD",
-      currency: 0,
-      remark: "",
-      supplierName: "",
-    });
+    setFormValues(INITIAL_FORM_VALUES);
     setSelectedCustomerId(null);
     setSelectedVesselId(null);
     setItems([createNewItem(1)]);
-    setItemCount(2);
   };
 
   const handleItemCodeChange = (index: number, value: string) => {
