@@ -1,15 +1,13 @@
-// src/pages/InquiryList.tsx
 import React, { useState, useEffect } from "react";
 import { Table, Input, Button as AntButton, Select, Pagination } from "antd";
-import { SearchOutlined, LeftOutlined, RightOutlined } from "@ant-design/icons";
+import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import styled from "styled-components";
-import { fetchInquiryList } from "../api/api";
+import { fetchInquiryList, searchInquiryList } from "../api/api";
 import DetailInquiryModal from "../components/inquiryList/DetailInquiryModal";
 import type { ColumnsType } from "antd/es/table";
 import { Inquiry } from "../types/types";
 import { useNavigate } from "react-router-dom";
 
-// Styled Components
 const Container = styled.div`
   position: relative;
   top: 150px;
@@ -53,7 +51,6 @@ const PaginationWrapper = styled(Pagination)`
   justify-content: center;
 `;
 
-// Columns Definition
 const columns: ColumnsType<Inquiry> = [
   {
     title: "문서번호",
@@ -114,7 +111,6 @@ const columns: ColumnsType<Inquiry> = [
   },
 ];
 
-// Custom Hook for Inquiry List
 const useInquiryData = () => {
   const [data, setData] = useState<Inquiry[]>([]);
   const [totalCount, setTotalCount] = useState<number>(0);
@@ -139,12 +135,12 @@ const useInquiryData = () => {
   return { data, totalCount, loading };
 };
 
-// InquiryList Component
 const InquiryList = () => {
   const navigate = useNavigate();
   const { data, totalCount, loading } = useInquiryData();
   const [searchText, setSearchText] = useState<string>("");
-  const [searchCategory, setSearchCategory] = useState<string>("all");
+  const [searchCategory, setSearchCategory] =
+    useState<string>("documentNumber");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage, setItemsPerPage] = useState<number>(10);
   const [selectedInquiryId, setSelectedInquiryId] = useState<number | null>(
@@ -155,13 +151,13 @@ const InquiryList = () => {
 
   useEffect(() => {
     if (isDetailCompanyModalOpen) {
-      document.body.style.overflow = "hidden"; // Disable scroll when modal is open
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = ""; // Restore scroll when modal is closed
+      document.body.style.overflow = "";
     }
 
     return () => {
-      document.body.style.overflow = ""; // Ensure scroll is restored on unmount
+      document.body.style.overflow = "";
     };
   }, [isDetailCompanyModalOpen]);
 
@@ -191,13 +187,13 @@ const InquiryList = () => {
         <TableHeader>
           <SearchBar>
             <Select
-              defaultValue="all"
+              defaultValue="documentNumber"
               style={{ width: 120, marginRight: 10 }}
               onChange={(value) => setSearchCategory(value)}
             >
-              <Select.Option value="all">통합검색</Select.Option>
-              <Select.Option value="code">코드</Select.Option>
-              <Select.Option value="companyName">상호명</Select.Option>
+              <Select.Option value="documentNumber">문서번호</Select.Option>
+              <Select.Option value="refNumber">REF NO.</Select.Option>
+              <Select.Option value="customerName">매출처</Select.Option>
             </Select>
             <Input
               placeholder="검색..."

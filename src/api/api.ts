@@ -91,5 +91,29 @@ export const editInquiry = async (inquiryId: number, data: any) => {
 };
 
 export const deleteInquiry = async (inquiryId: number) => {
-  await axios.delete(`/api/customer-inquiries/${inquiryId}`);
+  await axios.delete(`/api/customer-inquiries/${inquiryId}/trash`);
+};
+
+export const searchInquiryList = async (
+  registerStartDate: string = "",
+  registerEndDate: string = "",
+  documentNumber: string = "",
+  refNumber: string = "",
+  customerName: string = ""
+): Promise<{
+  totalCount: number;
+  customerInquiryList: Inquiry[];
+}> => {
+  const response = await axios.post<{
+    totalCount: number;
+    customerInquiryList: Inquiry[];
+  }>(`/api/customer-inquiries/search`, {
+    registerStartDate,
+    registerEndDate,
+    documentNumber,
+    refNumber,
+    customerName,
+  });
+
+  return response.data;
 };
