@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Table, Input, Button as AntButton, Select, Pagination } from "antd";
+import {
+  Table,
+  Input,
+  Button as AntButton,
+  Select,
+  Pagination,
+  DatePicker,
+} from "antd";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 import { fetchInquiryList, searchInquiryList } from "../api/api";
@@ -111,33 +118,11 @@ const columns: ColumnsType<Inquiry> = [
   },
 ];
 
-const useInquiryData = () => {
+const InquiryList = () => {
+  const navigate = useNavigate();
   const [data, setData] = useState<Inquiry[]>([]);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
-
-  const fetchInquiryData = async () => {
-    try {
-      const response = await fetchInquiryList();
-      setData(response.customerInquiryList);
-      setTotalCount(response.totalCount);
-    } catch (error) {
-      console.error("데이터를 가져오는 중 오류가 발생했습니다:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchInquiryData();
-  }, []);
-
-  return { data, totalCount, loading };
-};
-
-const InquiryList = () => {
-  const navigate = useNavigate();
-  const { data, totalCount, loading } = useInquiryData();
   const [searchText, setSearchText] = useState<string>("");
   const [searchCategory, setSearchCategory] =
     useState<string>("documentNumber");
@@ -148,6 +133,24 @@ const InquiryList = () => {
   );
   const [isDetailCompanyModalOpen, setIsDetailCompanyModalOpen] =
     useState<boolean>(false);
+  const [registerStartDate, setRegisterStartDate] = useState<string>("");
+  const [registerEndDate, setRegisterEndDate] = useState<string>("");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetchInquiryList();
+        setData(response.customerInquiryList);
+        setTotalCount(response.totalCount);
+      } catch (error) {
+        console.error("데이터를 가져오는 중 오류가 발생했습니다:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   useEffect(() => {
     if (isDetailCompanyModalOpen) {
@@ -160,6 +163,27 @@ const InquiryList = () => {
       document.body.style.overflow = "";
     };
   }, [isDetailCompanyModalOpen]);
+
+  const handleSearch = async () => {
+    setLoading(true);
+    try {
+      const response = await searchInquiryList(
+        registerStartDate,
+        registerEndDate,
+        searchCategory === "documentNumber" ? searchText : "",
+        searchCategory === "refNumber" ? searchText : "",
+        searchCategory === "customerName" ? searchText : ""
+      );
+
+      setData(response.customerInquiryList);
+      setTotalCount(response.totalCount);
+      setCurrentPage(1); // 검색 후 첫 페이지로 이동
+    } catch (error) {
+      console.error("검색 중 오류가 발생했습니다:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const paginatedData = data.slice(
     (currentPage - 1) * itemsPerPage,
@@ -201,13 +225,27 @@ const InquiryList = () => {
               onChange={(e) => setSearchText(e.target.value)}
               style={{ width: 300, marginRight: 10 }}
             />
+            <DatePicker
+              placeholder="시작 날짜"
+              format="YYYY-MM-DD"
+              onChange={(date) =>
+                setRegisterStartDate(date ? date.format("YYYY-MM-DD") : "")
+              }
+              style={{ marginRight: 10 }}
+            />
+            <DatePicker
+              placeholder="종료 날짜"
+              format="YYYY-MM-DD"
+              onChange={(date) =>
+                setRegisterEndDate(date ? date.format("YYYY-MM-DD") : "")
+              }
+              style={{ marginRight: 10 }}
+            />
+            <Button type="primary" onClick={handleSearch}>
+              검색
+            </Button>
           </SearchBar>
-          <Button
-            type="primary"
-            onClick={() => {
-              navigate("/makeinquiry");
-            }}
-          >
+          <Button type="primary" onClick={() => navigate("/makeinquiry")}>
             신규 등록
           </Button>
         </TableHeader>

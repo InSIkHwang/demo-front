@@ -104,16 +104,23 @@ export const searchInquiryList = async (
   totalCount: number;
   customerInquiryList: Inquiry[];
 }> => {
-  const response = await axios.post<{
-    totalCount: number;
-    customerInquiryList: Inquiry[];
-  }>(`/api/customer-inquiries/search`, {
+  // Query parameters를 객체로 정의
+  const queryParams: { [key: string]: string } = {
     registerStartDate,
     registerEndDate,
     documentNumber,
     refNumber,
     customerName,
-  });
+  };
+
+  // 쿼리 문자열을 생성
+  const queryString = new URLSearchParams(queryParams).toString();
+
+  // GET 요청을 보냄
+  const response = await axios.post<{
+    totalCount: number;
+    customerInquiryList: Inquiry[];
+  }>(`/api/customer-inquiries/search?${queryString}`);
 
   return response.data;
 };
