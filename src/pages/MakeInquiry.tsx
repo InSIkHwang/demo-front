@@ -184,7 +184,7 @@ const MakeInquiry = () => {
           inquiryItemDetails.map((item, index) => ({
             itemId: item.itemId,
             no: index + 1,
-            itemType: item.inquiryItemType ?? "ITEM",
+            itemType: item.itemType,
             itemCode: item.itemCode,
             itemName: item.itemName,
             itemRemark: item.itemRemark,

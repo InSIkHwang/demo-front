@@ -92,7 +92,7 @@ export interface InquiryListSupplier {
 export interface InquiryListItem {
   itemDetailId: number;
   itemId: number;
-  inquiryItemType?: "ITEM" | "MAKER" | "TYPE" | "DESC";
+  itemType: "ITEM" | "MAKER" | "TYPE" | "DESC";
   itemCode: string;
   itemName: string;
   itemRemark: string;
