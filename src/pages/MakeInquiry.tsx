@@ -19,6 +19,7 @@ import {
   VesselList,
 } from "../types/types";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import HeaderEditModal from "../components/makeInquiry/HeaderEditModal";
 
 // Styles
 const FormContainer = styled.div`
@@ -122,7 +123,9 @@ const MakeInquiry = () => {
   const [pdfSupplierTag, setPdfSupplierTag] = useState<
     { id: number; name: string }[]
   >([]);
-
+  const [headerEditModalVisible, setHeaderEditModalVisible] =
+    useState<boolean>(false);
+  const [pdfHeader, setPdfHeader] = useState<string>("");
   const [formValues, setFormValues] = useState(INITIAL_FORM_VALUES);
 
   // Load document data
@@ -512,6 +515,18 @@ const MakeInquiry = () => {
     );
   };
 
+  const handleOpenHeaderModal = () => {
+    setHeaderEditModalVisible(true);
+  };
+
+  const handleCloseHeaderModal = () => {
+    setHeaderEditModalVisible(false);
+  };
+
+  const handleHeaderSave = (text: string) => {
+    setPdfHeader(text);
+  };
+
   if (docDataloading) {
     return <div>Loading...</div>;
   }
@@ -583,6 +598,15 @@ const MakeInquiry = () => {
             </Select.Option>
           ))}
         </Select>
+        <Button onClick={handleOpenHeaderModal} style={{ marginLeft: 20 }}>
+          머릿글 수정
+        </Button>
+        <HeaderEditModal
+          visible={headerEditModalVisible}
+          onClose={handleCloseHeaderModal}
+          onSave={handleHeaderSave}
+          pdfSupplierTag={pdfSupplierTag}
+        />
       </div>
       {showPDFPreview && (
         <PDFDocument
@@ -592,6 +616,7 @@ const MakeInquiry = () => {
             pdfSupplierTag.length > 0 ? pdfSupplierTag[0].name : ""
           }
           vesselInfo={selectedVessel}
+          pdfHeader={pdfHeader}
         />
       )}
     </FormContainer>

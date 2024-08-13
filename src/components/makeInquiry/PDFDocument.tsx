@@ -36,6 +36,7 @@ interface PDFDocumentProps {
   items: InquiryItem[];
   selectedSupplierName: string;
   vesselInfo: VesselList | null;
+  pdfHeader: string;
 }
 
 // 스타일 정의
@@ -143,9 +144,9 @@ const PDFDocument = ({
   items,
   selectedSupplierName,
   vesselInfo,
+  pdfHeader,
 }: PDFDocumentProps) => {
-  const headerMessage =
-    "귀사의 무궁한 발전을 기원합니다.\n하기와 같이 견적서 외뢰하오니 빠른 회신 부탁드립니다.";
+  const headerMessage = pdfHeader;
   let itemIndex = 0;
 
   return (
