@@ -95,7 +95,7 @@ const UpdateButton = styled.button`
   padding: 12px 24px;
   font-size: 16px;
   border: none;
-  background-color: #1677ff;
+  background-color: ${(props) => props.theme.blue};
   color: white;
   border-radius: 8px;
   cursor: pointer;
@@ -103,8 +103,8 @@ const UpdateButton = styled.button`
   transition: background-color 0.3s, transform 0.3s;
 
   &:hover {
-    background-color: #1976d2;
-    transform: scale(1.05);
+    background-color: ${({ disabled, theme }) =>
+      disabled ? theme.blue : theme.darkBlue};
   }
 `;
 

@@ -18,7 +18,7 @@ const SubmitButton = styled.button`
   padding: 10px 20px;
   font-size: 16px;
   border: none;
-  background-color: #1976d2;
+  background-color: ${(props) => props.theme.blue};
   color: white;
   border-radius: 4px;
   cursor: pointer;
@@ -27,10 +27,9 @@ const SubmitButton = styled.button`
   transition: background-color 0.3s;
 
   &:hover {
-    background-color: #1560ac;
+    background-color: ${(props) => props.theme.darkBlue};
   }
 `;
-
 
 interface FormProps {
   formData: Vessel;

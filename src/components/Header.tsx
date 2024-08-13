@@ -12,88 +12,94 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
 const StyledHeader = styled.header`
-  top: 0;
   display: flex;
   align-items: center;
   position: fixed;
   width: 100%;
   height: 70px;
-  font-size: 14px;
-  padding: 20px;
+  padding: 0 20px;
+  background-color: ${(props) => props.theme.blue};
   color: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   z-index: 1000;
-  background-color: #1976d2;
 `;
 
 const HeaderTitle = styled.div`
-  font-size: 28px;
-  font-weight: 700;
-  margin-left: 30px;
+  font-size: 24px;
+  font-weight: bold;
+  margin-left: 20px;
+  flex-grow: 1;
 `;
 
 const HeaderMenuBtnWrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 40px;
-  height: 40px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
-  background-color: white;
+  background-color: #ffffff;
   cursor: pointer;
-  z-index: 1001;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: #f0f0f0;
+  }
 `;
 
 const HeaderMenuBtnIcon = styled(FontAwesomeIcon)`
-  color: grey;
+  color: #333;
   font-size: 24px;
 
   ${HeaderMenuBtnWrapper}:hover & {
-    color: black;
-    transition: color 0.5s ease;
+    color: ${(props) => props.theme.darkBlue};
+    transition: color 0.3s ease;
   }
 `;
 
 const SideMenu = styled(motion.div)`
   position: fixed;
-  top: 60px;
+  top: 70px;
   left: 0;
-  height: calc(100% - 60px);
-  width: 280px;
-  background-color: #333;
+  height: calc(100% - 70px);
+  width: 300px;
+  background-color: #212529; /* Darker background for contrast */
   color: white;
   padding: 20px;
   z-index: 999;
   overflow: hidden;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
+  border-right: 1px solid #343a40;
 `;
 
 const MenuItem = styled.div`
   margin: 10px 0;
-  font-size: 18px;
+  font-size: 16px;
   display: flex;
   align-items: center;
   padding: 10px 20px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  border-radius: 8px;
+  transition: background-color 0.3s ease, color 0.3s ease;
 
   &:hover {
-    background-color: rgba(0, 0, 0, 0.205);
+    background-color: #495057; /* Subtle hover effect */
+    color: #ffffff;
   }
 `;
+
 interface SubMenuProps {
   isOpen: boolean;
 }
 
 const SubMenu = styled.div<SubMenuProps>`
-  margin-left: 40px;
-  font-size: 12px;
+  margin-left: 20px;
+  font-size: 14px;
   display: ${({ isOpen }) => (isOpen ? "block" : "none")};
-  margin-bottom: 35px;
-
-  & > div {
-    border-radius: 5px;
-    border-left: 1px solid #ccc;
-  }
+  padding-left: 20px;
+  border-left: 2px solid #495057;
+  margin-bottom: 10px;
+  transition: max-height 0.3s ease;
 `;
 
 const menuVariants = {
@@ -107,7 +113,7 @@ const Backdrop = styled.div`
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: #0000004e;
+  background-color: rgba(0, 0, 0, 0.5); /* Slightly lighter background */
   z-index: 998;
 `;
 

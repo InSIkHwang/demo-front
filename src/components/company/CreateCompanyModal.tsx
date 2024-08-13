@@ -67,7 +67,7 @@ const SubmitButton = styled.button<{ disabled: boolean }>`
   padding: 10px 20px;
   font-size: 16px;
   border: none;
-  background-color: #1976d2;
+  background-color: ${(props) => props.theme.blue};
   color: white;
   border-radius: 4px;
   cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
@@ -78,7 +78,8 @@ const SubmitButton = styled.button<{ disabled: boolean }>`
   opacity: ${({ disabled }) => (disabled ? 0.5 : 1)};
 
   &:hover {
-    background-color: ${({ disabled }) => (disabled ? "#1976d2" : "#1560ac")};
+    background-color: ${({ disabled, theme }) =>
+      disabled ? theme.blue : theme.darkBlue};
   }
 `;
 
@@ -162,7 +163,6 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
         address: formData.address,
         communicationLanguage: formData.language,
       });
-      console.log("POST request successful:", response);
     } catch (error) {
       console.error("Error posting data:", error);
     }

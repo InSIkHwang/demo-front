@@ -37,12 +37,12 @@ const SearchBar = styled.div`
 `;
 
 const Button = styled(AntButton)`
-  background-color: #1976d2;
+  background-color: ${(props) => props.theme.blue};
   color: white;
   transition: background-color 0.3s;
 
   &:hover {
-    background-color: #1560ac !important;
+    background-color: ${(props) => props.theme.darkBlue} !important;
   }
 `;
 
@@ -52,8 +52,6 @@ const PaginationWrapper = styled(Pagination)`
 `;
 
 const { Option } = Select;
-
-
 
 const ShipList = () => {
   const [data, setData] = useState<Vessel[]>([]);

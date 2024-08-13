@@ -148,8 +148,6 @@ const PDFDocument = ({
     "귀사의 무궁한 발전을 기원합니다.\n하기와 같이 견적서 외뢰하오니 빠른 회신 부탁드립니다.";
   let itemIndex = 0;
 
-  console.log(vesselInfo);
-
   return (
     <PDFViewer width="100%" height="600" style={{ margin: "20px 0" }}>
       <Document>
