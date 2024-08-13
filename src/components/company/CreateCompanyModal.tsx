@@ -101,6 +101,7 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
     language: "",
     address: "",
     date: todayDate,
+    headerMessage: "",
   });
 
   const [isCodeUnique, setIsCodeUnique] = useState(true);
@@ -265,6 +266,16 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
               value={formData.language}
               onChange={handleChange}
               placeholder="KOR"
+            />
+          </FormGroup>
+          <FormGroup>
+            <Label htmlFor="headerMessage">머릿글</Label>
+            <Input
+              id="headerMessage"
+              name="headerMessage"
+              value={formData.headerMessage}
+              onChange={handleChange}
+              placeholder="귀사의 무궁한 발전을 기원합니다."
             />
           </FormGroup>
           <SubmitButton

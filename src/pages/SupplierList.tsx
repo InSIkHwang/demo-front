@@ -181,8 +181,8 @@ const SupplierList = () => {
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
-  const openDetailCompanyModal = (category: Supplier) => {
-    setSelectedSupplier(category);
+  const openDetailCompanyModal = (supplier: Supplier) => {
+    setSelectedSupplier(supplier);
     setIsDetailCompanyModalOpen(true);
   };
 

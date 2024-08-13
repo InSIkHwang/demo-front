@@ -134,6 +134,7 @@ interface Company {
   address: string;
   communicationLanguage: string;
   modifiedAt: string;
+  headerMessage: string;
 }
 
 interface ModalProps {
@@ -151,6 +152,8 @@ const DetailCompanyModal = ({
 }: ModalProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(company);
+
+  console.log(formData);
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
@@ -267,6 +270,10 @@ const DetailCompanyModal = ({
             <DetailItem>
               <PropName>수정된 날짜</PropName>
               <PropValue>{formData.modifiedAt}</PropValue>
+            </DetailItem>
+            <DetailItem>
+              <PropName>머릿글</PropName>
+              <PropValue>{formData.headerMessage}</PropValue>
             </DetailItem>
             <BtnWrap>
               <UpdateButton type="button" onClick={() => setIsEditing(true)}>

@@ -10,6 +10,7 @@ export interface Customer {
   communicationLanguage: string;
   modifiedAt: string;
   vesselList: VesselList[];
+  headerMessage: string;
 }
 
 export interface VesselList {
@@ -33,6 +34,7 @@ export interface Supplier {
   country: string;
   communicationLanguage: string;
   modifiedAt: string;
+  headerMessage: string;
 }
 
 export interface Vessel {

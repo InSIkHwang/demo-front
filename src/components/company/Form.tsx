@@ -52,6 +52,7 @@ interface FormProps {
     address: string;
     communicationLanguage: string;
     modifiedAt: string;
+    headerMessage: string;
   };
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSubmit: (e: React.FormEvent) => void;
@@ -129,6 +130,16 @@ const Form = ({
         name="communicationLanguage"
         value={formData.communicationLanguage}
         onChange={onChange}
+      />
+    </FormGroup>{" "}
+    <FormGroup>
+      <Label htmlFor="headerMessage">머릿글</Label>
+      <Input
+        id="headerMessage"
+        name="headerMessage"
+        value={formData.headerMessage}
+        onChange={onChange}
+        placeholder="귀사의 무궁한 발전을 기원합니다."
       />
     </FormGroup>
     <SubmitButton type="submit">{isEditing ? "수정" : "등록"}</SubmitButton>
