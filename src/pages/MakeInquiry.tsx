@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
-import { Button, message, Select } from "antd";
+import { Button, message, Modal, Select } from "antd";
 import dayjs from "dayjs";
 import {
   fetchDocData,
@@ -20,6 +20,7 @@ import {
 } from "../types/types";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import HeaderEditModal from "../components/makeInquiry/HeaderEditModal";
+import MailSenderComponent from "../components/makeInquiry/MailSenderComponent";
 
 // Styles
 const FormContainer = styled.div`
@@ -127,6 +128,7 @@ const MakeInquiry = () => {
     useState<boolean>(false);
   const [pdfHeader, setPdfHeader] = useState<string>("");
   const [formValues, setFormValues] = useState(INITIAL_FORM_VALUES);
+  const [isMailSenderVisible, setIsMailSenderVisible] = useState(false);
 
   // Load document data
   const loadDocData = useCallback(async () => {
@@ -527,6 +529,18 @@ const MakeInquiry = () => {
     setPdfHeader(text);
   };
 
+  const showMailSenderModal = () => {
+    setIsMailSenderVisible(true);
+  };
+
+  const handleMailSenderOk = () => {
+    setIsMailSenderVisible(false);
+  };
+
+  const handleMailSenderCancel = () => {
+    setIsMailSenderVisible(false);
+  };
+
   if (docDataloading) {
     return <div>Loading...</div>;
   }
@@ -562,10 +576,26 @@ const MakeInquiry = () => {
       <Button
         type="primary"
         onClick={handleSubmit}
-        style={{ marginTop: "20px", float: "right" }}
+        style={{ margin: "20px 0 0 15px", float: "right" }}
       >
         저장하기
       </Button>
+      <Button
+        type="primary"
+        onClick={showMailSenderModal}
+        style={{ margin: "20px 0 0 15px", float: "right" }}
+      >
+        메일 발송
+      </Button>
+      <Modal
+        title="Send Mail"
+        visible={isMailSenderVisible}
+        onOk={handleMailSenderOk}
+        onCancel={handleMailSenderCancel}
+        footer={null}
+      >
+        <MailSenderComponent />
+      </Modal>
       <Button
         onClick={() => setShowPDFPreview((prev) => !prev)}
         style={{ marginTop: "20px", float: "left" }}

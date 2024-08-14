@@ -1,5 +1,5 @@
 import axios from "../api/axios";
-import { Customer, Inquiry, Item, Supplier } from "../types/types";
+import { Customer, Inquiry, Item, MailData, Supplier } from "../types/types";
 
 export const fetchDocData = async () => {
   const response = await axios.post<{
@@ -127,6 +127,21 @@ export const searchInquiryList = async (
     totalCount: number;
     customerInquiryList: Inquiry[];
   }>(`/api/customer-inquiries/search?${queryString}`);
+
+  return response.data;
+};
+
+export const sendInquiryMail = async (
+  docNumber: string,
+  mailData: MailData[]
+) => {
+  const response = await axios.post(
+    `/api/customer-inquirues/send-email?docNumber=${docNumber}`,
+    {
+      mailData,
+      attachments: [],
+    }
+  );
 
   return response.data;
 };

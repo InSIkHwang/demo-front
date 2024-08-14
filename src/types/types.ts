@@ -122,3 +122,11 @@ export interface Inquiry {
   inquiryType: string;
   inquiryItemDetails: InquiryListItem[];
 }
+
+export interface MailData {
+  toRecipient: string;
+  subject: string;
+  content: string;
+  ccRecipient?: string | null;
+  bccRecipient?: string | null;
+}
