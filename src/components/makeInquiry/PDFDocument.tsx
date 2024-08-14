@@ -6,8 +6,8 @@ import {
   View,
   StyleSheet,
   Font,
-  PDFViewer,
   Image,
+  PDFViewer,
 } from "@react-pdf/renderer";
 import dayjs from "dayjs";
 import malgunGothic from "../../assets/font/malgun.ttf";
@@ -34,9 +34,10 @@ interface FormValues {
 interface PDFDocumentProps {
   formValues: FormValues;
   items: InquiryItem[];
-  selectedSupplierName: string;
   vesselInfo: VesselList | null;
   pdfHeader: string;
+  supplierName: string; // 개별 공급자 이름
+  viewMode: boolean;
 }
 
 // 스타일 정의
@@ -142,132 +143,254 @@ const getDisplayNo = (itemType: string, itemIndex: number) => {
 const PDFDocument = ({
   formValues,
   items,
-  selectedSupplierName,
   vesselInfo,
   pdfHeader,
+  supplierName,
+  viewMode,
 }: PDFDocumentProps) => {
   const headerMessage = pdfHeader;
   let itemIndex = 0;
 
-  return (
-    <PDFViewer width="100%" height="600" style={{ margin: "20px 0" }}>
-      <Document>
-        <Page size="A4" style={styles.page}>
-          <View style={styles.header}>
-            <Image src={logoUrl} style={styles.logo} />
-            <View>
-              <Text style={styles.headerInfo}>BAS KOREA CO.</Text>
-              <Text style={styles.headerInfo}>
-                43-4, Gyeongjeoncheon-ro 248beon-gil, Gangseo-gu, Busan Korea
-                46719
-              </Text>
-              <Text style={styles.headerInfo}>
-                Tel: +82-51-797-7078 Fax: +82-51-793-0635
-              </Text>
-              <Text style={styles.headerInfo}>Email: info@bas-korea.com</Text>
-            </View>
-          </View>
-          <View style={styles.section}>
-            <Text style={styles.title}>견 적 의 뢰 서</Text>
-          </View>
-          <View style={styles.inquiryInfoWrap}>
-            <View style={styles.inquiryInfoColumn}>
-              <Text style={styles.inquiryInfoText}>
-                MESSRS: {selectedSupplierName}
-              </Text>
-              <Text style={[styles.inquiryInfoText, { marginBottom: 10 }]}>
-                VESSEL: {formValues.vesselName}
-              </Text>
-              <Text style={styles.inquiryInfoText}>
-                IMO NO: {vesselInfo?.imoNumber}
-              </Text>
-              <Text style={styles.inquiryInfoText}>
-                HULL NO: {vesselInfo?.hullNumber}
-              </Text>
-            </View>
-            <View
-              style={[styles.inquiryInfoColumn, { alignItems: "flex-end" }]}
-            >
-              <Text style={styles.inquiryInfoText}>
-                OUR REF No: {formValues.refNumber}
-              </Text>
-              <Text style={styles.inquiryInfoText}>
-                DATE: {dayjs(formValues.registerDate).format("YYYY-MM-DD")}
-              </Text>
-            </View>
-          </View>
-          <View style={styles.section}>
-            <Text style={styles.headerMessage}>{headerMessage}</Text>
-          </View>
-          <View style={styles.table}>
-            <View style={styles.tableRow}>
-              <View style={styles.tableSmallCol}>
-                <Text style={styles.tableCell}>NO.</Text>
-              </View>
-              <View style={styles.tableMedCol}>
-                <Text style={styles.tableCell}>CODE</Text>
-              </View>
-              <View style={styles.tableBigCol}>
-                <Text style={styles.tableCell}>DESCRIPTION</Text>
-              </View>
-              <View style={styles.tableSmallCol}>
-                <Text style={styles.tableCell}>Q'TY</Text>
-              </View>
-              <View style={styles.tableSmallCol}>
-                <Text style={styles.tableCell}>UNIT</Text>
-              </View>
-              <View style={styles.tableMedCol}>
-                <Text style={styles.tableCell}>비고</Text>
+  if (viewMode) {
+    return (
+      <PDFViewer width="100%" height="600" style={{ margin: "20px 0" }}>
+        <Document>
+          <Page size="A4" style={styles.page}>
+            <View style={styles.header}>
+              <Image src={logoUrl} style={styles.logo} />
+              <View>
+                <Text style={styles.headerInfo}>BAS KOREA CO.</Text>
+                <Text style={styles.headerInfo}>
+                  43-4, Gyeongjeoncheon-ro 248beon-gil, Gangseo-gu, Busan Korea
+                  46719
+                </Text>
+                <Text style={styles.headerInfo}>
+                  Tel: +82-51-797-7078 Fax: +82-51-793-0635
+                </Text>
+                <Text style={styles.headerInfo}>Email: info@bas-korea.com</Text>
               </View>
             </View>
-            {items.map((item) => {
-              const isItemType = item.itemType === "ITEM";
-              if (isItemType) {
-                itemIndex += 1; // "ITEM" 타입일 때만 인덱스 증가
-              }
-
-              return (
-                <View style={styles.tableRow} key={item.no}>
-                  <View style={styles.tableSmallCol}>
-                    <Text style={styles.tableCell}>
-                      {isItemType
-                        ? getDisplayNo(item.itemType, itemIndex - 1)
-                        : getDisplayNo(item.itemType, 0)}
-                    </Text>
-                  </View>
-                  {isItemType && (
-                    <>
-                      <View style={styles.tableMedCol}>
-                        <Text style={styles.tableCell}>{item.itemCode}</Text>
-                      </View>
-                      <View style={styles.tableBigCol}>
-                        <Text style={styles.tableCell}>{item.itemName}</Text>
-                      </View>
-                      <View style={styles.tableSmallCol}>
-                        <Text style={styles.tableCell}>{item.qty}</Text>
-                      </View>
-                      <View style={styles.tableSmallCol}>
-                        <Text style={styles.tableCell}>{item.unit}</Text>
-                      </View>
-                      <View style={styles.tableMedCol}>
-                        <Text style={styles.tableCell}>{item.itemRemark}</Text>
-                      </View>
-                    </>
-                  )}
-                  {!isItemType && (
-                    <>
-                      <View style={[styles.tableBigCol, { flex: 7.65 }]}>
-                        <Text style={styles.tableCell}>{item.itemName}</Text>
-                      </View>
-                    </>
-                  )}
+            <View style={styles.section}>
+              <Text style={styles.title}>견 적 의 뢰 서</Text>
+            </View>
+            <View style={styles.inquiryInfoWrap}>
+              <View style={styles.inquiryInfoColumn}>
+                <Text style={styles.inquiryInfoText}>
+                  MESSRS: {supplierName}
+                </Text>
+                <Text style={[styles.inquiryInfoText, { marginBottom: 10 }]}>
+                  VESSEL: {formValues.vesselName}
+                </Text>
+                <Text style={styles.inquiryInfoText}>
+                  IMO NO: {vesselInfo?.imoNumber}
+                </Text>
+                <Text style={styles.inquiryInfoText}>
+                  HULL NO: {vesselInfo?.hullNumber}
+                </Text>
+              </View>
+              <View
+                style={[styles.inquiryInfoColumn, { alignItems: "flex-end" }]}
+              >
+                <Text style={styles.inquiryInfoText}>
+                  OUR REF No: {formValues.refNumber}
+                </Text>
+                <Text style={styles.inquiryInfoText}>
+                  DATE: {dayjs(formValues.registerDate).format("YYYY-MM-DD")}
+                </Text>
+              </View>
+            </View>
+            <View style={styles.section}>
+              <Text style={styles.headerMessage}>{headerMessage}</Text>
+            </View>
+            <View style={styles.table}>
+              <View style={styles.tableRow}>
+                <View style={styles.tableSmallCol}>
+                  <Text style={styles.tableCell}>NO.</Text>
                 </View>
-              );
-            })}
+                <View style={styles.tableMedCol}>
+                  <Text style={styles.tableCell}>CODE</Text>
+                </View>
+                <View style={styles.tableBigCol}>
+                  <Text style={styles.tableCell}>DESCRIPTION</Text>
+                </View>
+                <View style={styles.tableSmallCol}>
+                  <Text style={styles.tableCell}>Q'TY</Text>
+                </View>
+                <View style={styles.tableSmallCol}>
+                  <Text style={styles.tableCell}>UNIT</Text>
+                </View>
+                <View style={styles.tableMedCol}>
+                  <Text style={styles.tableCell}>비고</Text>
+                </View>
+              </View>
+              {items.map((item) => {
+                const isItemType = item.itemType === "ITEM";
+                if (isItemType) {
+                  itemIndex += 1; // "ITEM" 타입일 때만 인덱스 증가
+                }
+
+                return (
+                  <View style={styles.tableRow} key={item.no}>
+                    <View style={styles.tableSmallCol}>
+                      <Text style={styles.tableCell}>
+                        {isItemType
+                          ? getDisplayNo(item.itemType, itemIndex - 1)
+                          : getDisplayNo(item.itemType, 0)}
+                      </Text>
+                    </View>
+                    {isItemType && (
+                      <>
+                        <View style={styles.tableMedCol}>
+                          <Text style={styles.tableCell}>{item.itemCode}</Text>
+                        </View>
+                        <View style={styles.tableBigCol}>
+                          <Text style={styles.tableCell}>{item.itemName}</Text>
+                        </View>
+                        <View style={styles.tableSmallCol}>
+                          <Text style={styles.tableCell}>{item.qty}</Text>
+                        </View>
+                        <View style={styles.tableSmallCol}>
+                          <Text style={styles.tableCell}>{item.unit}</Text>
+                        </View>
+                        <View style={styles.tableMedCol}>
+                          <Text style={styles.tableCell}>
+                            {item.itemRemark}
+                          </Text>
+                        </View>
+                      </>
+                    )}
+                    {!isItemType && (
+                      <>
+                        <View style={[styles.tableBigCol, { flex: 7.65 }]}>
+                          <Text style={styles.tableCell}>{item.itemName}</Text>
+                        </View>
+                      </>
+                    )}
+                  </View>
+                );
+              })}
+            </View>
+          </Page>
+        </Document>
+      </PDFViewer>
+    );
+  }
+
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        <View style={styles.header}>
+          <Image src={logoUrl} style={styles.logo} />
+          <View>
+            <Text style={styles.headerInfo}>BAS KOREA CO.</Text>
+            <Text style={styles.headerInfo}>
+              43-4, Gyeongjeoncheon-ro 248beon-gil, Gangseo-gu, Busan Korea
+              46719
+            </Text>
+            <Text style={styles.headerInfo}>
+              Tel: +82-51-797-7078 Fax: +82-51-793-0635
+            </Text>
+            <Text style={styles.headerInfo}>Email: info@bas-korea.com</Text>
           </View>
-        </Page>
-      </Document>
-    </PDFViewer>
+        </View>
+        <View style={styles.section}>
+          <Text style={styles.title}>견 적 의 뢰 서</Text>
+        </View>
+        <View style={styles.inquiryInfoWrap}>
+          <View style={styles.inquiryInfoColumn}>
+            <Text style={styles.inquiryInfoText}>
+              MESSRS: {supplierName} {/* 개별 공급자 이름 사용 */}
+            </Text>
+            <Text style={[styles.inquiryInfoText, { marginBottom: 10 }]}>
+              VESSEL: {formValues.vesselName}
+            </Text>
+            <Text style={styles.inquiryInfoText}>
+              IMO NO: {vesselInfo?.imoNumber}
+            </Text>
+            <Text style={styles.inquiryInfoText}>
+              HULL NO: {vesselInfo?.hullNumber}
+            </Text>
+          </View>
+          <View style={[styles.inquiryInfoColumn, { alignItems: "flex-end" }]}>
+            <Text style={styles.inquiryInfoText}>
+              OUR REF No: {formValues.refNumber}
+            </Text>
+            <Text style={styles.inquiryInfoText}>
+              DATE: {dayjs(formValues.registerDate).format("YYYY-MM-DD")}
+            </Text>
+          </View>
+        </View>
+        <View style={styles.section}>
+          <Text style={styles.headerMessage}>{headerMessage}</Text>
+        </View>
+        <View style={styles.table}>
+          <View style={styles.tableRow}>
+            <View style={styles.tableSmallCol}>
+              <Text style={styles.tableCell}>NO.</Text>
+            </View>
+            <View style={styles.tableMedCol}>
+              <Text style={styles.tableCell}>CODE</Text>
+            </View>
+            <View style={styles.tableBigCol}>
+              <Text style={styles.tableCell}>DESCRIPTION</Text>
+            </View>
+            <View style={styles.tableSmallCol}>
+              <Text style={styles.tableCell}>Q'TY</Text>
+            </View>
+            <View style={styles.tableSmallCol}>
+              <Text style={styles.tableCell}>UNIT</Text>
+            </View>
+            <View style={styles.tableMedCol}>
+              <Text style={styles.tableCell}>비고</Text>
+            </View>
+          </View>
+          {items.map((item) => {
+            const isItemType = item.itemType === "ITEM";
+            if (isItemType) {
+              itemIndex += 1; // "ITEM" 타입일 때만 인덱스 증가
+            }
+
+            return (
+              <View style={styles.tableRow} key={item.no}>
+                <View style={styles.tableSmallCol}>
+                  <Text style={styles.tableCell}>
+                    {isItemType
+                      ? getDisplayNo(item.itemType, itemIndex - 1)
+                      : getDisplayNo(item.itemType, 0)}
+                  </Text>
+                </View>
+                {isItemType && (
+                  <>
+                    <View style={styles.tableMedCol}>
+                      <Text style={styles.tableCell}>{item.itemCode}</Text>
+                    </View>
+                    <View style={styles.tableBigCol}>
+                      <Text style={styles.tableCell}>{item.itemName}</Text>
+                    </View>
+                    <View style={styles.tableSmallCol}>
+                      <Text style={styles.tableCell}>{item.qty}</Text>
+                    </View>
+                    <View style={styles.tableSmallCol}>
+                      <Text style={styles.tableCell}>{item.unit}</Text>
+                    </View>
+                    <View style={styles.tableMedCol}>
+                      <Text style={styles.tableCell}>{item.itemRemark}</Text>
+                    </View>
+                  </>
+                )}
+                {!isItemType && (
+                  <>
+                    <View style={[styles.tableBigCol, { flex: 7.65 }]}>
+                      <Text style={styles.tableCell}>{item.itemName}</Text>
+                    </View>
+                  </>
+                )}
+              </View>
+            );
+          })}
+        </View>
+      </Page>
+    </Document>
   );
 };
 

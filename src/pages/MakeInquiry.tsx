@@ -21,6 +21,7 @@ import {
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import HeaderEditModal from "../components/makeInquiry/HeaderEditModal";
 import MailSenderComponent from "../components/makeInquiry/MailSenderComponent";
+import PDFGenerator from "../components/makeInquiry/PDFGenerator";
 
 // Styles
 const FormContainer = styled.div`
@@ -541,6 +542,10 @@ const MakeInquiry = () => {
     setIsMailSenderVisible(false);
   };
 
+  const handlePDFPreview = () => {
+    setShowPDFPreview(true);
+  };
+
   if (docDataloading) {
     return <div>Loading...</div>;
   }
@@ -597,10 +602,11 @@ const MakeInquiry = () => {
         <MailSenderComponent />
       </Modal>
       <Button
-        onClick={() => setShowPDFPreview((prev) => !prev)}
-        style={{ marginTop: "20px", float: "left" }}
+        type="default"
+        onClick={handlePDFPreview}
+        style={{ marginLeft: "10px" }}
       >
-        {showPDFPreview ? "PDF 미리보기 닫기" : "PDF 미리보기"}
+        Preview PDF
       </Button>
       <div
         style={{
@@ -638,15 +644,23 @@ const MakeInquiry = () => {
           pdfSupplierTag={pdfSupplierTag}
         />
       </div>
+      <PDFGenerator
+        isVisible={showPDFPreview}
+        onClose={() => setShowPDFPreview(false)}
+        selectedSupplierTag={selectedSupplierTag}
+        formValues={formValues}
+        items={items}
+        vesselInfo={selectedVessel}
+        pdfHeader={pdfHeader}
+      />
       {showPDFPreview && (
         <PDFDocument
           formValues={formValues}
           items={items}
-          selectedSupplierName={
-            pdfSupplierTag.length > 0 ? pdfSupplierTag[0].name : ""
-          }
+          supplierName={pdfSupplierTag.length > 0 ? pdfSupplierTag[0].name : ""}
           vesselInfo={selectedVessel}
           pdfHeader={pdfHeader}
+          viewMode={true}
         />
       )}
     </FormContainer>

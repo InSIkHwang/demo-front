@@ -62,7 +62,6 @@ const MailSenderComponent = () => {
       >
         <Input />
       </StyledFormItem>
-
       <Form.List name="mails">
         {(fields, { add, remove }) => (
           <>
