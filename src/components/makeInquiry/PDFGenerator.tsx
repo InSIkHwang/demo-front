@@ -1,16 +1,8 @@
-import React from "react";
-import { Modal, Button } from "antd";
-import {
-  Page,
-  Text,
-  View,
-  Document,
-  StyleSheet,
-  PDFDownloadLink,
-} from "@react-pdf/renderer";
+import React, { Dispatch, SetStateAction, useEffect } from "react";
+import { pdf } from "@react-pdf/renderer";
 import PDFDocument from "./PDFDocument";
 import dayjs from "dayjs";
-import { InquiryItem, VesselList } from "../../types/types";
+import { InquiryItem, MailData, VesselList } from "../../types/types";
 
 interface FormValues {
   docNumber: string;
@@ -26,61 +18,78 @@ interface FormValues {
 interface PDFGeneratorProps {
   isVisible: boolean;
   onClose: () => void;
-  selectedSupplierTag: { id: number; name: string; code: string }[];
+  selectedSupplierTag: {
+    id: number;
+    name: string;
+    code: string;
+    email: string;
+  }[];
   formValues: FormValues;
   items: InquiryItem[];
   vesselInfo: VesselList | null;
   pdfHeader: string;
+  setMailDataList: Dispatch<SetStateAction<MailData[]>>;
 }
 
-const styles = StyleSheet.create({
-  page: {
-    flexDirection: "row",
-    backgroundColor: "#ffffff",
-    padding: 20,
-  },
-  section: {
-    margin: 10,
-    padding: 10,
-    flexGrow: 1,
-  },
-});
-
 const PDFGenerator = ({
-  isVisible,
-  onClose,
   selectedSupplierTag,
   formValues,
   items,
   vesselInfo,
   pdfHeader,
+  setMailDataList,
 }: PDFGeneratorProps) => {
-  return (
-    <>
-      {selectedSupplierTag.map((supplierTag, index) => (
-        <PDFDownloadLink
-          key={index}
-          document={
-            <PDFDocument
-              formValues={formValues}
-              items={items}
-              supplierName={supplierTag.name} // 공급자 이름을 넘김
-              vesselInfo={vesselInfo}
-              pdfHeader={pdfHeader}
-              viewMode={false}
-            />
-          }
-          fileName={`document_${supplierTag.name}.pdf`}
-        >
-          {({ loading }) =>
-            loading
-              ? "Generating PDF..."
-              : `Download PDF for ${supplierTag.name}`
-          }
-        </PDFDownloadLink>
-      ))}
-    </>
-  );
+  const generateAndSendPDFs = async () => {
+    const mailDataList: MailData[] = [];
+
+    for (const supplierTag of selectedSupplierTag) {
+      const doc = (
+        <PDFDocument
+          formValues={formValues}
+          items={items}
+          supplierName={supplierTag.name}
+          vesselInfo={vesselInfo}
+          pdfHeader={pdfHeader}
+          viewMode={false}
+        />
+      );
+
+      const pdfBlob = await pdf(doc).toBlob();
+      const pdfBase64 = await convertBlobToBase64(pdfBlob);
+
+      const mailData: MailData = {
+        toRecipient: supplierTag.email,
+        subject: `BASKOREA REQUEST FOR QUOTATION (${formValues.refNumber}) - ${supplierTag.name}`,
+        content: `Thanks for your cooperation \n\n<VESSEL INFO>\nVESSEL: ${vesselInfo?.vesselName}\nIMO: ${vesselInfo?.imoNumber}`,
+        ccRecipient: "info@bas-korea.com",
+        attachments: [
+          {
+            fileName: `document${formValues.refNumber}_${supplierTag.name}.pdf`,
+            content: pdfBase64,
+            contentType: "application/pdf",
+          },
+        ],
+      };
+
+      mailDataList.push(mailData);
+    }
+    setMailDataList(mailDataList);
+  };
+
+  const convertBlobToBase64 = (blob: Blob): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
+
+  useEffect(() => {
+    generateAndSendPDFs();
+  }, [selectedSupplierTag, formValues, items, vesselInfo, pdfHeader]);
+
+  return null;
 };
 
 export default PDFGenerator;

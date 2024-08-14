@@ -16,6 +16,7 @@ import {
   Inquiry,
   InquiryItem,
   InquiryListItem,
+  MailData,
   VesselList,
 } from "../types/types";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
@@ -68,10 +69,10 @@ const createNewItem = (no: number): InquiryItem => ({
 
 const getSupplierMap = (
   itemDetails: InquiryListItem[]
-): { id: number; name: string; code: string }[] => {
+): { id: number; name: string; code: string; email: string }[] => {
   const supplierMap = new Map<
     number,
-    { id: number; name: string; code: string }
+    { id: number; name: string; code: string; email: string }
   >();
   itemDetails.forEach((item) =>
     item.suppliers.forEach((supplier) =>
@@ -79,6 +80,7 @@ const getSupplierMap = (
         id: supplier.supplierId,
         name: supplier.companyName,
         code: supplier.code,
+        email: supplier.email,
       })
     )
   );
@@ -113,13 +115,13 @@ const MakeInquiry = () => {
   const [itemNameMap, setItemNameMap] = useState<{ [key: string]: string }>({});
   const [itemIdMap, setItemIdMap] = useState<{ [key: string]: number }>({});
   const [supplierOptions, setSupplierOptions] = useState<
-    { value: string; id: number; itemId: number; code: string }[]
+    { value: string; id: number; itemId: number; code: string; email: string }[]
   >([]);
   const [selectedSuppliers, setSelectedSuppliers] = useState<
-    { id: number; name: string; code: string }[]
+    { id: number; name: string; code: string; email: string }[]
   >([]);
   const [selectedSupplierTag, setSelectedSupplierTag] = useState<
-    { id: number; name: string; code: string }[]
+    { id: number; name: string; code: string; email: string }[]
   >([]);
   const [showPDFPreview, setShowPDFPreview] = useState(false);
   const [pdfSupplierTag, setPdfSupplierTag] = useState<
@@ -130,6 +132,8 @@ const MakeInquiry = () => {
   const [pdfHeader, setPdfHeader] = useState<string>("");
   const [formValues, setFormValues] = useState(INITIAL_FORM_VALUES);
   const [isMailSenderVisible, setIsMailSenderVisible] = useState(false);
+  const [mailDataList, setMailDataList] = useState<MailData[]>([]);
+  const [loadMailData, setLoadMailData] = useState<boolean>(false);
 
   // Load document data
   const loadDocData = useCallback(async () => {
@@ -307,6 +311,7 @@ const MakeInquiry = () => {
         id: supplier.id,
         name: supplier.value,
         code: supplier.code,
+        email: supplier.email,
       }));
 
     setSelectedSuppliers((prev) => [
@@ -458,6 +463,7 @@ const MakeInquiry = () => {
             id: supplier.id,
             itemId: supplier.itemId,
             code: supplier.code,
+            email: supplier.email,
           }))
         );
 
@@ -498,7 +504,7 @@ const MakeInquiry = () => {
 
   const handleSupplierSelect = (
     value: string,
-    option: { value: string; id: number; code: string }
+    option: { value: string; id: number; code: string; email: string }
   ) => {
     setSelectedSuppliers((prev) => {
       const existingSuppliers = new Map(prev.map((s) => [s.id, s]));
@@ -506,6 +512,7 @@ const MakeInquiry = () => {
         id: option.id,
         name: value,
         code: option.code,
+        email: option.email,
       });
       return Array.from(existingSuppliers.values());
     });
@@ -599,7 +606,10 @@ const MakeInquiry = () => {
         onCancel={handleMailSenderCancel}
         footer={null}
       >
-        <MailSenderComponent />
+        <MailSenderComponent
+          mailDataList={mailDataList}
+          inquiryFormValues={formValues}
+        />
       </Modal>
       <Button
         type="default"
@@ -645,13 +655,14 @@ const MakeInquiry = () => {
         />
       </div>
       <PDFGenerator
-        isVisible={showPDFPreview}
-        onClose={() => setShowPDFPreview(false)}
+        isVisible={loadMailData}
+        onClose={() => setLoadMailData(false)}
         selectedSupplierTag={selectedSupplierTag}
         formValues={formValues}
         items={items}
         vesselInfo={selectedVessel}
         pdfHeader={pdfHeader}
+        setMailDataList={setMailDataList}
       />
       {showPDFPreview && (
         <PDFDocument

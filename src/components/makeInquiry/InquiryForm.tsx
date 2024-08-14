@@ -45,7 +45,12 @@ interface InquiryFormProps {
   autoCompleteOptions: { value: string }[];
   vesselNameList: string[];
   supplierOptions: { value: string; id: number; code: string }[];
-  selectedSuppliers: { id: number; name: string; code: string }[];
+  selectedSuppliers: {
+    id: number;
+    name: string;
+    code: string;
+    email: string;
+  }[];
   handleFormChange: <K extends keyof FormValues>(
     key: K,
     value: FormValues[K]
@@ -59,17 +64,17 @@ interface InquiryFormProps {
   handleSupplierSearch: (value: string) => void;
   handleSupplierSelect: (
     value: string,
-    option: { value: string; id: number; code: string }
+    option: { value: string; id: number; code: string; email: string }
   ) => void;
   handleTagClose: (id: number) => void;
   addItem: () => void;
   customerUnreg: boolean;
   vesselUnreg: boolean;
   setSelectedSupplierTag: Dispatch<
-    SetStateAction<{ id: number; name: string; code: string }[]>
+    SetStateAction<{ id: number; name: string; code: string; email: string }[]>
   >;
   setSelectedSuppliers: Dispatch<
-    SetStateAction<{ id: number; name: string; code: string }[]>
+    SetStateAction<{ id: number; name: string; code: string; email: string }[]>
   >;
 }
 
@@ -96,7 +101,7 @@ const InquiryForm = ({
   const [tagColors, setTagColors] = useState<{ [id: number]: string }>({});
   const [supplierSearch, setSupplierSearch] = useState("");
   const [supplierList, setSupplierList] = useState<
-    { name: string; id: number; code: string }[]
+    { name: string; id: number; code: string; email: string }[]
   >([]);
   const [autoSearchSupCompleteOptions, setAutoSearchSupCompleteOptions] =
     useState<{ value: string }[]>([]);
@@ -160,6 +165,7 @@ const InquiryForm = ({
           name: supplier.companyName,
           id: supplier.id,
           code: supplier.code,
+          email: supplier.email,
         }));
         setSupplierList(options);
         setAutoSearchSupCompleteOptions(
@@ -230,6 +236,7 @@ const InquiryForm = ({
             id: matchedSupplier.id,
             name: matchedSupplier.name,
             code: matchedSupplier.code,
+            email: matchedSupplier.email,
           },
         ];
       });
