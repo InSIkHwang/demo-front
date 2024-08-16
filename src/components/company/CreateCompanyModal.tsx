@@ -173,6 +173,7 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
     if (!isCodeUnique) return; // 코드가 유효하지 않으면 제출하지 않음
     await postCreate();
     onUpdate();
+    onClose();
   };
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
