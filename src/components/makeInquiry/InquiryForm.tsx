@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useState } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import {
   Form,
   Input,
@@ -44,7 +44,7 @@ interface InquiryFormProps {
   formValues: FormValues;
   autoCompleteOptions: { value: string }[];
   vesselNameList: string[];
-  supplierOptions: { value: string; id: number; code: string }[];
+  supplierOptions: { value: string; id: number; code: string; email: string }[];
   selectedSuppliers: {
     id: number;
     name: string;
@@ -106,38 +106,39 @@ const InquiryForm = ({
   const [autoSearchSupCompleteOptions, setAutoSearchSupCompleteOptions] =
     useState<{ value: string }[]>([]);
 
-  const openCustomerModal = () => setIsCustomerModalOpen(true);
-  const closeCustomerModal = () => setIsCustomerModalOpen(false);
-  const openVesselModal = () => setIsVesselModalOpen(true);
-  const closeVesselModal = () => setIsVesselModalOpen(false);
+  useEffect(() => {
+    if (selectedSuppliers.length > 0) {
+      const initialColors = selectedSuppliers.reduce((colors, supplier) => {
+        colors[supplier.id] = "#007bff";
+        return colors;
+      }, {} as { [id: number]: string });
+
+      setTagColors(initialColors);
+    }
+  }, [selectedSuppliers]);
 
   const validateCustomer = () => {
     if (customerUnreg) {
-      if (formValues.customer.trim() === "") {
-        return {
-          status: "error" as "error",
-          message: "Please enter a customer",
-        };
-      } else {
-        return {
-          status: "error" as "error",
-          message: "등록되지 않은 매출처입니다.",
-        };
-      }
+      return {
+        status: formValues.customer.trim() === "" ? "error" : undefined,
+        message:
+          formValues.customer.trim() === ""
+            ? "Please enter a customer"
+            : "등록되지 않은 매출처입니다.",
+      };
     }
     return { status: undefined, message: undefined };
   };
 
   const validateVessel = () => {
     if (vesselUnreg) {
-      if (formValues.vesselName.trim() === "") {
-        return { status: "error" as "error", message: "Please enter a vessel" };
-      } else {
-        return {
-          status: "error" as "error",
-          message: "등록되지 않은 선박입니다.",
-        };
-      }
+      return {
+        status: formValues.vesselName.trim() === "" ? "error" : undefined,
+        message:
+          formValues.vesselName.trim() === ""
+            ? "Please enter a vessel"
+            : "등록되지 않은 선박입니다.",
+      };
     }
     return { status: undefined, message: undefined };
   };
@@ -149,10 +150,9 @@ const InquiryForm = ({
     return arr.filter((item) => {
       if (uniqueIds.has(item.id)) {
         return false;
-      } else {
-        uniqueIds.add(item.id);
-        return true;
       }
+      uniqueIds.add(item.id);
+      return true;
     });
   };
 
@@ -189,10 +189,7 @@ const InquiryForm = ({
       const currentTags = [...prevTags];
 
       if (isAlreadySelected) {
-        setTagColors((prevColors) => ({
-          ...prevColors,
-          [id]: "#d9d9d9",
-        }));
+        setTagColors((prevColors) => ({ ...prevColors, [id]: "#d9d9d9" }));
         return currentTags.filter((tag) => tag.id !== id);
       } else {
         const newTag = selectedSuppliers.find((supplier) => supplier.id === id);
@@ -201,10 +198,7 @@ const InquiryForm = ({
             message.error("최대 5개의 의뢰처만 등록 가능합니다.");
             return currentTags;
           }
-          setTagColors((prevColors) => ({
-            ...prevColors,
-            [id]: "#1677ff",
-          }));
+          setTagColors((prevColors) => ({ ...prevColors, [id]: "#007bff" }));
           return [...currentTags, newTag];
         }
         return currentTags;
@@ -326,14 +320,22 @@ const InquiryForm = ({
           <InquiryItemForm
             label="매출처"
             name="customer"
-            validateStatus={validateCustomer().status}
+            validateStatus={
+              validateCustomer().status as
+                | ""
+                | "error"
+                | "success"
+                | "warning"
+                | "validating"
+                | undefined
+            }
             help={validateCustomer().message}
             rules={[{ required: true, message: "Please enter customer" }]}
           >
             <Button
               type="primary"
               style={{ position: "absolute", top: "-35px", right: "0" }}
-              onClick={openCustomerModal}
+              onClick={() => setIsCustomerModalOpen(true)}
             >
               신규 등록
             </Button>
@@ -349,14 +351,22 @@ const InquiryForm = ({
           <InquiryItemForm
             label="선박명"
             name="vesselName"
-            validateStatus={validateVessel().status}
+            validateStatus={
+              validateVessel().status as
+                | ""
+                | "error"
+                | "success"
+                | "warning"
+                | "validating"
+                | undefined
+            }
             help={validateVessel().message}
             rules={[{ required: true, message: "Please enter vessel name" }]}
           >
             <Button
               type="primary"
               style={{ position: "absolute", top: "-35px", right: "0" }}
-              onClick={openVesselModal}
+              onClick={() => setIsVesselModalOpen(true)}
             >
               신규 등록
             </Button>
@@ -439,14 +449,14 @@ const InquiryForm = ({
       {isCustomerModalOpen && (
         <CreateCompanyModal
           category={"customer"}
-          onClose={closeCustomerModal}
-          onUpdate={closeCustomerModal}
+          onClose={() => setIsCustomerModalOpen(false)}
+          onUpdate={() => setIsCustomerModalOpen(false)}
         />
       )}
       {isVesselModalOpen && (
         <CreateVesselModal
-          onClose={closeVesselModal}
-          onUpdate={closeVesselModal}
+          onClose={() => setIsVesselModalOpen(false)}
+          onUpdate={() => setIsVesselModalOpen(false)}
         />
       )}
     </>
