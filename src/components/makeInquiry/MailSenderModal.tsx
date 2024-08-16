@@ -90,33 +90,37 @@ const MailSenderModal = ({
   }, [mailDataList, form, inquiryFormValues.docNumber]);
 
   const onFinish = async (values: any) => {
+    // Update mail data list with form values
     const updatedMailDataList = currentMailDataList.map((mailData, index) => ({
       ...mailData,
       ...values.mails[index],
     }));
 
     setLoading(true);
+
     try {
+      // Send inquiry mail with updated data list
       await sendInquiryMail(values.docNumber, updatedMailDataList);
-      console.log(updatedMailDataList);
+
+      // Success message
       message.success("이메일이 성공적으로 전송되었습니다!");
     } catch (error) {
-      console.log(updatedMailDataList);
+      // Error handling
+      console.error("Error sending email:", error);
       message.error("이메일 전송에 실패했습니다. 다시 시도해 주세요.");
     } finally {
       setLoading(false);
     }
   };
 
-  console.log(inquiryFormValues);
-
   return (
     <StyledForm form={form} onFinish={onFinish}>
-      <FormRow>
+      <FormRow style={{ marginBottom: 0 }}>
         <StyledFormItem
           name="docNumber"
           label="문서 번호"
           initialValue={inquiryFormValues.docNumber}
+          style={{ flex: 0.8 }}
         >
           <Input disabled placeholder="문서 번호" />
         </StyledFormItem>
@@ -124,8 +128,27 @@ const MailSenderModal = ({
           name="refNumber"
           label="REF NO."
           initialValue={inquiryFormValues.refNumber}
+          style={{ flex: 1 }}
         >
           <Input disabled placeholder="REF NO." />
+        </StyledFormItem>
+      </FormRow>
+      <FormRow>
+        <StyledFormItem
+          name="customer"
+          label="매출처"
+          initialValue={inquiryFormValues.customer}
+          style={{ flex: 1 }}
+        >
+          <Input disabled placeholder="customer" />
+        </StyledFormItem>
+        <StyledFormItem
+          name="vesselName"
+          label="선명"
+          initialValue={inquiryFormValues.vesselName}
+          style={{ flex: 0.8 }}
+        >
+          <Input disabled placeholder="vesselName" />
         </StyledFormItem>
       </FormRow>
       <Tabs defaultActiveKey="0" type="card">

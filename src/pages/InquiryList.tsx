@@ -207,7 +207,7 @@ const InquiryList = () => {
   return (
     <>
       <Container>
-        <Title>견적 관리</Title>
+        <Title>견적 관리 - CUSTOMER</Title>
         <TableHeader>
           <SearchBar>
             <Select

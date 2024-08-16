@@ -27,7 +27,8 @@ function App() {
             path="/makeinquiry/:customerInquiryId"
             element={<MakeInquiry />}
           />
-          <Route path="/inquirylist" element={<InquiryList />}></Route>
+          <Route path="/customerInquirylist" element={<InquiryList />}></Route>
+          <Route path="/supplierInquirylist" element={<InquiryList />}></Route>
         </Routes>
         <Footer />
       </ThemeProvider>

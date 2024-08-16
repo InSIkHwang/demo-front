@@ -131,16 +131,10 @@ export const searchInquiryList = async (
   return response.data;
 };
 
-export const sendInquiryMail = async (
-  docNumber: string,
-  mailData: MailData[]
-) => {
+export const sendInquiryMail = async (docNumber: string, mailData: MailData[]) => {
   const response = await axios.post(
-    `/api/customer-inquirues/send-email?docNumber=${docNumber}`,
-    {
-      mailData,
-      attachments: [],
-    }
+    `/api/customer-inquiries/send-email?docNumber=${docNumber}`,
+    mailData
   );
 
   return response.data;

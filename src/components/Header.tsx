@@ -173,9 +173,18 @@ const Header = () => {
             견적생성
           </MenuItem>
           <MenuItem
-            onClick={() => handleMenuItemClick(() => navigate("/inquirylist"))}
+            onClick={() =>
+              handleMenuItemClick(() => navigate("/customerInquirylist"))
+            }
           >
-            견적관리
+            견적관리 - CUSTOMER
+          </MenuItem>
+          <MenuItem
+            onClick={() =>
+              handleMenuItemClick(() => navigate("/supplierInquirylist"))
+            }
+          >
+            견적관리 - SUPPLIER
           </MenuItem>
         </SubMenu>
         <MenuItem onClick={() => setCodeOpen(!isCodeOpen)}>
