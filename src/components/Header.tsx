@@ -177,14 +177,14 @@ const Header = () => {
               handleMenuItemClick(() => navigate("/customerInquirylist"))
             }
           >
-            견적관리 - CUSTOMER
+            견적 요청 - Requests
           </MenuItem>
           <MenuItem
             onClick={() =>
               handleMenuItemClick(() => navigate("/supplierInquirylist"))
             }
           >
-            견적관리 - SUPPLIER
+            견적 제안 - Offers
           </MenuItem>
         </SubMenu>
         <MenuItem onClick={() => setCodeOpen(!isCodeOpen)}>

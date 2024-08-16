@@ -257,7 +257,7 @@ const DetailInquiryModal = ({
                 {inquiryDetail.docRemark || "없음"}
               </Descriptions.Item>
               <Descriptions.Item label="문서 담당자">
-                {inquiryDetail.docManger}
+                {inquiryDetail.docManager}
               </Descriptions.Item>
               <Descriptions.Item label="대표자">
                 {inquiryDetail.representative}

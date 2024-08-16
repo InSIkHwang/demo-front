@@ -118,7 +118,7 @@ const columns: ColumnsType<Inquiry> = [
   },
 ];
 
-const InquiryList = () => {
+const CustomerInquiryList = () => {
   const navigate = useNavigate();
   const [data, setData] = useState<Inquiry[]>([]);
   const [totalCount, setTotalCount] = useState<number>(0);
@@ -207,7 +207,7 @@ const InquiryList = () => {
   return (
     <>
       <Container>
-        <Title>견적 관리 - CUSTOMER</Title>
+        <Title>견적 요청 - Requests</Title>
         <TableHeader>
           <SearchBar>
             <Select
@@ -291,4 +291,4 @@ const InquiryList = () => {
   );
 };
 
-export default InquiryList;
+export default CustomerInquiryList;

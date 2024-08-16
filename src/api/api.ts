@@ -1,5 +1,12 @@
 import axios from "../api/axios";
-import { Customer, Inquiry, Item, MailData, Supplier } from "../types/types";
+import {
+  Customer,
+  Inquiry,
+  Item,
+  MailData,
+  Supplier,
+  SupplierInquiryListIF,
+} from "../types/types";
 
 export const fetchDocData = async () => {
   const response = await axios.post<{
@@ -18,6 +25,26 @@ export const fetchInquiryList = async () => {
     totalCount: number;
     customerInquiryList: Inquiry[];
   }>("/api/customer-inquiries");
+
+  return response.data;
+};
+
+export const fetchOfferList = async () => {
+  const response = await axios.get<{
+    totalCount: number;
+    supplierInquiryList: SupplierInquiryListIF[];
+  }>("/api/supplier-inquires");
+
+  return response.data;
+};
+
+export const fetchOfferDetail = async (
+  supplierInquiryId: number,
+  supplierId: number
+) => {
+  const response = await axios.get(
+    `/api/supplier-inquires/${supplierInquiryId}?supplierId=${supplierId}`
+  );
 
   return response.data;
 };

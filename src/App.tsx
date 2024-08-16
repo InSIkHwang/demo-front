@@ -8,9 +8,10 @@ import Footer from "./components/Footer";
 import SupplierList from "./pages/SupplierList";
 import ShipList from "./pages/ShipList";
 import MakeInquiry from "./pages/MakeInquiry";
-import InquiryList from "./pages/InquiryList";
 import { ThemeProvider } from "styled-components";
 import theme from "./style/Theme";
+import SupplierInquiryList from "./pages/SupplierInquiryList";
+import CustomerInquiryList from "./pages/CustomerInquiryList";
 
 function App() {
   return (
@@ -27,8 +28,14 @@ function App() {
             path="/makeinquiry/:customerInquiryId"
             element={<MakeInquiry />}
           />
-          <Route path="/customerInquirylist" element={<InquiryList />}></Route>
-          <Route path="/supplierInquirylist" element={<InquiryList />}></Route>
+          <Route
+            path="/customerInquirylist"
+            element={<CustomerInquiryList />}
+          ></Route>
+          <Route
+            path="/supplierInquirylist"
+            element={<SupplierInquiryList />}
+          ></Route>
         </Routes>
         <Footer />
       </ThemeProvider>

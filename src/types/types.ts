@@ -115,7 +115,7 @@ export interface Inquiry {
   vesselName: string;
   veeselHullNo: string;
   docRemark: string;
-  docManger: string;
+  docManager: string;
   representative: string;
   documentStatus: string;
   pdfUrl: string | null;
@@ -136,4 +136,70 @@ export interface MailData {
       contentType: string;
     }
   ];
+}
+
+export interface SupplierInquiryListIF {
+  supplierInquiryId: number;
+  documentNumber: string;
+  registerDate: string;
+  shippingDate: string;
+  refNumber: string;
+  currencyType: string;
+  currency: number;
+  docRemark: string;
+  docManager: string;
+  documentStatus: string;
+  supplierInfoList: {
+    supplierInquiryId: number;
+    supplierId: number;
+    code: string;
+    companyName: string;
+  }[];
+}
+
+export interface SupplierInquiryDetailIF {
+  supplierInquiryId: number;
+  documentNumber: string;
+  registerDate: string;
+  shippingDate: string;
+  customerName: string;
+  supplierName: string;
+  refNumber: string;
+  currencyType: string;
+  currency: number;
+  vesselName: string;
+  veeselHullNo: string;
+  docRemark: string;
+  docManager: string;
+  representative: string;
+  documentStatus: string;
+  pdfUrl: string | null; // pdfUrl can be null or a string
+  inquiryType: string;
+  inquiryItemDetails: {
+    itemDetailId: number;
+    itemId: number;
+    itemType: string;
+    itemCode: string;
+    itemName: string;
+    itemRemark: string | null; // itemRemark can be null
+    qty: number;
+    unit: string;
+    salesPriceKRW: number;
+    salesPriceUSD: number;
+    salesAmountKRW: number;
+    salesAmountUSD: number;
+    margin: number;
+    purchasePriceKRW: number;
+    purchasePriceUSD: number;
+    purchaseAmountKRW: number;
+    purchaseAmountUSD: number;
+  }[];
+  supplierInfo: {
+    inquiryItemDetailId: number | null;
+    supplierId: number;
+    code: string;
+    companyName: string;
+    representative: string;
+    email: string;
+  };
 }
