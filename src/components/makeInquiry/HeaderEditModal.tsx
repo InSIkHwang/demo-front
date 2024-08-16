@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Modal, Button, Input, Spin } from "antd";
+import { Modal, Button, Input } from "antd";
 import styled from "styled-components";
 import { Supplier } from "../../types/types";
 import { fetchSupplierDetail } from "../../api/api";

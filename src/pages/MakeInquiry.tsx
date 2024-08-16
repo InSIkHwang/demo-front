@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
-import { Button, ConfigProvider, message, Modal, Select } from "antd";
+import { Button, message, Modal, Select } from "antd";
 import dayjs from "dayjs";
 import {
   fetchDocData,
@@ -21,7 +21,7 @@ import {
 } from "../types/types";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import HeaderEditModal from "../components/makeInquiry/HeaderEditModal";
-import MailSenderComponent from "../components/makeInquiry/MailSenderComponent";
+import MailSenderModal from "../components/makeInquiry/MailSenderModal";
 import PDFGenerator from "../components/makeInquiry/PDFGenerator";
 
 // Styles
@@ -602,7 +602,7 @@ const MakeInquiry = () => {
         footer={null}
         width={800}
       >
-        <MailSenderComponent
+        <MailSenderModal
           mailDataList={mailDataList}
           inquiryFormValues={formValues}
         />

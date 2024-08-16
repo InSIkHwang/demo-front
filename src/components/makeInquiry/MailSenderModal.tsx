@@ -1,14 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Form,
-  Input,
-  Button,
-  message,
-  Tabs,
-  Typography,
-  Card,
-  Modal,
-} from "antd";
+import { Form, Input, Button, message, Tabs, Typography, Card } from "antd";
 import { SendOutlined, MailOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 import { sendInquiryMail } from "../../api/api";
@@ -73,7 +64,7 @@ interface FormValue {
   supplierName: string;
 }
 
-const MailSenderComponent = ({
+const MailSenderModal = ({
   mailDataList,
   inquiryFormValues,
 }: {
@@ -194,4 +185,4 @@ const MailSenderComponent = ({
   );
 };
 
-export default MailSenderComponent;
+export default MailSenderModal;
