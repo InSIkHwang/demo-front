@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Form, Input, Button, message, Tabs, Typography, Card } from "antd";
+import {
+  Form,
+  Input,
+  Button,
+  message,
+  Tabs,
+  Typography,
+  Card,
+  Modal,
+} from "antd";
 import { SendOutlined, MailOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 import { sendInquiryMail } from "../../api/api";
@@ -25,6 +34,12 @@ const StyledForm = styled(Form)`
 `;
 
 const StyledCard = styled(Card)`
+  margin-bottom: 16px;
+`;
+
+const FormRow = styled.div`
+  display: flex;
+  gap: 16px;
   margin-bottom: 16px;
 `;
 
@@ -102,17 +117,26 @@ const MailSenderComponent = ({
     }
   };
 
+  console.log(inquiryFormValues);
+
   return (
     <StyledForm form={form} onFinish={onFinish}>
-      <StyledCard>
-        <Form.Item
+      <FormRow>
+        <StyledFormItem
           name="docNumber"
           label="문서 번호"
           initialValue={inquiryFormValues.docNumber}
         >
           <Input disabled placeholder="문서 번호" />
-        </Form.Item>
-      </StyledCard>
+        </StyledFormItem>
+        <StyledFormItem
+          name="refNumber"
+          label="REF NO."
+          initialValue={inquiryFormValues.refNumber}
+        >
+          <Input disabled placeholder="REF NO." />
+        </StyledFormItem>
+      </FormRow>
       <Tabs defaultActiveKey="0" type="card">
         {currentMailDataList.map((mailData, index) => (
           <TabPane tab={`의뢰처 ${index + 1}`} key={index.toString()}>
@@ -136,12 +160,11 @@ const MailSenderComponent = ({
                 <TextArea placeholder="내용" rows={6} />
               </StyledFormItem>
               <StyledFormItem name={["mails", index, "ccRecipient"]}>
-                <Input placeholder="CC" />
+                <Input placeholder="참조 메일" />
               </StyledFormItem>
               <StyledFormItem name={["mails", index, "bccRecipient"]}>
-                <Input placeholder="BCC" />
+                <Input placeholder="참조 메일" />
               </StyledFormItem>
-
               <StyledFormItem>
                 <Title level={5}>첨부파일</Title>
                 <AttachmentList>

@@ -55,18 +55,6 @@ interface InquiryFormProps {
     key: K,
     value: FormValues[K]
   ) => void;
-  handleInputChange: (
-    index: number,
-    field: string,
-    value: string | number
-  ) => void;
-  handleItemCodeChange: (index: number, value: string) => void;
-  handleSupplierSearch: (value: string) => void;
-  handleSupplierSelect: (
-    value: string,
-    option: { value: string; id: number; code: string; email: string }
-  ) => void;
-  handleTagClose: (id: number) => void;
   addItem: () => void;
   customerUnreg: boolean;
   vesselUnreg: boolean;
@@ -82,14 +70,8 @@ const InquiryForm = ({
   formValues,
   autoCompleteOptions,
   vesselNameList,
-  supplierOptions,
   selectedSuppliers,
   handleFormChange,
-  handleInputChange,
-  handleItemCodeChange,
-  handleSupplierSearch,
-  handleSupplierSelect,
-  handleTagClose,
   addItem,
   customerUnreg,
   vesselUnreg,

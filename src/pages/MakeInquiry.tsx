@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
-import { Button, message, Modal, Select } from "antd";
+import { Button, ConfigProvider, message, Modal, Select } from "antd";
 import dayjs from "dayjs";
 import {
   fetchDocData,
@@ -567,11 +567,6 @@ const MakeInquiry = () => {
         supplierOptions={supplierOptions}
         selectedSuppliers={selectedSuppliers}
         handleFormChange={handleFormChange}
-        handleInputChange={handleInputChange}
-        handleItemCodeChange={handleItemCodeChange}
-        handleSupplierSearch={() => {}}
-        handleSupplierSelect={handleSupplierSelect}
-        handleTagClose={handleTagClose}
         addItem={addItem}
         customerUnreg={!selectedCustomerId}
         vesselUnreg={!selectedVessel?.id}
@@ -605,19 +600,13 @@ const MakeInquiry = () => {
         onOk={handleMailSenderOk}
         onCancel={handleMailSenderCancel}
         footer={null}
+        width={800}
       >
         <MailSenderComponent
           mailDataList={mailDataList}
           inquiryFormValues={formValues}
         />
       </Modal>
-      <Button
-        type="default"
-        onClick={handlePDFPreview}
-        style={{ marginLeft: "10px" }}
-      >
-        Preview PDF
-      </Button>
       <div
         style={{
           display: "flex",
@@ -646,6 +635,13 @@ const MakeInquiry = () => {
         </Select>
         <Button onClick={handleOpenHeaderModal} style={{ marginLeft: 20 }}>
           머릿글 수정
+        </Button>
+        <Button
+          type="default"
+          onClick={handlePDFPreview}
+          style={{ marginLeft: "10px" }}
+        >
+          PDF 미리보기
         </Button>
         <HeaderEditModal
           visible={headerEditModalVisible}
