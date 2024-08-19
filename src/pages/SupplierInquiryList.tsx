@@ -14,6 +14,7 @@ import { fetchOfferDetail, fetchOfferList } from "../api/api";
 import { useNavigate } from "react-router-dom";
 import type { ColumnsType } from "antd/es/table";
 import type { SupplierInquiryListIF } from "../types/types";
+import SearchModal from "../components/supplierInquiryList/SearchModal";
 
 const Container = styled.div`
   position: relative;
@@ -175,6 +176,7 @@ const SupplierInquiryList = () => {
   const [registerEndDate, setRegisterEndDate] = useState<string>("");
   const [supplierInfoList, setSupplierInfoList] = useState<any[]>([]);
   const [currentDetail, setCurrentDetail] = useState<any | null>(null);
+  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -234,6 +236,8 @@ const SupplierInquiryList = () => {
       fetchDetails();
     }
   };
+  console.log(supplierInfoList);
+
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
@@ -322,7 +326,7 @@ const SupplierInquiryList = () => {
               style={{ marginRight: 10 }}
             />
           </SearchBar>
-          <Button type="primary" onClick={() => navigate("/makeinquiry")}>
+          <Button type="primary" onClick={() => setIsModalVisible(true)}>
             신규 등록
           </Button>
         </TableHeader>
@@ -410,7 +414,11 @@ const SupplierInquiryList = () => {
             return originalElement;
           }}
         />
-      </Container>
+      </Container>{" "}
+      <SearchModal
+        visible={isModalVisible}
+        onClose={() => setIsModalVisible(false)}
+      />{" "}
     </>
   );
 };
