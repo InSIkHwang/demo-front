@@ -4,11 +4,11 @@ import { searchInquiryList } from "../../api/api";
 import { Inquiry } from "../../types/types";
 
 interface SearchModalProps {
-  visible: boolean;
+  open: boolean;
   onClose: () => void;
 }
 
-const SearchModal = ({ visible, onClose }: SearchModalProps) => {
+const SearchModal = ({ open, onClose }: SearchModalProps) => {
   const [searchText, setSearchText] = useState<string>("");
   const [searchCategory, setSearchCategory] =
     useState<string>("documentNumber");
@@ -80,13 +80,12 @@ const SearchModal = ({ visible, onClose }: SearchModalProps) => {
   return (
     <Modal
       title="검색"
-      visible={visible}
+      open={open}
       onCancel={onClose}
       footer={null}
       centered
       width={1400}
-      style={{ top: 20 }}
-      bodyStyle={{ maxHeight: "70vh", overflowY: "auto" }} // 높이와 스크롤 설정
+      style={{ top: 20, maxHeight: "70vh", overflowY: "auto" }}
     >
       <Row gutter={16}>
         <Col span={6}>

@@ -209,33 +209,34 @@ const SupplierInquiryList = () => {
       setSupplierInfoList([]);
     } else {
       // 새 항목을 클릭하면 supplierInfoList의 모든 항목에 대해 fetchOfferDetail을 호출합니다.
-      const fetchDetails = async () => {
-        try {
-          // 모든 요청을 동시에 실행
-          const detailPromises = record.supplierInfoList.map(async (info) => {
-            const { supplierId, supplierInquiryId } = info;
-            const detailResponse = await fetchOfferDetail(
-              supplierInquiryId,
-              supplierId
-            );
-            return {
-              info,
-              detail: detailResponse,
-            };
-          });
+      try {
+        // 선택한 항목의 세부정보를 가져오기 전에 기존 세부정보를 지웁니다.
+        setSupplierInfoList([]);
 
-          // 모든 요청이 완료된 후 결과를 상태에 저장
-          const details = await Promise.all(detailPromises);
+        // 선택한 항목의 세부정보를 가져옵니다.
+        const detailPromises = record.supplierInfoList.map(async (info) => {
+          const { supplierId, supplierInquiryId } = info;
+          const detailResponse = await fetchOfferDetail(
+            supplierInquiryId,
+            supplierId
+          );
+          return {
+            info,
+            detail: detailResponse,
+          };
+        });
 
-          setSupplierInfoList(details);
-        } catch (error) {
-          console.error("세부정보를 가져오는 중 오류가 발생했습니다:", error);
-        }
-      };
+        // 모든 요청이 완료된 후 결과를 상태에 저장
+        const details = await Promise.all(detailPromises);
 
-      fetchDetails();
+        setCurrentDetail(record); // 현재 항목을 현재 세부정보로 설정
+        setSupplierInfoList(details);
+      } catch (error) {
+        console.error("세부정보를 가져오는 중 오류가 발생했습니다:", error);
+      }
     }
   };
+
   console.log(supplierInfoList);
 
   const handlePageChange = (page: number) => {
@@ -387,9 +388,12 @@ const SupplierInquiryList = () => {
                     이익율: {totals.profitMarginKRW.toFixed(2)}% (USD:{" "}
                     {totals.profitMarginUSD.toFixed(2)}%)
                   </InfoText>
-                  <InfoText style={{ float: "right" }}>
-                    적용환율: {detail.currency} ({detail.currencyType})
-                  </InfoText>
+                  <div style={{ display: "grid", height: 50, margin: "5px 0" }}>
+                    <InfoText>
+                      적용환율: {detail.currency} ({detail.currencyType})
+                    </InfoText>
+                    <Button type="primary">수정</Button>
+                  </div>
                 </StyledCard>
               );
             })}
@@ -416,7 +420,7 @@ const SupplierInquiryList = () => {
         />
       </Container>{" "}
       <SearchModal
-        visible={isModalVisible}
+        open={isModalVisible}
         onClose={() => setIsModalVisible(false)}
       />{" "}
     </>
