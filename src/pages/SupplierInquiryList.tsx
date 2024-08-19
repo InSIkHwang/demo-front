@@ -6,18 +6,14 @@ import {
   Select,
   Pagination,
   DatePicker,
+  Card,
 } from "antd";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import styled from "styled-components";
-import {
-  fetchOfferDetail,
-  fetchOfferList,
-  searchInquiryList,
-} from "../api/api";
-import DetailInquiryModal from "../components/inquiryList/DetailInquiryModal";
-import type { ColumnsType } from "antd/es/table";
+import { fetchOfferDetail, fetchOfferList } from "../api/api";
 import { useNavigate } from "react-router-dom";
-import { SupplierInquiryListIF } from "../types/types";
+import type { ColumnsType } from "antd/es/table";
+import type { SupplierInquiryListIF } from "../types/types";
 
 const Container = styled.div`
   position: relative;
@@ -60,6 +56,57 @@ const Button = styled(AntButton)`
 const PaginationWrapper = styled(Pagination)`
   margin-top: 20px;
   justify-content: center;
+`;
+
+const CardContainer = styled.div`
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+`;
+
+const StyledCard = styled(Card)`
+  width: 500px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  .ant-card-body {
+    padding: 20px;
+  }
+`;
+
+const CardTitle = styled.h3`
+  margin-bottom: 10px;
+  font-size: 16px;
+  font-weight: bold;
+`;
+
+const CardContent = styled.div`
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+`;
+
+const Section = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const Divider = styled.div`
+  width: 1px;
+  background-color: #ddd;
+  flex-shrink: 0;
+  margin: 0 5px;
+`;
+
+const InfoText = styled.p`
+  margin: 0;
+  font-size: 14px;
+  color: #555;
 `;
 
 const columns: ColumnsType<SupplierInquiryListIF> = [
@@ -124,10 +171,10 @@ const SupplierInquiryList = () => {
   const [selectedInquiryIds, setSelectedInquiryIds] = useState<number | null>(
     null
   );
-  const [isDetailCompanyModalOpen, setIsDetailCompanyModalOpen] =
-    useState<boolean>(false);
   const [registerStartDate, setRegisterStartDate] = useState<string>("");
   const [registerEndDate, setRegisterEndDate] = useState<string>("");
+  const [supplierInfoList, setSupplierInfoList] = useState<any[]>([]);
+  const [currentDetail, setCurrentDetail] = useState<any | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -145,53 +192,35 @@ const SupplierInquiryList = () => {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    if (isDetailCompanyModalOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isDetailCompanyModalOpen]);
-
-  const fetchDetail = async () => {
-    try {
-      const response = await fetchOfferDetail(1, 1);
-    } catch (error) {
-      console.error("데이터를 가져오는 중 오류가 발생했습니다:", error);
-    }
-  };
-
   const paginatedData = data.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
   const handleRowClick = async (record: SupplierInquiryListIF) => {
-    try {
-      // supplierInfoList의 첫 번째 항목을 가져오기
+    if (
+      currentDetail &&
+      record.documentNumber === currentDetail.documentNumber
+    ) {
+      // 현재 열려있는 항목을 다시 클릭하면 currentDetail을 숨깁니다.
+      setCurrentDetail(null);
+    } else {
+      // 새 항목을 클릭하면 currentDetail을 업데이트합니다.
+      setSupplierInfoList(record.supplierInfoList);
       const firstSupplierInfo = record.supplierInfoList[0];
       if (firstSupplierInfo) {
-        const { supplierId } = firstSupplierInfo;
-        const { supplierInquiryId } = firstSupplierInfo; // 첫 번째 항목의 supplierInquiryId를 사용
-
-        // 상태에 값 설정
-        setSelectedInquiryIds(supplierId);
-
-        // fetchDetail 함수 호출하여 세부정보 가져오기
-        const detailResponse = await fetchOfferDetail(
-          supplierInquiryId,
-          supplierId
-        );
-
-        // 세부정보를 콘솔에 출력
-        console.log(detailResponse);
+        const { supplierId, supplierInquiryId } = firstSupplierInfo;
+        try {
+          const detailResponse = await fetchOfferDetail(
+            supplierInquiryId,
+            supplierId
+          );
+          setCurrentDetail(detailResponse);
+          console.log(detailResponse);
+        } catch (error) {
+          console.error("세부정보를 가져오는 중 오류가 발생했습니다:", error);
+        }
       }
-    } catch (error) {
-      console.error("세부정보를 가져오는 중 오류가 발생했습니다:", error);
     }
   };
 
@@ -202,6 +231,47 @@ const SupplierInquiryList = () => {
   const handlePageSizeChange = (current: number, size: number) => {
     setItemsPerPage(size);
     setCurrentPage(1);
+  };
+
+  const calculateTotals = (details: any[]) => {
+    const totalPurchaseAmountKRW = details.reduce(
+      (acc, item) => acc + item.purchaseAmountKRW,
+      0
+    );
+    const totalSalesAmountKRW = details.reduce(
+      (acc, item) => acc + item.salesAmountKRW,
+      0
+    );
+    const totalPurchaseAmountUSD = details.reduce(
+      (acc, item) => acc + item.purchaseAmountUSD,
+      0
+    );
+    const totalSalesAmountUSD = details.reduce(
+      (acc, item) => acc + item.salesAmountUSD,
+      0
+    );
+
+    const totalProfitKRW = totalSalesAmountKRW - totalPurchaseAmountKRW;
+    const totalProfitUSD = totalSalesAmountUSD - totalPurchaseAmountUSD;
+    const profitMarginKRW =
+      totalSalesAmountKRW === 0
+        ? 0
+        : (totalProfitKRW / totalSalesAmountKRW) * 100;
+    const profitMarginUSD =
+      totalSalesAmountUSD === 0
+        ? 0
+        : (totalProfitUSD / totalSalesAmountUSD) * 100;
+
+    return {
+      totalPurchaseAmountKRW,
+      totalSalesAmountKRW,
+      totalProfitKRW: totalProfitKRW,
+      profitMarginKRW,
+      totalPurchaseAmountUSD,
+      totalSalesAmountUSD,
+      totalProfitUSD: totalProfitUSD,
+      profitMarginUSD,
+    };
   };
 
   return (
@@ -257,6 +327,62 @@ const SupplierInquiryList = () => {
             onClick: () => handleRowClick(record),
           })}
         />
+        {currentDetail && supplierInfoList.length > 0 && (
+          <CardContainer>
+            {supplierInfoList.map((info) => {
+              const totals = calculateTotals(currentDetail.inquiryItemDetails);
+              return (
+                <StyledCard
+                  key={info.supplierInquiryId}
+                  title={
+                    <CardTitle>
+                      {info.code} ({info.companyName})
+                    </CardTitle>
+                  }
+                >
+                  <CardContent>
+                    <Section>
+                      <InfoText>
+                        매입액 (KRW):{" "}
+                        {totals.totalPurchaseAmountKRW.toLocaleString()}
+                      </InfoText>
+                      <InfoText>
+                        매출액 (KRW):{" "}
+                        {totals.totalSalesAmountKRW.toLocaleString()}
+                      </InfoText>
+                      <InfoText style={{ color: "#000" }}>
+                        총 이익 (KRW): {totals.totalProfitKRW.toLocaleString()}{" "}
+                      </InfoText>
+                    </Section>
+                    <Divider />
+                    <Section>
+                      {" "}
+                      <InfoText>
+                        매입액 (USD):{" "}
+                        {totals.totalPurchaseAmountUSD.toLocaleString()}
+                      </InfoText>
+                      <InfoText>
+                        매출액 (USD):{" "}
+                        {totals.totalSalesAmountUSD.toLocaleString()}
+                      </InfoText>
+                      <InfoText style={{ color: "#000" }}>
+                        총 이익 (USD): {totals.totalProfitUSD.toLocaleString()}{" "}
+                      </InfoText>
+                    </Section>
+                  </CardContent>
+                  <InfoText style={{ color: "#000" }}>
+                    이익율: {totals.profitMarginKRW.toFixed(2)}% (USD:
+                    {totals.profitMarginUSD.toFixed(2)}%)
+                  </InfoText>{" "}
+                  <InfoText style={{ float: "right" }}>
+                    적용환율: {currentDetail.currency} (
+                    {currentDetail.currencyType})
+                  </InfoText>
+                </StyledCard>
+              );
+            })}
+          </CardContainer>
+        )}
         <PaginationWrapper
           current={currentPage}
           pageSize={itemsPerPage}
