@@ -12,6 +12,7 @@ import { ThemeProvider } from "styled-components";
 import theme from "./style/Theme";
 import SupplierInquiryList from "./pages/SupplierInquiryList";
 import CustomerInquiryList from "./pages/CustomerInquiryList";
+import MakeOffer from "./pages/MakeOffer";
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
             path="/supplierInquirylist"
             element={<SupplierInquiryList />}
           ></Route>
+          <Route path="/makeoffer/:supplierInquiryId" element={<MakeOffer />} />
         </Routes>
         <Footer />
       </ThemeProvider>

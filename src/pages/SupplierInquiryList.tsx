@@ -165,15 +165,8 @@ const SupplierInquiryList = () => {
   const [totalCount, setTotalCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [searchText, setSearchText] = useState<string>("");
-  const [searchCategory, setSearchCategory] =
-    useState<string>("documentNumber");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage, setItemsPerPage] = useState<number>(10);
-  const [selectedInquiryIds, setSelectedInquiryIds] = useState<number | null>(
-    null
-  );
-  const [registerStartDate, setRegisterStartDate] = useState<string>("");
-  const [registerEndDate, setRegisterEndDate] = useState<string>("");
   const [supplierInfoList, setSupplierInfoList] = useState<any[]>([]);
   const [currentDetail, setCurrentDetail] = useState<any | null>(null);
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
@@ -237,8 +230,6 @@ const SupplierInquiryList = () => {
     }
   };
 
-  console.log(supplierInfoList);
-
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
@@ -271,11 +262,11 @@ const SupplierInquiryList = () => {
     const profitMarginKRW =
       totalSalesAmountKRW === 0
         ? 0
-        : (totalProfitKRW / totalSalesAmountKRW) * 100;
+        : ((totalProfitKRW / totalSalesAmountKRW) * 100).toFixed(2);
     const profitMarginUSD =
       totalSalesAmountUSD === 0
         ? 0
-        : (totalProfitUSD / totalSalesAmountUSD) * 100;
+        : ((totalProfitUSD / totalSalesAmountUSD) * 100).toFixed(2);
 
     return {
       totalPurchaseAmountKRW,
@@ -289,6 +280,11 @@ const SupplierInquiryList = () => {
     };
   };
 
+  const handleEditClick = (info: any) => {
+    navigate(`/makeoffer/${info.supplierInquiryId}`, {
+      state: { info }, // 상세 정보를 상태로 전달
+    });
+  };
   return (
     <>
       <Container>
@@ -298,7 +294,6 @@ const SupplierInquiryList = () => {
             <Select
               defaultValue="documentNumber"
               style={{ width: 120, marginRight: 10 }}
-              onChange={(value) => setSearchCategory(value)}
             >
               <Select.Option value="documentNumber">문서번호</Select.Option>
               <Select.Option value="refNumber">REF NO.</Select.Option>
@@ -313,17 +308,11 @@ const SupplierInquiryList = () => {
             <DatePicker
               placeholder="시작 날짜"
               format="YYYY-MM-DD"
-              onChange={(date) =>
-                setRegisterStartDate(date ? date.format("YYYY-MM-DD") : "")
-              }
               style={{ marginRight: 10 }}
             />
             <DatePicker
               placeholder="종료 날짜"
               format="YYYY-MM-DD"
-              onChange={(date) =>
-                setRegisterEndDate(date ? date.format("YYYY-MM-DD") : "")
-              }
               style={{ marginRight: 10 }}
             />
           </SearchBar>
@@ -385,14 +374,19 @@ const SupplierInquiryList = () => {
                     </Section>
                   </CardContent>
                   <InfoText style={{ color: "#000" }}>
-                    이익율: {totals.profitMarginKRW.toFixed(2)}% (USD:{" "}
-                    {totals.profitMarginUSD.toFixed(2)}%)
+                    이익율: {totals.profitMarginKRW}% (USD:{" "}
+                    {totals.profitMarginUSD}%)
                   </InfoText>
                   <div style={{ display: "grid", height: 50, margin: "5px 0" }}>
                     <InfoText>
                       적용환율: {detail.currency} ({detail.currencyType})
                     </InfoText>
-                    <Button type="primary">수정</Button>
+                    <Button
+                      type="primary"
+                      onClick={() => handleEditClick(detail)}
+                    >
+                      수정
+                    </Button>
                   </div>
                 </StyledCard>
               );

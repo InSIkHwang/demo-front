@@ -203,3 +203,22 @@ export interface SupplierInquiryDetailIF {
     email: string;
   };
 }
+
+export interface DataType {
+  itemCode: string;
+  itemType: string;
+  itemName: string;
+  qty: number;
+  unit: string;
+  itemRemark: string;
+  salesPriceKRW: number;
+  salesPriceUSD: number;
+  salesAmountKRW: number;
+  salesAmountUSD: number;
+  margin: number;
+  purchasePriceKRW: number;
+  purchasePriceUSD: number;
+  purchaseAmountKRW: number;
+  purchaseAmountUSD: number;
+  itemDetailId: string;
+}
