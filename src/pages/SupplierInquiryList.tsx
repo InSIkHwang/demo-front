@@ -204,26 +204,36 @@ const SupplierInquiryList = () => {
     ) {
       // 현재 열려있는 항목을 다시 클릭하면 currentDetail을 숨깁니다.
       setCurrentDetail(null);
+      setSupplierInfoList([]);
     } else {
-      // 새 항목을 클릭하면 currentDetail을 업데이트합니다.
-      setSupplierInfoList(record.supplierInfoList);
-      const firstSupplierInfo = record.supplierInfoList[0];
-      if (firstSupplierInfo) {
-        const { supplierId, supplierInquiryId } = firstSupplierInfo;
+      // 새 항목을 클릭하면 supplierInfoList의 모든 항목에 대해 fetchOfferDetail을 호출합니다.
+      const fetchDetails = async () => {
         try {
-          const detailResponse = await fetchOfferDetail(
-            supplierInquiryId,
-            supplierId
-          );
-          setCurrentDetail(detailResponse);
-          console.log(detailResponse);
+          // 모든 요청을 동시에 실행
+          const detailPromises = record.supplierInfoList.map(async (info) => {
+            const { supplierId, supplierInquiryId } = info;
+            const detailResponse = await fetchOfferDetail(
+              supplierInquiryId,
+              supplierId
+            );
+            return {
+              info,
+              detail: detailResponse,
+            };
+          });
+
+          // 모든 요청이 완료된 후 결과를 상태에 저장
+          const details = await Promise.all(detailPromises);
+
+          setSupplierInfoList(details);
         } catch (error) {
           console.error("세부정보를 가져오는 중 오류가 발생했습니다:", error);
         }
-      }
+      };
+
+      fetchDetails();
     }
   };
-
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
@@ -327,10 +337,10 @@ const SupplierInquiryList = () => {
             onClick: () => handleRowClick(record),
           })}
         />
-        {currentDetail && supplierInfoList.length > 0 && (
+        {supplierInfoList.length > 0 && (
           <CardContainer>
-            {supplierInfoList.map((info) => {
-              const totals = calculateTotals(currentDetail.inquiryItemDetails);
+            {supplierInfoList.map(({ info, detail }) => {
+              const totals = calculateTotals(detail.inquiryItemDetails);
               return (
                 <StyledCard
                   key={info.supplierInquiryId}
@@ -351,12 +361,11 @@ const SupplierInquiryList = () => {
                         {totals.totalSalesAmountKRW.toLocaleString()}
                       </InfoText>
                       <InfoText style={{ color: "#000" }}>
-                        총 이익 (KRW): {totals.totalProfitKRW.toLocaleString()}{" "}
+                        총 이익 (KRW): {totals.totalProfitKRW.toLocaleString()}
                       </InfoText>
                     </Section>
                     <Divider />
                     <Section>
-                      {" "}
                       <InfoText>
                         매입액 (USD):{" "}
                         {totals.totalPurchaseAmountUSD.toLocaleString()}
@@ -366,17 +375,16 @@ const SupplierInquiryList = () => {
                         {totals.totalSalesAmountUSD.toLocaleString()}
                       </InfoText>
                       <InfoText style={{ color: "#000" }}>
-                        총 이익 (USD): {totals.totalProfitUSD.toLocaleString()}{" "}
+                        총 이익 (USD): {totals.totalProfitUSD.toLocaleString()}
                       </InfoText>
                     </Section>
                   </CardContent>
                   <InfoText style={{ color: "#000" }}>
-                    이익율: {totals.profitMarginKRW.toFixed(2)}% (USD:
+                    이익율: {totals.profitMarginKRW.toFixed(2)}% (USD:{" "}
                     {totals.profitMarginUSD.toFixed(2)}%)
-                  </InfoText>{" "}
+                  </InfoText>
                   <InfoText style={{ float: "right" }}>
-                    적용환율: {currentDetail.currency} (
-                    {currentDetail.currencyType})
+                    적용환율: {detail.currency} ({detail.currencyType})
                   </InfoText>
                 </StyledCard>
               );
