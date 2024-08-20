@@ -75,8 +75,6 @@ const MailSenderModal = ({
   const [loading, setLoading] = useState(false);
   const [currentMailDataList, setCurrentMailDataList] = useState(mailDataList);
 
-  console.log(mailDataList);
-
   useEffect(() => {
     form.setFieldsValue({
       docNumber: inquiryFormValues.docNumber,

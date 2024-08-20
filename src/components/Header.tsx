@@ -89,13 +89,13 @@ const MenuItem = styled.div`
 `;
 
 interface SubMenuProps {
-  isOpen: boolean;
+  $isOpen: boolean;
 }
 
 const SubMenu = styled.div<SubMenuProps>`
   margin-left: 20px;
   font-size: 14px;
-  display: ${({ isOpen }) => (isOpen ? "block" : "none")};
+  display: ${({ $isOpen }) => ($isOpen ? "block" : "none")};
   padding-left: 20px;
   border-left: 2px solid #495057;
   margin-bottom: 10px;
@@ -166,7 +166,7 @@ const Header = () => {
             style={{ marginLeft: "auto", cursor: "pointer" }}
           />
         </MenuItem>
-        <SubMenu isOpen={isEstimateOpen}>
+        <SubMenu $isOpen={isEstimateOpen}>
           <MenuItem
             onClick={() => handleMenuItemClick(() => navigate("/makeinquiry"))}
           >
@@ -195,7 +195,7 @@ const Header = () => {
             style={{ marginLeft: "auto", cursor: "pointer" }}
           />
         </MenuItem>
-        <SubMenu isOpen={isCodeOpen}>
+        <SubMenu $isOpen={isCodeOpen}>
           <MenuItem
             onClick={() => handleMenuItemClick(() => navigate("/customerlist"))}
           >

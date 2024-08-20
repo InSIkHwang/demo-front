@@ -23,27 +23,27 @@ const TotalCards = styled.div`
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
-const TotalCard = styled.div<{ isHighlight?: boolean; isPositive?: boolean }>`
+const TotalCard = styled.div<{ $isHighlight?: boolean; $isPositive?: boolean }>`
   flex: 1;
   text-align: center;
   padding: 8px;
   margin: 0 5px;
   border-radius: 4px;
-  background: ${({ isHighlight, isPositive }) =>
-    isHighlight ? (isPositive ? "#eaffea" : "#ffe6e6") : "#ffffff"};
-  box-shadow: ${({ isHighlight }) =>
-    isHighlight ? "0 1px 2px rgba(0, 0, 0, 0.1)" : "none"};
-  border: ${({ isHighlight, isPositive }) =>
-    isHighlight
-      ? `1px solid ${isPositive ? "#b3e6b3" : "#f5b3b3"}`
+  background: ${({ $isHighlight, $isPositive }) =>
+    $isHighlight ? ($isPositive ? "#eaffea" : "#ffe6e6") : "#ffffff"};
+  box-shadow: ${({ $isHighlight }) =>
+    $isHighlight ? "0 1px 2px rgba(0, 0, 0, 0.1)" : "none"};
+  border: ${({ $isHighlight, $isPositive }) =>
+    $isHighlight
+      ? `1px solid ${$isPositive ? "#b3e6b3" : "#f5b3b3"}`
       : "1px solid #ddd"};
 
   span {
     display: block;
     font-size: 14px;
     font-weight: 500;
-    color: ${({ isHighlight, isPositive }) =>
-      isHighlight ? (isPositive ? "#2e8b57" : "#d9534f") : "#666"};
+    color: ${({ $isHighlight, $isPositive }) =>
+      $isHighlight ? ($isPositive ? "#2e8b57" : "#d9534f") : "#666"};
   }
 
   span.value {
@@ -500,13 +500,15 @@ const TableComponent = ({
             $ {totals.totalPurchaseAmountUSD.toFixed(2)}
           </span>
         </TotalCard>
-        <TotalCard isHighlight isPositive={totals.totalProfit >= 0}>
+        <TotalCard $isHighlight $isPositive={totals.totalProfit >= 0}>
           <span>이익합계</span>
           <span className="value">₩ {totals.totalProfit.toFixed(2)}</span>
         </TotalCard>
-        <TotalCard isHighlight isPositive={totals.totalProfitPercent >= 0}>
+        <TotalCard $isHighlight $isPositive={totals.totalProfitPercent >= 0}>
           <span>이익율</span>
-          <span className="value">{totals.totalProfitPercent}%</span>
+          <span className="value">
+            {isNaN(totals.totalProfitPercent) ? 0 : totals.totalProfitPercent}%
+          </span>
         </TotalCard>
       </TotalCards>
       <CustomTable

@@ -596,7 +596,7 @@ const MakeInquiry = () => {
       </Button>
       <Modal
         title="Send Mail"
-        visible={isMailSenderVisible}
+        open={isMailSenderVisible}
         onOk={handleMailSenderOk}
         onCancel={handleMailSenderCancel}
         footer={null}
@@ -644,7 +644,7 @@ const MakeInquiry = () => {
           PDF 미리보기
         </Button>
         <HeaderEditModal
-          visible={headerEditModalVisible}
+          open={headerEditModalVisible}
           onClose={handleCloseHeaderModal}
           onSave={handleHeaderSave}
           pdfSupplierTag={pdfSupplierTag}

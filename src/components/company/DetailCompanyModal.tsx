@@ -153,8 +153,6 @@ const DetailCompanyModal = ({
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(company);
 
-  console.log(formData);
-
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       onClose();

@@ -29,14 +29,14 @@ const StyledTextArea = styled(Input.TextArea)`
 `;
 
 interface HeaderEditModalProps {
-  visible: boolean;
+  open: boolean;
   onClose: () => void;
   onSave: (text: string) => void;
   pdfSupplierTag: { id: number; name: string }[];
 }
 
 const HeaderEditModal = ({
-  visible,
+  open,
   onClose,
   onSave,
   pdfSupplierTag,
@@ -49,14 +49,14 @@ const HeaderEditModal = ({
   const prevSupplierIdRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
-    if (visible) {
+    if (open) {
       const currentSupplierId = pdfSupplierTag[0]?.id;
       if (prevSupplierIdRef.current !== currentSupplierId) {
         fetchData();
         prevSupplierIdRef.current = currentSupplierId;
       }
     }
-  }, [visible, pdfSupplierTag]);
+  }, [open, pdfSupplierTag]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -79,7 +79,7 @@ const HeaderEditModal = ({
   return (
     <StyledModal
       title="머릿글 수정"
-      visible={visible}
+      open={open}
       onCancel={onClose}
       footer={[
         <Button key="cancel" onClick={onClose}>
