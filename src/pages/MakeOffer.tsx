@@ -38,9 +38,14 @@ const MakeOffer = () => {
     }
   }, [info]);
 
-  const handleInputChange = (index: number, key: keyof any, value: any) => {
+  const handleInputChange = (
+    index: number,
+    key: keyof ItemDataType,
+    value: any
+  ) => {
     const updatedDataSource = [...dataSource];
     updatedDataSource[index] = { ...updatedDataSource[index], [key]: value };
+    console.log("Updated DataSource:", updatedDataSource);
     setDataSource(updatedDataSource);
   };
 
@@ -61,18 +66,14 @@ const MakeOffer = () => {
       purchaseAmountKRW: item.purchaseAmountKRW,
       purchaseAmountUSD: item.purchaseAmountUSD,
     }));
-    const response = await editOffer(
-      info.supplierInquiryId,
-      info.supplierInfo.supplierId,
-      formattedData
-    );
-
     try {
-      console.log(response);
-
+      await editOffer(
+        info.supplierInquiryId,
+        info.supplierInfo.supplierId,
+        formattedData
+      );
       message.success("성공적으로 저장 되었습니다!");
     } catch (error) {
-      console.log(response);
       message.error("데이터 저장 중 오류가 발생했습니다.");
     }
   };

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Table, Input, Select, InputNumber } from "antd";
 import { ColumnsType } from "antd/es/table";
 import styled from "styled-components";
+import { ItemDataType } from "../../types/types";
 
 const CustomTable = styled(Table)`
   .ant-table-cell {
@@ -83,7 +84,11 @@ const calculateMargin = (salesAmount: number, purchaseAmount: number) =>
 
 interface TableComponentProps {
   dataSource: any[];
-  handleInputChange: (index: number, key: keyof any, value: any) => void;
+  handleInputChange: (
+    index: number,
+    key: keyof ItemDataType,
+    value: any
+  ) => void;
   currency: number;
 }
 
@@ -100,6 +105,10 @@ const TableComponent = ({
     totalProfit: 0,
     totalProfitPercent: 0,
   });
+
+  useEffect(() => {
+    console.log("Updated dataSource:", dataSource);
+  }, [dataSource]);
 
   useEffect(() => {
     const totalSalesAmountKRW = dataSource.reduce(

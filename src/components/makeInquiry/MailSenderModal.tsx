@@ -10,11 +10,6 @@ const { TextArea } = Input;
 const { TabPane } = Tabs;
 const { Title } = Typography;
 
-interface FormValues {
-  docNumber: string;
-  mails: MailData[];
-}
-
 const StyledForm = styled(Form)`
   max-width: 800px;
   margin: 0 auto;
@@ -74,6 +69,7 @@ const MailSenderModal = ({
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [currentMailDataList, setCurrentMailDataList] = useState(mailDataList);
+  const [activeTabIndex, setActiveTabIndex] = useState("0");
 
   useEffect(() => {
     form.setFieldsValue({
@@ -89,24 +85,29 @@ const MailSenderModal = ({
     setCurrentMailDataList(mailDataList);
   }, [mailDataList, form, inquiryFormValues.docNumber]);
 
+  const handleTabChange = (key: string) => {
+    setActiveTabIndex(key);
+  };
+
   const onFinish = async (values: any) => {
-    // Update mail data list with form values
-    const updatedMailDataList = currentMailDataList.map((mailData, index) => ({
-      ...mailData,
+    const index = parseInt(activeTabIndex, 10);
+
+    // 현재 활성 탭의 메일 데이터만 가져오기
+    const updatedMailDataToSend = {
+      ...currentMailDataList[index],
       ...values.mails[index],
-    }));
+    };
 
     setLoading(true);
 
     try {
-      // Send inquiry mail with updated data list
-      await sendInquiryMail(values.docNumber, updatedMailDataList);
-      console.log(updatedMailDataList);
+      // 활성 탭의 메일만 전송
+      await sendInquiryMail(values.docNumber, [updatedMailDataToSend]);
 
-      // Success message
+      // 성공 메시지
       message.success("이메일이 성공적으로 전송되었습니다!");
     } catch (error) {
-      // Error handling
+      // 에러 처리
       console.error("Error sending email:", error);
       message.error("이메일 전송에 실패했습니다. 다시 시도해 주세요.");
     } finally {
@@ -152,7 +153,7 @@ const MailSenderModal = ({
           <Input disabled placeholder="vesselName" />
         </StyledFormItem>
       </FormRow>
-      <Tabs defaultActiveKey="0" type="card">
+      <Tabs defaultActiveKey="0" type="card" onChange={handleTabChange}>
         {currentMailDataList.map((mailData, index) => (
           <TabPane tab={`의뢰처 ${index + 1}`} key={index.toString()}>
             <StyledCard>
