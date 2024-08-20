@@ -44,8 +44,7 @@ const MakeOffer = () => {
     value: any
   ) => {
     const updatedDataSource = [...dataSource];
-    updatedDataSource[index] = { ...updatedDataSource[index], [key]: value };
-    console.log("Updated DataSource:", updatedDataSource);
+    updatedDataSource[index][key] = value;
     setDataSource(updatedDataSource);
   };
 
