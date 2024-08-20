@@ -11,10 +11,6 @@ const CustomTable = styled(Table)`
     font-weight: bold;
     background-color: #dff4ff;
   }
-  .highlight-header {
-    background-color: #dff4ff;
-    font-weight: bold;
-  }
 `;
 
 const TotalCards = styled.div`
@@ -76,6 +72,14 @@ const convertCurrency = (
 // 수량과 단가를 곱하여 총액을 계산하는 함수
 const calculateTotalAmount = (price: number, qty: number) =>
   roundToTwoDecimalPlaces(price * qty);
+
+// 마진을 계산하는 함수
+const calculateMargin = (salesAmount: number, purchaseAmount: number) =>
+  purchaseAmount === 0
+    ? 0
+    : roundToTwoDecimalPlaces(
+        ((salesAmount - purchaseAmount) / purchaseAmount) * 100
+      );
 
 interface TableComponentProps {
   dataSource: any[];
@@ -290,7 +294,7 @@ const TableComponent = ({
       ),
     },
     {
-      title: <span className="highlight-header">매출총액(KRW)</span>,
+      title: "매출총액(KRW)",
       dataIndex: "salesAmountKRW",
       key: "salesAmountKRW",
       width: 150,
@@ -310,7 +314,7 @@ const TableComponent = ({
       ),
     },
     {
-      title: <span className="highlight-header">매출총액(USD)</span>,
+      title: "매출총액(USD)",
       dataIndex: "salesAmountUSD",
       key: "salesAmountUSD",
       width: 150,
@@ -394,7 +398,7 @@ const TableComponent = ({
       ),
     },
     {
-      title: <span className="highlight-header">매입총액(KRW)</span>,
+      title: "매입총액(KRW)",
       dataIndex: "purchaseAmountKRW",
       key: "purchaseAmountKRW",
       width: 150,
@@ -414,7 +418,7 @@ const TableComponent = ({
       ),
     },
     {
-      title: <span className="highlight-header">매입총액(USD)</span>,
+      title: "매입총액(USD)",
       dataIndex: "purchaseAmountUSD",
       key: "purchaseAmountUSD",
       width: 150,
@@ -434,24 +438,38 @@ const TableComponent = ({
       ),
     },
     {
-      title: "마진",
+      title: "마진(%)",
       dataIndex: "margin",
       key: "margin",
       width: 120,
-      render: (text: number, record: any, index: number) => (
-        <InputNumber
-          value={text}
-          onChange={(value) => handleInputChange(index, "margin", value ?? 0)}
-          style={{ width: "100%" }}
-          min={0}
-          step={0.01}
-          formatter={(value) => `$ ${value}`}
-          parser={(value) =>
-            value ? parseFloat(value.replace(/\$\s?|,/g, "")) : 0
-          }
-          controls={false}
-        />
-      ),
+      render: (text: number, record: any, index: number) => {
+        const salesAmountKRW = calculateTotalAmount(
+          record.salesPriceKRW,
+          record.qty
+        );
+        const purchaseAmountKRW = calculateTotalAmount(
+          record.purchasePriceKRW,
+          record.qty
+        );
+        const marginPercent = calculateMargin(
+          salesAmountKRW,
+          purchaseAmountKRW
+        );
+        return (
+          <InputNumber
+            value={marginPercent}
+            style={{ width: "100%" }}
+            min={0}
+            step={0.01}
+            formatter={(value) => `${value} %`}
+            parser={(value) =>
+              value ? parseFloat(value.replace(/ %/, "")) : 0
+            }
+            readOnly
+            className="highlight-cell"
+          />
+        );
+      },
     },
   ];
 

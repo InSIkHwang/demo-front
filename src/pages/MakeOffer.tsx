@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { message } from "antd";
+import { Button, message } from "antd";
 import styled from "styled-components";
 import dayjs from "dayjs";
 import FormComponent from "../components/makeOffer/FormComponent";
 import TableComponent from "../components/makeOffer/TableComponent";
+import { editOffer } from "../api/api";
+import { ItemDataType } from "../types/types";
 
 const FormContainer = styled.div`
   position: relative;
@@ -36,15 +38,43 @@ const MakeOffer = () => {
     }
   }, [info]);
 
-  const onFinish = (values: any) => {
-    console.log("수정된 데이터:", values);
-    message.success("데이터가 성공적으로 수정되었습니다!");
+  const handleInputChange = (index: number, key: keyof any, value: any) => {
+    const updatedDataSource = [...dataSource];
+    updatedDataSource[index] = { ...updatedDataSource[index], [key]: value };
+    setDataSource(updatedDataSource);
   };
 
-  const handleInputChange = (index: number, key: keyof any, value: any) => {
-    const newData = [...dataSource];
-    newData[index][key] = value;
-    setDataSource(newData);
+  const handleSave = async () => {
+    const formattedData = dataSource.map((item: ItemDataType) => ({
+      itemDetailId: item.itemDetailId,
+      itemRemark: item.itemRemark || "",
+      qty: item.qty,
+      unit: item.unit || "",
+      itemId: item.itemId,
+      salesPriceKRW: item.salesPriceKRW,
+      salesPriceUSD: item.salesPriceUSD,
+      salesAmountKRW: item.salesAmountKRW,
+      salesAmountUSD: item.salesAmountUSD,
+      margin: item.margin,
+      purchasePriceKRW: item.purchasePriceKRW,
+      purchasePriceUSD: item.purchasePriceUSD,
+      purchaseAmountKRW: item.purchaseAmountKRW,
+      purchaseAmountUSD: item.purchaseAmountUSD,
+    }));
+    const response = await editOffer(
+      info.supplierInquiryId,
+      info.supplierInfo.supplierId,
+      formattedData
+    );
+
+    try {
+      console.log(response);
+
+      message.success("성공적으로 저장 되었습니다!");
+    } catch (error) {
+      console.log(response);
+      message.error("데이터 저장 중 오류가 발생했습니다.");
+    }
   };
 
   return (
@@ -66,13 +96,20 @@ const MakeOffer = () => {
           documentStatus: info.documentStatus,
           veeselHullNo: info.veeselHullNo,
         }}
-        onFinish={onFinish}
       />
       <TableComponent
         dataSource={dataSource}
         handleInputChange={handleInputChange}
         currency={info.currency}
       />
+      <Button
+        type="primary"
+        htmlType="submit"
+        style={{ float: "right", width: 100, marginTop: 20 }}
+        onClick={handleSave}
+      >
+        저장
+      </Button>
     </FormContainer>
   );
 };

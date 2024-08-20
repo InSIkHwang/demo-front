@@ -3,6 +3,7 @@ import {
   Customer,
   Inquiry,
   Item,
+  ItemDataType,
   MailData,
   Supplier,
   SupplierInquiryListIF,
@@ -33,7 +34,7 @@ export const fetchOfferList = async () => {
   const response = await axios.get<{
     totalCount: number;
     supplierInquiryList: SupplierInquiryListIF[];
-  }>("/api/supplier-inquires");
+  }>("/api/supplier-inquiries");
 
   return response.data;
 };
@@ -43,7 +44,7 @@ export const fetchOfferDetail = async (
   supplierId: number
 ) => {
   const response = await axios.get(
-    `/api/supplier-inquires/${supplierInquiryId}?supplierId=${supplierId}`
+    `/api/supplier-inquiries/${supplierInquiryId}?supplierId=${supplierId}`
   );
 
   return response.data;
@@ -158,11 +159,28 @@ export const searchInquiryList = async (
   return response.data;
 };
 
-export const sendInquiryMail = async (docNumber: string, mailData: MailData[]) => {
+export const sendInquiryMail = async (
+  docNumber: string,
+  mailData: MailData[]
+) => {
   const response = await axios.post(
     `/api/customer-inquiries/send-email?docNumber=${docNumber}`,
     mailData
   );
 
   return response.data;
+};
+
+export const editOffer = async (
+  supplierInquiryId: number,
+  supplierId: number,
+  itemCostEditList: ItemDataType[]
+) => {
+  // 서버로 보내는 데이터의 포맷을 맞추기 위해 수정
+  const requestData = {
+    supplierId,
+    itemCostEditList,
+  };
+
+  await axios.put(`/api/supplier-inquiries/${supplierInquiryId}`, requestData);
 };

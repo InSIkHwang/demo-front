@@ -124,6 +124,7 @@ export interface Inquiry {
 }
 
 export interface MailData {
+  supplierId: number;
   toRecipient: string;
   subject: string;
   content: string;
@@ -204,10 +205,11 @@ export interface SupplierInquiryDetailIF {
   };
 }
 
-export interface DataType {
+export interface ItemDataType {
   itemCode: string;
   itemType: string;
   itemName: string;
+  itemId: number;
   qty: number;
   unit: string;
   itemRemark: string;

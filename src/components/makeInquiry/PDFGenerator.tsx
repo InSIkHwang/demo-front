@@ -58,6 +58,7 @@ const PDFGenerator = ({
       const pdfBase64 = await convertBlobToBase64(pdfBlob);
 
       const mailData: MailData = {
+        supplierId: supplierTag.id,
         toRecipient: supplierTag.email,
         subject: `BASKOREA REQUEST FOR QUOTATION (${formValues.refNumber}) - ${supplierTag.name}`,
         content: `Thanks for your cooperation \n\n<VESSEL INFO>\nVESSEL: ${vesselInfo?.vesselName}\nIMO: ${vesselInfo?.imoNumber}`,

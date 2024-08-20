@@ -75,6 +75,8 @@ const MailSenderModal = ({
   const [loading, setLoading] = useState(false);
   const [currentMailDataList, setCurrentMailDataList] = useState(mailDataList);
 
+  console.log(mailDataList);
+
   useEffect(() => {
     form.setFieldsValue({
       docNumber: inquiryFormValues.docNumber,
@@ -101,6 +103,7 @@ const MailSenderModal = ({
     try {
       // Send inquiry mail with updated data list
       await sendInquiryMail(values.docNumber, updatedMailDataList);
+      console.log(updatedMailDataList);
 
       // Success message
       message.success("이메일이 성공적으로 전송되었습니다!");

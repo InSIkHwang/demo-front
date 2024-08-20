@@ -15,12 +15,11 @@ const FormItem = styled(Form.Item)`
 
 interface FormComponentProps {
   initialValues: any;
-  onFinish: (values: any) => void;
 }
 
-const FormComponent = ({ initialValues, onFinish }: FormComponentProps) => {
+const FormComponent = ({ initialValues }: FormComponentProps) => {
   return (
-    <Form layout="vertical" initialValues={initialValues} onFinish={onFinish}>
+    <Form layout="vertical" initialValues={initialValues}>
       <Row>
         <FormItem
           label="문서번호"
@@ -108,11 +107,6 @@ const FormComponent = ({ initialValues, onFinish }: FormComponentProps) => {
           <Input.TextArea rows={1} />
         </FormItem>
       </Row>
-      <Form.Item>
-        <Button type="primary" htmlType="submit" style={{ float: "right" }}>
-          저장
-        </Button>
-      </Form.Item>
     </Form>
   );
 };
