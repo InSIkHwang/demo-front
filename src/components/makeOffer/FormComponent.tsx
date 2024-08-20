@@ -30,6 +30,9 @@ const FormComponent = ({ initialValues, onFinish }: FormComponentProps) => {
         >
           <Input disabled />
         </FormItem>
+        <FormItem label="문서상태" name="documentStatus">
+          <Input readOnly />
+        </FormItem>
         <FormItem
           label="작성일자"
           name="registerDate"
@@ -62,7 +65,7 @@ const FormComponent = ({ initialValues, onFinish }: FormComponentProps) => {
           rules={[{ required: true, message: "환율을 입력하세요!" }]}
         >
           <InputNumber min={0} style={{ width: "100%" }} />
-        </FormItem>
+        </FormItem>{" "}
       </Row>
 
       <Row>
@@ -71,14 +74,17 @@ const FormComponent = ({ initialValues, onFinish }: FormComponentProps) => {
           name="customerName"
           rules={[{ required: true, message: "매출처를 입력하세요!" }]}
         >
-          <Input />
+          <Input readOnly />
         </FormItem>
         <FormItem
           label="선박명"
           name="vesselName"
           rules={[{ required: true, message: "선박명을 입력하세요!" }]}
         >
-          <Input />
+          <Input readOnly />
+        </FormItem>
+        <FormItem label="HULL NO." name="veeselHullNo">
+          <Input readOnly />
         </FormItem>
         <FormItem
           label="REF NO."
@@ -86,16 +92,24 @@ const FormComponent = ({ initialValues, onFinish }: FormComponentProps) => {
           rules={[{ required: true, message: "REF NO.를 입력하세요!" }]}
           style={{ flex: "20%" }}
         >
-          <Input />
+          <Input readOnly />
         </FormItem>
       </Row>
       <Row>
-        <FormItem label="비고" name="docRemark">
+        <FormItem
+          label="의뢰처"
+          name="supplierName"
+          rules={[{ required: true, message: "의뢰처를 입력하세요!" }]}
+          style={{ flex: 3 }}
+        >
+          <Input readOnly />
+        </FormItem>
+        <FormItem label="비고" name="docRemark" style={{ flex: 7 }}>
           <Input.TextArea rows={1} />
         </FormItem>
       </Row>
       <Form.Item>
-        <Button type="primary" htmlType="submit">
+        <Button type="primary" htmlType="submit" style={{ float: "right" }}>
           저장
         </Button>
       </Form.Item>

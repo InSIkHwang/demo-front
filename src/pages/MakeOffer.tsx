@@ -27,7 +27,6 @@ const Title = styled.h1`
 const MakeOffer = () => {
   const { state } = useLocation();
   const { info } = state || {};
-  console.log(info);
 
   const [dataSource, setDataSource] = useState(info?.inquiryItemDetails || []);
 
@@ -53,6 +52,8 @@ const MakeOffer = () => {
       <Title>견적 제안 - Offers</Title>
       <FormComponent
         initialValues={{
+          supplierInquiryId: info.supplierInquiryId,
+          supplierName: info.supplierName,
           documentNumber: info.documentNumber,
           registerDate: info.registerDate ? dayjs(info.registerDate) : null,
           shippingDate: info.shippingDate ? dayjs(info.shippingDate) : null,
@@ -62,12 +63,15 @@ const MakeOffer = () => {
           vesselName: info.vesselName,
           refNumber: info.refNumber,
           docRemark: info.docRemark,
+          documentStatus: info.documentStatus,
+          veeselHullNo: info.veeselHullNo,
         }}
         onFinish={onFinish}
       />
       <TableComponent
         dataSource={dataSource}
         handleInputChange={handleInputChange}
+        currency={info.currency}
       />
     </FormContainer>
   );
