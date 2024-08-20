@@ -7,7 +7,6 @@ import { MailData } from "../../types/types";
 import dayjs from "dayjs";
 
 const { TextArea } = Input;
-const { TabPane } = Tabs;
 const { Title } = Typography;
 
 const StyledForm = styled(Form)`
@@ -115,6 +114,49 @@ const MailSenderModal = ({
     }
   };
 
+  const tabsItems = currentMailDataList.map((mailData, index) => ({
+    key: index.toString(),
+    label: `의뢰처 ${index + 1}`,
+    children: (
+      <StyledCard>
+        <StyledFormItem
+          name={["mails", index, "toRecipient"]}
+          rules={[{ required: true, message: "받는 사람을 입력하세요." }]}
+        >
+          <Input prefix={<MailOutlined />} placeholder="받는 사람" />
+        </StyledFormItem>
+        <StyledFormItem
+          name={["mails", index, "subject"]}
+          rules={[{ required: true, message: "제목을 입력하세요." }]}
+        >
+          <Input placeholder="제목" />
+        </StyledFormItem>
+        <StyledFormItem
+          name={["mails", index, "content"]}
+          rules={[{ required: true, message: "내용을 입력하세요." }]}
+        >
+          <TextArea placeholder="내용" rows={6} />
+        </StyledFormItem>
+        <StyledFormItem name={["mails", index, "ccRecipient"]}>
+          <Input placeholder="참조 메일" />
+        </StyledFormItem>
+        <StyledFormItem name={["mails", index, "bccRecipient"]}>
+          <Input placeholder="참조 메일" />
+        </StyledFormItem>
+        <StyledFormItem>
+          <Title level={5}>첨부파일</Title>
+          <AttachmentList>
+            {mailData.attachments.map((attachment, attachIndex) => (
+              <AttachmentItem key={attachIndex}>
+                {attachment.fileName}
+              </AttachmentItem>
+            ))}
+          </AttachmentList>
+        </StyledFormItem>
+      </StyledCard>
+    ),
+  }));
+
   return (
     <StyledForm form={form} onFinish={onFinish}>
       <FormRow style={{ marginBottom: 0 }}>
@@ -153,48 +195,12 @@ const MailSenderModal = ({
           <Input disabled placeholder="vesselName" />
         </StyledFormItem>
       </FormRow>
-      <Tabs defaultActiveKey="0" type="card" onChange={handleTabChange}>
-        {currentMailDataList.map((mailData, index) => (
-          <TabPane tab={`의뢰처 ${index + 1}`} key={index.toString()}>
-            <StyledCard>
-              <StyledFormItem
-                name={["mails", index, "toRecipient"]}
-                rules={[{ required: true, message: "받는 사람을 입력하세요." }]}
-              >
-                <Input prefix={<MailOutlined />} placeholder="받는 사람" />
-              </StyledFormItem>
-              <StyledFormItem
-                name={["mails", index, "subject"]}
-                rules={[{ required: true, message: "제목을 입력하세요." }]}
-              >
-                <Input placeholder="제목" />
-              </StyledFormItem>
-              <StyledFormItem
-                name={["mails", index, "content"]}
-                rules={[{ required: true, message: "내용을 입력하세요." }]}
-              >
-                <TextArea placeholder="내용" rows={6} />
-              </StyledFormItem>
-              <StyledFormItem name={["mails", index, "ccRecipient"]}>
-                <Input placeholder="참조 메일" />
-              </StyledFormItem>
-              <StyledFormItem name={["mails", index, "bccRecipient"]}>
-                <Input placeholder="참조 메일" />
-              </StyledFormItem>
-              <StyledFormItem>
-                <Title level={5}>첨부파일</Title>
-                <AttachmentList>
-                  {mailData.attachments.map((attachment, attachIndex) => (
-                    <AttachmentItem key={attachIndex}>
-                      {attachment.fileName}
-                    </AttachmentItem>
-                  ))}
-                </AttachmentList>
-              </StyledFormItem>
-            </StyledCard>
-          </TabPane>
-        ))}
-      </Tabs>
+      <Tabs
+        defaultActiveKey="0"
+        type="card"
+        onChange={handleTabChange}
+        items={tabsItems}
+      />
 
       <StyledButton
         type="primary"
