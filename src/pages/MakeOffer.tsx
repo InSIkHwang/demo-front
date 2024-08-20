@@ -6,7 +6,6 @@ import dayjs from "dayjs";
 import FormComponent from "../components/makeOffer/FormComponent";
 import TableComponent from "../components/makeOffer/TableComponent";
 
-// Styled Components
 const FormContainer = styled.div`
   position: relative;
   top: 150px;
@@ -25,7 +24,6 @@ const Title = styled.h1`
   color: #333;
 `;
 
-// MakeOffer Component
 const MakeOffer = () => {
   const { state } = useLocation();
   const { info } = state || {};
@@ -40,7 +38,6 @@ const MakeOffer = () => {
   }, [info]);
 
   const onFinish = (values: any) => {
-    // Save updated data logic
     console.log("수정된 데이터:", values);
     message.success("데이터가 성공적으로 수정되었습니다!");
   };

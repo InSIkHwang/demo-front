@@ -1,6 +1,5 @@
 import React from "react";
 import { Form, Input, Button, DatePicker, Select, InputNumber } from "antd";
-import dayjs from "dayjs";
 import styled from "styled-components";
 
 const Row = styled.div`
@@ -14,7 +13,6 @@ const FormItem = styled(Form.Item)`
   flex: auto;
 `;
 
-// FormComponent Props Type
 interface FormComponentProps {
   initialValues: any;
   onFinish: (values: any) => void;
@@ -55,8 +53,7 @@ const FormComponent = ({ initialValues, onFinish }: FormComponentProps) => {
         >
           <Select>
             <Select.Option value="USD">USD</Select.Option>
-            <Select.Option value="KRW">KRW</Select.Option>
-            {/* 다른 화폐 옵션 추가 가능 */}
+            <Select.Option value="KRW">EUR</Select.Option>
           </Select>
         </FormItem>
         <FormItem
