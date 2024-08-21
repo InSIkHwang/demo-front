@@ -9,11 +9,22 @@ import {
   Card,
 } from "antd";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import { fetchOfferDetail, fetchOfferList } from "../api/api";
 import { useNavigate } from "react-router-dom";
 import type { ColumnsType } from "antd/es/table";
 import type { SupplierInquiryListIF } from "../types/types";
+
+const expandAnimation = keyframes`
+   from {
+    transform: translateY(-20px);   
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);   
+    opacity: 1;
+  }
+`;
 
 const Container = styled.div`
   position: relative;
@@ -63,6 +74,8 @@ const CardContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
+  animation: ${expandAnimation} 0.5s ease-in-out;
+  overflow: hidden;
 `;
 
 const StyledCard = styled(Card)`
