@@ -1,0 +1,38 @@
+name: Deploy React App to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main # private 레포지토리의 기본 브랜치 이름
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16' # 필요한 Node.js 버전 설정
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project
+        run: npm run build
+
+      - name: Deploy to GitHub Pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }} # Personal Access Token을 시크릿으로 설정
+        run: |
+          git clone https://github.com/your-username/my-public-repo.git public-repo
+          cp -R build/* public-repo/
+          cd public-repo
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add .
+          git commit -m "Deploy React app to GitHub Pages"
+          git push https://github.com/your-username/my-public-repo.git main
