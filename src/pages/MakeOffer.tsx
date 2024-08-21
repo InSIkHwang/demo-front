@@ -107,6 +107,7 @@ const MakeOffer = () => {
     const formattedData = dataSource.map((item: ItemDataType) => ({
       itemDetailId: item.itemDetailId,
       itemRemark: item.itemRemark || "",
+      itemType: item.itemType,
       qty: item.qty,
       unit: item.unit || "",
       itemId: item.itemId,
@@ -120,12 +121,14 @@ const MakeOffer = () => {
       purchaseAmountKRW: item.purchaseAmountKRW,
       purchaseAmountUSD: item.purchaseAmountUSD,
     }));
+
     try {
       await editOffer(
         info.supplierInquiryId,
         info.supplierInfo.supplierId,
         formattedData
       );
+
       message.success("성공적으로 저장 되었습니다!");
 
       // 저장 후 최신 데이터로 업데이트
@@ -162,6 +165,7 @@ const MakeOffer = () => {
       />
       <TableComponent
         dataSource={dataSource}
+        setDataSource={setDataSource}
         handleInputChange={handleInputChange}
         currency={info.currency}
       />

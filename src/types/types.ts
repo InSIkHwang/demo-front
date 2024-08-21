@@ -209,7 +209,7 @@ export interface ItemDataType {
   itemCode: string;
   itemType: string;
   itemName: string;
-  itemId: number;
+  itemId: number | null;
   qty: number;
   unit: string;
   itemRemark: string;
@@ -222,5 +222,5 @@ export interface ItemDataType {
   purchasePriceUSD: number;
   purchaseAmountKRW: number;
   purchaseAmountUSD: number;
-  itemDetailId: string;
+  itemDetailId: number | null;
 }

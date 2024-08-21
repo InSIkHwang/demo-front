@@ -1,13 +1,17 @@
-import React, { useEffect, useState } from "react";
-import { Table, Input, Select, InputNumber } from "antd";
+import React, { Dispatch, useEffect, useState } from "react";
+import { Table, Input, Select, InputNumber, Button, AutoComplete } from "antd";
 import { ColumnsType } from "antd/es/table";
 import styled from "styled-components";
 import { ItemDataType } from "../../types/types";
+import { DeleteOutlined } from "@ant-design/icons";
+import { fetchItemData } from "../../api/api";
 
 const CustomTable = styled(Table)`
   .ant-table-cell {
     padding: 12px !important;
+    text-align: center !important;
   }
+
   .highlight-cell {
     font-weight: bold;
     background-color: #dff4ff;
@@ -83,7 +87,8 @@ const calculateMargin = (salesAmount: number, purchaseAmount: number) =>
       );
 
 interface TableComponentProps {
-  dataSource: any[];
+  dataSource: ItemDataType[];
+  setDataSource: Dispatch<ItemDataType[]>;
   handleInputChange: (
     index: number,
     key: keyof ItemDataType,
@@ -96,6 +101,7 @@ const TableComponent = ({
   dataSource,
   handleInputChange,
   currency,
+  setDataSource,
 }: TableComponentProps) => {
   const [totals, setTotals] = useState({
     totalSalesAmountKRW: 0,
@@ -105,6 +111,86 @@ const TableComponent = ({
     totalProfit: 0,
     totalProfitPercent: 0,
   });
+
+  const [itemCodeOptions, setItemCodeOptions] = useState<{ value: string }[]>(
+    []
+  );
+  const [itemNameMap, setItemNameMap] = useState<{ [key: string]: string }>({});
+  const [itemIdMap, setItemIdMap] = useState<{ [key: string]: number }>({});
+  const [supplierOptions, setSupplierOptions] = useState<
+    { value: string; id: number; itemId: number; code: string; email: string }[]
+  >([]);
+
+  const handleItemCodeChange = (index: number, value: string) => {
+    handleInputChange(index, "itemCode", value);
+
+    if (value.trim() === "") {
+      return;
+    }
+
+    const searchItemCode = async () => {
+      try {
+        const { items } = await fetchItemData(value);
+        const itemArray = Array.isArray(items) ? items : [items];
+
+        const newItemNameMap = itemArray.reduce<{ [key: string]: string }>(
+          (acc, item) => {
+            acc[item.itemCode] = item.itemName;
+            return acc;
+          },
+          {}
+        );
+
+        const newItemIdMap = itemArray.reduce<{ [key: string]: number }>(
+          (acc, item) => {
+            acc[item.itemCode] = item.itemId;
+            return acc;
+          },
+          {}
+        );
+
+        const newSupplierOptions = itemArray.flatMap((item) =>
+          item.supplierList.map((supplier) => ({
+            value: supplier.companyName,
+            id: supplier.id,
+            itemId: supplier.itemId,
+            code: supplier.code,
+            email: supplier.email,
+          }))
+        );
+
+        setItemCodeOptions(itemArray.map((item) => ({ value: item.itemCode })));
+        setItemNameMap(newItemNameMap);
+        setItemIdMap(newItemIdMap);
+
+        setSupplierOptions((prevOptions) => [
+          ...prevOptions,
+          ...newSupplierOptions.filter(
+            (newSupplier) =>
+              !prevOptions.some(
+                (existingSupplier) => existingSupplier.id === newSupplier.id
+              )
+          ),
+        ]);
+
+        if (newItemNameMap[value]) {
+          handleInputChange(index, "itemName", newItemNameMap[value]);
+        }
+
+        if (newItemIdMap[value]) {
+          const updatedItems = [...dataSource];
+          updatedItems[index] = {
+            ...updatedItems[index],
+            itemId: newItemIdMap[value],
+          };
+          setDataSource(updatedItems);
+        }
+      } catch (error) {
+        console.error("Error fetching item codes and suppliers:", error);
+      }
+    };
+    searchItemCode();
+  };
 
   useEffect(() => {
     const totalSalesAmountKRW = dataSource.reduce(
@@ -129,7 +215,7 @@ const TableComponent = ({
     );
     const totalProfit = totalSalesAmountKRW - totalPurchaseAmountKRW;
     const totalProfitPercent = Number(
-      ((totalProfit / totalPurchaseAmountKRW) * 100).toFixed(2)
+      ((totalProfit / totalSalesAmountKRW) * 100).toFixed(2)
     );
 
     setTotals({
@@ -142,7 +228,48 @@ const TableComponent = ({
     });
   }, [dataSource, currency]);
 
+  const handleAddItem = () => {
+    const newItem: ItemDataType = {
+      itemDetailId: null,
+      itemId: null,
+      itemType: "ITEM",
+      itemCode: "",
+      itemName: "",
+      itemRemark: "",
+      qty: 0,
+      unit: "",
+      salesPriceKRW: 0,
+      salesPriceUSD: 0,
+      salesAmountKRW: 0,
+      salesAmountUSD: 0,
+      margin: 0,
+      purchasePriceKRW: 0,
+      purchasePriceUSD: 0,
+      purchaseAmountKRW: 0,
+      purchaseAmountUSD: 0,
+    };
+
+    setDataSource([...dataSource, newItem]);
+  };
+
+  const handleDeleteItem = (index: number) => {
+    const updatedDataSource = dataSource.filter((_, i) => i !== index);
+    setDataSource(updatedDataSource);
+  };
+
   const columns: ColumnsType<any> = [
+    {
+      title: "삭제",
+      key: "delete",
+      width: 60,
+      render: (text: any, record: any, index: number) => (
+        <Button
+          type="default"
+          onClick={() => handleDeleteItem(index)}
+          icon={<DeleteOutlined />}
+        ></Button>
+      ),
+    },
     {
       title: "품목코드",
       dataIndex: "itemCode",
@@ -150,11 +277,14 @@ const TableComponent = ({
       fixed: "left",
       width: 150,
       render: (text: string, record: any, index: number) => (
-        <Input
+        <AutoComplete
           value={text}
-          onChange={(e) => handleInputChange(index, "itemCode", e.target.value)}
+          onChange={(value) => handleItemCodeChange(index, value)}
+          options={itemCodeOptions}
           style={{ borderRadius: "4px", width: "100%" }}
-        />
+        >
+          <Input />
+        </AutoComplete>
       ),
     },
     {
@@ -516,6 +646,13 @@ const TableComponent = ({
           </span>
         </TotalCard>
       </TotalCards>
+      <Button
+        type="primary"
+        style={{ margin: "5px 0 10px 0" }}
+        onClick={handleAddItem}
+      >
+        품목추가
+      </Button>
       <CustomTable
         columns={columns}
         dataSource={dataSource}
