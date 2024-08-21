@@ -168,6 +168,7 @@ const SupplierInquiryList = () => {
   const [itemsPerPage, setItemsPerPage] = useState<number>(10);
   const [supplierInfoList, setSupplierInfoList] = useState<any[]>([]);
   const [currentDetail, setCurrentDetail] = useState<any | null>(null);
+  const [expandedRowKeys, setExpandedRowKeys] = useState<React.Key[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -198,6 +199,7 @@ const SupplierInquiryList = () => {
       // 현재 열려있는 항목을 다시 클릭하면 currentDetail을 숨깁니다.
       setCurrentDetail(null);
       setSupplierInfoList([]);
+      setExpandedRowKeys([]);
     } else {
       // 새 항목을 클릭하면 supplierInfoList의 모든 항목에 대해 fetchOfferDetail을 호출합니다.
       try {
@@ -222,6 +224,7 @@ const SupplierInquiryList = () => {
 
         setCurrentDetail(record); // 현재 항목을 현재 세부정보로 설정
         setSupplierInfoList(details);
+        setExpandedRowKeys([record.documentNumber]); // 행을 확장합니다.
       } catch (error) {
         console.error("세부정보를 가져오는 중 오류가 발생했습니다:", error);
       }
@@ -321,74 +324,100 @@ const SupplierInquiryList = () => {
           dataSource={paginatedData}
           pagination={false}
           loading={loading}
-          rowKey="supplierInquiryId"
-          style={{ cursor: "pointer" }}
+          rowKey="documentNumber" // Use documentNumber as key for expansion
+          expandedRowRender={(record) => {
+            if (
+              currentDetail &&
+              record.documentNumber === currentDetail.documentNumber
+            ) {
+              return (
+                <CardContainer>
+                  {supplierInfoList.map(({ info, detail }) => {
+                    const totals = calculateTotals(detail.inquiryItemDetails);
+                    return (
+                      <StyledCard
+                        key={info.supplierInquiryId}
+                        title={
+                          <CardTitle>
+                            {info.code} ({info.companyName})
+                          </CardTitle>
+                        }
+                      >
+                        <CardContent>
+                          <Section>
+                            <InfoText>
+                              매입액 (KRW):{" "}
+                              {totals.totalPurchaseAmountKRW.toLocaleString()}
+                            </InfoText>
+                            <InfoText>
+                              매출액 (KRW):{" "}
+                              {totals.totalSalesAmountKRW.toLocaleString()}
+                            </InfoText>
+                            <InfoText style={{ color: "#000" }}>
+                              총 이익 (KRW):{" "}
+                              {totals.totalProfitKRW.toLocaleString()}
+                            </InfoText>
+                          </Section>
+                          <Divider />
+                          <Section>
+                            <InfoText>
+                              매입액 (USD):{" "}
+                              {totals.totalPurchaseAmountUSD.toLocaleString()}
+                            </InfoText>
+                            <InfoText>
+                              매출액 (USD):{" "}
+                              {totals.totalSalesAmountUSD.toLocaleString()}
+                            </InfoText>
+                            <InfoText style={{ color: "#000" }}>
+                              총 이익 (USD):{" "}
+                              {totals.totalProfitUSD.toLocaleString()}
+                            </InfoText>
+                          </Section>
+                        </CardContent>
+                        <InfoText style={{ color: "#000" }}>
+                          이익율: {totals.profitMarginKRW}% (USD:{" "}
+                          {totals.profitMarginUSD}%)
+                        </InfoText>
+                        <div
+                          style={{
+                            display: "grid",
+                            height: 50,
+                            margin: "5px 0",
+                          }}
+                        >
+                          <InfoText>
+                            적용환율: {record.currency} ({record.currencyType})
+                          </InfoText>
+                          <Button
+                            type="primary"
+                            onClick={() => handleEditClick(detail)}
+                          >
+                            수정
+                          </Button>
+                        </div>
+                      </StyledCard>
+                    );
+                  })}
+                </CardContainer>
+              );
+            }
+            return null;
+          }}
+          expandedRowKeys={expandedRowKeys}
           onRow={(record) => ({
             onClick: () => handleRowClick(record),
           })}
+          onExpand={(expanded, record) => {
+            if (expanded) {
+              handleRowClick(record);
+            } else {
+              setCurrentDetail(null);
+              setSupplierInfoList([]);
+              setExpandedRowKeys([]);
+            }
+          }}
         />
-        {supplierInfoList.length > 0 && (
-          <CardContainer>
-            {supplierInfoList.map(({ info, detail }) => {
-              const totals = calculateTotals(detail.inquiryItemDetails);
-              return (
-                <StyledCard
-                  key={info.supplierInquiryId}
-                  title={
-                    <CardTitle>
-                      {info.code} ({info.companyName})
-                    </CardTitle>
-                  }
-                >
-                  <CardContent>
-                    <Section>
-                      <InfoText>
-                        매입액 (KRW):{" "}
-                        {totals.totalPurchaseAmountKRW.toLocaleString()}
-                      </InfoText>
-                      <InfoText>
-                        매출액 (KRW):{" "}
-                        {totals.totalSalesAmountKRW.toLocaleString()}
-                      </InfoText>
-                      <InfoText style={{ color: "#000" }}>
-                        총 이익 (KRW): {totals.totalProfitKRW.toLocaleString()}
-                      </InfoText>
-                    </Section>
-                    <Divider />
-                    <Section>
-                      <InfoText>
-                        매입액 (USD):{" "}
-                        {totals.totalPurchaseAmountUSD.toLocaleString()}
-                      </InfoText>
-                      <InfoText>
-                        매출액 (USD):{" "}
-                        {totals.totalSalesAmountUSD.toLocaleString()}
-                      </InfoText>
-                      <InfoText style={{ color: "#000" }}>
-                        총 이익 (USD): {totals.totalProfitUSD.toLocaleString()}
-                      </InfoText>
-                    </Section>
-                  </CardContent>
-                  <InfoText style={{ color: "#000" }}>
-                    이익율: {totals.profitMarginKRW}% (USD:{" "}
-                    {totals.profitMarginUSD}%)
-                  </InfoText>
-                  <div style={{ display: "grid", height: 50, margin: "5px 0" }}>
-                    <InfoText>
-                      적용환율: {detail.currency} ({detail.currencyType})
-                    </InfoText>
-                    <Button
-                      type="primary"
-                      onClick={() => handleEditClick(detail)}
-                    >
-                      수정
-                    </Button>
-                  </div>
-                </StyledCard>
-              );
-            })}
-          </CardContainer>
-        )}
+
         <PaginationWrapper
           current={currentPage}
           pageSize={itemsPerPage}
