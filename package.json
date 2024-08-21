@@ -57,6 +57,7 @@
     ]
   },
   "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@types/react-transition-group": "^4.4.10",
     "@types/react-virtualized": "^9.21.30",
     "@types/react-window": "^1.8.8"
