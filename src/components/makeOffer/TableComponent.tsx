@@ -651,7 +651,7 @@ const TableComponent = ({
         style={{ margin: "5px 0 10px 0" }}
         onClick={handleAddItem}
       >
-        품목추가
+        추가
       </Button>
       <CustomTable
         columns={columns}
