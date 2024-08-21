@@ -4,8 +4,10 @@ import { Button, message } from "antd";
 import styled from "styled-components";
 import dayjs from "dayjs";
 import FormComponent from "../components/makeOffer/FormComponent";
-import TableComponent from "../components/makeOffer/TableComponent";
-import { editOffer } from "../api/api";
+import TableComponent, {
+  calculateTotalAmount,
+} from "../components/makeOffer/TableComponent";
+import { editOffer, fetchOfferDetail } from "../api/api";
 import { ItemDataType } from "../types/types";
 
 const FormContainer = styled.div`
@@ -28,9 +30,28 @@ const Title = styled.h1`
 
 const MakeOffer = () => {
   const { state } = useLocation();
-  const { info } = state || {};
+  const [info, setInfo] = useState(state?.info || {});
 
   const [dataSource, setDataSource] = useState(info?.inquiryItemDetails || []);
+
+  useEffect(() => {
+    const loadOfferDetail = async () => {
+      if (info?.supplierInquiryId && info?.supplierInfo?.supplierId) {
+        try {
+          const response = await fetchOfferDetail(
+            info.supplierInquiryId,
+            info.supplierInfo.supplierId
+          );
+          setInfo(response);
+          setDataSource(response.inquiryItemDetails || []);
+        } catch (error) {
+          message.error("데이터를 가져오는 중 오류가 발생했습니다.");
+        }
+      }
+    };
+
+    loadOfferDetail();
+  }, [info.supplierInquiryId, info.supplierInfo?.supplierId]);
 
   useEffect(() => {
     if (info?.inquiryItemDetails) {
@@ -45,6 +66,41 @@ const MakeOffer = () => {
   ) => {
     const updatedDataSource = [...dataSource];
     updatedDataSource[index][key] = value;
+
+    // 값이 변경된 항목이 "salesPriceKRW", "salesPriceUSD", "purchasePriceKRW", "purchasePriceUSD"일 경우 계산하여 업데이트
+    if (
+      key === "salesPriceKRW" ||
+      key === "salesPriceUSD" ||
+      key === "purchasePriceKRW" ||
+      key === "purchasePriceUSD"
+    ) {
+      const record = updatedDataSource[index];
+      const updatedSalesAmountKRW = calculateTotalAmount(
+        record.salesPriceKRW,
+        record.qty
+      );
+      const updatedSalesAmountUSD = calculateTotalAmount(
+        record.salesPriceUSD,
+        record.qty
+      );
+      const updatedPurchaseAmountKRW = calculateTotalAmount(
+        record.purchasePriceKRW,
+        record.qty
+      );
+      const updatedPurchaseAmountUSD = calculateTotalAmount(
+        record.purchasePriceUSD,
+        record.qty
+      );
+
+      updatedDataSource[index] = {
+        ...record,
+        salesAmountKRW: updatedSalesAmountKRW,
+        salesAmountUSD: updatedSalesAmountUSD,
+        purchaseAmountKRW: updatedPurchaseAmountKRW,
+        purchaseAmountUSD: updatedPurchaseAmountUSD,
+      };
+    }
+
     setDataSource(updatedDataSource);
   };
 
@@ -72,6 +128,14 @@ const MakeOffer = () => {
         formattedData
       );
       message.success("성공적으로 저장 되었습니다!");
+
+      // 저장 후 최신 데이터로 업데이트
+      const response = await fetchOfferDetail(
+        info.supplierInquiryId,
+        info.supplierInfo.supplierId
+      );
+      setInfo(response);
+      setDataSource(response.inquiryItemDetails || []);
     } catch (error) {
       message.error("데이터 저장 중 오류가 발생했습니다.");
     }

@@ -71,7 +71,7 @@ const convertCurrency = (
 };
 
 // 수량과 단가를 곱하여 총액을 계산하는 함수
-const calculateTotalAmount = (price: number, qty: number) =>
+export const calculateTotalAmount = (price: number, qty: number) =>
   roundToTwoDecimalPlaces(price * qty);
 
 // 마진을 계산하는 함수
@@ -105,10 +105,6 @@ const TableComponent = ({
     totalProfit: 0,
     totalProfitPercent: 0,
   });
-
-  useEffect(() => {
-    console.log("Updated dataSource:", dataSource);
-  }, [dataSource]);
 
   useEffect(() => {
     const totalSalesAmountKRW = dataSource.reduce(

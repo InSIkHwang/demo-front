@@ -283,6 +283,7 @@ const SupplierInquiryList = () => {
       state: { info }, // 상세 정보를 상태로 전달
     });
   };
+
   return (
     <>
       <Container>
