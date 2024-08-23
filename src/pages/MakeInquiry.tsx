@@ -134,6 +134,7 @@ const MakeInquiry = () => {
   const [isMailSenderVisible, setIsMailSenderVisible] = useState(false);
   const [mailDataList, setMailDataList] = useState<MailData[]>([]);
   const [loadMailData, setLoadMailData] = useState<boolean>(false);
+  console.log(inquiryDetail);
 
   // Load document data
   const loadDocData = useCallback(async () => {
@@ -159,12 +160,11 @@ const MakeInquiry = () => {
       setDocDataLoading(false);
     }
   }, []);
-  
+
   useEffect(() => {
     if (customerInquiryId) {
       setIsEditMode(true);
       if (inquiryDetail) {
-        console.log(inquiryDetail);
         const {
           documentNumber,
           registerDate,
@@ -399,7 +399,6 @@ const MakeInquiry = () => {
       if (isEditMode) {
         requestData.documentNumber = formValues.docNumber;
       }
-      console.log(requestData);
 
       // Submit the inquiry and get the response
       const response = await submitInquiry(
@@ -616,6 +615,7 @@ const MakeInquiry = () => {
           mailDataList={mailDataList}
           inquiryFormValues={formValues}
           handleSubmit={handleSubmit}
+          setIsMailSenderVisible={setIsMailSenderVisible}
         />
       </Modal>
       <div

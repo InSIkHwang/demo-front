@@ -71,7 +71,6 @@ const PDFGenerator = ({
           },
         ],
       };
-      console.log(mailData);
       mailDataList.push(mailData);
     }
     setMailDataList(mailDataList);

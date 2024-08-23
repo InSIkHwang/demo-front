@@ -226,7 +226,6 @@ const SupplierInquiryList = () => {
             supplierInquiryId,
             supplierId
           );
-          console.log(detailResponse);
           return {
             info,
             detail: detailResponse,

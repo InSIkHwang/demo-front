@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Dispatch, SetStateAction } from "react";
 import { Form, Input, Button, message, Tabs, Typography, Card } from "antd";
 import { SendOutlined, MailOutlined } from "@ant-design/icons";
 import styled from "styled-components";
@@ -62,10 +62,12 @@ const MailSenderModal = ({
   mailDataList,
   inquiryFormValues,
   handleSubmit,
+  setIsMailSenderVisible,
 }: {
   mailDataList: MailData[];
   inquiryFormValues: FormValue;
   handleSubmit: () => Promise<void>;
+  setIsMailSenderVisible: Dispatch<SetStateAction<boolean>>;
 }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -109,6 +111,7 @@ const MailSenderModal = ({
 
       // 성공 메시지
       message.success("이메일이 성공적으로 전송되었습니다!");
+      setIsMailSenderVisible(false);
     } catch (error) {
       // 에러 처리
       console.error("Error sending email:", error);

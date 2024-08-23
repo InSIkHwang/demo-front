@@ -103,8 +103,12 @@ const MakeOffer = () => {
 
     setDataSource(updatedDataSource);
   };
-  console.log(dataSource);
   const handleSave = async () => {
+    if (dataSource.length === 0) {
+      message.error("아이템을 추가해주세요");
+      return;
+    }
+
     const formattedData = dataSource.map((item: ItemDataType) => ({
       position: item.position,
       itemDetailId: item.itemDetailId,
