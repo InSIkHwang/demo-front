@@ -207,6 +207,7 @@ export interface SupplierInquiryDetailIF {
 }
 
 export interface ItemDataType {
+  position: number;
   itemCode: string;
   itemType: string;
   itemName: string;

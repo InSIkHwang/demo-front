@@ -32,6 +32,7 @@ const MakeOffer = () => {
   const { state } = useLocation();
   const [info, setInfo] = useState(state?.info || {});
   const [dataSource, setDataSource] = useState(info?.inquiryItemDetails || []);
+  console.log(info);
 
   useEffect(() => {
     const loadOfferDetail = async () => {
@@ -102,9 +103,10 @@ const MakeOffer = () => {
 
     setDataSource(updatedDataSource);
   };
-
+  console.log(dataSource);
   const handleSave = async () => {
     const formattedData = dataSource.map((item: ItemDataType) => ({
+      position: item.position,
       itemDetailId: item.itemDetailId,
       itemRemark: item.itemRemark || "",
       itemType: item.itemType,

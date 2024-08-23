@@ -82,6 +82,8 @@ const DetailInquiryModal = ({
         try {
           const data = await fetchInquiryDetail(inquiryId);
           setInquiryDetail(data);
+          console.log(data);
+          
         } catch (error) {
           console.error("상세 정보를 가져오는 중 오류가 발생했습니다:", error);
         } finally {

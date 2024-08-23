@@ -61,9 +61,11 @@ interface FormValue {
 const MailSenderModal = ({
   mailDataList,
   inquiryFormValues,
+  handleSubmit,
 }: {
   mailDataList: MailData[];
   inquiryFormValues: FormValue;
+  handleSubmit: () => Promise<void>;
 }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -100,6 +102,8 @@ const MailSenderModal = ({
     setLoading(true);
 
     try {
+      //저장
+      await handleSubmit();
       // 활성 탭의 메일만 전송
       await sendInquiryMail(values.docNumber, [updatedMailDataToSend]);
 

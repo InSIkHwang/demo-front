@@ -120,493 +120,501 @@ const TableComponent = ({
   const [supplierOptions, setSupplierOptions] = useState<
     { value: string; id: number; itemId: number; code: string; email: string }[]
   >([]);
+console.log(dataSource);
 
-  const handleItemCodeChange = (index: number, value: string) => {
-    handleInputChange(index, "itemCode", value);
+const handleItemCodeChange = (index: number, value: string) => {
+  handleInputChange(index, "itemCode", value);
 
-    if (value.trim() === "") {
-      return;
-    }
+  if (value.trim() === "") {
+    return;
+  }
 
-    const searchItemCode = async () => {
-      try {
-        const { items } = await fetchItemData(value);
-        const itemArray = Array.isArray(items) ? items : [items];
+  const searchItemCode = async () => {
+    try {
+      const { items } = await fetchItemData(value);
+      const itemArray = Array.isArray(items) ? items : [items];
 
-        const newItemNameMap = itemArray.reduce<{ [key: string]: string }>(
-          (acc, item) => {
-            acc[item.itemCode] = item.itemName;
-            return acc;
-          },
-          {}
-        );
+      const newItemNameMap = itemArray.reduce<{ [key: string]: string }>(
+        (acc, item) => {
+          acc[item.itemCode] = item.itemName;
+          return acc;
+        },
+        {}
+      );
 
-        const newItemIdMap = itemArray.reduce<{ [key: string]: number }>(
-          (acc, item) => {
-            acc[item.itemCode] = item.itemId;
-            return acc;
-          },
-          {}
-        );
+      const newItemIdMap = itemArray.reduce<{ [key: string]: number }>(
+        (acc, item) => {
+          acc[item.itemCode] = item.itemId;
+          return acc;
+        },
+        {}
+      );
 
-        const newSupplierOptions = itemArray.flatMap((item) =>
-          item.supplierList.map((supplier) => ({
-            value: supplier.companyName,
-            id: supplier.id,
-            itemId: supplier.itemId,
-            code: supplier.code,
-            email: supplier.email,
-          }))
-        );
+      const newSupplierOptions = itemArray.flatMap((item) =>
+        item.supplierList.map((supplier) => ({
+          value: supplier.companyName,
+          id: supplier.id,
+          itemId: supplier.itemId,
+          code: supplier.code,
+          email: supplier.email,
+        }))
+      );
 
-        setItemCodeOptions(itemArray.map((item) => ({ value: item.itemCode })));
-        setItemNameMap(newItemNameMap);
-        setItemIdMap(newItemIdMap);
+      setItemCodeOptions(itemArray.map((item) => ({ value: item.itemCode })));
+      setItemNameMap(newItemNameMap);
+      setItemIdMap(newItemIdMap);
 
-        setSupplierOptions((prevOptions) => [
-          ...prevOptions,
-          ...newSupplierOptions.filter(
-            (newSupplier) =>
-              !prevOptions.some(
-                (existingSupplier) => existingSupplier.id === newSupplier.id
-              )
-          ),
-        ]);
+      setSupplierOptions((prevOptions) => [
+        ...prevOptions,
+        ...newSupplierOptions.filter(
+          (newSupplier) =>
+            !prevOptions.some(
+              (existingSupplier) => existingSupplier.id === newSupplier.id
+            )
+        ),
+      ]);
 
-        if (newItemNameMap[value]) {
-          handleInputChange(index, "itemName", newItemNameMap[value]);
-        }
-
-        if (newItemIdMap[value]) {
-          const updatedItems = [...dataSource];
-          updatedItems[index] = {
-            ...updatedItems[index],
-            itemId: newItemIdMap[value],
-          };
-          setDataSource(updatedItems);
-        }
-      } catch (error) {
-        console.error("Error fetching item codes and suppliers:", error);
+      if (newItemNameMap[value]) {
+        handleInputChange(index, "itemName", newItemNameMap[value]);
       }
-    };
-    searchItemCode();
+
+      if (newItemIdMap[value]) {
+        const updatedItems = [...dataSource];
+        updatedItems[index] = {
+          ...updatedItems[index],
+          itemId: newItemIdMap[value],
+        };
+        setDataSource(updatedItems);
+      }
+    } catch (error) {
+      console.error("Error fetching item codes and suppliers:", error);
+    }
+  };
+  searchItemCode();
+};
+
+useEffect(() => {
+  const updatedDataSource = dataSource.map((item, index) => ({
+    ...item,
+    no: index + 1, // No. 추가
+  }));
+
+  setDataSource(updatedDataSource);
+  const totalSalesAmountKRW = dataSource.reduce(
+    (acc, record) =>
+      acc + calculateTotalAmount(record.salesPriceKRW, record.qty),
+    0
+  );
+  const totalSalesAmountUSD = dataSource.reduce(
+    (acc, record) =>
+      acc + calculateTotalAmount(record.salesPriceUSD, record.qty),
+    0
+  );
+  const totalPurchaseAmountKRW = dataSource.reduce(
+    (acc, record) =>
+      acc + calculateTotalAmount(record.purchasePriceKRW, record.qty),
+    0
+  );
+  const totalPurchaseAmountUSD = dataSource.reduce(
+    (acc, record) =>
+      acc + calculateTotalAmount(record.purchasePriceUSD, record.qty),
+    0
+  );
+  const totalProfit = totalSalesAmountKRW - totalPurchaseAmountKRW;
+  const totalProfitPercent = Number(
+    ((totalProfit / totalSalesAmountKRW) * 100).toFixed(2)
+  );
+
+  setTotals({
+    totalSalesAmountKRW,
+    totalSalesAmountUSD,
+    totalPurchaseAmountKRW,
+    totalPurchaseAmountUSD,
+    totalProfit,
+    totalProfitPercent,
+  });
+}, [dataSource, currency]);
+
+const handleAddItem = () => {
+  const newItem: ItemDataType = {
+    position: dataSource.length + 1,
+    itemDetailId: null,
+    itemId: null,
+    itemType: "ITEM",
+    itemCode: "",
+    itemName: "",
+    itemRemark: "",
+    qty: 0,
+    unit: "",
+    salesPriceKRW: 0,
+    salesPriceUSD: 0,
+    salesAmountKRW: 0,
+    salesAmountUSD: 0,
+    margin: 0,
+    purchasePriceKRW: 0,
+    purchasePriceUSD: 0,
+    purchaseAmountKRW: 0,
+    purchaseAmountUSD: 0,
   };
 
-  useEffect(() => {
-    const totalSalesAmountKRW = dataSource.reduce(
-      (acc, record) =>
-        acc + calculateTotalAmount(record.salesPriceKRW, record.qty),
-      0
-    );
-    const totalSalesAmountUSD = dataSource.reduce(
-      (acc, record) =>
-        acc + calculateTotalAmount(record.salesPriceUSD, record.qty),
-      0
-    );
-    const totalPurchaseAmountKRW = dataSource.reduce(
-      (acc, record) =>
-        acc + calculateTotalAmount(record.purchasePriceKRW, record.qty),
-      0
-    );
-    const totalPurchaseAmountUSD = dataSource.reduce(
-      (acc, record) =>
-        acc + calculateTotalAmount(record.purchasePriceUSD, record.qty),
-      0
-    );
-    const totalProfit = totalSalesAmountKRW - totalPurchaseAmountKRW;
-    const totalProfitPercent = Number(
-      ((totalProfit / totalSalesAmountKRW) * 100).toFixed(2)
-    );
+  setDataSource([...dataSource, newItem]);
+};
 
-    setTotals({
-      totalSalesAmountKRW,
-      totalSalesAmountUSD,
-      totalPurchaseAmountKRW,
-      totalPurchaseAmountUSD,
-      totalProfit,
-      totalProfitPercent,
-    });
-  }, [dataSource, currency]);
+const handleDeleteItem = (index: number) => {
+  const updatedDataSource = dataSource.filter((_, i) => i !== index);
+  setDataSource(updatedDataSource);
+};
 
-  const handleAddItem = () => {
-    const newItem: ItemDataType = {
-      itemDetailId: null,
-      itemId: null,
-      itemType: "ITEM",
-      itemCode: "",
-      itemName: "",
-      itemRemark: "",
-      qty: 0,
-      unit: "",
-      salesPriceKRW: 0,
-      salesPriceUSD: 0,
-      salesAmountKRW: 0,
-      salesAmountUSD: 0,
-      margin: 0,
-      purchasePriceKRW: 0,
-      purchasePriceUSD: 0,
-      purchaseAmountKRW: 0,
-      purchaseAmountUSD: 0,
-    };
-
-    setDataSource([...dataSource, newItem]);
-  };
-
-  const handleDeleteItem = (index: number) => {
-    const updatedDataSource = dataSource.filter((_, i) => i !== index);
-    setDataSource(updatedDataSource);
-  };
-
-  const columns: ColumnsType<any> = [
-    {
-      title: "삭제",
-      key: "delete",
-      width: 60,
-      render: (text: any, record: any, index: number) => (
-        <Button
-          type="default"
-          onClick={() => handleDeleteItem(index)}
-          icon={<DeleteOutlined />}
-        ></Button>
-      ),
-    },
-    {
-      title: "품목코드",
-      dataIndex: "itemCode",
-      key: "itemCode",
-      fixed: "left",
-      width: 150,
-      render: (text: string, record: any, index: number) => (
-        <AutoComplete
-          value={text}
-          onChange={(value) => handleItemCodeChange(index, value)}
-          options={itemCodeOptions}
-          style={{ borderRadius: "4px", width: "100%" }}
-        >
-          <Input />
-        </AutoComplete>
-      ),
-    },
-    {
-      title: "OPT",
-      dataIndex: "itemType",
-      key: "itemType",
-      width: 120,
-      render: (text: string, record: any, index: number) => (
-        <Select
-          value={text}
-          onChange={(value) => handleInputChange(index, "itemType", value)}
-          style={{ width: "100%" }}
-        >
-          {["MAKER", "TYPE", "DESC", "ITEM"].map((opt) => (
-            <Select.Option key={opt} value={opt}>
-              {opt}
-            </Select.Option>
-          ))}
-        </Select>
-      ),
-    },
-    {
-      title: "품명",
-      dataIndex: "itemName",
-      key: "itemName",
-      fixed: "left",
-      width: 300,
-      render: (text: string, record: any, index: number) => (
-        <Input
-          value={text}
-          onChange={(e) => handleInputChange(index, "itemName", e.target.value)}
-          style={{ borderRadius: "4px", width: "100%" }}
-        />
-      ),
-    },
-    {
-      title: "수량",
-      dataIndex: "qty",
-      key: "qty",
-      width: 80,
-      render: (text: number, record: any, index: number) => (
+const columns: ColumnsType<any> = [
+  {
+    title: "삭제",
+    key: "delete",
+    width: 60,
+    render: (text: any, record: any, index: number) => (
+      <Button
+        type="default"
+        onClick={() => handleDeleteItem(index)}
+        icon={<DeleteOutlined />}
+      ></Button>
+    ),
+  },
+  {
+    title: "No.",
+    dataIndex: "no", // No. 값 표시
+    key: "no",
+    render: (_: any, __: any, index: number) => <span>{index + 1}</span>,
+    width: 50,
+  },
+  {
+    title: "품목코드",
+    dataIndex: "itemCode",
+    key: "itemCode",
+    fixed: "left",
+    width: 150,
+    render: (text: string, record: any, index: number) => (
+      <AutoComplete
+        value={text}
+        onChange={(value) => handleItemCodeChange(index, value)}
+        options={itemCodeOptions}
+        style={{ borderRadius: "4px", width: "100%" }}
+      >
+        <Input />
+      </AutoComplete>
+    ),
+  },
+  {
+    title: "OPT",
+    dataIndex: "itemType",
+    key: "itemType",
+    width: 120,
+    render: (text: string, record: any, index: number) => (
+      <Select
+        value={text}
+        onChange={(value) => handleInputChange(index, "itemType", value)}
+        style={{ width: "100%" }}
+      >
+        {["MAKER", "TYPE", "DESC", "ITEM"].map((opt) => (
+          <Select.Option key={opt} value={opt}>
+            {opt}
+          </Select.Option>
+        ))}
+      </Select>
+    ),
+  },
+  {
+    title: "품명",
+    dataIndex: "itemName",
+    key: "itemName",
+    fixed: "left",
+    width: 300,
+    render: (text: string, record: any, index: number) => (
+      <Input
+        value={text}
+        onChange={(e) => handleInputChange(index, "itemName", e.target.value)}
+        style={{ borderRadius: "4px", width: "100%" }}
+      />
+    ),
+  },
+  {
+    title: "수량",
+    dataIndex: "qty",
+    key: "qty",
+    width: 80,
+    render: (text: number, record: any, index: number) => (
+      <InputNumber
+        value={text}
+        onChange={(value) => handleInputChange(index, "qty", value ?? 0)}
+        style={{ width: "100%" }}
+        min={0}
+        step={1}
+        controls={false}
+      />
+    ),
+  },
+  {
+    title: "단위",
+    dataIndex: "unit",
+    key: "unit",
+    width: 80,
+    render: (text: string, record: any, index: number) => (
+      <Input
+        value={text}
+        onChange={(e) => handleInputChange(index, "unit", e.target.value)}
+        style={{ borderRadius: "4px", width: "100%" }}
+      />
+    ),
+  },
+  {
+    title: "비고",
+    dataIndex: "itemRemark",
+    key: "itemRemark",
+    width: 100,
+    render: (text: string, record: any, index: number) => (
+      <Input
+        value={text}
+        onChange={(e) => handleInputChange(index, "itemRemark", e.target.value)}
+        style={{ borderRadius: "4px", width: "100%" }}
+      />
+    ),
+  },
+  {
+    title: "매출단가(KRW)",
+    dataIndex: "salesPriceKRW",
+    key: "salesPriceKRW",
+    width: 150,
+    render: (text: number, record: any, index: number) => (
+      <InputNumber
+        value={text}
+        onChange={(value) => {
+          const updatedValue = value ?? 0;
+          handleInputChange(
+            index,
+            "salesPriceKRW",
+            roundToTwoDecimalPlaces(updatedValue)
+          );
+          handleInputChange(
+            index,
+            "salesPriceUSD",
+            convertCurrency(updatedValue, currency, "USD")
+          );
+        }}
+        style={{ width: "100%" }}
+        min={0}
+        step={0.01}
+        formatter={(value) => `₩ ${value}`}
+        parser={(value) =>
+          value ? parseFloat(value.replace(/₩\s?|,/g, "")) : 0
+        }
+        controls={false}
+      />
+    ),
+  },
+  {
+    title: "매출단가(USD)",
+    dataIndex: "salesPriceUSD",
+    key: "salesPriceUSD",
+    width: 150,
+    render: (text: number, record: any, index: number) => (
+      <InputNumber
+        value={text}
+        onChange={(value) => {
+          const updatedValue = value ?? 0;
+          handleInputChange(
+            index,
+            "salesPriceUSD",
+            roundToTwoDecimalPlaces(updatedValue)
+          );
+          handleInputChange(
+            index,
+            "salesPriceKRW",
+            convertCurrency(updatedValue, currency, "KRW")
+          );
+        }}
+        style={{ width: "100%" }}
+        min={0}
+        step={0.01}
+        formatter={(value) => `$ ${value}`}
+        parser={(value) =>
+          value ? parseFloat(value.replace(/\$\s?|,/g, "")) : 0
+        }
+        controls={false}
+      />
+    ),
+  },
+  {
+    title: "매출총액(KRW)",
+    dataIndex: "salesAmountKRW",
+    key: "salesAmountKRW",
+    width: 150,
+    render: (text: number, record: any, index: number) => (
+      <InputNumber
+        value={calculateTotalAmount(record.salesPriceKRW, record.qty)}
+        style={{ width: "100%" }}
+        min={0}
+        step={0.01}
+        formatter={(value) => `₩ ${value}`}
+        parser={(value) =>
+          value ? parseFloat(value.replace(/₩\s?|,/g, "")) : 0
+        }
+        readOnly
+        className="highlight-cell"
+      />
+    ),
+  },
+  {
+    title: "매출총액(USD)",
+    dataIndex: "salesAmountUSD",
+    key: "salesAmountUSD",
+    width: 150,
+    render: (text: number, record: any, index: number) => (
+      <InputNumber
+        value={calculateTotalAmount(record.salesPriceUSD, record.qty)}
+        style={{ width: "100%" }}
+        min={0}
+        step={0.01}
+        formatter={(value) => `$ ${value}`}
+        parser={(value) =>
+          value ? parseFloat(value.replace(/\$\s?|,/g, "")) : 0
+        }
+        readOnly
+        className="highlight-cell"
+      />
+    ),
+  },
+  {
+    title: "매입단가(KRW)",
+    dataIndex: "purchasePriceKRW",
+    key: "purchasePriceKRW",
+    width: 150,
+    render: (text: number, record: any, index: number) => (
+      <InputNumber
+        value={text}
+        onChange={(value) => {
+          const updatedValue = value ?? 0;
+          handleInputChange(
+            index,
+            "purchasePriceKRW",
+            roundToTwoDecimalPlaces(updatedValue)
+          );
+          handleInputChange(
+            index,
+            "purchasePriceUSD",
+            convertCurrency(updatedValue, currency, "USD")
+          );
+        }}
+        style={{ width: "100%" }}
+        min={0}
+        step={0.01}
+        formatter={(value) => `₩ ${value}`}
+        parser={(value) =>
+          value ? parseFloat(value.replace(/₩\s?|,/g, "")) : 0
+        }
+        controls={false}
+      />
+    ),
+  },
+  {
+    title: "매입단가(USD)",
+    dataIndex: "purchasePriceUSD",
+    key: "purchasePriceUSD",
+    width: 150,
+    render: (text: number, record: any, index: number) => (
+      <InputNumber
+        value={text}
+        onChange={(value) => {
+          const updatedValue = value ?? 0;
+          handleInputChange(
+            index,
+            "purchasePriceUSD",
+            roundToTwoDecimalPlaces(updatedValue)
+          );
+          handleInputChange(
+            index,
+            "purchasePriceKRW",
+            convertCurrency(updatedValue, currency, "KRW")
+          );
+        }}
+        style={{ width: "100%" }}
+        min={0}
+        step={0.01}
+        formatter={(value) => `$ ${value}`}
+        parser={(value) =>
+          value ? parseFloat(value.replace(/\$\s?|,/g, "")) : 0
+        }
+        controls={false}
+      />
+    ),
+  },
+  {
+    title: "매입총액(KRW)",
+    dataIndex: "purchaseAmountKRW",
+    key: "purchaseAmountKRW",
+    width: 150,
+    render: (text: number, record: any, index: number) => (
+      <InputNumber
+        value={calculateTotalAmount(record.purchasePriceKRW, record.qty)}
+        style={{ width: "100%" }}
+        min={0}
+        step={0.01}
+        formatter={(value) => `₩ ${value}`}
+        parser={(value) =>
+          value ? parseFloat(value.replace(/₩\s?|,/g, "")) : 0
+        }
+        readOnly
+        className="highlight-cell"
+      />
+    ),
+  },
+  {
+    title: "매입총액(USD)",
+    dataIndex: "purchaseAmountUSD",
+    key: "purchaseAmountUSD",
+    width: 150,
+    render: (text: number, record: any, index: number) => (
+      <InputNumber
+        value={calculateTotalAmount(record.purchasePriceUSD, record.qty)}
+        style={{ width: "100%" }}
+        min={0}
+        step={0.01}
+        formatter={(value) => `$ ${value}`}
+        parser={(value) =>
+          value ? parseFloat(value.replace(/\$\s?|,/g, "")) : 0
+        }
+        readOnly
+        className="highlight-cell"
+      />
+    ),
+  },
+  {
+    title: "마진(%)",
+    dataIndex: "margin",
+    key: "margin",
+    width: 120,
+    render: (text: number, record: any, index: number) => {
+      const salesAmountKRW = calculateTotalAmount(
+        record.salesPriceKRW,
+        record.qty
+      );
+      const purchaseAmountKRW = calculateTotalAmount(
+        record.purchasePriceKRW,
+        record.qty
+      );
+      const marginPercent = calculateMargin(salesAmountKRW, purchaseAmountKRW);
+      return (
         <InputNumber
-          value={text}
-          onChange={(value) => handleInputChange(index, "qty", value ?? 0)}
-          style={{ width: "100%" }}
-          min={0}
-          step={1}
-          controls={false}
-        />
-      ),
-    },
-    {
-      title: "단위",
-      dataIndex: "unit",
-      key: "unit",
-      width: 80,
-      render: (text: string, record: any, index: number) => (
-        <Input
-          value={text}
-          onChange={(e) => handleInputChange(index, "unit", e.target.value)}
-          style={{ borderRadius: "4px", width: "100%" }}
-        />
-      ),
-    },
-    {
-      title: "비고",
-      dataIndex: "itemRemark",
-      key: "itemRemark",
-      width: 100,
-      render: (text: string, record: any, index: number) => (
-        <Input
-          value={text}
-          onChange={(e) =>
-            handleInputChange(index, "itemRemark", e.target.value)
-          }
-          style={{ borderRadius: "4px", width: "100%" }}
-        />
-      ),
-    },
-    {
-      title: "매출단가(KRW)",
-      dataIndex: "salesPriceKRW",
-      key: "salesPriceKRW",
-      width: 150,
-      render: (text: number, record: any, index: number) => (
-        <InputNumber
-          value={text}
-          onChange={(value) => {
-            const updatedValue = value ?? 0;
-            handleInputChange(
-              index,
-              "salesPriceKRW",
-              roundToTwoDecimalPlaces(updatedValue)
-            );
-            handleInputChange(
-              index,
-              "salesPriceUSD",
-              convertCurrency(updatedValue, currency, "USD")
-            );
-          }}
+          value={marginPercent}
           style={{ width: "100%" }}
           min={0}
           step={0.01}
-          formatter={(value) => `₩ ${value}`}
-          parser={(value) =>
-            value ? parseFloat(value.replace(/₩\s?|,/g, "")) : 0
-          }
-          controls={false}
-        />
-      ),
-    },
-    {
-      title: "매출단가(USD)",
-      dataIndex: "salesPriceUSD",
-      key: "salesPriceUSD",
-      width: 150,
-      render: (text: number, record: any, index: number) => (
-        <InputNumber
-          value={text}
-          onChange={(value) => {
-            const updatedValue = value ?? 0;
-            handleInputChange(
-              index,
-              "salesPriceUSD",
-              roundToTwoDecimalPlaces(updatedValue)
-            );
-            handleInputChange(
-              index,
-              "salesPriceKRW",
-              convertCurrency(updatedValue, currency, "KRW")
-            );
-          }}
-          style={{ width: "100%" }}
-          min={0}
-          step={0.01}
-          formatter={(value) => `$ ${value}`}
-          parser={(value) =>
-            value ? parseFloat(value.replace(/\$\s?|,/g, "")) : 0
-          }
-          controls={false}
-        />
-      ),
-    },
-    {
-      title: "매출총액(KRW)",
-      dataIndex: "salesAmountKRW",
-      key: "salesAmountKRW",
-      width: 150,
-      render: (text: number, record: any, index: number) => (
-        <InputNumber
-          value={calculateTotalAmount(record.salesPriceKRW, record.qty)}
-          style={{ width: "100%" }}
-          min={0}
-          step={0.01}
-          formatter={(value) => `₩ ${value}`}
-          parser={(value) =>
-            value ? parseFloat(value.replace(/₩\s?|,/g, "")) : 0
-          }
+          formatter={(value) => `${value} %`}
+          parser={(value) => (value ? parseFloat(value.replace(/ %/, "")) : 0)}
           readOnly
           className="highlight-cell"
         />
-      ),
+      );
     },
-    {
-      title: "매출총액(USD)",
-      dataIndex: "salesAmountUSD",
-      key: "salesAmountUSD",
-      width: 150,
-      render: (text: number, record: any, index: number) => (
-        <InputNumber
-          value={calculateTotalAmount(record.salesPriceUSD, record.qty)}
-          style={{ width: "100%" }}
-          min={0}
-          step={0.01}
-          formatter={(value) => `$ ${value}`}
-          parser={(value) =>
-            value ? parseFloat(value.replace(/\$\s?|,/g, "")) : 0
-          }
-          readOnly
-          className="highlight-cell"
-        />
-      ),
-    },
-    {
-      title: "매입단가(KRW)",
-      dataIndex: "purchasePriceKRW",
-      key: "purchasePriceKRW",
-      width: 150,
-      render: (text: number, record: any, index: number) => (
-        <InputNumber
-          value={text}
-          onChange={(value) => {
-            const updatedValue = value ?? 0;
-            handleInputChange(
-              index,
-              "purchasePriceKRW",
-              roundToTwoDecimalPlaces(updatedValue)
-            );
-            handleInputChange(
-              index,
-              "purchasePriceUSD",
-              convertCurrency(updatedValue, currency, "USD")
-            );
-          }}
-          style={{ width: "100%" }}
-          min={0}
-          step={0.01}
-          formatter={(value) => `₩ ${value}`}
-          parser={(value) =>
-            value ? parseFloat(value.replace(/₩\s?|,/g, "")) : 0
-          }
-          controls={false}
-        />
-      ),
-    },
-    {
-      title: "매입단가(USD)",
-      dataIndex: "purchasePriceUSD",
-      key: "purchasePriceUSD",
-      width: 150,
-      render: (text: number, record: any, index: number) => (
-        <InputNumber
-          value={text}
-          onChange={(value) => {
-            const updatedValue = value ?? 0;
-            handleInputChange(
-              index,
-              "purchasePriceUSD",
-              roundToTwoDecimalPlaces(updatedValue)
-            );
-            handleInputChange(
-              index,
-              "purchasePriceKRW",
-              convertCurrency(updatedValue, currency, "KRW")
-            );
-          }}
-          style={{ width: "100%" }}
-          min={0}
-          step={0.01}
-          formatter={(value) => `$ ${value}`}
-          parser={(value) =>
-            value ? parseFloat(value.replace(/\$\s?|,/g, "")) : 0
-          }
-          controls={false}
-        />
-      ),
-    },
-    {
-      title: "매입총액(KRW)",
-      dataIndex: "purchaseAmountKRW",
-      key: "purchaseAmountKRW",
-      width: 150,
-      render: (text: number, record: any, index: number) => (
-        <InputNumber
-          value={calculateTotalAmount(record.purchasePriceKRW, record.qty)}
-          style={{ width: "100%" }}
-          min={0}
-          step={0.01}
-          formatter={(value) => `₩ ${value}`}
-          parser={(value) =>
-            value ? parseFloat(value.replace(/₩\s?|,/g, "")) : 0
-          }
-          readOnly
-          className="highlight-cell"
-        />
-      ),
-    },
-    {
-      title: "매입총액(USD)",
-      dataIndex: "purchaseAmountUSD",
-      key: "purchaseAmountUSD",
-      width: 150,
-      render: (text: number, record: any, index: number) => (
-        <InputNumber
-          value={calculateTotalAmount(record.purchasePriceUSD, record.qty)}
-          style={{ width: "100%" }}
-          min={0}
-          step={0.01}
-          formatter={(value) => `$ ${value}`}
-          parser={(value) =>
-            value ? parseFloat(value.replace(/\$\s?|,/g, "")) : 0
-          }
-          readOnly
-          className="highlight-cell"
-        />
-      ),
-    },
-    {
-      title: "마진(%)",
-      dataIndex: "margin",
-      key: "margin",
-      width: 120,
-      render: (text: number, record: any, index: number) => {
-        const salesAmountKRW = calculateTotalAmount(
-          record.salesPriceKRW,
-          record.qty
-        );
-        const purchaseAmountKRW = calculateTotalAmount(
-          record.purchasePriceKRW,
-          record.qty
-        );
-        const marginPercent = calculateMargin(
-          salesAmountKRW,
-          purchaseAmountKRW
-        );
-        return (
-          <InputNumber
-            value={marginPercent}
-            style={{ width: "100%" }}
-            min={0}
-            step={0.01}
-            formatter={(value) => `${value} %`}
-            parser={(value) =>
-              value ? parseFloat(value.replace(/ %/, "")) : 0
-            }
-            readOnly
-            className="highlight-cell"
-          />
-        );
-      },
-    },
-  ];
+  },
+];
 
   return (
     <div style={{ marginTop: 20, overflowX: "auto" }}>

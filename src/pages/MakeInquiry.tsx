@@ -159,11 +159,12 @@ const MakeInquiry = () => {
       setDocDataLoading(false);
     }
   }, []);
-
+  
   useEffect(() => {
     if (customerInquiryId) {
       setIsEditMode(true);
       if (inquiryDetail) {
+        console.log(inquiryDetail);
         const {
           documentNumber,
           registerDate,
@@ -367,6 +368,7 @@ const MakeInquiry = () => {
         );
 
         return {
+          position: item.no,
           itemDetailId: matchingItemDetail
             ? matchingItemDetail.itemDetailId
             : null,
@@ -397,6 +399,7 @@ const MakeInquiry = () => {
       if (isEditMode) {
         requestData.documentNumber = formValues.docNumber;
       }
+      console.log(requestData);
 
       // Submit the inquiry and get the response
       const response = await submitInquiry(
@@ -612,6 +615,7 @@ const MakeInquiry = () => {
         <MailSenderModal
           mailDataList={mailDataList}
           inquiryFormValues={formValues}
+          handleSubmit={handleSubmit}
         />
       </Modal>
       <div
