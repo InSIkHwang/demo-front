@@ -142,7 +142,7 @@ export const submitInquiry = async (
 };
 //Inquiry 삭제
 export const deleteInquiry = async (inquiryId: number) => {
-  await axios.delete(`/api/customer-inquiries/${inquiryId}/trash`);
+  await axios.put(`/api/customer-inquiries/${inquiryId}/trash`);
 };
 
 //Inquiry 검색

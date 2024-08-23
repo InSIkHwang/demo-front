@@ -94,6 +94,18 @@ const InquiryForm = ({
   >([]);
   const [autoSearchSupCompleteOptions, setAutoSearchSupCompleteOptions] =
     useState<{ value: string }[]>([]);
+  const [makerOptions, setMakerOptions] = useState<{ value: string }[]>([]);
+  const [makerSupplierList, setMakerSupplierList] = useState<
+    {
+      maker: string;
+      supplierList: {
+        id: number;
+        code: string;
+        name: string;
+        email: string;
+      }[];
+    }[]
+  >([]);
 
   useEffect(() => {
     if (selectedSuppliers.length > 0) {
@@ -104,7 +116,7 @@ const InquiryForm = ({
 
       setTagColors(initialColors);
     }
-  }, [selectedSuppliers]);
+  }, []);
 
   const validateCustomer = () => {
     if (customerUnreg) {
@@ -150,7 +162,6 @@ const InquiryForm = ({
     if (value) {
       try {
         if (selectedType === "의뢰처") {
-          // 의뢰처 검색
           const data = await searchSupplier(value);
           const options = data.suppliers.map((supplier) => ({
             name: supplier.companyName,
@@ -166,39 +177,33 @@ const InquiryForm = ({
               )
               .map((supplier) => ({ value: supplier.name }))
           );
-
-          console.log(data);
         } else if (selectedType === "MAKER") {
-          // Maker 검색
           const data = await searchSupplierUseMaker(value);
-
-          const supplierOptions = data.makerSupplierList.flatMap((makerItem) =>
-            makerItem.supplierList.map((supplier) => ({
+          const makerSupplierList = data.makerSupplierList.map((maker) => ({
+            maker: maker.maker,
+            supplierList: maker.supplierList.map((supplier) => ({
               name: supplier.companyName,
               id: supplier.supplierId,
               code: supplier.code,
               email: supplier.email,
-            }))
-          );
-          const uniqueSupplierOptions = supplierOptions.filter(
-            (option, index, self) =>
-              index === self.findIndex((t) => t.id === option.id)
-          );
-          console.log(data);
+            })),
+          }));
 
-          setSupplierList(uniqueSupplierOptions);
-          setAutoSearchSupCompleteOptions(
-            uniqueSupplierOptions.map((supplier) => ({ value: supplier.name }))
-          );
+          // 상태 업데이트
+          setMakerSupplierList(makerSupplierList);
+          const makerOptions = data.makerSupplierList.map((maker) => ({
+            value: maker.maker,
+          }));
+          setMakerOptions(makerOptions);
         }
       } catch (error) {
         message.error("검색 중 오류가 발생했습니다.");
       }
     } else {
       setSupplierList([]);
+      setMakerSupplierList([]);
     }
   };
-
   const handleTagClick = (id: number) => {
     setSelectedSupplierTag((prevTags) => {
       const isAlreadySelected = prevTags.some((tag) => tag.id === id);
@@ -209,6 +214,7 @@ const InquiryForm = ({
         return currentTags.filter((tag) => tag.id !== id);
       } else {
         const newTag = selectedSuppliers.find((supplier) => supplier.id === id);
+
         if (newTag) {
           if (currentTags.length >= 5) {
             message.error("최대 5개의 의뢰처만 등록 가능합니다.");
@@ -225,42 +231,49 @@ const InquiryForm = ({
   const uniqueSuppliers = removeDuplicates(selectedSuppliers);
 
   const handleAddSupplier = () => {
-    let matchedSupplier: any;
-    console.log(supplierList);
+    let matchedSuppliers: any[] = [];
 
     if (selectedType === "의뢰처") {
-      // 의뢰처일 때는 input 값과 동일한 이름의 supplier를 찾음
-      matchedSupplier = supplierList.find(
+      const matchedSupplier = supplierList.find(
         (supplier) =>
           supplier.name.toLowerCase() === supplierSearch.toLowerCase()
       );
+      if (matchedSupplier) {
+        matchedSuppliers = [matchedSupplier];
+      }
     } else if (selectedType === "MAKER") {
-      // MAKER일 때는 입력된 메이커 이름과 관련된 supplier를 찾음
-      matchedSupplier = supplierList.find((supplier) =>
-        supplier.name.toLowerCase().includes(supplierSearch.toLowerCase())
+      const matchedMaker = makerSupplierList.find(
+        (maker) => maker.maker.toLowerCase() === supplierSearch.toLowerCase()
       );
+      if (matchedMaker) {
+        matchedSuppliers = matchedMaker.supplierList;
+      }
     }
 
-    if (matchedSupplier) {
+    if (matchedSuppliers.length > 0) {
       setSelectedSuppliers((prevSuppliers) => {
-        const supplierExists = prevSuppliers.some(
-          (supplier) => supplier.id === matchedSupplier.id
+        const newSuppliers = matchedSuppliers.filter(
+          (supplier) =>
+            !prevSuppliers.some(
+              (existingSupplier) => existingSupplier.id === supplier.supplierId
+            )
         );
 
-        if (supplierExists) {
+        if (newSuppliers.length === 0) {
           message.warning("이미 추가된 의뢰처입니다.");
           return prevSuppliers;
         }
 
-        return [
+        const updatedSuppliers = [
           ...prevSuppliers,
-          {
-            id: matchedSupplier.id,
-            name: matchedSupplier.name,
-            code: matchedSupplier.code,
-            email: matchedSupplier.email,
-          },
+          ...newSuppliers.map((supplier) => ({
+            id: supplier.id,
+            name: supplier.name,
+            code: supplier.code,
+            email: supplier.email,
+          })),
         ];
+        return updatedSuppliers;
       });
 
       setSupplierSearch("");
@@ -444,7 +457,11 @@ const InquiryForm = ({
               <AutoComplete
                 value={supplierSearch}
                 onChange={(value) => handleSearch(value)}
-                options={autoSearchSupCompleteOptions}
+                options={
+                  selectedType === "MAKER"
+                    ? makerOptions
+                    : autoSearchSupCompleteOptions
+                }
                 style={{ width: "100%" }}
               >
                 <Input style={{ marginTop: 3 }} />
