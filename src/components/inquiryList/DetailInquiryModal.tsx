@@ -18,6 +18,7 @@ interface DetailInquiryModalProps {
   visible: boolean;
   onClose: () => void;
   inquiryId: number;
+  fetchData: () => Promise<void>;
 }
 
 const StyledModal = styled(Modal)`
@@ -69,6 +70,7 @@ const DetailInquiryModal = ({
   visible,
   onClose,
   inquiryId,
+  fetchData,
 }: DetailInquiryModalProps) => {
   const [inquiryDetail, setInquiryDetail] = useState<Inquiry | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -109,6 +111,7 @@ const DetailInquiryModal = ({
           await deleteInquiry(inquiryId);
           message.success("견적서가 성공적으로 삭제되었습니다.");
           onClose();
+          fetchData();
         } catch (error) {
           console.error("견적서 삭제 중 오류가 발생했습니다:", error);
           message.error("견적서 삭제에 실패했습니다. 다시 시도해 주세요.");

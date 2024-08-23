@@ -136,19 +136,18 @@ const CustomerInquiryList = () => {
   const [registerStartDate, setRegisterStartDate] = useState<string>("");
   const [registerEndDate, setRegisterEndDate] = useState<string>("");
 
+  const fetchData = async () => {
+    try {
+      const response = await fetchInquiryList();
+      setData(response.customerInquiryList);
+      setTotalCount(response.totalCount);
+    } catch (error) {
+      console.error("데이터를 가져오는 중 오류가 발생했습니다:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetchInquiryList();
-        setData(response.customerInquiryList);
-        setTotalCount(response.totalCount);
-      } catch (error) {
-        console.error("데이터를 가져오는 중 오류가 발생했습니다:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
   }, []);
 
@@ -285,6 +284,7 @@ const CustomerInquiryList = () => {
           visible={isDetailCompanyModalOpen}
           onClose={() => setIsDetailCompanyModalOpen(false)}
           inquiryId={selectedInquiryId}
+          fetchData={fetchData}
         />
       )}
     </>
