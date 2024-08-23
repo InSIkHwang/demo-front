@@ -24,6 +24,7 @@ export interface VesselList {
 }
 
 export interface Supplier {
+  supplierId: number;
   id: number;
   code: string;
   companyName: string;

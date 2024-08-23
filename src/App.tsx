@@ -16,7 +16,7 @@ import MakeOffer from "./pages/MakeOffer";
 
 function App() {
   return (
-    <BrowserRouter basename={process.env.PUBLIC_URL}>
+    <BrowserRouter>
       <ThemeProvider theme={theme}>
         <Header />
         <Routes>

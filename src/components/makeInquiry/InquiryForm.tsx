@@ -12,7 +12,7 @@ import {
 import styled from "styled-components";
 import CreateCompanyModal from "../company/CreateCompanyModal";
 import CreateVesselModal from "../vessel/CreateVesselModal";
-import { searchSupplier } from "../../api/api";
+import { searchSupplier, searchSupplierUseMaker } from "../../api/api";
 
 const { Option } = Select;
 
@@ -25,6 +25,12 @@ const InquiryItemForm = styled(Form.Item)`
 const FormRow = styled.div`
   display: flex;
   margin-bottom: 5px;
+`;
+
+const SearchBox = styled.div`
+  margin-top: 10px;
+  display: flex;
+  align-items: center !important;
 `;
 
 interface FormValues {
@@ -82,6 +88,7 @@ const InquiryForm = ({
   const [isVesselModalOpen, setIsVesselModalOpen] = useState(false);
   const [tagColors, setTagColors] = useState<{ [id: number]: string }>({});
   const [supplierSearch, setSupplierSearch] = useState("");
+  const [selectedType, setSelectedType] = useState("의뢰처");
   const [supplierList, setSupplierList] = useState<
     { name: string; id: number; code: string; email: string }[]
   >([]);
@@ -142,21 +149,48 @@ const InquiryForm = ({
     setSupplierSearch(value);
     if (value) {
       try {
-        const data = await searchSupplier(value);
-        const options = data.suppliers.map((supplier) => ({
-          name: supplier.companyName,
-          id: supplier.id,
-          code: supplier.code,
-          email: supplier.email,
-        }));
-        setSupplierList(options);
-        setAutoSearchSupCompleteOptions(
-          options
-            .filter((supplier) =>
-              supplier.name.toLowerCase().includes(value.toLowerCase())
-            )
-            .map((supplier) => ({ value: supplier.name }))
-        );
+        if (selectedType === "의뢰처") {
+          // 의뢰처 검색
+          const data = await searchSupplier(value);
+          const options = data.suppliers.map((supplier) => ({
+            name: supplier.companyName,
+            id: supplier.id,
+            code: supplier.code,
+            email: supplier.email,
+          }));
+          setSupplierList(options);
+          setAutoSearchSupCompleteOptions(
+            options
+              .filter((supplier) =>
+                supplier.name.toLowerCase().includes(value.toLowerCase())
+              )
+              .map((supplier) => ({ value: supplier.name }))
+          );
+
+          console.log(data);
+        } else if (selectedType === "MAKER") {
+          // Maker 검색
+          const data = await searchSupplierUseMaker(value);
+
+          const supplierOptions = data.makerSupplierList.flatMap((makerItem) =>
+            makerItem.supplierList.map((supplier) => ({
+              name: supplier.companyName,
+              id: supplier.supplierId,
+              code: supplier.code,
+              email: supplier.email,
+            }))
+          );
+          const uniqueSupplierOptions = supplierOptions.filter(
+            (option, index, self) =>
+              index === self.findIndex((t) => t.id === option.id)
+          );
+          console.log(data);
+
+          setSupplierList(uniqueSupplierOptions);
+          setAutoSearchSupCompleteOptions(
+            uniqueSupplierOptions.map((supplier) => ({ value: supplier.name }))
+          );
+        }
       } catch (error) {
         message.error("검색 중 오류가 발생했습니다.");
       }
@@ -191,9 +225,21 @@ const InquiryForm = ({
   const uniqueSuppliers = removeDuplicates(selectedSuppliers);
 
   const handleAddSupplier = () => {
-    const matchedSupplier = supplierList.find(
-      (supplier) => supplier.name.toLowerCase() === supplierSearch.toLowerCase()
-    );
+    let matchedSupplier: any;
+    console.log(supplierList);
+
+    if (selectedType === "의뢰처") {
+      // 의뢰처일 때는 input 값과 동일한 이름의 supplier를 찾음
+      matchedSupplier = supplierList.find(
+        (supplier) =>
+          supplier.name.toLowerCase() === supplierSearch.toLowerCase()
+      );
+    } else if (selectedType === "MAKER") {
+      // MAKER일 때는 입력된 메이커 이름과 관련된 supplier를 찾음
+      matchedSupplier = supplierList.find((supplier) =>
+        supplier.name.toLowerCase().includes(supplierSearch.toLowerCase())
+      );
+    }
 
     if (matchedSupplier) {
       setSelectedSuppliers((prevSuppliers) => {
@@ -385,36 +431,35 @@ const InquiryForm = ({
           </InquiryItemForm>
         </FormRow>
         <FormRow>
-          <div style={{ marginTop: 10, display: "flex", alignItems: "center" }}>
-            <InquiryItemForm label="의뢰처 검색" name="searchSupplier">
+          <SearchBox>
+            <Select
+              value={selectedType}
+              onChange={(value) => setSelectedType(value)}
+              style={{ width: 100, marginRight: 10 }}
+            >
+              <Option value="의뢰처">의뢰처</Option>
+              <Option value="MAKER">MAKER</Option>
+            </Select>
+            <InquiryItemForm name="searchSupplier">
               <AutoComplete
                 value={supplierSearch}
                 onChange={(value) => handleSearch(value)}
                 options={autoSearchSupCompleteOptions}
                 style={{ width: "100%" }}
-                filterOption={(inputValue, option) =>
-                  option!.value.toLowerCase().includes(inputValue.toLowerCase())
-                }
               >
-                <Input />
+                <Input style={{ marginTop: 3 }} />
               </AutoComplete>
             </InquiryItemForm>
-            <Button
-              onClick={handleAddSupplier}
-              style={{ marginTop: 20, marginRight: 20 }}
-            >
+            <Button onClick={handleAddSupplier} style={{ marginRight: 20 }}>
               추가
             </Button>
-            <span style={{ marginTop: 20, marginRight: 10 }}>
-              검색된 의뢰처 목록:{" "}
-            </span>
+            <span style={{ marginRight: 10 }}>검색된 의뢰처 목록: </span>
             {uniqueSuppliers.map((supplier) => (
               <Tag
                 key={supplier.id}
                 style={{
                   borderColor: tagColors[supplier.id] || "default",
                   cursor: "pointer",
-                  marginTop: 20,
                 }}
                 onClick={() => handleTagClick(supplier.id)}
                 onClose={() => handleTagClick(supplier.id)}
@@ -422,7 +467,7 @@ const InquiryForm = ({
                 {supplier.code}
               </Tag>
             ))}
-          </div>
+          </SearchBox>
         </FormRow>
         <Button type="primary" onClick={addItem} style={{ margin: "20px 0" }}>
           품목 추가

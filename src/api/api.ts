@@ -9,6 +9,7 @@ import {
   SupplierInquiryListIF,
 } from "../types/types";
 
+//MakeInquiry시 문서번호, 날짜 등 생성
 export const fetchDocData = async () => {
   const response = await axios.post<{
     docNumber: string;
@@ -21,6 +22,7 @@ export const fetchDocData = async () => {
   return response.data;
 };
 
+//Inquiry 조회
 export const fetchInquiryList = async () => {
   const response = await axios.get<{
     totalCount: number;
@@ -30,6 +32,7 @@ export const fetchInquiryList = async () => {
   return response.data;
 };
 
+//Offer(Supplier Inquiry) 조회
 export const fetchOfferList = async () => {
   const response = await axios.get<{
     totalCount: number;
@@ -39,6 +42,7 @@ export const fetchOfferList = async () => {
   return response.data;
 };
 
+//Offer(Supplier Inquiry) 상세조회
 export const fetchOfferDetail = async (
   supplierInquiryId: number,
   supplierId: number
@@ -50,6 +54,7 @@ export const fetchOfferDetail = async (
   return response.data;
 };
 
+//Customers 검색
 export const fetchCompanyNames = async (customerName: string) => {
   const response = await axios.get<{
     isExist: boolean;
@@ -58,7 +63,7 @@ export const fetchCompanyNames = async (customerName: string) => {
 
   return response.data;
 };
-
+//Supplier 검색
 export const searchSupplier = async (companyName: string) => {
   const response = await axios.get<{
     totalCount: number;
@@ -67,19 +72,34 @@ export const searchSupplier = async (companyName: string) => {
 
   return response.data;
 };
+//Maker이름으로 Supplier 검색
+export const searchSupplierUseMaker = async (maker: string) => {
+  const response = await axios.get<{
+    makerSupplierList: {
+      category: string;
+      maker: string;
+      supplierList: Supplier[];
+    }[];
+  }>(`/api/items/search/maker?maker=${maker}&itemType=MAKER`);
 
+  return response.data;
+};
+
+//Supplier 상세 정보 조회
 export const fetchSupplierDetail = async (suppliersId: number) => {
   const response = await axios.get(`/api/suppliers/${suppliersId}`);
 
   return response.data;
 };
 
+//Inquiry 상세 정보 조회
 export const fetchInquiryDetail = async (inquiryId: number) => {
   const response = await axios.get(`/api/customer-inquiries/${inquiryId}`);
 
   return response.data;
 };
 
+//Item 검색
 export const fetchItemData = async (itemCode: string) => {
   const response = await axios.get<{ items: Item | Item[] }>(
     `/api/items/search/itemCode?itemCode=${itemCode}`
@@ -88,6 +108,7 @@ export const fetchItemData = async (itemCode: string) => {
   return response.data;
 };
 
+//Inquiry 저장
 export const submitInquiry = async (
   docNumber: string | null,
   inquiryId: number | null,
@@ -119,15 +140,12 @@ export const submitInquiry = async (
     throw error;
   }
 };
-
-export const editInquiry = async (inquiryId: number, data: any) => {
-  await axios.put(`/api/customer-inquiries/${inquiryId}`, data);
-};
-
+//Inquiry 삭제
 export const deleteInquiry = async (inquiryId: number) => {
   await axios.delete(`/api/customer-inquiries/${inquiryId}/trash`);
 };
 
+//Inquiry 검색
 export const searchInquiryList = async (
   registerStartDate: string = "",
   registerEndDate: string = "",
@@ -159,6 +177,7 @@ export const searchInquiryList = async (
   return response.data;
 };
 
+//Inquiry 메일 발송
 export const sendInquiryMail = async (
   docNumber: string,
   mailData: MailData[]
@@ -171,6 +190,7 @@ export const sendInquiryMail = async (
   return response.data;
 };
 
+//Offer 수정
 export const editOffer = async (
   supplierInquiryId: number,
   supplierId: number,
