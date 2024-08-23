@@ -594,6 +594,13 @@ const MakeInquiry = () => {
       >
         메일 발송
       </Button>
+      <Button
+        type="default"
+        onClick={() => navigate("/customerInquirylist")}
+        style={{ margin: "20px 0 0 15px", float: "right" }}
+      >
+        목록
+      </Button>
       <Modal
         title="Send Mail"
         open={isMailSenderVisible}
