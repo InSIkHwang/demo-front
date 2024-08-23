@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const instance = axios.create({
-  baseURL: "http://test.bas-korea.org:8888/",
+  baseURL: "https://test.bas-korea.org/",
 });
 
 export default instance;
