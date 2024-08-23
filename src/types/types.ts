@@ -65,7 +65,7 @@ export interface InquiryItem {
   itemRemark: string;
   qty: number;
   unit: string;
-  suppliers?: InquiryListSupplier[]; // 추가된 필드
+  suppliers?: InquiryListSupplier[];
 }
 
 export interface Item {
