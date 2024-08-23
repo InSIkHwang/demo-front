@@ -56,6 +56,7 @@ export interface Vessel {
 }
 
 export interface InquiryItem {
+  itemDetailId?: number;
   itemId?: number;
   no: number;
   itemType: "ITEM" | "MAKER" | "TYPE" | "DESC";
@@ -64,6 +65,7 @@ export interface InquiryItem {
   itemRemark: string;
   qty: number;
   unit: string;
+  suppliers?: InquiryListSupplier[]; // 추가된 필드
 }
 
 export interface Item {
@@ -92,18 +94,6 @@ export interface InquiryListSupplier {
   email: string;
 }
 
-export interface InquiryListItem {
-  itemDetailId: number;
-  itemId: number;
-  itemType: "ITEM" | "MAKER" | "TYPE" | "DESC";
-  itemCode: string;
-  itemName: string;
-  itemRemark: string;
-  qty: number;
-  unit: string;
-  suppliers: InquiryListSupplier[];
-}
-
 export interface Inquiry {
   customerInquiryId: number;
   documentNumber: string;
@@ -121,7 +111,7 @@ export interface Inquiry {
   documentStatus: string;
   pdfUrl: string | null;
   inquiryType: string;
-  inquiryItemDetails: InquiryListItem[];
+  inquiryItemDetails: InquiryItem[];
 }
 
 export interface MailData {

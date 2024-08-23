@@ -15,7 +15,7 @@ import PDFDocument from "../components/makeInquiry/PDFDocument";
 import {
   Inquiry,
   InquiryItem,
-  InquiryListItem,
+  InquiryListSupplier,
   MailData,
   VesselList,
 } from "../types/types";
@@ -68,14 +68,14 @@ const createNewItem = (no: number): InquiryItem => ({
 });
 
 const getSupplierMap = (
-  itemDetails: InquiryListItem[]
+  itemDetails: InquiryItem[]
 ): { id: number; name: string; code: string; email: string }[] => {
   const supplierMap = new Map<
     number,
     { id: number; name: string; code: string; email: string }
   >();
   itemDetails.forEach((item) =>
-    item.suppliers.forEach((supplier) =>
+    item.suppliers?.forEach((supplier: InquiryListSupplier) =>
       supplierMap.set(supplier.supplierId, {
         id: supplier.supplierId,
         name: supplier.companyName,
@@ -134,7 +134,6 @@ const MakeInquiry = () => {
   const [isMailSenderVisible, setIsMailSenderVisible] = useState(false);
   const [mailDataList, setMailDataList] = useState<MailData[]>([]);
   const [loadMailData, setLoadMailData] = useState<boolean>(false);
-  console.log(inquiryDetail);
 
   // Load document data
   const loadDocData = useCallback(async () => {
@@ -193,6 +192,7 @@ const MakeInquiry = () => {
 
         setItems(
           inquiryItemDetails.map((item, index) => ({
+            itemDetailId: item.itemDetailId,
             itemId: item.itemId,
             no: index + 1,
             itemType: item.itemType,
@@ -554,7 +554,6 @@ const MakeInquiry = () => {
   const handlePDFPreview = () => {
     setShowPDFPreview(true);
   };
-
   if (docDataloading) {
     return <div>Loading...</div>;
   }

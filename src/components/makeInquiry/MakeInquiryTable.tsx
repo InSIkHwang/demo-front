@@ -34,7 +34,7 @@ const MakeInquiryTable = ({
       handleInputChange(index, "itemType", itemTypeMap[e.key]);
     }
   };
-
+  console.log(items);
   const columns = [
     {
       title: "No.",
