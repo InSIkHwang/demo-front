@@ -7,6 +7,8 @@ import {
   faCaretUp,
   faDollarSign,
   faCode,
+  faSignOutAlt,
+  faSignInAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -55,6 +57,23 @@ const HeaderMenuBtnIcon = styled(FontAwesomeIcon)`
     color: ${(props) => props.theme.darkBlue};
     transition: color 0.3s ease;
   }
+`;
+
+const UserBox = styled.div`
+  cursor: pointer;
+  margin-right: 20px;
+  display: flex;
+  align-items: center;
+`;
+
+const UserLogin = styled.div`
+  margin-right: 10px;
+`;
+
+const LogoutButton = styled.div`
+  cursor: pointer;
+  display: flex;
+  align-items: center;
 `;
 
 const SideMenu = styled(motion.div)`
@@ -117,7 +136,12 @@ const Backdrop = styled.div`
   z-index: 998;
 `;
 
-const Header = () => {
+interface HeaderProps {
+  isAuthenticated: boolean;
+  onLogout: () => void;
+}
+
+const Header = ({ isAuthenticated, onLogout }: HeaderProps) => {
   const [isMenuOpen, setMenuOpen] = useState(false);
   const [isEstimateOpen, setEstimateOpen] = useState(false);
   const [isCodeOpen, setCodeOpen] = useState(false);
@@ -144,6 +168,27 @@ const Header = () => {
           <HeaderMenuBtnIcon icon={faBars} />
         </HeaderMenuBtnWrapper>
         <HeaderTitle>BAS KOREA</HeaderTitle>
+        <UserBox>
+          {isAuthenticated ? (
+            <LogoutButton onClick={onLogout}>
+              <FontAwesomeIcon
+                icon={faSignOutAlt}
+                style={{ marginRight: "8px" }}
+              />
+              LOGOUT
+            </LogoutButton>
+          ) : (
+            <UserLogin
+              onClick={() => handleMenuItemClick(() => navigate("/userlogin"))}
+            >
+              <FontAwesomeIcon
+                icon={faSignInAlt}
+                style={{ marginRight: "8px" }}
+              />
+              LOGIN
+            </UserLogin>
+          )}
+        </UserBox>
       </StyledHeader>
 
       {isMenuOpen && <Backdrop onClick={closeMenu} />}

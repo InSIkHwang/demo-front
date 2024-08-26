@@ -32,7 +32,6 @@ const MakeOffer = () => {
   const { state } = useLocation();
   const [info, setInfo] = useState(state?.info || {});
   const [dataSource, setDataSource] = useState(info?.inquiryItemDetails || []);
-  console.log(info);
 
   useEffect(() => {
     const loadOfferDetail = async () => {

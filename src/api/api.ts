@@ -1,4 +1,7 @@
+import { message } from "antd";
 import axios from "../api/axios";
+import { AxiosError } from "axios";
+
 import {
   Customer,
   Inquiry,
@@ -8,6 +11,35 @@ import {
   Supplier,
   SupplierInquiryListIF,
 } from "../types/types";
+import { setAccessToken, setRefreshToken } from "./auth";
+
+export const postUserLogin = async (email: string, password: string) => {
+  try {
+    const response = await axios.post("/api/member/login", {
+      email,
+      password,
+    });
+
+    const { accessToken: newAccessToken, refreshToken } = response.data;
+
+    // 새로운 액세스 토큰을 메모리 변수에 저장
+    setAccessToken(newAccessToken);
+
+    // 리프레시 토큰을 쿠키에 저장
+    setRefreshToken(refreshToken);
+
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError && error.response) {
+      message.error(error.response.data.message);
+    } else if (error instanceof Error) {
+      message.error(error.message);
+    } else {
+      message.error("An unexpected error occurred");
+    }
+    throw error;
+  }
+};
 
 //MakeInquiry시 문서번호, 날짜 등 생성
 export const fetchDocData = async () => {
