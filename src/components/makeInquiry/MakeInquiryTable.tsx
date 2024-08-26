@@ -48,16 +48,17 @@ const MakeInquiryTable = ({
       title: "품목코드",
       dataIndex: "itemCode",
       key: "itemCode",
-      render: (text: string, record: InquiryItem, index: number) => (
-        <AutoComplete
-          value={text}
-          onChange={(value) => handleItemCodeChange(index, value)}
-          options={itemCodeOptions}
-          style={{ width: "100%" }}
-        >
-          <Input />
-        </AutoComplete>
-      ),
+      render: (text: string, record: InquiryItem, index: number) =>
+        record.itemType === "ITEM" ? ( // itemType이 ITEM일 때만 렌더링
+          <AutoComplete
+            value={text}
+            onChange={(value) => handleItemCodeChange(index, value)}
+            options={itemCodeOptions}
+            style={{ width: "100%" }}
+          >
+            <Input />
+          </AutoComplete>
+        ) : null, // itemType이 ITEM이 아니면 null 반환
       width: 150,
     },
     {

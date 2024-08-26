@@ -23,6 +23,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import HeaderEditModal from "../components/makeInquiry/HeaderEditModal";
 import MailSenderModal from "../components/makeInquiry/MailSenderModal";
 import PDFGenerator from "../components/makeInquiry/PDFGenerator";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 // Styles
 const FormContainer = styled.div`
@@ -557,7 +558,7 @@ const MakeInquiry = () => {
     setShowPDFPreview(true);
   };
   if (docDataloading) {
-    return <div>Loading...</div>;
+    return <LoadingSpinner />;
   }
 
   return (

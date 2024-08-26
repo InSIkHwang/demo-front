@@ -14,6 +14,7 @@ import UserLogin from "./pages/UserLogin";
 import { ThemeProvider } from "styled-components";
 import theme from "./style/Theme";
 import { refreshToken, removeTokens } from "./api/auth";
+import LoadingSpinner from "./components/LoadingSpinner";
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -51,7 +52,7 @@ const App = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>; // 로딩 중 화면
+    return <LoadingSpinner />; // 로딩 중 화면
   }
 
   return (

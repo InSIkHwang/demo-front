@@ -127,8 +127,8 @@ const DetailInquiryModal = ({
       key: "itemCode",
       width: 150,
       render: (text: string, record: any) => {
-        if (isSpecialItemType(record.inquiryItemType)) {
-          return null;
+        if (isSpecialItemType(record.itemType)) {
+          return record.itemType;
         }
         return text;
       },
@@ -138,7 +138,7 @@ const DetailInquiryModal = ({
       dataIndex: "itemName",
       key: "itemName",
       render: (text: string, record: any) => {
-        if (isSpecialItemType(record.inquiryItemType)) {
+        if (isSpecialItemType(record.itemType)) {
           return <div>{text}</div>;
         }
         return text;
@@ -150,7 +150,7 @@ const DetailInquiryModal = ({
       key: "itemRemark",
       width: 150,
       render: (text: string, record: any) => {
-        if (isSpecialItemType(record.inquiryItemType)) {
+        if (isSpecialItemType(record.itemType)) {
           return null;
         }
         return text;
@@ -162,7 +162,7 @@ const DetailInquiryModal = ({
       key: "qty",
       width: 50,
       render: (text: string, record: any) => {
-        if (isSpecialItemType(record.inquiryItemType)) {
+        if (isSpecialItemType(record.itemType)) {
           return null;
         }
         return text;
@@ -174,7 +174,7 @@ const DetailInquiryModal = ({
       key: "unit",
       width: 50,
       render: (text: string, record: any) => {
-        if (isSpecialItemType(record.inquiryItemType)) {
+        if (isSpecialItemType(record.itemType)) {
           return null;
         }
         return text;
@@ -186,7 +186,7 @@ const DetailInquiryModal = ({
       key: "suppliers",
       width: 200,
       render: (suppliers: InquiryListSupplier[], record: any) => {
-        if (isSpecialItemType(record.inquiryItemType)) {
+        if (isSpecialItemType(record.itemType)) {
           return null;
         }
 

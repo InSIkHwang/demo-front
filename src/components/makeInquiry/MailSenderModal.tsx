@@ -111,7 +111,6 @@ const MailSenderModal = ({
 
       // 성공 메시지
       message.success("이메일이 성공적으로 전송되었습니다!");
-      setIsMailSenderVisible(false);
     } catch (error) {
       // 에러 처리
       console.error("Error sending email:", error);

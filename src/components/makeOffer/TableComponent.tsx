@@ -290,16 +290,17 @@ const TableComponent = ({
       key: "itemCode",
       fixed: "left",
       width: 150,
-      render: (text: string, record: any, index: number) => (
-        <AutoComplete
-          value={text}
-          onChange={(value) => handleItemCodeChange(index, value)}
-          options={itemCodeOptions}
-          style={{ borderRadius: "4px", width: "100%" }}
-        >
-          <Input />
-        </AutoComplete>
-      ),
+      render: (text: string, record: any, index: number) =>
+        record.itemType === "ITEM" ? (
+          <AutoComplete
+            value={text}
+            onChange={(value) => handleItemCodeChange(index, value)}
+            options={itemCodeOptions}
+            style={{ borderRadius: "4px", width: "100%" }}
+          >
+            <Input />
+          </AutoComplete>
+        ) : null,
     },
     {
       title: "OPT",
@@ -339,29 +340,31 @@ const TableComponent = ({
       dataIndex: "qty",
       key: "qty",
       width: 80,
-      render: (text: number, record: any, index: number) => (
-        <InputNumber
-          value={text}
-          onChange={(value) => handleInputChange(index, "qty", value ?? 0)}
-          style={{ width: "100%" }}
-          min={0}
-          step={1}
-          controls={false}
-        />
-      ),
+      render: (text: number, record: any, index: number) =>
+        record.itemType === "ITEM" ? (
+          <InputNumber
+            value={text}
+            onChange={(value) => handleInputChange(index, "qty", value ?? 0)}
+            style={{ width: "100%" }}
+            min={0}
+            step={1}
+            controls={false}
+          />
+        ) : null,
     },
     {
       title: "단위",
       dataIndex: "unit",
       key: "unit",
       width: 80,
-      render: (text: string, record: any, index: number) => (
-        <Input
-          value={text}
-          onChange={(e) => handleInputChange(index, "unit", e.target.value)}
-          style={{ borderRadius: "4px", width: "100%" }}
-        />
-      ),
+      render: (text: string, record: any, index: number) =>
+        record.itemType === "ITEM" ? (
+          <Input
+            value={text}
+            onChange={(e) => handleInputChange(index, "unit", e.target.value)}
+            style={{ borderRadius: "4px", width: "100%" }}
+          />
+        ) : null,
     },
     {
       title: "비고",
@@ -383,64 +386,76 @@ const TableComponent = ({
       dataIndex: "salesPriceKRW",
       key: "salesPriceKRW",
       width: 150,
-      render: (text: number, record: any, index: number) => (
-        <InputNumber
-          value={text}
-          onChange={(value) => {
-            const updatedValue = value ?? 0;
-            handleInputChange(
-              index,
-              "salesPriceKRW",
-              roundToTwoDecimalPlaces(updatedValue)
-            );
-            handleInputChange(
-              index,
-              "salesPriceUSD",
-              convertCurrency(updatedValue, currency, "USD")
-            );
-          }}
-          style={{ width: "100%" }}
-          min={0}
-          step={0.01}
-          formatter={(value) => `₩ ${value}`}
-          parser={(value) =>
-            value ? parseFloat(value.replace(/₩\s?|,/g, "")) : 0
-          }
-          controls={false}
-        />
-      ),
+      render: (text: number, record: any, index: number) =>
+        record.itemType === "ITEM" ? (
+          <InputNumber
+            value={text}
+            onChange={(value) => {
+              const updatedValue = value ?? 0;
+              handleInputChange(
+                index,
+                "salesPriceKRW",
+                roundToTwoDecimalPlaces(updatedValue)
+              );
+              handleInputChange(
+                index,
+                "salesPriceUSD",
+                convertCurrency(updatedValue, currency, "USD")
+              );
+            }}
+            style={{ width: "100%" }}
+            min={0}
+            step={0.01}
+            formatter={(value) => `₩ ${value}`}
+            parser={(value) => {
+              // 빈 문자열이거나 공백만 있는 경우 0으로 변환
+              if (!value || value.trim() === "") {
+                return 0;
+              }
+              // 다른 경우 숫자로 변환
+              return parseFloat(value.replace(/\₩\s?|,/g, "")) || 0;
+            }}
+            controls={false}
+          />
+        ) : null,
     },
     {
       title: "매출단가(USD)",
       dataIndex: "salesPriceUSD",
       key: "salesPriceUSD",
       width: 150,
-      render: (text: number, record: any, index: number) => (
-        <InputNumber
-          value={text}
-          onChange={(value) => {
-            const updatedValue = value ?? 0;
-            handleInputChange(
-              index,
-              "salesPriceUSD",
-              roundToTwoDecimalPlaces(updatedValue)
-            );
-            handleInputChange(
-              index,
-              "salesPriceKRW",
-              convertCurrency(updatedValue, currency, "KRW")
-            );
-          }}
-          style={{ width: "100%" }}
-          min={0}
-          step={0.01}
-          formatter={(value) => `$ ${value}`}
-          parser={(value) =>
-            value ? parseFloat(value.replace(/\$\s?|,/g, "")) : 0
-          }
-          controls={false}
-        />
-      ),
+      render: (text: number, record: any, index: number) =>
+        record.itemType === "ITEM" ? (
+          <InputNumber
+            value={text}
+            onChange={(value) => {
+              const updatedValue = value ?? 0;
+              handleInputChange(
+                index,
+                "salesPriceUSD",
+                roundToTwoDecimalPlaces(updatedValue)
+              );
+              handleInputChange(
+                index,
+                "salesPriceKRW",
+                convertCurrency(updatedValue, currency, "KRW")
+              );
+            }}
+            style={{ width: "100%" }}
+            min={0}
+            step={0.01}
+            formatter={(value) => `$ ${value}`}
+            parser={(value) => {
+              // 빈 문자열이거나 공백만 있는 경우 0으로 변환
+              if (!value || value.trim() === "") {
+                return 0;
+              }
+              // 다른 경우 숫자로 변환
+              return parseFloat(value.replace(/\$\s?|,/g, "")) || 0;
+            }}
+            controls={false}
+          />
+        ) : null,
     },
     {
       title: "매출총액(KRW)",
@@ -454,9 +469,14 @@ const TableComponent = ({
           min={0}
           step={0.01}
           formatter={(value) => `₩ ${value}`}
-          parser={(value) =>
-            value ? parseFloat(value.replace(/₩\s?|,/g, "")) : 0
-          }
+          parser={(value) => {
+            // 빈 문자열이거나 공백만 있는 경우 0으로 변환
+            if (!value || value.trim() === "") {
+              return 0;
+            }
+            // 다른 경우 숫자로 변환
+            return parseFloat(value.replace(/\₩\s?|,/g, "")) || 0;
+          }}
           readOnly
           className="highlight-cell"
         />
@@ -474,9 +494,14 @@ const TableComponent = ({
           min={0}
           step={0.01}
           formatter={(value) => `$ ${value}`}
-          parser={(value) =>
-            value ? parseFloat(value.replace(/\$\s?|,/g, "")) : 0
-          }
+          parser={(value) => {
+            // 빈 문자열이거나 공백만 있는 경우 0으로 변환
+            if (!value || value.trim() === "") {
+              return 0;
+            }
+            // 다른 경우 숫자로 변환
+            return parseFloat(value.replace(/\$\s?|,/g, "")) || 0;
+          }}
           readOnly
           className="highlight-cell"
         />
@@ -487,64 +512,76 @@ const TableComponent = ({
       dataIndex: "purchasePriceKRW",
       key: "purchasePriceKRW",
       width: 150,
-      render: (text: number, record: any, index: number) => (
-        <InputNumber
-          value={text}
-          onChange={(value) => {
-            const updatedValue = value ?? 0;
-            handleInputChange(
-              index,
-              "purchasePriceKRW",
-              roundToTwoDecimalPlaces(updatedValue)
-            );
-            handleInputChange(
-              index,
-              "purchasePriceUSD",
-              convertCurrency(updatedValue, currency, "USD")
-            );
-          }}
-          style={{ width: "100%" }}
-          min={0}
-          step={0.01}
-          formatter={(value) => `₩ ${value}`}
-          parser={(value) =>
-            value ? parseFloat(value.replace(/₩\s?|,/g, "")) : 0
-          }
-          controls={false}
-        />
-      ),
+      render: (text: number, record: any, index: number) =>
+        record.itemType === "ITEM" ? (
+          <InputNumber
+            value={text}
+            onChange={(value) => {
+              const updatedValue = value ?? 0;
+              handleInputChange(
+                index,
+                "purchasePriceKRW",
+                roundToTwoDecimalPlaces(updatedValue)
+              );
+              handleInputChange(
+                index,
+                "purchasePriceUSD",
+                convertCurrency(updatedValue, currency, "USD")
+              );
+            }}
+            style={{ width: "100%" }}
+            min={0}
+            step={0.01}
+            formatter={(value) => `₩ ${value}`}
+            parser={(value) => {
+              // 빈 문자열이거나 공백만 있는 경우 0으로 변환
+              if (!value || value.trim() === "") {
+                return 0;
+              }
+              // 다른 경우 숫자로 변환
+              return parseFloat(value.replace(/\₩\s?|,/g, "")) || 0;
+            }}
+            controls={false}
+          />
+        ) : null,
     },
     {
       title: "매입단가(USD)",
       dataIndex: "purchasePriceUSD",
       key: "purchasePriceUSD",
       width: 150,
-      render: (text: number, record: any, index: number) => (
-        <InputNumber
-          value={text}
-          onChange={(value) => {
-            const updatedValue = value ?? 0;
-            handleInputChange(
-              index,
-              "purchasePriceUSD",
-              roundToTwoDecimalPlaces(updatedValue)
-            );
-            handleInputChange(
-              index,
-              "purchasePriceKRW",
-              convertCurrency(updatedValue, currency, "KRW")
-            );
-          }}
-          style={{ width: "100%" }}
-          min={0}
-          step={0.01}
-          formatter={(value) => `$ ${value}`}
-          parser={(value) =>
-            value ? parseFloat(value.replace(/\$\s?|,/g, "")) : 0
-          }
-          controls={false}
-        />
-      ),
+      render: (text: number, record: any, index: number) =>
+        record.itemType === "ITEM" ? (
+          <InputNumber
+            value={text}
+            onChange={(value) => {
+              const updatedValue = value ?? 0;
+              handleInputChange(
+                index,
+                "purchasePriceUSD",
+                roundToTwoDecimalPlaces(updatedValue)
+              );
+              handleInputChange(
+                index,
+                "purchasePriceKRW",
+                convertCurrency(updatedValue, currency, "KRW")
+              );
+            }}
+            style={{ width: "100%" }}
+            min={0}
+            step={0.01}
+            formatter={(value) => `$ ${value}`}
+            parser={(value) => {
+              // 빈 문자열이거나 공백만 있는 경우 0으로 변환
+              if (!value || value.trim() === "") {
+                return 0;
+              }
+              // 다른 경우 숫자로 변환
+              return parseFloat(value.replace(/\$\s?|,/g, "")) || 0;
+            }}
+            controls={false}
+          />
+        ) : null,
     },
     {
       title: "매입총액(KRW)",
@@ -558,9 +595,14 @@ const TableComponent = ({
           min={0}
           step={0.01}
           formatter={(value) => `₩ ${value}`}
-          parser={(value) =>
-            value ? parseFloat(value.replace(/₩\s?|,/g, "")) : 0
-          }
+          parser={(value) => {
+            // 빈 문자열이거나 공백만 있는 경우 0으로 변환
+            if (!value || value.trim() === "") {
+              return 0;
+            }
+            // 다른 경우 숫자로 변환
+            return parseFloat(value.replace(/\₩\s?|,/g, "")) || 0;
+          }}
           readOnly
           className="highlight-cell"
         />
@@ -578,9 +620,14 @@ const TableComponent = ({
           min={0}
           step={0.01}
           formatter={(value) => `$ ${value}`}
-          parser={(value) =>
-            value ? parseFloat(value.replace(/\$\s?|,/g, "")) : 0
-          }
+          parser={(value) => {
+            // 빈 문자열이거나 공백만 있는 경우 0으로 변환
+            if (!value || value.trim() === "") {
+              return 0;
+            }
+            // 다른 경우 숫자로 변환
+            return parseFloat(value.replace(/\$\s?|,/g, "")) || 0;
+          }}
           readOnly
           className="highlight-cell"
         />
