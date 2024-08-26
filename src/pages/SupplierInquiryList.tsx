@@ -7,10 +7,11 @@ import {
   Pagination,
   DatePicker,
   Card,
+  message,
 } from "antd";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import styled, { keyframes } from "styled-components";
-import { fetchOfferDetail, fetchOfferList } from "../api/api";
+import { editMurgedOffer, fetchOfferDetail, fetchOfferList } from "../api/api";
 import { useNavigate } from "react-router-dom";
 import type { ColumnsType } from "antd/es/table";
 import type { SupplierInquiryListIF } from "../types/types";
@@ -320,6 +321,24 @@ const SupplierInquiryList = () => {
     });
   };
 
+  const handleSendMailClick = async () => {
+    if (selectedSupplierIds.size > 0) {
+      try {
+        const info = await editMurgedOffer(
+          Array.from(selectedSupplierIds.keys())
+        );
+
+        // navigate를 사용하여 상태와 함께 페이지 이동
+        navigate("/makeoffer/mergedoffer", { state: { info } });
+      } catch (error) {
+        console.error("오류가 발생했습니다:", error);
+        message.error("메일 전송 중 오류가 발생했습니다."); // 오류 메시지 표시
+      }
+    } else {
+      message.error("선택된 의뢰처가 없습니다."); // 선택된 의뢰처가 없을 때 에러 메시지 표시
+    }
+  };
+
   // 체크박스 핸들러
   const handleCheckboxChange = (
     supplierInquiryId: number,
@@ -385,8 +404,9 @@ const SupplierInquiryList = () => {
                   <Button
                     type="primary"
                     style={{ position: "absolute", right: 20 }}
+                    onClick={() => handleSendMailClick()}
                   >
-                    통합하기
+                    메일전송
                   </Button>
                   <SelectedSupplierNameBox>
                     선택된 의뢰처:{" "}
@@ -396,7 +416,7 @@ const SupplierInquiryList = () => {
                       )
                     )}
                     {selectedSupplierIds.size === 0 &&
-                      "선택된 회사가 없습니다."}
+                      "선택된 의뢰처가 없습니다."}
                   </SelectedSupplierNameBox>
 
                   {supplierInfoList.map(({ info, detail }) => {

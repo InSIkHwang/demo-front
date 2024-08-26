@@ -238,10 +238,9 @@ export const editOffer = async (
 };
 
 export const editMurgedOffer = async (supplierInquiryIds: number[]) => {
-  const response = await axios.post(
-    `/api/supplier-inquiries/merged`,
-    supplierInquiryIds
-  );
+  const response = await axios.post(`/api/supplier-inquiries/merged`, {
+    supplierInquiryIds,
+  });
 
   return response.data;
 };

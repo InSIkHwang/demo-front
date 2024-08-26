@@ -9,6 +9,7 @@ import TableComponent, {
 } from "../components/makeOffer/TableComponent";
 import { editOffer, fetchOfferDetail } from "../api/api";
 import { ItemDataType } from "../types/types";
+import MergedTableComponent from "../components/makeOffer/MergedTableComponent";
 
 const FormContainer = styled.div`
   position: relative;
@@ -32,6 +33,7 @@ const MakeOffer = () => {
   const { state } = useLocation();
   const [info, setInfo] = useState(state?.info || {});
   const [dataSource, setDataSource] = useState(info?.inquiryItemDetails || []);
+  const isReadOnly = window.location.pathname === "/makeoffer/mergedoffer";
 
   useEffect(() => {
     const loadOfferDetail = async () => {
@@ -167,21 +169,33 @@ const MakeOffer = () => {
           documentStatus: info.documentStatus,
           veeselHullNo: info.veeselHullNo,
         }}
+        readOnly={isReadOnly}
       />
-      <TableComponent
-        dataSource={dataSource}
-        setDataSource={setDataSource}
-        handleInputChange={handleInputChange}
-        currency={info.currency}
-      />
-      <Button
-        type="primary"
-        htmlType="submit"
-        style={{ float: "right", width: 100, marginTop: 20 }}
-        onClick={handleSave}
-      >
-        저장
-      </Button>
+      {!isReadOnly && (
+        <TableComponent
+          dataSource={dataSource}
+          setDataSource={setDataSource}
+          handleInputChange={handleInputChange}
+          currency={info.currency}
+        />
+      )}
+      {isReadOnly && (
+        <MergedTableComponent
+          dataSource={dataSource}
+          setDataSource={setDataSource}
+          currency={info.currency}
+        />
+      )}
+      {!isReadOnly && (
+        <Button
+          type="primary"
+          htmlType="submit"
+          style={{ float: "right", width: 100, marginTop: 20 }}
+          onClick={handleSave}
+        >
+          저장
+        </Button>
+      )}
     </FormContainer>
   );
 };
