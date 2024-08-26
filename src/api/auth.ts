@@ -14,7 +14,7 @@ export const refreshToken = async () => {
   try {
     // 리프레시 토큰을 헤더에 담아 요청
     const response = await axios.post(
-      "/api/auth/token",
+      "/api/auth/reissue-token",
       {},
       {
         headers: {
