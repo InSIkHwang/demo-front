@@ -34,11 +34,14 @@ const MakeInquiryTable = ({
       handleInputChange(index, "itemType", itemTypeMap[e.key]);
     }
   };
-  console.log(items);
   const columns = [
     {
       title: "No.",
-      render: (_: any, __: any, index: number) => <span>{index + 1}</span>,
+      dataIndex: "position",
+      key: "position",
+      render: (text: string, record: InquiryItem, index: number) => (
+        <span>{text}</span>
+      ),
       width: 50,
     },
     {

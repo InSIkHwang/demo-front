@@ -57,8 +57,8 @@ const INITIAL_FORM_VALUES = {
   supplierName: "",
 };
 
-const createNewItem = (no: number): InquiryItem => ({
-  no,
+const createNewItem = (position: number): InquiryItem => ({
+  position,
   itemType: "ITEM",
   itemCode: "",
   itemName: "",
@@ -194,7 +194,7 @@ const MakeInquiry = () => {
           inquiryItemDetails.map((item, index) => ({
             itemDetailId: item.itemDetailId,
             itemId: item.itemId,
-            no: index + 1,
+            position: item.position,
             itemType: item.itemType,
             itemCode: item.itemCode,
             itemName: item.itemName,
@@ -325,7 +325,9 @@ const MakeInquiry = () => {
 
   const addItem = () => {
     const nextNo =
-      items.length > 0 ? Math.max(...items.map((item) => item.no)) + 1 : 1;
+      items.length > 0
+        ? Math.max(...items.map((item) => item.position)) + 1
+        : 1;
     setItems([...items, createNewItem(nextNo)]);
   };
 
@@ -368,7 +370,7 @@ const MakeInquiry = () => {
         );
 
         return {
-          position: item.no,
+          position: item.position,
           itemDetailId: matchingItemDetail
             ? matchingItemDetail.itemDetailId
             : null,

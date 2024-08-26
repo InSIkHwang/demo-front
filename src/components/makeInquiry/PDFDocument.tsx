@@ -230,7 +230,7 @@ const PDFDocument = ({
                 }
 
                 return (
-                  <View style={styles.tableRow} key={item.no}>
+                  <View style={styles.tableRow} key={item.position}>
                     <View style={styles.tableSmallCol}>
                       <Text style={styles.tableCell}>
                         {isItemType
@@ -351,7 +351,7 @@ const PDFDocument = ({
             }
 
             return (
-              <View style={styles.tableRow} key={item.no}>
+              <View style={styles.tableRow} key={item.position}>
                 <View style={styles.tableSmallCol}>
                   <Text style={styles.tableCell}>
                     {isItemType
