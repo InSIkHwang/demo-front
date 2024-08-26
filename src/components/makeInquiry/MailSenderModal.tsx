@@ -1,10 +1,20 @@
 import React, { useState, useEffect, Dispatch, SetStateAction } from "react";
-import { Form, Input, Button, message, Tabs, Typography, Card } from "antd";
+import {
+  Form,
+  Input,
+  Button,
+  message,
+  Tabs,
+  Typography,
+  Card,
+  Checkbox,
+} from "antd";
 import { SendOutlined, MailOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 import { sendInquiryMail } from "../../api/api";
 import { MailData } from "../../types/types";
 import dayjs from "dayjs";
+import { CheckboxChangeEvent } from "antd/es/checkbox";
 
 const { TextArea } = Input;
 const { Title } = Typography;
@@ -63,16 +73,26 @@ const MailSenderModal = ({
   inquiryFormValues,
   handleSubmit,
   setIsMailSenderVisible,
+  selectedSupplierTag,
 }: {
   mailDataList: MailData[];
   inquiryFormValues: FormValue;
   handleSubmit: () => Promise<void>;
   setIsMailSenderVisible: Dispatch<SetStateAction<boolean>>;
+  selectedSupplierTag: {
+    id: number;
+    name: string;
+    code: string;
+    email: string;
+  }[];
 }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [currentMailDataList, setCurrentMailDataList] = useState(mailDataList);
   const [activeTabIndex, setActiveTabIndex] = useState("0");
+  const [selectedMailIndexes, setSelectedMailIndexes] = useState<Set<number>>(
+    new Set()
+  );
 
   useEffect(() => {
     form.setFieldsValue({
@@ -92,27 +112,45 @@ const MailSenderModal = ({
     setActiveTabIndex(key);
   };
 
+  const handleSelectAllChange = (e: CheckboxChangeEvent) => {
+    if (e.target.checked) {
+      setSelectedMailIndexes(
+        new Set(currentMailDataList.map((_, index) => index))
+      );
+    } else {
+      setSelectedMailIndexes(new Set());
+    }
+  };
+
+  const handleMailSelectionChange = (index: number, checked: boolean) => {
+    setSelectedMailIndexes((prev) => {
+      const newSelection = new Set(prev);
+      if (checked) {
+        newSelection.add(index);
+      } else {
+        newSelection.delete(index);
+      }
+      return newSelection;
+    });
+  };
+
   const onFinish = async (values: any) => {
-    const index = parseInt(activeTabIndex, 10);
-
-    // 현재 활성 탭의 메일 데이터만 가져오기
-    const updatedMailDataToSend = {
-      ...currentMailDataList[index],
-      ...values.mails[index],
-    };
-
     setLoading(true);
 
     try {
-      //저장
       await handleSubmit();
-      // 활성 탭의 메일만 전송
-      await sendInquiryMail(values.docNumber, [updatedMailDataToSend]);
 
-      // 성공 메시지
-      message.success("이메일이 성공적으로 전송되었습니다!");
+      // 선택된 의뢰처의 메일 데이터만 필터링
+      const mailDataToSend = Array.from(selectedMailIndexes).map((index) => ({
+        ...currentMailDataList[index],
+        ...values.mails[index],
+      }));
+
+      // 선택된 의뢰처에 메일 전송
+      await sendInquiryMail(values.docNumber, mailDataToSend);
+
+      message.success("선택된 이메일이 성공적으로 전송되었습니다!");
     } catch (error) {
-      // 에러 처리
       console.error("Error sending email:", error);
       message.error("이메일 전송에 실패했습니다. 다시 시도해 주세요.");
     } finally {
@@ -122,7 +160,7 @@ const MailSenderModal = ({
 
   const tabsItems = currentMailDataList.map((mailData, index) => ({
     key: index.toString(),
-    label: `의뢰처 ${index + 1}`,
+    label: `${selectedSupplierTag[index]?.name || ` ${index + 1}`}`,
     children: (
       <StyledCard>
         <StyledFormItem
@@ -207,7 +245,30 @@ const MailSenderModal = ({
         onChange={handleTabChange}
         items={tabsItems}
       />
-
+      <div>
+        <Checkbox
+          checked={currentMailDataList.length === selectedMailIndexes.size}
+          indeterminate={
+            selectedMailIndexes.size > 0 &&
+            selectedMailIndexes.size < currentMailDataList.length
+          }
+          onChange={handleSelectAllChange}
+          style={{ marginRight: 20 }}
+        >
+          전체 선택
+        </Checkbox>
+        {currentMailDataList.map((_, index) => (
+          <Checkbox
+            key={index}
+            checked={selectedMailIndexes.has(index)}
+            onChange={(e: CheckboxChangeEvent) =>
+              handleMailSelectionChange(index, e.target.checked)
+            }
+          >
+            {selectedSupplierTag[index]?.name || ` ${index + 1}`}
+          </Checkbox>
+        ))}
+      </div>
       <StyledButton
         type="primary"
         htmlType="submit"

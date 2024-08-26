@@ -618,6 +618,7 @@ const MakeInquiry = () => {
           inquiryFormValues={formValues}
           handleSubmit={handleSubmit}
           setIsMailSenderVisible={setIsMailSenderVisible}
+          selectedSupplierTag={selectedSupplierTag}
         />
       </Modal>
       <div

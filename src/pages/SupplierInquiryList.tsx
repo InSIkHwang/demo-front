@@ -72,10 +72,24 @@ const PaginationWrapper = styled(Pagination)`
 const CardContainer = styled.div`
   margin-top: 10px;
   display: flex;
+  justify-content: center;
   flex-wrap: wrap;
   gap: 20px;
   animation: ${expandAnimation} 0.5s ease-in-out;
   overflow: hidden;
+`;
+
+const SelectedSupplierNameBox = styled.div`
+  position: absolute;
+  left: 80px;
+  font-weight: 700;
+  span {
+    border-left: 2px solid #007bff;
+    border-right: 2px solid #007bff;
+    margin: 0 3px;
+    padding: 2px 4px;
+    border-radius: 5px;
+  }
 `;
 
 const StyledCard = styled(Card)`
@@ -86,12 +100,14 @@ const StyledCard = styled(Card)`
   .ant-card-body {
     padding: 20px;
   }
+  margin-top: 50px;
 `;
 
 const CardTitle = styled.h3`
   margin-bottom: 10px;
   font-size: 16px;
   font-weight: bold;
+  cursor: pointer;
 `;
 
 const CardContent = styled.div`
@@ -182,6 +198,9 @@ const SupplierInquiryList = () => {
   const [supplierInfoList, setSupplierInfoList] = useState<any[]>([]);
   const [currentDetail, setCurrentDetail] = useState<any | null>(null);
   const [expandedRowKeys, setExpandedRowKeys] = useState<React.Key[]>([]);
+  const [selectedSupplierIds, setSelectedSupplierIds] = useState<
+    Map<number, string>
+  >(new Map());
 
   useEffect(() => {
     const fetchData = async () => {
@@ -226,6 +245,7 @@ const SupplierInquiryList = () => {
             supplierInquiryId,
             supplierId
           );
+
           return {
             info,
             detail: detailResponse,
@@ -300,6 +320,23 @@ const SupplierInquiryList = () => {
     });
   };
 
+  // 체크박스 핸들러
+  const handleCheckboxChange = (
+    supplierInquiryId: number,
+    companyName: string,
+    checked: boolean
+  ) => {
+    setSelectedSupplierIds((prev) => {
+      const newSelectedIds = new Map(prev);
+      if (checked) {
+        newSelectedIds.set(supplierInquiryId, companyName);
+      } else {
+        newSelectedIds.delete(supplierInquiryId);
+      }
+      return newSelectedIds;
+    });
+  };
+
   return (
     <>
       <Container>
@@ -345,13 +382,55 @@ const SupplierInquiryList = () => {
             ) {
               return (
                 <CardContainer>
+                  <Button
+                    type="primary"
+                    style={{ position: "absolute", right: 20 }}
+                  >
+                    통합하기
+                  </Button>
+                  <SelectedSupplierNameBox>
+                    선택된 의뢰처:{" "}
+                    {Array.from(selectedSupplierIds.values()).map(
+                      (companyName, index) => (
+                        <span key={index}>{companyName}</span>
+                      )
+                    )}
+                    {selectedSupplierIds.size === 0 &&
+                      "선택된 회사가 없습니다."}
+                  </SelectedSupplierNameBox>
+
                   {supplierInfoList.map(({ info, detail }) => {
                     const totals = calculateTotals(detail.inquiryItemDetails);
                     return (
                       <StyledCard
                         key={info.supplierInquiryId}
                         title={
-                          <CardTitle>
+                          <CardTitle
+                            onClick={() => {
+                              const isChecked = selectedSupplierIds.has(
+                                info.supplierInquiryId
+                              );
+                              handleCheckboxChange(
+                                info.supplierInquiryId,
+                                info.companyName,
+                                !isChecked
+                              );
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedSupplierIds.has(
+                                info.supplierInquiryId
+                              )}
+                              onChange={(e) =>
+                                handleCheckboxChange(
+                                  info.supplierInquiryId,
+                                  info.companyName,
+                                  e.target.checked
+                                )
+                              }
+                              style={{ marginRight: 8 }}
+                            />
                             {info.code} ({info.companyName})
                           </CardTitle>
                         }

@@ -60,7 +60,7 @@ const PDFGenerator = ({
       const mailData: MailData = {
         supplierId: supplierTag.id,
         toRecipient: supplierTag.email,
-        subject: `BASKOREA REQUEST FOR QUOTATION (${formValues.refNumber}) - ${supplierTag.name}`,
+        subject: `BASKOREA REQUEST FOR QUOTATION (Ref No. ${formValues.refNumber}) - ${supplierTag.name}`,
         content: `Thanks for your cooperation \n\n<VESSEL INFO>\nVESSEL: ${vesselInfo?.vesselName}\nIMO: ${vesselInfo?.imoNumber}`,
         ccRecipient: "info@bas-korea.com",
         attachments: [
