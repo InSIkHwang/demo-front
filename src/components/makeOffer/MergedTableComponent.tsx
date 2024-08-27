@@ -136,7 +136,7 @@ const MergedTableComponent = ({
     );
     const totalProfit = totalSalesAmountKRW - totalPurchaseAmountKRW;
     const totalProfitPercent = Number(
-      (totalProfit / totalSalesAmountKRW) * 100
+      ((totalProfit / totalSalesAmountKRW) * 100).toFixed(2)
     );
 
     setTotals({
