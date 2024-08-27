@@ -66,7 +66,7 @@ const roundToTwoDecimalPlaces = (value: number) => {
 const convertCurrency = (
   value: number,
   currency: number,
-  toCurrency: "KRW" | "USD"
+  toCurrency: "KRW" | "USD" | "EUR" | "INR"
 ) => {
   if (toCurrency === "KRW") {
     return roundToTwoDecimalPlaces(value * currency);
@@ -385,13 +385,14 @@ const TableComponent = ({
       title: "매출단가(KRW)",
       dataIndex: "salesPriceKRW",
       key: "salesPriceKRW",
+
       width: 150,
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <InputNumber
-            value={text}
+            value={text.toLocaleString()}
             onChange={(value) => {
-              const updatedValue = value ?? 0;
+              const updatedValue = Number(value) ?? 0;
               handleInputChange(
                 index,
                 "salesPriceKRW",
@@ -404,32 +405,22 @@ const TableComponent = ({
               );
             }}
             style={{ width: "100%" }}
-            min={0}
-            step={0.01}
-            formatter={(value) => `₩ ${value}`}
-            parser={(value) => {
-              // 빈 문자열이거나 공백만 있는 경우 0으로 변환
-              if (!value || value.trim() === "") {
-                return 0;
-              }
-              // 다른 경우 숫자로 변환
-              return parseFloat(value.replace(/\₩\s?|,/g, "")) || 0;
-            }}
             controls={false}
+            addonBefore="₩"
           />
         ) : null,
     },
     {
-      title: "매출단가(USD)",
+      title: "매출단가(F)",
       dataIndex: "salesPriceUSD",
       key: "salesPriceUSD",
       width: 150,
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <InputNumber
-            value={text}
+            value={text.toLocaleString()}
             onChange={(value) => {
-              const updatedValue = value ?? 0;
+              const updatedValue = Number(value) ?? 0;
               handleInputChange(
                 index,
                 "salesPriceUSD",
@@ -442,18 +433,8 @@ const TableComponent = ({
               );
             }}
             style={{ width: "100%" }}
-            min={0}
-            step={0.01}
-            formatter={(value) => `$ ${value}`}
-            parser={(value) => {
-              // 빈 문자열이거나 공백만 있는 경우 0으로 변환
-              if (!value || value.trim() === "") {
-                return 0;
-              }
-              // 다른 경우 숫자로 변환
-              return parseFloat(value.replace(/\$\s?|,/g, "")) || 0;
-            }}
             controls={false}
+            addonBefore="$"
           />
         ) : null,
     },
@@ -464,46 +445,32 @@ const TableComponent = ({
       width: 150,
       render: (text: number, record: any, index: number) => (
         <InputNumber
-          value={calculateTotalAmount(record.salesPriceKRW, record.qty)}
+          value={calculateTotalAmount(
+            record.salesPriceKRW,
+            record.qty
+          ).toLocaleString()}
           style={{ width: "100%" }}
-          min={0}
-          step={0.01}
-          formatter={(value) => `₩ ${value}`}
-          parser={(value) => {
-            // 빈 문자열이거나 공백만 있는 경우 0으로 변환
-            if (!value || value.trim() === "") {
-              return 0;
-            }
-            // 다른 경우 숫자로 변환
-            return parseFloat(value.replace(/\₩\s?|,/g, "")) || 0;
-          }}
           readOnly
           className="highlight-cell"
+          addonBefore="₩"
         />
       ),
     },
     {
-      title: "매출총액(USD)",
+      title: "매출총액(F)",
       dataIndex: "salesAmountUSD",
       key: "salesAmountUSD",
       width: 150,
       render: (text: number, record: any, index: number) => (
         <InputNumber
-          value={calculateTotalAmount(record.salesPriceUSD, record.qty)}
+          value={calculateTotalAmount(
+            record.salesPriceUSD,
+            record.qty
+          ).toLocaleString()}
           style={{ width: "100%" }}
-          min={0}
-          step={0.01}
-          formatter={(value) => `$ ${value}`}
-          parser={(value) => {
-            // 빈 문자열이거나 공백만 있는 경우 0으로 변환
-            if (!value || value.trim() === "") {
-              return 0;
-            }
-            // 다른 경우 숫자로 변환
-            return parseFloat(value.replace(/\$\s?|,/g, "")) || 0;
-          }}
           readOnly
           className="highlight-cell"
+          addonBefore="$"
         />
       ),
     },
@@ -515,9 +482,9 @@ const TableComponent = ({
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <InputNumber
-            value={text}
+            value={text.toLocaleString()}
             onChange={(value) => {
-              const updatedValue = value ?? 0;
+              const updatedValue = Number(value) ?? 0;
               handleInputChange(
                 index,
                 "purchasePriceKRW",
@@ -530,32 +497,22 @@ const TableComponent = ({
               );
             }}
             style={{ width: "100%" }}
-            min={0}
-            step={0.01}
-            formatter={(value) => `₩ ${value}`}
-            parser={(value) => {
-              // 빈 문자열이거나 공백만 있는 경우 0으로 변환
-              if (!value || value.trim() === "") {
-                return 0;
-              }
-              // 다른 경우 숫자로 변환
-              return parseFloat(value.replace(/\₩\s?|,/g, "")) || 0;
-            }}
             controls={false}
+            addonBefore="₩"
           />
         ) : null,
     },
     {
-      title: "매입단가(USD)",
+      title: "매입단가(F)",
       dataIndex: "purchasePriceUSD",
       key: "purchasePriceUSD",
       width: 150,
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <InputNumber
-            value={text}
+            value={text.toLocaleString()}
             onChange={(value) => {
-              const updatedValue = value ?? 0;
+              const updatedValue = Number(value) ?? 0;
               handleInputChange(
                 index,
                 "purchasePriceUSD",
@@ -568,18 +525,8 @@ const TableComponent = ({
               );
             }}
             style={{ width: "100%" }}
-            min={0}
-            step={0.01}
-            formatter={(value) => `$ ${value}`}
-            parser={(value) => {
-              // 빈 문자열이거나 공백만 있는 경우 0으로 변환
-              if (!value || value.trim() === "") {
-                return 0;
-              }
-              // 다른 경우 숫자로 변환
-              return parseFloat(value.replace(/\$\s?|,/g, "")) || 0;
-            }}
             controls={false}
+            addonBefore="$"
           />
         ) : null,
     },
@@ -590,46 +537,32 @@ const TableComponent = ({
       width: 150,
       render: (text: number, record: any, index: number) => (
         <InputNumber
-          value={calculateTotalAmount(record.purchasePriceKRW, record.qty)}
+          value={calculateTotalAmount(
+            record.purchasePriceKRW,
+            record.qty
+          ).toLocaleString()}
           style={{ width: "100%" }}
-          min={0}
-          step={0.01}
-          formatter={(value) => `₩ ${value}`}
-          parser={(value) => {
-            // 빈 문자열이거나 공백만 있는 경우 0으로 변환
-            if (!value || value.trim() === "") {
-              return 0;
-            }
-            // 다른 경우 숫자로 변환
-            return parseFloat(value.replace(/\₩\s?|,/g, "")) || 0;
-          }}
           readOnly
           className="highlight-cell"
+          addonBefore="₩"
         />
       ),
     },
     {
-      title: "매입총액(USD)",
+      title: "매입총액(F)",
       dataIndex: "purchaseAmountUSD",
       key: "purchaseAmountUSD",
       width: 150,
       render: (text: number, record: any, index: number) => (
         <InputNumber
-          value={calculateTotalAmount(record.purchasePriceUSD, record.qty)}
+          value={calculateTotalAmount(
+            record.purchasePriceUSD,
+            record.qty
+          ).toLocaleString()}
           style={{ width: "100%" }}
-          min={0}
-          step={0.01}
-          formatter={(value) => `$ ${value}`}
-          parser={(value) => {
-            // 빈 문자열이거나 공백만 있는 경우 0으로 변환
-            if (!value || value.trim() === "") {
-              return 0;
-            }
-            // 다른 경우 숫자로 변환
-            return parseFloat(value.replace(/\$\s?|,/g, "")) || 0;
-          }}
           readOnly
           className="highlight-cell"
+          addonBefore="$"
         />
       ),
     },
@@ -675,30 +608,30 @@ const TableComponent = ({
         <TotalCard>
           <span>매출총액(KRW)</span>
           <span className="value">
-            ₩ {totals.totalSalesAmountKRW.toFixed(2)}
+            ₩ {totals.totalSalesAmountKRW.toLocaleString()}
           </span>
         </TotalCard>
         <TotalCard>
-          <span>매출총액(USD)</span>
+          <span>매출총액(F)</span>
           <span className="value">
-            $ {totals.totalSalesAmountUSD.toFixed(2)}
+            F {totals.totalSalesAmountUSD.toLocaleString()}
           </span>
         </TotalCard>
         <TotalCard>
           <span>매입총액(KRW)</span>
           <span className="value">
-            ₩ {totals.totalPurchaseAmountKRW.toFixed(2)}
+            ₩ {totals.totalPurchaseAmountKRW.toLocaleString()}
           </span>
         </TotalCard>
         <TotalCard>
-          <span>매입총액(USD)</span>
+          <span>매입총액(F)</span>
           <span className="value">
-            $ {totals.totalPurchaseAmountUSD.toFixed(2)}
+            F {totals.totalPurchaseAmountUSD.toLocaleString()}
           </span>
         </TotalCard>
         <TotalCard $isHighlight $isPositive={totals.totalProfit >= 0}>
           <span>이익합계</span>
-          <span className="value">₩ {totals.totalProfit.toFixed(2)}</span>
+          <span className="value">₩ {totals.totalProfit.toLocaleString()}</span>
         </TotalCard>
         <TotalCard $isHighlight $isPositive={totals.totalProfitPercent >= 0}>
           <span>이익율</span>

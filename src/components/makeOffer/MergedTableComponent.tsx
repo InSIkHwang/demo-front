@@ -182,7 +182,7 @@ const MergedTableComponent = ({
       render: (text: number) => <span>₩{text.toLocaleString()}</span>,
     },
     {
-      title: "단가 (USD)",
+      title: "단가 (F)",
       dataIndex: "salesPriceUSD",
       key: "salesPriceUSD",
       render: (text: number) => <span>${text.toLocaleString()}</span>,
@@ -194,7 +194,7 @@ const MergedTableComponent = ({
       render: (text: number) => <span>₩{text.toLocaleString()}</span>,
     },
     {
-      title: "총액 (USD)",
+      title: "총액 (F)",
       dataIndex: "salesAmountUSD",
       key: "salesAmountUSD",
       render: (text: number) => <span>${text.toLocaleString()}</span>,
@@ -206,7 +206,7 @@ const MergedTableComponent = ({
       render: (text: number) => <span>₩{text.toLocaleString()}</span>,
     },
     {
-      title: "구매단가 (USD)",
+      title: "구매단가 (F)",
       dataIndex: "purchasePriceUSD",
       key: "purchasePriceUSD",
       render: (text: number) => <span>${text.toLocaleString()}</span>,
@@ -218,7 +218,7 @@ const MergedTableComponent = ({
       render: (text: number) => <span>₩{text.toLocaleString()}</span>,
     },
     {
-      title: "구매총액 (USD)",
+      title: "구매총액 (F)",
       dataIndex: "purchaseAmountUSD",
       key: "purchaseAmountUSD",
       render: (text: number) => <span>${text.toLocaleString()}</span>,
@@ -244,19 +244,27 @@ const MergedTableComponent = ({
       <TotalCards>
         <TotalCard>
           <span>매출총액(KRW)</span>
-          <span className="value">₩ {totals.totalSalesAmountKRW}</span>
+          <span className="value">
+            ₩ {totals.totalSalesAmountKRW.toLocaleString()}
+          </span>
         </TotalCard>
         <TotalCard>
-          <span>매출총액(USD)</span>
-          <span className="value">$ {totals.totalSalesAmountUSD}</span>
+          <span>매출총액(F)</span>
+          <span className="value">
+            F {totals.totalSalesAmountUSD.toLocaleString()}
+          </span>
         </TotalCard>
         <TotalCard>
           <span>매입총액(KRW)</span>
-          <span className="value">₩ {totals.totalPurchaseAmountKRW}</span>
+          <span className="value">
+            ₩ {totals.totalPurchaseAmountKRW.toLocaleString()}
+          </span>
         </TotalCard>
         <TotalCard>
-          <span>매입총액(USD)</span>
-          <span className="value">$ {totals.totalPurchaseAmountUSD}</span>
+          <span>매입총액(F)</span>
+          <span className="value">
+            F {totals.totalPurchaseAmountUSD.toLocaleString()}
+          </span>
         </TotalCard>
         <TotalCard $isHighlight $isPositive={totals.totalProfit >= 0}>
           <span>이익합계</span>
