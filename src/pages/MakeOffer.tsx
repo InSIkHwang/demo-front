@@ -34,8 +34,6 @@ const MakeOffer = () => {
   const [info, setInfo] = useState(state?.info || {});
   const [dataSource, setDataSource] = useState(info?.inquiryItemDetails || []);
   const isReadOnly = window.location.pathname === "/makeoffer/mergedoffer";
-  console.log(info);
-  
 
   useEffect(() => {
     const loadOfferDetail = async () => {
@@ -197,6 +195,12 @@ const MakeOffer = () => {
         >
           저장
         </Button>
+      )}
+      {isReadOnly && (
+        <div style={{ marginTop: 20 }}>
+          <Button type="default">PDF 미리보기</Button>
+          <Button style={{ marginLeft: 10 }}>머릿글 수정</Button>
+        </div>
       )}
     </FormContainer>
   );

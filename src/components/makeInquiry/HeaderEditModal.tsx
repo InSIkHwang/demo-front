@@ -32,14 +32,14 @@ interface HeaderEditModalProps {
   open: boolean;
   onClose: () => void;
   onSave: (text: string) => void;
-  pdfSupplierTag: { id: number; name: string }[];
+  pdfCompanyTag: { id: number; name: string }[];
 }
 
 const HeaderEditModal = ({
   open,
   onClose,
   onSave,
-  pdfSupplierTag,
+  pdfCompanyTag,
 }: HeaderEditModalProps) => {
   const [text, setText] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
@@ -50,18 +50,18 @@ const HeaderEditModal = ({
 
   useEffect(() => {
     if (open) {
-      const currentSupplierId = pdfSupplierTag[0]?.id;
+      const currentSupplierId = pdfCompanyTag[0]?.id;
       if (prevSupplierIdRef.current !== currentSupplierId) {
         fetchData();
         prevSupplierIdRef.current = currentSupplierId;
       }
     }
-  }, [open, pdfSupplierTag]);
+  }, [open, pdfCompanyTag]);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await fetchSupplierDetail(pdfSupplierTag[0].id);
+      const response = await fetchSupplierDetail(pdfCompanyTag[0].id);
       setSelectedSupplier(response);
       setText(response.headerMessage || "");
     } catch (error) {

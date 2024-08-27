@@ -661,7 +661,7 @@ const MakeInquiry = () => {
           open={headerEditModalVisible}
           onClose={handleCloseHeaderModal}
           onSave={handleHeaderSave}
-          pdfSupplierTag={pdfSupplierTag}
+          pdfCompanyTag={pdfSupplierTag}
         />
       </div>
       <PDFGenerator
