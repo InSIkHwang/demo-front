@@ -135,6 +135,7 @@ const MakeInquiry = () => {
   const [isMailSenderVisible, setIsMailSenderVisible] = useState(false);
   const [mailDataList, setMailDataList] = useState<MailData[]>([]);
   const [loadMailData, setLoadMailData] = useState<boolean>(false);
+  const [isDuplicate, setIsDuplicate] = useState<boolean>(false);
 
   // Load document data
   const loadDocData = useCallback(async () => {
@@ -362,76 +363,97 @@ const MakeInquiry = () => {
 
   const handleSubmit = async () => {
     try {
-      const selectedVessel = vesselList.find(
-        (v) => v.vesselName === formValues.vesselName
-      );
-      const inquiryItemDetails = items.map((item) => {
-        const matchingItemDetail = inquiryDetail?.inquiryItemDetails.find(
-          (detail) => detail.itemId === item.itemId
-        );
-
-        return {
-          position: item.position,
-          itemDetailId: matchingItemDetail
-            ? matchingItemDetail.itemDetailId
-            : null,
-          itemId: item.itemId || null,
-          itemCode: item.itemCode,
-          itemName: item.itemName,
-          itemRemark: item.itemRemark,
-          qty: item.qty,
-          unit: item.unit,
-          itemType: item.itemType,
-          supplierIdList: selectedSupplierTag.map((supplier) => supplier.id),
-        };
-      });
-
-      const requestData = {
-        documentNumber: formValues.docNumber,
-        vesselId: selectedVessel ? selectedVessel.id : null,
-        customerId: selectedCustomerId,
-        refNumber: formValues.refNumber,
-        registerDate: formValues.registerDate.format("YYYY-MM-DD"),
-        shippingDate: formValues.shippingDate.format("YYYY-MM-DD"),
-        remark: formValues.remark,
-        currencyType: formValues.currencyType,
-        currency: parseFloat(formValues.currency as any),
-        inquiryItemDetails,
-      };
-
-      if (isEditMode) {
-        requestData.documentNumber = formValues.docNumber;
-      }
-
-      // Submit the inquiry and get the response
-      const response = await submitInquiry(
-        formValues.docNumber,
-        Number(customerInquiryId),
-        requestData,
-        isEditMode
-      );
-
-      message.success("성공적으로 저장 되었습니다!");
-
-      if (isEditMode) {
-        const newInquiryDetail = await fetchInquiryDetail(
-          Number(customerInquiryId)
-        );
-
-        navigate(`/makeinquiry/${response}`, {
-          state: { inquiry: newInquiryDetail },
+      if (isDuplicate) {
+        Modal.confirm({
+          title: "중복된 품목이 있습니다.",
+          content: "저장하시겠습니까?",
+          okText: "확인",
+          cancelText: "취소",
+          onOk: async () => {
+            // 중복 확인 후 저장 로직
+            try {
+              await saveInquiry();
+            } catch (error) {
+              console.error("견적서 저장 중 오류 발생:", error);
+              message.error("다시 시도해 주세요");
+            }
+          },
         });
       } else {
-        const newInquiryDetail = await fetchInquiryDetail(Number(response));
-
-        navigate(`/makeinquiry/${response}`, {
-          state: { inquiry: newInquiryDetail },
-        });
+        // 중복이 없을 경우 바로 저장
+        try {
+          await saveInquiry();
+        } catch (error) {
+          console.error("견적서 저장 중 오류 발생:", error);
+          message.error("다시 시도해 주세요");
+        }
       }
     } catch (error) {
       console.error("견적서 저장 중 오류 발생:", error);
       message.error("다시 시도해 주세요");
     }
+  };
+
+  // 저장 로직을 함수로 분리
+  const saveInquiry = async () => {
+    const selectedVessel = vesselList.find(
+      (v) => v.vesselName === formValues.vesselName
+    );
+    const inquiryItemDetails = items.map((item) => {
+      const matchingItemDetail = inquiryDetail?.inquiryItemDetails.find(
+        (detail) => detail.itemId === item.itemId
+      );
+
+      return {
+        position: item.position,
+        itemDetailId: matchingItemDetail
+          ? matchingItemDetail.itemDetailId
+          : null,
+        itemId: item.itemId || null,
+        itemCode: item.itemCode,
+        itemName: item.itemName,
+        itemRemark: item.itemRemark,
+        qty: item.qty,
+        unit: item.unit,
+        itemType: item.itemType,
+        supplierIdList: selectedSupplierTag.map((supplier) => supplier.id),
+      };
+    });
+
+    const requestData = {
+      documentNumber: formValues.docNumber,
+      vesselId: selectedVessel ? selectedVessel.id : null,
+      customerId: selectedCustomerId,
+      refNumber: formValues.refNumber,
+      registerDate: formValues.registerDate.format("YYYY-MM-DD"),
+      shippingDate: formValues.shippingDate.format("YYYY-MM-DD"),
+      remark: formValues.remark,
+      currencyType: formValues.currencyType,
+      currency: parseFloat(formValues.currency as any),
+      inquiryItemDetails,
+    };
+
+    if (isEditMode) {
+      requestData.documentNumber = formValues.docNumber;
+    }
+
+    // Submit the inquiry and get the response
+    const response = await submitInquiry(
+      formValues.docNumber,
+      Number(customerInquiryId),
+      requestData,
+      isEditMode
+    );
+
+    message.success("성공적으로 저장 되었습니다!");
+
+    const newInquiryDetail = await fetchInquiryDetail(
+      Number(isEditMode ? customerInquiryId : response)
+    );
+
+    navigate(`/makeinquiry/${response}`, {
+      state: { inquiry: newInquiryDetail },
+    });
   };
 
   const handleItemCodeChange = (index: number, value: string) => {
@@ -583,6 +605,7 @@ const MakeInquiry = () => {
         handleItemCodeChange={handleItemCodeChange}
         itemCodeOptions={itemCodeOptions}
         handleDelete={handleDelete}
+        setIsDuplicate={setIsDuplicate}
       />
       <Button
         type="primary"

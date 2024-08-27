@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Dispatch, SetStateAction } from "react";
 import { Table, AutoComplete, Input, Select, Button } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import { InquiryItem } from "../../types/types";
@@ -11,6 +11,7 @@ interface MakeInquiryTableProps {
   handleItemCodeChange: (index: number, value: string) => void;
   itemCodeOptions: { value: string }[];
   handleDelete: (index: number) => void;
+  setIsDuplicate: Dispatch<SetStateAction<boolean>>;
 }
 
 const MakeInquiryTable = ({
@@ -19,6 +20,7 @@ const MakeInquiryTable = ({
   handleItemCodeChange,
   itemCodeOptions,
   handleDelete,
+  setIsDuplicate,
 }: MakeInquiryTableProps) => {
   const handleKeyDown = (
     e: React.KeyboardEvent<HTMLInputElement>,
@@ -34,6 +36,27 @@ const MakeInquiryTable = ({
       handleInputChange(index, "itemType", itemTypeMap[e.key]);
     }
   };
+
+  const checkDuplicate = (key: string, value: string, index: number) => {
+    // 빈 값인 경우 false 반환
+    if (!value.trim()) {
+      setIsDuplicate(false); // 빈 값일 때 중복 아님으로 설정
+      return false;
+    }
+
+    const isDuplicate = items.some(
+      (item: any, idx) => item[key] === value && idx !== index
+    );
+
+    if (isDuplicate) {
+      setIsDuplicate(true);
+    } else {
+      setIsDuplicate(false); // 중복이 아닌 경우 false 설정
+    }
+
+    return isDuplicate;
+  };
+
   const columns = [
     {
       title: "No.",
@@ -49,16 +72,21 @@ const MakeInquiryTable = ({
       dataIndex: "itemCode",
       key: "itemCode",
       render: (text: string, record: InquiryItem, index: number) =>
-        record.itemType === "ITEM" ? ( // itemType이 ITEM일 때만 렌더링
+        record.itemType === "ITEM" ? (
           <AutoComplete
             value={text}
             onChange={(value) => handleItemCodeChange(index, value)}
             options={itemCodeOptions}
-            style={{ width: "100%" }}
           >
-            <Input />
+            <Input
+              style={{
+                borderColor: checkDuplicate("itemCode", text, index)
+                  ? "red"
+                  : "#d9d9d9", // 중복 시 배경색 빨간색
+              }}
+            />
           </AutoComplete>
-        ) : null, // itemType이 ITEM이 아니면 null 반환
+        ) : null,
       width: 150,
     },
     {
@@ -91,6 +119,11 @@ const MakeInquiryTable = ({
         <Input
           value={text}
           onChange={(e) => handleInputChange(index, "itemName", e.target.value)}
+          style={{
+            borderColor: checkDuplicate("itemName", text, index)
+              ? "red"
+              : "#d9d9d9", // 중복 시 배경색 빨간색
+          }}
         />
       ),
       width: 250,
@@ -101,7 +134,7 @@ const MakeInquiryTable = ({
       key: "qty",
       render: (text: number, record: InquiryItem, index: number) => (
         <Input
-          type="number" // Ensure it's a number input
+          type="number"
           value={text}
           onChange={(e) => {
             const value = parseInt(e.target.value, 10);
@@ -142,7 +175,7 @@ const MakeInquiryTable = ({
       render: (_: any, __: any, index: number) => (
         <Button
           icon={<DeleteOutlined />}
-          type="default" // Replace 'danger' with 'default' or another supported type
+          type="default"
           onClick={() => handleDelete(index)}
         />
       ),
@@ -155,7 +188,7 @@ const MakeInquiryTable = ({
       columns={columns}
       dataSource={items}
       pagination={false}
-      rowKey="no" // Use a unique key, adjust if necessary
+      rowKey="no"
     />
   );
 };

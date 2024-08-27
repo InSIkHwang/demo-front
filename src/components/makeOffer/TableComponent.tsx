@@ -1,4 +1,4 @@
-import React, { Dispatch, useEffect, useState } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Table, Input, Select, InputNumber, Button, AutoComplete } from "antd";
 import { ColumnsType } from "antd/es/table";
 import styled from "styled-components";
@@ -95,6 +95,7 @@ interface TableComponentProps {
     value: any
   ) => void;
   currency: number;
+  setIsDuplicate: Dispatch<SetStateAction<boolean>>;
 }
 
 const TableComponent = ({
@@ -102,6 +103,7 @@ const TableComponent = ({
   handleInputChange,
   currency,
   setDataSource,
+  setIsDuplicate,
 }: TableComponentProps) => {
   const [totals, setTotals] = useState({
     totalSalesAmountKRW: 0,
@@ -120,6 +122,28 @@ const TableComponent = ({
   const [supplierOptions, setSupplierOptions] = useState<
     { value: string; id: number; itemId: number; code: string; email: string }[]
   >([]);
+
+  const checkDuplicate = (key: string, value: string, index: number) => {
+    if (!value.trim()) {
+      return false;
+    }
+
+    return dataSource.some(
+      (item: any, idx) => item[key] === value && idx !== index
+    );
+  };
+
+  // 컴포넌트 최초 렌더링 시 중복 여부를 확인
+  useEffect(() => {
+    // 중복 여부를 전체적으로 확인합니다.
+    const hasDuplicate = dataSource.some((item: any, index) =>
+      ["itemCode", "itemName"].some((key) =>
+        checkDuplicate(key, item[key], index)
+      )
+    );
+
+    setIsDuplicate(hasDuplicate);
+  }, [dataSource]);
 
   const handleItemCodeChange = (index: number, value: string) => {
     handleInputChange(index, "itemCode", value);
@@ -298,7 +322,13 @@ const TableComponent = ({
             options={itemCodeOptions}
             style={{ borderRadius: "4px", width: "100%" }}
           >
-            <Input />
+            <Input
+              style={{
+                borderColor: checkDuplicate("itemCode", text, index)
+                  ? "red"
+                  : "#d9d9d9", // 중복 시 배경색 빨간색
+              }}
+            />
           </AutoComplete>
         ) : null,
     },
@@ -331,7 +361,13 @@ const TableComponent = ({
         <Input
           value={text}
           onChange={(e) => handleInputChange(index, "itemName", e.target.value)}
-          style={{ borderRadius: "4px", width: "100%" }}
+          style={{
+            borderRadius: "4px",
+            width: "100%",
+            borderColor: checkDuplicate("itemName", text, index)
+              ? "red"
+              : "#d9d9d9", // 중복 시 배경색 빨간색
+          }}
         />
       ),
     },
