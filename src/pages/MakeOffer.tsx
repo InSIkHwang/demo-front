@@ -34,121 +34,122 @@ const MakeOffer = () => {
   const [info, setInfo] = useState(state?.info || {});
   const [dataSource, setDataSource] = useState(info?.inquiryItemDetails || []);
   const isReadOnly = window.location.pathname === "/makeoffer/mergedoffer";
+console.log(info);
 
-  useEffect(() => {
-    const loadOfferDetail = async () => {
-      if (info?.supplierInquiryId && info?.supplierInfo?.supplierId) {
-        try {
-          const response = await fetchOfferDetail(
-            info.supplierInquiryId,
-            info.supplierInfo.supplierId
-          );
-          setInfo(response);
-          setDataSource(response.inquiryItemDetails || []);
-        } catch (error) {
-          message.error("데이터를 가져오는 중 오류가 발생했습니다.");
-        }
+useEffect(() => {
+  const loadOfferDetail = async () => {
+    if (info?.supplierInquiryId && info?.supplierInfo?.supplierId) {
+      try {
+        const response = await fetchOfferDetail(
+          info.supplierInquiryId,
+          info.supplierInfo.supplierId
+        );
+        setInfo(response);
+        setDataSource(response.inquiryItemDetails || []);
+      } catch (error) {
+        message.error("데이터를 가져오는 중 오류가 발생했습니다.");
       }
+    }
+  };
+
+  loadOfferDetail();
+}, [info.supplierInquiryId, info.supplierInfo?.supplierId]);
+
+useEffect(() => {
+  if (info?.inquiryItemDetails) {
+    setDataSource(info.inquiryItemDetails);
+  }
+}, [info]);
+
+const handleInputChange = (
+  index: number,
+  key: keyof ItemDataType,
+  value: any
+) => {
+  const updatedDataSource = [...dataSource];
+  updatedDataSource[index][key] = value;
+
+  // 값이 변경된 항목이 "salesPriceKRW", "salesPriceGlobal", "purchasePriceKRW", "purchasePriceGlobal"일 경우 계산하여 업데이트
+  if (
+    key === "salesPriceKRW" ||
+    key === "salesPriceGlobal" ||
+    key === "purchasePriceKRW" ||
+    key === "purchasePriceGlobal"
+  ) {
+    const record = updatedDataSource[index];
+    const updatedSalesAmountKRW = calculateTotalAmount(
+      record.salesPriceKRW,
+      record.qty
+    );
+    const updatedSalesAmountGlobal = calculateTotalAmount(
+      record.salesPriceGlobal,
+      record.qty
+    );
+    const updatedPurchaseAmountKRW = calculateTotalAmount(
+      record.purchasePriceKRW,
+      record.qty
+    );
+    const updatedPurchaseAmountGlobal = calculateTotalAmount(
+      record.purchasePriceGlobal,
+      record.qty
+    );
+
+    updatedDataSource[index] = {
+      ...record,
+      salesAmountKRW: updatedSalesAmountKRW,
+      salesAmountGlobal: updatedSalesAmountGlobal,
+      purchaseAmountKRW: updatedPurchaseAmountKRW,
+      purchaseAmountGlobal: updatedPurchaseAmountGlobal,
     };
+  }
 
-    loadOfferDetail();
-  }, [info.supplierInquiryId, info.supplierInfo?.supplierId]);
+  setDataSource(updatedDataSource);
+};
+const handleSave = async () => {
+  if (dataSource.length === 0) {
+    message.error("아이템을 추가해주세요");
+    return;
+  }
 
-  useEffect(() => {
-    if (info?.inquiryItemDetails) {
-      setDataSource(info.inquiryItemDetails);
-    }
-  }, [info]);
+  const formattedData = dataSource.map((item: ItemDataType) => ({
+    position: item.position,
+    itemDetailId: item.itemDetailId,
+    itemRemark: item.itemRemark || "",
+    itemType: item.itemType,
+    qty: item.qty,
+    unit: item.unit || "",
+    itemId: item.itemId,
+    salesPriceKRW: item.salesPriceKRW,
+    salesPriceGlobal: item.salesPriceGlobal,
+    salesAmountKRW: item.salesAmountKRW,
+    salesAmountGlobal: item.salesAmountGlobal,
+    margin: item.margin,
+    purchasePriceKRW: item.purchasePriceKRW,
+    purchasePriceGlobal: item.purchasePriceGlobal,
+    purchaseAmountKRW: item.purchaseAmountKRW,
+    purchaseAmountGlobal: item.purchaseAmountGlobal,
+  }));
 
-  const handleInputChange = (
-    index: number,
-    key: keyof ItemDataType,
-    value: any
-  ) => {
-    const updatedDataSource = [...dataSource];
-    updatedDataSource[index][key] = value;
+  try {
+    await editOffer(
+      info.supplierInquiryId,
+      info.supplierInfo.supplierId,
+      formattedData
+    );
 
-    // 값이 변경된 항목이 "salesPriceKRW", "salesPriceUSD", "purchasePriceKRW", "purchasePriceUSD"일 경우 계산하여 업데이트
-    if (
-      key === "salesPriceKRW" ||
-      key === "salesPriceUSD" ||
-      key === "purchasePriceKRW" ||
-      key === "purchasePriceUSD"
-    ) {
-      const record = updatedDataSource[index];
-      const updatedSalesAmountKRW = calculateTotalAmount(
-        record.salesPriceKRW,
-        record.qty
-      );
-      const updatedSalesAmountUSD = calculateTotalAmount(
-        record.salesPriceUSD,
-        record.qty
-      );
-      const updatedPurchaseAmountKRW = calculateTotalAmount(
-        record.purchasePriceKRW,
-        record.qty
-      );
-      const updatedPurchaseAmountUSD = calculateTotalAmount(
-        record.purchasePriceUSD,
-        record.qty
-      );
+    message.success("성공적으로 저장 되었습니다!");
 
-      updatedDataSource[index] = {
-        ...record,
-        salesAmountKRW: updatedSalesAmountKRW,
-        salesAmountUSD: updatedSalesAmountUSD,
-        purchaseAmountKRW: updatedPurchaseAmountKRW,
-        purchaseAmountUSD: updatedPurchaseAmountUSD,
-      };
-    }
-
-    setDataSource(updatedDataSource);
-  };
-  const handleSave = async () => {
-    if (dataSource.length === 0) {
-      message.error("아이템을 추가해주세요");
-      return;
-    }
-
-    const formattedData = dataSource.map((item: ItemDataType) => ({
-      position: item.position,
-      itemDetailId: item.itemDetailId,
-      itemRemark: item.itemRemark || "",
-      itemType: item.itemType,
-      qty: item.qty,
-      unit: item.unit || "",
-      itemId: item.itemId,
-      salesPriceKRW: item.salesPriceKRW,
-      salesPriceUSD: item.salesPriceUSD,
-      salesAmountKRW: item.salesAmountKRW,
-      salesAmountUSD: item.salesAmountUSD,
-      margin: item.margin,
-      purchasePriceKRW: item.purchasePriceKRW,
-      purchasePriceUSD: item.purchasePriceUSD,
-      purchaseAmountKRW: item.purchaseAmountKRW,
-      purchaseAmountUSD: item.purchaseAmountUSD,
-    }));
-
-    try {
-      await editOffer(
-        info.supplierInquiryId,
-        info.supplierInfo.supplierId,
-        formattedData
-      );
-
-      message.success("성공적으로 저장 되었습니다!");
-
-      // 저장 후 최신 데이터로 업데이트
-      const response = await fetchOfferDetail(
-        info.supplierInquiryId,
-        info.supplierInfo.supplierId
-      );
-      setInfo(response);
-      setDataSource(response.inquiryItemDetails || []);
-    } catch (error) {
-      message.error("데이터 저장 중 오류가 발생했습니다.");
-    }
-  };
+    // 저장 후 최신 데이터로 업데이트
+    const response = await fetchOfferDetail(
+      info.supplierInquiryId,
+      info.supplierInfo.supplierId
+    );
+    setInfo(response);
+    setDataSource(response.inquiryItemDetails || []);
+  } catch (error) {
+    message.error("데이터 저장 중 오류가 발생했습니다.");
+  }
+};
 
   return (
     <FormContainer>

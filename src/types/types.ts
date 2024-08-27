@@ -177,14 +177,14 @@ export interface SupplierInquiryDetailIF {
     qty: number;
     unit: string;
     salesPriceKRW: number;
-    salesPriceUSD: number;
+    salesPriceGlobal: number;
     salesAmountKRW: number;
-    salesAmountUSD: number;
+    salesAmountGlobal: number;
     margin: number;
     purchasePriceKRW: number;
-    purchasePriceUSD: number;
+    purchasePriceGlobal: number;
     purchaseAmountKRW: number;
-    purchaseAmountUSD: number;
+    purchaseAmountGlobal: number;
   }[];
   supplierInfo: {
     inquiryItemDetailId: number | null;
@@ -206,13 +206,13 @@ export interface ItemDataType {
   unit: string;
   itemRemark: string;
   salesPriceKRW: number;
-  salesPriceUSD: number;
+  salesPriceGlobal: number;
   salesAmountKRW: number;
-  salesAmountUSD: number;
+  salesAmountGlobal: number;
   margin: number;
   purchasePriceKRW: number;
-  purchasePriceUSD: number;
+  purchasePriceGlobal: number;
   purchaseAmountKRW: number;
-  purchaseAmountUSD: number;
+  purchaseAmountGlobal: number;
   itemDetailId: number | null;
 }

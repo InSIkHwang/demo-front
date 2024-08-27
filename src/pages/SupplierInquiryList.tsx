@@ -282,35 +282,36 @@ const handleRowClick = async (record: SupplierInquiryListIF) => {
       (acc, item) => acc + item.salesAmountKRW,
       0
     );
-    const totalPurchaseAmountUSD = details.reduce(
-      (acc, item) => acc + item.purchaseAmountUSD,
+    const totalPurchaseAmountGlobal = details.reduce(
+      (acc, item) => acc + item.purchaseAmountGlobal,
       0
     );
-    const totalSalesAmountUSD = details.reduce(
-      (acc, item) => acc + item.salesAmountUSD,
+    const totalSalesAmountGlobal = details.reduce(
+      (acc, item) => acc + item.salesAmountGlobal,
       0
     );
 
     const totalProfitKRW = totalSalesAmountKRW - totalPurchaseAmountKRW;
-    const totalProfitUSD = totalSalesAmountUSD - totalPurchaseAmountUSD;
+    const totalProfitGlobal =
+      totalSalesAmountGlobal - totalPurchaseAmountGlobal;
     const profitMarginKRW =
       totalSalesAmountKRW === 0
         ? 0
         : ((totalProfitKRW / totalSalesAmountKRW) * 100).toFixed(2);
-    const profitMarginUSD =
-      totalSalesAmountUSD === 0
+    const profitMarginGlobal =
+      totalSalesAmountGlobal === 0
         ? 0
-        : ((totalProfitUSD / totalSalesAmountUSD) * 100).toFixed(2);
+        : ((totalProfitGlobal / totalSalesAmountGlobal) * 100).toFixed(2);
 
     return {
       totalPurchaseAmountKRW,
       totalSalesAmountKRW,
       totalProfitKRW: totalProfitKRW,
       profitMarginKRW,
-      totalPurchaseAmountUSD,
-      totalSalesAmountUSD,
-      totalProfitUSD: totalProfitUSD,
-      profitMarginUSD,
+      totalPurchaseAmountGlobal,
+      totalSalesAmountGlobal,
+      totalProfitGlobal: totalProfitGlobal,
+      profitMarginGlobal,
     };
   };
 
@@ -472,22 +473,22 @@ const handleRowClick = async (record: SupplierInquiryListIF) => {
                           <Divider />
                           <Section>
                             <InfoText>
-                              매입액 (USD):{" "}
-                              {totals.totalPurchaseAmountUSD.toLocaleString()}
+                              매입액 (F):{" "}
+                              {totals.totalPurchaseAmountGlobal.toLocaleString()}
                             </InfoText>
                             <InfoText>
-                              매출액 (USD):{" "}
-                              {totals.totalSalesAmountUSD.toLocaleString()}
+                              매출액 (F):{" "}
+                              {totals.totalSalesAmountGlobal.toLocaleString()}
                             </InfoText>
                             <InfoText style={{ color: "#000" }}>
-                              총 이익 (USD):{" "}
-                              {totals.totalProfitUSD.toLocaleString()}
+                              총 이익 (F):{" "}
+                              {totals.totalProfitGlobal.toLocaleString()}
                             </InfoText>
                           </Section>
                         </CardContent>
                         <InfoText style={{ color: "#000" }}>
-                          이익율: {totals.profitMarginKRW}% (USD:{" "}
-                          {totals.profitMarginUSD}%)
+                          이익율: {totals.profitMarginKRW}% (F:{" "}
+                          {totals.profitMarginGlobal}%)
                         </InfoText>
                         <div
                           style={{

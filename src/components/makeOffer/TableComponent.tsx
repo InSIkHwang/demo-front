@@ -105,9 +105,9 @@ const TableComponent = ({
 }: TableComponentProps) => {
   const [totals, setTotals] = useState({
     totalSalesAmountKRW: 0,
-    totalSalesAmountUSD: 0,
+    totalSalesAmountGlobal: 0,
     totalPurchaseAmountKRW: 0,
-    totalPurchaseAmountUSD: 0,
+    totalPurchaseAmountGlobal: 0,
     totalProfit: 0,
     totalProfitPercent: 0,
   });
@@ -204,9 +204,9 @@ const TableComponent = ({
         acc + calculateTotalAmount(record.salesPriceKRW, record.qty),
       0
     );
-    const totalSalesAmountUSD = dataSource.reduce(
+    const totalSalesAmountGlobal = dataSource.reduce(
       (acc, record) =>
-        acc + calculateTotalAmount(record.salesPriceUSD, record.qty),
+        acc + calculateTotalAmount(record.salesPriceGlobal, record.qty),
       0
     );
     const totalPurchaseAmountKRW = dataSource.reduce(
@@ -214,9 +214,9 @@ const TableComponent = ({
         acc + calculateTotalAmount(record.purchasePriceKRW, record.qty),
       0
     );
-    const totalPurchaseAmountUSD = dataSource.reduce(
+    const totalPurchaseAmountGlobal = dataSource.reduce(
       (acc, record) =>
-        acc + calculateTotalAmount(record.purchasePriceUSD, record.qty),
+        acc + calculateTotalAmount(record.purchasePriceGlobal, record.qty),
       0
     );
     const totalProfit = totalSalesAmountKRW - totalPurchaseAmountKRW;
@@ -226,9 +226,9 @@ const TableComponent = ({
 
     setTotals({
       totalSalesAmountKRW,
-      totalSalesAmountUSD,
+      totalSalesAmountGlobal,
       totalPurchaseAmountKRW,
-      totalPurchaseAmountUSD,
+      totalPurchaseAmountGlobal,
       totalProfit,
       totalProfitPercent,
     });
@@ -246,14 +246,14 @@ const TableComponent = ({
       qty: 0,
       unit: "",
       salesPriceKRW: 0,
-      salesPriceUSD: 0,
+      salesPriceGlobal: 0,
       salesAmountKRW: 0,
-      salesAmountUSD: 0,
+      salesAmountGlobal: 0,
       margin: 0,
       purchasePriceKRW: 0,
-      purchasePriceUSD: 0,
+      purchasePriceGlobal: 0,
       purchaseAmountKRW: 0,
-      purchaseAmountUSD: 0,
+      purchaseAmountGlobal: 0,
     };
 
     setDataSource([...dataSource, newItem]);
@@ -400,7 +400,7 @@ const TableComponent = ({
               );
               handleInputChange(
                 index,
-                "salesPriceUSD",
+                "salesPriceGlobal",
                 convertCurrency(updatedValue, currency, "USD")
               );
             }}
@@ -412,8 +412,8 @@ const TableComponent = ({
     },
     {
       title: "매출단가(F)",
-      dataIndex: "salesPriceUSD",
-      key: "salesPriceUSD",
+      dataIndex: "salesPriceGlobal",
+      key: "salesPriceGlobal",
       width: 150,
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
@@ -423,7 +423,7 @@ const TableComponent = ({
               const updatedValue = Number(value) ?? 0;
               handleInputChange(
                 index,
-                "salesPriceUSD",
+                "salesPriceGlobal",
                 roundToTwoDecimalPlaces(updatedValue)
               );
               handleInputChange(
@@ -458,13 +458,13 @@ const TableComponent = ({
     },
     {
       title: "매출총액(F)",
-      dataIndex: "salesAmountUSD",
-      key: "salesAmountUSD",
+      dataIndex: "salesAmountGlobal",
+      key: "salesAmountGlobal",
       width: 150,
       render: (text: number, record: any, index: number) => (
         <InputNumber
           value={calculateTotalAmount(
-            record.salesPriceUSD,
+            record.salesPriceGlobal,
             record.qty
           ).toLocaleString()}
           style={{ width: "100%" }}
@@ -492,7 +492,7 @@ const TableComponent = ({
               );
               handleInputChange(
                 index,
-                "purchasePriceUSD",
+                "purchasePriceGlobal",
                 convertCurrency(updatedValue, currency, "USD")
               );
             }}
@@ -504,8 +504,8 @@ const TableComponent = ({
     },
     {
       title: "매입단가(F)",
-      dataIndex: "purchasePriceUSD",
-      key: "purchasePriceUSD",
+      dataIndex: "purchasePriceGlobal",
+      key: "purchasePriceGlobal",
       width: 150,
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
@@ -515,7 +515,7 @@ const TableComponent = ({
               const updatedValue = Number(value) ?? 0;
               handleInputChange(
                 index,
-                "purchasePriceUSD",
+                "purchasePriceGlobal",
                 roundToTwoDecimalPlaces(updatedValue)
               );
               handleInputChange(
@@ -550,13 +550,13 @@ const TableComponent = ({
     },
     {
       title: "매입총액(F)",
-      dataIndex: "purchaseAmountUSD",
-      key: "purchaseAmountUSD",
+      dataIndex: "purchaseAmountGlobal",
+      key: "purchaseAmountGlobal",
       width: 150,
       render: (text: number, record: any, index: number) => (
         <InputNumber
           value={calculateTotalAmount(
-            record.purchasePriceUSD,
+            record.purchasePriceGlobal,
             record.qty
           ).toLocaleString()}
           style={{ width: "100%" }}
@@ -614,7 +614,7 @@ const TableComponent = ({
         <TotalCard>
           <span>매출총액(F)</span>
           <span className="value">
-            F {totals.totalSalesAmountUSD.toLocaleString()}
+            F {totals.totalSalesAmountGlobal.toLocaleString()}
           </span>
         </TotalCard>
         <TotalCard>
@@ -626,7 +626,7 @@ const TableComponent = ({
         <TotalCard>
           <span>매입총액(F)</span>
           <span className="value">
-            F {totals.totalPurchaseAmountUSD.toLocaleString()}
+            F {totals.totalPurchaseAmountGlobal.toLocaleString()}
           </span>
         </TotalCard>
         <TotalCard $isHighlight $isPositive={totals.totalProfit >= 0}>

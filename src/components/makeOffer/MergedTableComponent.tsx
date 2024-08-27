@@ -11,13 +11,13 @@ interface ItemDataType {
   itemType: string;
   qty: number;
   salesPriceKRW: number;
-  salesPriceUSD: number;
+  salesPriceGlobal: number;
   salesAmountKRW: number;
-  salesAmountUSD: number;
+  salesAmountGlobal: number;
   purchasePriceKRW: number;
-  purchasePriceUSD: number;
+  purchasePriceGlobal: number;
   purchaseAmountKRW: number;
-  purchaseAmountUSD: number;
+  purchaseAmountGlobal: number;
   margin?: number;
 }
 
@@ -94,9 +94,9 @@ const MergedTableComponent = ({
 }: MergedTableComponentProps) => {
   const [totals, setTotals] = useState({
     totalSalesAmountKRW: 0,
-    totalSalesAmountUSD: 0,
+    totalSalesAmountGlobal: 0,
     totalPurchaseAmountKRW: 0,
-    totalPurchaseAmountUSD: 0,
+    totalPurchaseAmountGlobal: 0,
     totalProfit: 0,
     totalProfitPercent: 0,
   });
@@ -121,9 +121,9 @@ const MergedTableComponent = ({
         acc + calculateTotalAmount(record.salesPriceKRW, record.qty),
       0
     );
-    const totalSalesAmountUSD = dataSource.reduce(
+    const totalSalesAmountGlobal = dataSource.reduce(
       (acc, record) =>
-        acc + calculateTotalAmount(record.salesPriceUSD, record.qty),
+        acc + calculateTotalAmount(record.salesPriceGlobal, record.qty),
       0
     );
     const totalPurchaseAmountKRW = dataSource.reduce(
@@ -131,9 +131,9 @@ const MergedTableComponent = ({
         acc + calculateTotalAmount(record.purchasePriceKRW, record.qty),
       0
     );
-    const totalPurchaseAmountUSD = dataSource.reduce(
+    const totalPurchaseAmountGlobal = dataSource.reduce(
       (acc, record) =>
-        acc + calculateTotalAmount(record.purchasePriceUSD, record.qty),
+        acc + calculateTotalAmount(record.purchasePriceGlobal, record.qty),
       0
     );
     const totalProfit = totalSalesAmountKRW - totalPurchaseAmountKRW;
@@ -143,9 +143,9 @@ const MergedTableComponent = ({
 
     setTotals({
       totalSalesAmountKRW,
-      totalSalesAmountUSD,
+      totalSalesAmountGlobal,
       totalPurchaseAmountKRW,
-      totalPurchaseAmountUSD,
+      totalPurchaseAmountGlobal,
       totalProfit,
       totalProfitPercent,
     });
@@ -190,8 +190,8 @@ const MergedTableComponent = ({
     },
     {
       title: "단가 (F)",
-      dataIndex: "salesPriceUSD",
-      key: "salesPriceUSD",
+      dataIndex: "salesPriceGlobal",
+      key: "salesPriceGlobal",
       render: (text: number) => <span>{text?.toLocaleString()}</span>,
     },
     {
@@ -202,8 +202,8 @@ const MergedTableComponent = ({
     },
     {
       title: "총액 (F)",
-      dataIndex: "salesAmountUSD",
-      key: "salesAmountUSD",
+      dataIndex: "salesAmountGlobal",
+      key: "salesAmountGlobal",
       render: (text: number) => <span>{text?.toLocaleString()}</span>,
     },
     {
@@ -214,8 +214,8 @@ const MergedTableComponent = ({
     },
     {
       title: "구매단가 (F)",
-      dataIndex: "purchasePriceUSD",
-      key: "purchasePriceUSD",
+      dataIndex: "purchasePriceGlobal",
+      key: "purchasePriceGlobal",
       render: (text: number) => <span>{text?.toLocaleString()}</span>,
     },
     {
@@ -226,8 +226,8 @@ const MergedTableComponent = ({
     },
     {
       title: "구매총액 (F)",
-      dataIndex: "purchaseAmountUSD",
-      key: "purchaseAmountUSD",
+      dataIndex: "purchaseAmountGlobal",
+      key: "purchaseAmountGlobal",
       render: (text: number) => <span>{text?.toLocaleString()}</span>,
     },
     {
@@ -262,7 +262,7 @@ const MergedTableComponent = ({
         <TotalCard>
           <span>매출총액(F)</span>
           <span className="value">
-            F {totals.totalSalesAmountUSD.toLocaleString()}
+            F {totals.totalSalesAmountGlobal.toLocaleString()}
           </span>
         </TotalCard>
         <TotalCard>
@@ -274,7 +274,7 @@ const MergedTableComponent = ({
         <TotalCard>
           <span>매입총액(F)</span>
           <span className="value">
-            F {totals.totalPurchaseAmountUSD.toLocaleString()}
+            F {totals.totalPurchaseAmountGlobal.toLocaleString()}
           </span>
         </TotalCard>
         <TotalCard $isHighlight $isPositive={totals.totalProfit >= 0}>
