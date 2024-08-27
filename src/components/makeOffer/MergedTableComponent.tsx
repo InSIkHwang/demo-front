@@ -8,6 +8,7 @@ interface ItemDataType {
   position?: number;
   itemCode: string;
   itemName: string;
+  itemType: string;
   qty: number;
   salesPriceKRW: number;
   salesPriceUSD: number;
@@ -99,6 +100,7 @@ const MergedTableComponent = ({
     totalProfit: 0,
     totalProfitPercent: 0,
   });
+
   // 마진을 계산하는 함수
   const calculateMargin = (salesAmount: number, purchaseAmount: number) =>
     purchaseAmount === 0
@@ -161,7 +163,12 @@ const MergedTableComponent = ({
       title: "품목코드",
       dataIndex: "itemCode",
       key: "itemCode",
-      render: (text: string) => <span>{text}</span>,
+      render: (text: string, record: ItemDataType) =>
+        record.itemType === "ITEM" ? (
+          <span>{text}</span>
+        ) : (
+          <span>{record.itemType}</span>
+        ),
     },
     {
       title: "품목명",
@@ -179,49 +186,49 @@ const MergedTableComponent = ({
       title: "단가 (KRW)",
       dataIndex: "salesPriceKRW",
       key: "salesPriceKRW",
-      render: (text: number) => <span>₩{text.toLocaleString()}</span>,
+      render: (text: number) => <span>{text?.toLocaleString()}</span>,
     },
     {
       title: "단가 (F)",
       dataIndex: "salesPriceUSD",
       key: "salesPriceUSD",
-      render: (text: number) => <span>${text.toLocaleString()}</span>,
+      render: (text: number) => <span>{text?.toLocaleString()}</span>,
     },
     {
       title: "총액 (KRW)",
       dataIndex: "salesAmountKRW",
       key: "salesAmountKRW",
-      render: (text: number) => <span>₩{text.toLocaleString()}</span>,
+      render: (text: number) => <span>{text?.toLocaleString()}</span>,
     },
     {
       title: "총액 (F)",
       dataIndex: "salesAmountUSD",
       key: "salesAmountUSD",
-      render: (text: number) => <span>${text.toLocaleString()}</span>,
+      render: (text: number) => <span>{text?.toLocaleString()}</span>,
     },
     {
       title: "구매단가 (KRW)",
       dataIndex: "purchasePriceKRW",
       key: "purchasePriceKRW",
-      render: (text: number) => <span>₩{text.toLocaleString()}</span>,
+      render: (text: number) => <span>{text?.toLocaleString()}</span>,
     },
     {
       title: "구매단가 (F)",
       dataIndex: "purchasePriceUSD",
       key: "purchasePriceUSD",
-      render: (text: number) => <span>${text.toLocaleString()}</span>,
+      render: (text: number) => <span>{text?.toLocaleString()}</span>,
     },
     {
       title: "구매총액 (KRW)",
       dataIndex: "purchaseAmountKRW",
       key: "purchaseAmountKRW",
-      render: (text: number) => <span>₩{text.toLocaleString()}</span>,
+      render: (text: number) => <span>{text?.toLocaleString()}</span>,
     },
     {
       title: "구매총액 (F)",
       dataIndex: "purchaseAmountUSD",
       key: "purchaseAmountUSD",
-      render: (text: number) => <span>${text.toLocaleString()}</span>,
+      render: (text: number) => <span>{text?.toLocaleString()}</span>,
     },
     {
       title: "마진 (%)",
@@ -234,7 +241,11 @@ const MergedTableComponent = ({
           salesAmountKRW,
           purchaseAmountKRW
         );
-        return <span>{marginPercent}%</span>;
+        return !isNaN(marginPercent) ? (
+          <span>{marginPercent}%</span>
+        ) : (
+          <span></span>
+        );
       },
     },
   ];

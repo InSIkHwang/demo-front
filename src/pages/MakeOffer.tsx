@@ -34,6 +34,8 @@ const MakeOffer = () => {
   const [info, setInfo] = useState(state?.info || {});
   const [dataSource, setDataSource] = useState(info?.inquiryItemDetails || []);
   const isReadOnly = window.location.pathname === "/makeoffer/mergedoffer";
+  console.log(info);
+  
 
   useEffect(() => {
     const loadOfferDetail = async () => {

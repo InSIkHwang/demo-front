@@ -390,7 +390,7 @@ const TableComponent = ({
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <InputNumber
-            value={text.toLocaleString()}
+            value={text?.toLocaleString()}
             onChange={(value) => {
               const updatedValue = Number(value) ?? 0;
               handleInputChange(
@@ -418,7 +418,7 @@ const TableComponent = ({
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <InputNumber
-            value={text.toLocaleString()}
+            value={text?.toLocaleString()}
             onChange={(value) => {
               const updatedValue = Number(value) ?? 0;
               handleInputChange(
@@ -434,7 +434,7 @@ const TableComponent = ({
             }}
             style={{ width: "100%" }}
             controls={false}
-            addonBefore="$"
+            addonBefore="F"
           />
         ) : null,
     },
@@ -470,7 +470,7 @@ const TableComponent = ({
           style={{ width: "100%" }}
           readOnly
           className="highlight-cell"
-          addonBefore="$"
+          addonBefore="F"
         />
       ),
     },
@@ -482,7 +482,7 @@ const TableComponent = ({
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <InputNumber
-            value={text.toLocaleString()}
+            value={text?.toLocaleString()}
             onChange={(value) => {
               const updatedValue = Number(value) ?? 0;
               handleInputChange(
@@ -510,7 +510,7 @@ const TableComponent = ({
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <InputNumber
-            value={text.toLocaleString()}
+            value={text?.toLocaleString()}
             onChange={(value) => {
               const updatedValue = Number(value) ?? 0;
               handleInputChange(
@@ -526,7 +526,7 @@ const TableComponent = ({
             }}
             style={{ width: "100%" }}
             controls={false}
-            addonBefore="$"
+            addonBefore="F"
           />
         ) : null,
     },
@@ -562,7 +562,7 @@ const TableComponent = ({
           style={{ width: "100%" }}
           readOnly
           className="highlight-cell"
-          addonBefore="$"
+          addonBefore="F"
         />
       ),
     },

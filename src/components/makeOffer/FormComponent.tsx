@@ -31,7 +31,7 @@ const FormComponent = ({
           rules={[{ required: true, message: "문서번호를 입력하세요!" }]}
           style={{ maxWidth: 200 }}
         >
-          <Input disabled={readOnly} />
+          <Input readOnly={readOnly} />
         </FormItem>
         <FormItem label="문서상태" name="documentStatus">
           <Input readOnly />
