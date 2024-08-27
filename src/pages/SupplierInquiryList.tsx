@@ -224,46 +224,45 @@ const SupplierInquiryList = () => {
     currentPage * itemsPerPage
   );
 
-  const handleRowClick = async (record: SupplierInquiryListIF) => {
-    if (
-      currentDetail &&
-      record.documentNumber === currentDetail.documentNumber
-    ) {
-      // 현재 열려있는 항목을 다시 클릭하면 currentDetail을 숨깁니다.
-      setCurrentDetail(null);
+const handleRowClick = async (record: SupplierInquiryListIF) => {
+  setSelectedSupplierIds(new Map<number, string>());
+
+  if (currentDetail && record.documentNumber === currentDetail.documentNumber) {
+    // 현재 열려있는 항목을 다시 클릭하면 currentDetail을 숨깁니다.
+    setCurrentDetail(null);
+    setSupplierInfoList([]);
+    setExpandedRowKeys([]);
+  } else {
+    // 새 항목을 클릭하면 supplierInfoList의 모든 항목에 대해 fetchOfferDetail을 호출합니다.
+    try {
+      // 선택한 항목의 세부정보를 가져오기 전에 기존 세부정보를 지웁니다.
       setSupplierInfoList([]);
-      setExpandedRowKeys([]);
-    } else {
-      // 새 항목을 클릭하면 supplierInfoList의 모든 항목에 대해 fetchOfferDetail을 호출합니다.
-      try {
-        // 선택한 항목의 세부정보를 가져오기 전에 기존 세부정보를 지웁니다.
-        setSupplierInfoList([]);
 
-        // 선택한 항목의 세부정보를 가져옵니다.
-        const detailPromises = record.supplierInfoList.map(async (info) => {
-          const { supplierId, supplierInquiryId } = info;
-          const detailResponse = await fetchOfferDetail(
-            supplierInquiryId,
-            supplierId
-          );
+      // 선택한 항목의 세부정보를 가져옵니다.
+      const detailPromises = record.supplierInfoList.map(async (info) => {
+        const { supplierId, supplierInquiryId } = info;
+        const detailResponse = await fetchOfferDetail(
+          supplierInquiryId,
+          supplierId
+        );
 
-          return {
-            info,
-            detail: detailResponse,
-          };
-        });
+        return {
+          info,
+          detail: detailResponse,
+        };
+      });
 
-        // 모든 요청이 완료된 후 결과를 상태에 저장
-        const details = await Promise.all(detailPromises);
+      // 모든 요청이 완료된 후 결과를 상태에 저장
+      const details = await Promise.all(detailPromises);
 
-        setCurrentDetail(record); // 현재 항목을 현재 세부정보로 설정
-        setSupplierInfoList(details);
-        setExpandedRowKeys([record.documentNumber]); // 행을 확장합니다.
-      } catch (error) {
-        console.error("세부정보를 가져오는 중 오류가 발생했습니다:", error);
-      }
+      setCurrentDetail(record); // 현재 항목을 현재 세부정보로 설정
+      setSupplierInfoList(details);
+      setExpandedRowKeys([record.documentNumber]); // 행을 확장합니다.
+    } catch (error) {
+      console.error("세부정보를 가져오는 중 오류가 발생했습니다:", error);
     }
-  };
+  }
+};
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
