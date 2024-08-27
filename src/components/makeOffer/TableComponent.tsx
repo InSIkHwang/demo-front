@@ -719,7 +719,7 @@ const TableComponent = ({
         dataSource={dataSource}
         rowKey="itemDetailId"
         pagination={false}
-        scroll={{ x: 2000 }}
+        scroll={{ x: "max-content" }}
         bordered
       />
     </div>

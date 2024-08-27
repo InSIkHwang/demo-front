@@ -136,7 +136,7 @@ const MergedTableComponent = ({
     );
     const totalProfit = totalSalesAmountKRW - totalPurchaseAmountKRW;
     const totalProfitPercent = Number(
-      ((totalProfit / totalSalesAmountKRW) * 100).toFixed(2)
+      (totalProfit / totalSalesAmountKRW) * 100
     );
 
     setTotals({
@@ -179,55 +179,63 @@ const MergedTableComponent = ({
       title: "단가 (KRW)",
       dataIndex: "salesPriceKRW",
       key: "salesPriceKRW",
-      render: (text: number) => <span>₩{text}</span>,
+      render: (text: number) => <span>₩{text.toLocaleString()}</span>,
     },
     {
       title: "단가 (USD)",
       dataIndex: "salesPriceUSD",
       key: "salesPriceUSD",
-      render: (text: number) => <span>${text}</span>,
+      render: (text: number) => <span>${text.toLocaleString()}</span>,
     },
     {
       title: "총액 (KRW)",
       dataIndex: "salesAmountKRW",
       key: "salesAmountKRW",
-      render: (text: number) => <span>₩{text}</span>,
+      render: (text: number) => <span>₩{text.toLocaleString()}</span>,
     },
     {
       title: "총액 (USD)",
       dataIndex: "salesAmountUSD",
       key: "salesAmountUSD",
-      render: (text: number) => <span>${text}</span>,
+      render: (text: number) => <span>${text.toLocaleString()}</span>,
     },
     {
       title: "구매단가 (KRW)",
       dataIndex: "purchasePriceKRW",
       key: "purchasePriceKRW",
-      render: (text: number) => <span>₩{text}</span>,
+      render: (text: number) => <span>₩{text.toLocaleString()}</span>,
     },
     {
       title: "구매단가 (USD)",
       dataIndex: "purchasePriceUSD",
       key: "purchasePriceUSD",
-      render: (text: number) => <span>${text}</span>,
+      render: (text: number) => <span>${text.toLocaleString()}</span>,
     },
     {
       title: "구매총액 (KRW)",
       dataIndex: "purchaseAmountKRW",
       key: "purchaseAmountKRW",
-      render: (text: number) => <span>₩{text}</span>,
+      render: (text: number) => <span>₩{text.toLocaleString()}</span>,
     },
     {
       title: "구매총액 (USD)",
       dataIndex: "purchaseAmountUSD",
       key: "purchaseAmountUSD",
-      render: (text: number) => <span>${text}</span>,
+      render: (text: number) => <span>${text.toLocaleString()}</span>,
     },
     {
       title: "마진 (%)",
       dataIndex: "margin",
       key: "margin",
-      render: (text: number) => <span>{text}%</span>,
+      render: (text: number, record: any, index: number) => {
+        const salesAmountKRW = record.salesAmountKRW;
+        const purchaseAmountKRW = record.purchaseAmountKRW;
+        const marginPercent = calculateMargin(
+          salesAmountKRW,
+          purchaseAmountKRW
+        );
+        return <span>{marginPercent}%</span>;
+      },
     },
   ];
 
@@ -236,31 +244,23 @@ const MergedTableComponent = ({
       <TotalCards>
         <TotalCard>
           <span>매출총액(KRW)</span>
-          <span className="value">
-            ₩ {totals.totalSalesAmountKRW.toFixed(2)}
-          </span>
+          <span className="value">₩ {totals.totalSalesAmountKRW}</span>
         </TotalCard>
         <TotalCard>
           <span>매출총액(USD)</span>
-          <span className="value">
-            $ {totals.totalSalesAmountUSD.toFixed(2)}
-          </span>
+          <span className="value">$ {totals.totalSalesAmountUSD}</span>
         </TotalCard>
         <TotalCard>
           <span>매입총액(KRW)</span>
-          <span className="value">
-            ₩ {totals.totalPurchaseAmountKRW.toFixed(2)}
-          </span>
+          <span className="value">₩ {totals.totalPurchaseAmountKRW}</span>
         </TotalCard>
         <TotalCard>
           <span>매입총액(USD)</span>
-          <span className="value">
-            $ {totals.totalPurchaseAmountUSD.toFixed(2)}
-          </span>
+          <span className="value">$ {totals.totalPurchaseAmountUSD}</span>
         </TotalCard>
         <TotalCard $isHighlight $isPositive={totals.totalProfit >= 0}>
           <span>이익합계</span>
-          <span className="value">₩ {totals.totalProfit.toFixed(2)}</span>
+          <span className="value">₩ {totals.totalProfit}</span>
         </TotalCard>
         <TotalCard $isHighlight $isPositive={totals.totalProfitPercent >= 0}>
           <span>이익율</span>
