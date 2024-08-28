@@ -364,33 +364,41 @@ const MakeInquiry = () => {
   const handleSubmit = async () => {
     try {
       if (isDuplicate) {
-        Modal.confirm({
-          title: "중복된 품목이 있습니다.",
-          content: "저장하시겠습니까?",
-          okText: "확인",
-          cancelText: "취소",
-          onOk: async () => {
-            // 중복 확인 후 저장 로직
-            try {
-              await saveInquiry();
-            } catch (error) {
-              console.error("견적서 저장 중 오류 발생:", error);
-              message.error("다시 시도해 주세요");
-            }
-          },
+        return new Promise((resolve, reject) => {
+          Modal.confirm({
+            title: "중복된 품목이 있습니다.",
+            content: "저장하시겠습니까?",
+            okText: "확인",
+            cancelText: "취소",
+            onOk: async () => {
+              try {
+                await saveInquiry();
+                resolve(true); // 저장 성공
+              } catch (error) {
+                console.error("견적서 저장 중 오류 발생:", error);
+                message.error("다시 시도해 주세요");
+                reject(false); // 저장 실패
+              }
+            },
+            onCancel: () => {
+              reject(false); // 저장 취소
+            },
+          });
         });
       } else {
-        // 중복이 없을 경우 바로 저장
         try {
           await saveInquiry();
+          return true; // 저장 성공
         } catch (error) {
           console.error("견적서 저장 중 오류 발생:", error);
           message.error("다시 시도해 주세요");
+          return false; // 저장 실패
         }
       }
     } catch (error) {
       console.error("견적서 저장 중 오류 발생:", error);
       message.error("다시 시도해 주세요");
+      return false; // 저장 실패
     }
   };
 

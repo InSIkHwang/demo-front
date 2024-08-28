@@ -77,7 +77,7 @@ const MailSenderModal = ({
 }: {
   mailDataList: MailData[];
   inquiryFormValues: FormValue;
-  handleSubmit: () => Promise<void>;
+  handleSubmit: () => Promise<unknown>;
   setIsMailSenderVisible: Dispatch<SetStateAction<boolean>>;
   selectedSupplierTag: {
     id: number;
@@ -138,18 +138,22 @@ const MailSenderModal = ({
     setLoading(true);
 
     try {
-      await handleSubmit();
+      const submitSuccess = await handleSubmit();
 
-      // 선택된 의뢰처의 메일 데이터만 필터링
-      const mailDataToSend = Array.from(selectedMailIndexes).map((index) => ({
-        ...currentMailDataList[index],
-        ...values.mails[index],
-      }));
+      if (submitSuccess) {
+        // 선택된 의뢰처의 메일 데이터만 필터링
+        const mailDataToSend = Array.from(selectedMailIndexes).map((index) => ({
+          ...currentMailDataList[index],
+          ...values.mails[index],
+        }));
 
-      // 선택된 의뢰처에 메일 전송
-      await sendInquiryMail(values.docNumber, mailDataToSend);
+        // 선택된 의뢰처에 메일 전송
+        await sendInquiryMail(values.docNumber, mailDataToSend);
 
-      message.success("선택된 이메일이 성공적으로 전송되었습니다!");
+        message.success("선택된 이메일이 성공적으로 전송되었습니다!");
+      } else {
+        message.error("중복된 품목이 있어 저장을 취소했습니다.");
+      }
     } catch (error) {
       console.error("Error sending email:", error);
       message.error("이메일 전송에 실패했습니다. 다시 시도해 주세요.");

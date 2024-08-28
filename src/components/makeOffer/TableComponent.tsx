@@ -1,10 +1,26 @@
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Table, Input, Select, InputNumber, Button, AutoComplete } from "antd";
 import { ColumnsType } from "antd/es/table";
-import styled from "styled-components";
+import styled, { CSSProperties } from "styled-components";
 import { ItemDataType } from "../../types/types";
 import { DeleteOutlined } from "@ant-design/icons";
 import { fetchItemData } from "../../api/api";
+import {
+  DndContext,
+  DragEndEvent,
+  useSensor,
+  useSensors,
+  PointerSensor,
+  UniqueIdentifier,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 
 const CustomTable = styled(Table)`
   .ant-table-cell {
@@ -88,7 +104,7 @@ const calculateMargin = (salesAmount: number, purchaseAmount: number) =>
 
 interface TableComponentProps {
   dataSource: ItemDataType[];
-  setDataSource: Dispatch<ItemDataType[]>;
+  setDataSource: Dispatch<SetStateAction<ItemDataType[]>>;
   handleInputChange: (
     index: number,
     key: keyof ItemDataType,
@@ -97,6 +113,48 @@ interface TableComponentProps {
   currency: number;
   setIsDuplicate: Dispatch<SetStateAction<boolean>>;
 }
+
+interface RowProps extends React.HTMLAttributes<HTMLTableRowElement> {
+  "data-row-key": number;
+}
+
+const Row = (props: RowProps) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: props["data-row-key"],
+  });
+
+  // Manually format transform values if transform is available
+  const transformStyle: CSSProperties = transform
+    ? {
+        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+      }
+    : {};
+
+  const style: CSSProperties = {
+    ...props.style,
+    ...transformStyle,
+    transition,
+    cursor: "move",
+    ...(isDragging ? { position: "relative", zIndex: 9999 } : {}),
+  };
+
+  return (
+    <tr
+      {...props}
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+    />
+  );
+};
 
 const TableComponent = ({
   dataSource,
@@ -124,13 +182,53 @@ const TableComponent = ({
   >([]);
 
   const checkDuplicate = (key: string, value: string, index: number) => {
-    if (!value.trim()) {
+    if (!value?.trim()) {
       return false;
     }
 
     return dataSource.some(
       (item: any, idx) => item[key] === value && idx !== index
     );
+  };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 1,
+      },
+    })
+  );
+
+  const itemIds: UniqueIdentifier[] = dataSource.map(
+    (item) => item.position as UniqueIdentifier
+  );
+
+  const onDragEnd = ({ active, over }: DragEndEvent) => {
+    if (active.id !== over?.id) {
+      setDataSource((prev) => {
+        // 활성화된 아이템과 오버된 아이템의 인덱스 찾기
+        const activeIndex = prev.findIndex(
+          (item) => item.position === active.id
+        );
+        const overIndex = prev.findIndex((item) => item.position === over?.id);
+
+        if (activeIndex === -1 || overIndex === -1) {
+          return prev; // 인덱스가 잘못된 경우 원래 상태 반환
+        }
+
+        // 아이템의 순서를 변경
+        const reorderedItems = arrayMove(prev, activeIndex, overIndex);
+
+        // position 속성을 업데이트
+        const updatedItems = reorderedItems.map((item, index) => ({
+          ...item,
+          position: index + 1, // position 속성 업데이트 (1부터 시작)
+        }));
+
+        // 상태 업데이트
+        return updatedItems;
+      });
+    }
   };
 
   // 컴포넌트 최초 렌더링 시 중복 여부를 확인
@@ -219,7 +317,7 @@ const TableComponent = ({
   useEffect(() => {
     const updatedDataSource = dataSource.map((item, index) => ({
       ...item,
-      no: index + 1, // No. 추가
+      no: item.position, // No. 추가
     }));
 
     setDataSource(updatedDataSource);
@@ -283,8 +381,11 @@ const TableComponent = ({
     setDataSource([...dataSource, newItem]);
   };
 
-  const handleDeleteItem = (index: number) => {
-    const updatedDataSource = dataSource.filter((_, i) => i !== index);
+  const handleDeleteItem = (itemDetailId: number, position: number) => {
+    const updatedDataSource = dataSource.filter(
+      (item) =>
+        !(item.itemDetailId === itemDetailId && item.position === position)
+    );
     setDataSource(updatedDataSource);
   };
 
@@ -296,7 +397,7 @@ const TableComponent = ({
       render: (text: any, record: any, index: number) => (
         <Button
           type="default"
-          onClick={() => handleDeleteItem(index)}
+          onClick={() => handleDeleteItem(record.itemDetailId, record.position)}
           icon={<DeleteOutlined />}
         ></Button>
       ),
@@ -683,14 +784,27 @@ const TableComponent = ({
       >
         추가
       </Button>
-      <CustomTable
-        columns={columns}
-        dataSource={dataSource}
-        rowKey="itemDetailId"
-        pagination={false}
-        scroll={{ x: "max-content" }}
-        bordered
-      />
+      <DndContext
+        sensors={sensors}
+        modifiers={[restrictToVerticalAxis]}
+        onDragEnd={onDragEnd}
+      >
+        <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
+          <CustomTable
+            components={{
+              body: {
+                row: Row,
+              },
+            }}
+            rowKey="position"
+            columns={columns}
+            dataSource={dataSource.sort((a, b) => a.position - b.position)}
+            pagination={false}
+            scroll={{ x: "max-content" }}
+            bordered
+          />
+        </SortableContext>
+      </DndContext>
     </div>
   );
 };
