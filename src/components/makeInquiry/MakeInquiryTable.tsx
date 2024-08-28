@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction } from "react";
+import React, { Dispatch, SetStateAction, useState } from "react";
 import { Table, AutoComplete, Input, Select, Button } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import { InquiryItem } from "../../types/types";
@@ -16,7 +16,9 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 
-import { CSSProperties } from "styled-components";
+import styled, { CSSProperties } from "styled-components";
+import ExcelUploadModal from "./ExcelUploadModal";
+import { ColumnsType } from "antd/es/table";
 
 const { Option } = Select;
 
@@ -28,6 +30,7 @@ interface MakeInquiryTableProps {
   handleDelete: (index: number) => void;
   setIsDuplicate: Dispatch<SetStateAction<boolean>>;
   setItems: React.Dispatch<React.SetStateAction<InquiryItem[]>>;
+  addItem: () => void;
 }
 
 const Row = (props: any) => {
@@ -53,7 +56,7 @@ const Row = (props: any) => {
     ...transformStyle,
     transition,
     cursor: "move",
-    ...(isDragging ? { position: "relative", zIndex: 9999 } : {}),
+    ...(isDragging ? { position: "relative", zIndex: 999 } : {}),
   };
 
   return (
@@ -75,7 +78,21 @@ const MakeInquiryTable = ({
   handleDelete,
   setIsDuplicate,
   setItems,
+  addItem,
 }: MakeInquiryTableProps) => {
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const handleApplyExcelData = (mappedItems: InquiryItem[]) => {
+    setItems((prevItems) => [
+      ...prevItems,
+      ...mappedItems.map((item, idx) => ({
+        ...item,
+        position: prevItems.length + idx + 1, // position 값 설정
+      })),
+    ]);
+    setIsModalVisible(false);
+  };
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -138,7 +155,7 @@ const MakeInquiryTable = ({
     }
   };
 
-  const columns = [
+  const columns: ColumnsType<any> = [
     {
       title: "No.",
       dataIndex: "position",
@@ -265,28 +282,55 @@ const MakeInquiryTable = ({
   ];
 
   return (
-    <DndContext
-      sensors={sensors}
-      modifiers={[restrictToVerticalAxis]}
-      onDragEnd={onDragEnd}
-    >
-      <SortableContext
-        items={items.map((item) => item.position)}
-        strategy={verticalListSortingStrategy}
+    <>
+      <div>
+        <Button type="primary" onClick={addItem} style={{ margin: "20px 5px" }}>
+          품목 추가
+        </Button>
+        <Button
+          type="dashed"
+          style={{ margin: "20px 5px" }}
+          onClick={() => setIsModalVisible(true)}
+        >
+          액셀 불러오기
+        </Button>
+      </div>
+      <DndContext
+        sensors={sensors}
+        modifiers={[restrictToVerticalAxis]}
+        onDragEnd={onDragEnd}
       >
-        <Table
-          components={{
-            body: {
-              row: Row,
-            },
-          }}
-          columns={columns}
-          dataSource={items}
-          pagination={false}
-          rowKey="position"
-        />
-      </SortableContext>
-    </DndContext>
+        <SortableContext
+          items={items.map((item) => item.position)}
+          strategy={verticalListSortingStrategy}
+        >
+          <Table
+            components={{
+              body: {
+                row: Row,
+              },
+            }}
+            columns={columns}
+            dataSource={items}
+            pagination={false}
+            rowKey="position"
+          />
+        </SortableContext>
+      </DndContext>
+      <ExcelUploadModal
+        visible={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        onApply={handleApplyExcelData}
+        columns={{
+          itemCode: "품목코드",
+          itemType: "OPT",
+          itemName: "품명",
+          qty: "수량",
+          unit: "단위",
+          itemRemark: "비고",
+        }} // 테이블의 컬럼 설정
+      />
+    </>
   );
 };
 

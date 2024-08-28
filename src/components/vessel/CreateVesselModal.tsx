@@ -134,7 +134,7 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
     setIsCustomerLoading(true);
     try {
       const response = await axios.get(
-        `/api/customers/check-name?customerName=${customerName}`
+        `/api/customers/check-name?query=${customerName}`
       );
       setCustomerSuggestions(response.data.customerDetailResponse);
     } catch (error) {
@@ -322,7 +322,7 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
             </Form.Item>
           </FormGroup>
           <FormGroup>
-            <h1>선택된 매출처: {selectedCustomer?.companyName}</h1>
+            <span>선택된 매출처: {selectedCustomer?.companyName}</span>
             <SubmitButton
               type="primary"
               htmlType="submit"

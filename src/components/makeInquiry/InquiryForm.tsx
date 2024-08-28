@@ -61,7 +61,6 @@ interface InquiryFormProps {
     key: K,
     value: FormValues[K]
   ) => void;
-  addItem: () => void;
   customerUnreg: boolean;
   vesselUnreg: boolean;
   setSelectedSupplierTag: Dispatch<
@@ -78,7 +77,6 @@ const InquiryForm = ({
   vesselNameList,
   selectedSuppliers,
   handleFormChange,
-  addItem,
   customerUnreg,
   vesselUnreg,
   setSelectedSupplierTag,
@@ -486,9 +484,6 @@ const InquiryForm = ({
             ))}
           </SearchBox>
         </FormRow>
-        <Button type="primary" onClick={addItem} style={{ margin: "20px 0" }}>
-          품목 추가
-        </Button>
       </Form>
       {isCustomerModalOpen && (
         <CreateCompanyModal

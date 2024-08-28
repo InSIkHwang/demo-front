@@ -243,76 +243,97 @@ const TableComponent = ({
     setIsDuplicate(hasDuplicate);
   }, [dataSource]);
 
-  const handleItemCodeChange = (index: number, value: string) => {
+  const handleItemCodeChange = async (index: number, value: string) => {
     handleInputChange(index, "itemCode", value);
 
     if (value.trim() === "") {
+      // itemCode가 비어있을 경우 itemId를 초기화
+      setDataSource((prevItems) => {
+        const updatedItems = [...prevItems];
+        updatedItems[index] = {
+          ...updatedItems[index],
+          itemId: null, // itemId를 초기화
+        };
+        return updatedItems;
+      });
       return;
     }
 
-    const searchItemCode = async () => {
-      try {
-        const { items } = await fetchItemData(value);
-        const itemArray = Array.isArray(items) ? items : [items];
+    try {
+      const { items } = await fetchItemData(value);
+      const itemArray = Array.isArray(items) ? items : [items];
 
-        const newItemNameMap = itemArray.reduce<{ [key: string]: string }>(
-          (acc, item) => {
-            acc[item.itemCode] = item.itemName;
-            return acc;
-          },
-          {}
-        );
+      const newItemNameMap = itemArray.reduce<{ [key: string]: string }>(
+        (acc, item) => {
+          acc[item.itemCode] = item.itemName;
+          return acc;
+        },
+        {}
+      );
 
-        const newItemIdMap = itemArray.reduce<{ [key: string]: number }>(
-          (acc, item) => {
-            acc[item.itemCode] = item.itemId;
-            return acc;
-          },
-          {}
-        );
+      const newItemIdMap = itemArray.reduce<{ [key: string]: number }>(
+        (acc, item) => {
+          acc[item.itemCode] = item.itemId;
+          return acc;
+        },
+        {}
+      );
 
-        const newSupplierOptions = itemArray.flatMap((item) =>
-          item.supplierList.map((supplier) => ({
-            value: supplier.companyName,
-            id: supplier.id,
-            itemId: supplier.itemId,
-            code: supplier.code,
-            email: supplier.email,
-          }))
-        );
+      const newSupplierOptions = itemArray.flatMap((item) =>
+        item.supplierList.map((supplier) => ({
+          value: supplier.companyName,
+          id: supplier.id,
+          itemId: supplier.itemId,
+          code: supplier.code,
+          email: supplier.email,
+        }))
+      );
 
-        setItemCodeOptions(itemArray.map((item) => ({ value: item.itemCode })));
-        setItemNameMap(newItemNameMap);
-        setItemIdMap(newItemIdMap);
+      setItemCodeOptions(itemArray.map((item) => ({ value: item.itemCode })));
+      setItemNameMap(newItemNameMap);
+      setItemIdMap(newItemIdMap);
 
-        setSupplierOptions((prevOptions) => [
-          ...prevOptions,
-          ...newSupplierOptions.filter(
-            (newSupplier) =>
-              !prevOptions.some(
-                (existingSupplier) => existingSupplier.id === newSupplier.id
-              )
-          ),
-        ]);
+      setSupplierOptions((prevOptions) => [
+        ...prevOptions,
+        ...newSupplierOptions.filter(
+          (newSupplier) =>
+            !prevOptions.some(
+              (existingSupplier) => existingSupplier.id === newSupplier.id
+            )
+        ),
+      ]);
 
-        if (newItemNameMap[value]) {
-          handleInputChange(index, "itemName", newItemNameMap[value]);
-        }
+      // itemName 업데이트
+      if (newItemNameMap[value]) {
+        handleInputChange(index, "itemName", newItemNameMap[value]);
+      }
 
-        if (newItemIdMap[value]) {
-          const updatedItems = [...dataSource];
+      // itemId 업데이트
+      if (newItemIdMap[value] !== undefined) {
+        setDataSource((prevItems) => {
+          const updatedItems = [...prevItems];
           updatedItems[index] = {
             ...updatedItems[index],
             itemId: newItemIdMap[value],
           };
-          setDataSource(updatedItems);
-        }
-      } catch (error) {
-        console.error("Error fetching item codes and suppliers:", error);
+          return updatedItems;
+        });
+      } else {
+        // 값이 유효하지 않은 경우 itemId를 초기화
+        setDataSource((prevItems) => {
+          const updatedItems = [...prevItems];
+          updatedItems[index] = {
+            ...updatedItems[index],
+            itemId: null,
+          };
+          return updatedItems;
+        });
       }
-    };
-    searchItemCode();
+    } catch (error) {
+      console.error("Error fetching item codes and suppliers:", error);
+    }
   };
+
 
   useEffect(() => {
     const updatedDataSource = dataSource.map((item, index) => ({

@@ -23,7 +23,7 @@ const StyledHeader = styled.header`
   background-color: ${(props) => props.theme.blue};
   color: white;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
+  z-index: 100000;
 `;
 
 const HeaderTitle = styled.div`
@@ -85,7 +85,7 @@ const SideMenu = styled(motion.div)`
   background-color: #212529; /* Darker background for contrast */
   color: white;
   padding: 20px;
-  z-index: 999;
+  z-index: 100000;
   overflow: hidden;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
   border-right: 1px solid #343a40;
@@ -133,7 +133,7 @@ const Backdrop = styled.div`
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5); /* Slightly lighter background */
-  z-index: 998;
+  z-index: 99999;
 `;
 
 interface HeaderProps {

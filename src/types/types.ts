@@ -57,7 +57,7 @@ export interface Vessel {
 
 export interface InquiryItem {
   itemDetailId?: number;
-  itemId?: number;
+  itemId?: number | null;
   position: number;
   itemType: "ITEM" | "MAKER" | "TYPE" | "DESC";
   itemCode: string;
