@@ -444,24 +444,25 @@ const MakeInquiry = () => {
     if (isEditMode) {
       requestData.documentNumber = formValues.docNumber;
     }
+    console.log(requestData);
 
-    //Submit the inquiry and get the response
-    const response = await submitInquiry(
-      formValues.docNumber,
-      Number(customerInquiryId),
-      requestData,
-      isEditMode
-    );
+    // Submit the inquiry and get the response
+    // const response = await submitInquiry(
+    //   formValues.docNumber,
+    //   Number(customerInquiryId),
+    //   requestData,
+    //   isEditMode
+    // );
 
-    message.success("성공적으로 저장 되었습니다!");
+    // message.success("성공적으로 저장 되었습니다!");
 
-    const newInquiryDetail = await fetchInquiryDetail(
-      Number(isEditMode ? customerInquiryId : response)
-    );
+    // const newInquiryDetail = await fetchInquiryDetail(
+    //   Number(isEditMode ? customerInquiryId : response)
+    // );
 
-    navigate(`/makeinquiry/${response}`, {
-      state: { inquiry: newInquiryDetail },
-    });
+    // navigate(`/makeinquiry/${response}`, {
+    //   state: { inquiry: newInquiryDetail },
+    // });
   };
 
   const handleItemCodeChange = async (index: number, value: string) => {
@@ -469,14 +470,7 @@ const MakeInquiry = () => {
 
     if (value.trim() === "") {
       // itemCode가 비어있을 경우 itemId를 초기화
-      setItems((prevItems) => {
-        const updatedItems = [...prevItems];
-        updatedItems[index] = {
-          ...updatedItems[index],
-          itemId: null, // itemId를 초기화
-        };
-        return updatedItems;
-      });
+      updateItemId(index, null);
       return;
     }
 
@@ -530,30 +524,25 @@ const MakeInquiry = () => {
       }
 
       // itemId 업데이트
-      if (newItemIdMap[value] !== undefined) {
-        setItems((prevItems) => {
-          const updatedItems = [...prevItems];
-          updatedItems[index] = {
-            ...updatedItems[index],
-            itemId: newItemIdMap[value],
-          };
-          return updatedItems;
-        });
-      } else {
-        // 값이 유효하지 않은 경우 itemId를 초기화
-        setItems((prevItems) => {
-          const updatedItems = [...prevItems];
-          updatedItems[index] = {
-            ...updatedItems[index],
-            itemId: null,
-          };
-          return updatedItems;
-        });
-      }
+      const newItemId = newItemIdMap[value] ?? null;
+      updateItemId(index, newItemId);
     } catch (error) {
       console.error("Error fetching item codes and suppliers:", error);
     }
   };
+
+  // itemId 업데이트를 별도의 함수로 분리
+  const updateItemId = (index: number, itemId: number | null) => {
+    setItems((prevItems) => {
+      const updatedItems = [...prevItems];
+      updatedItems[index] = {
+        ...updatedItems[index],
+        itemId,
+      };
+      return updatedItems;
+    });
+  };
+
 
   const handleSupplierSelect = (
     value: string,

@@ -318,17 +318,9 @@ const MakeInquiryTable = ({
         </SortableContext>
       </DndContext>
       <ExcelUploadModal
-        visible={isModalVisible}
+        open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         onApply={handleApplyExcelData}
-        columns={{
-          itemCode: "품목코드",
-          itemType: "OPT",
-          itemName: "품명",
-          qty: "수량",
-          unit: "단위",
-          itemRemark: "비고",
-        }} // 테이블의 컬럼 설정
       />
     </>
   );
