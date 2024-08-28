@@ -614,6 +614,7 @@ const MakeInquiry = () => {
         itemCodeOptions={itemCodeOptions}
         handleDelete={handleDelete}
         setIsDuplicate={setIsDuplicate}
+        setItems={setItems}
       />
       <Button
         type="primary"

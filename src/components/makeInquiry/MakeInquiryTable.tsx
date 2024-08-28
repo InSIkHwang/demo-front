@@ -2,6 +2,21 @@ import React, { Dispatch, SetStateAction } from "react";
 import { Table, AutoComplete, Input, Select, Button } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import { InquiryItem } from "../../types/types";
+import {
+  DndContext,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+  arrayMove,
+} from "@dnd-kit/sortable";
+
+import { CSSProperties } from "styled-components";
 
 const { Option } = Select;
 
@@ -12,7 +27,45 @@ interface MakeInquiryTableProps {
   itemCodeOptions: { value: string }[];
   handleDelete: (index: number) => void;
   setIsDuplicate: Dispatch<SetStateAction<boolean>>;
+  setItems: React.Dispatch<React.SetStateAction<InquiryItem[]>>;
 }
+
+const Row = (props: any) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: props["data-row-key"],
+  });
+
+  const transformStyle: CSSProperties = transform
+    ? {
+        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+      }
+    : {};
+
+  const style: CSSProperties = {
+    ...props.style,
+    ...transformStyle,
+    transition,
+    cursor: "move",
+    ...(isDragging ? { position: "relative", zIndex: 9999 } : {}),
+  };
+
+  return (
+    <tr
+      {...props}
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+    />
+  );
+};
 
 const MakeInquiryTable = ({
   items,
@@ -21,7 +74,16 @@ const MakeInquiryTable = ({
   itemCodeOptions,
   handleDelete,
   setIsDuplicate,
+  setItems,
 }: MakeInquiryTableProps) => {
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5, // Customize the distance for drag start
+      },
+    })
+  );
+
   const handleKeyDown = (
     e: React.KeyboardEvent<HTMLInputElement>,
     index: number
@@ -55,6 +117,25 @@ const MakeInquiryTable = ({
     }
 
     return isDuplicate;
+  };
+
+  const onDragEnd = ({ active, over }: any) => {
+    if (active.id !== over?.id) {
+      setItems((prevItems) => {
+        const activeIndex = prevItems.findIndex(
+          (item) => item.position === active.id
+        );
+        const overIndex = prevItems.findIndex(
+          (item) => item.position === over?.id
+        );
+        return arrayMove(prevItems, activeIndex, overIndex).map(
+          (item, index) => ({
+            ...item,
+            position: index + 1,
+          })
+        );
+      });
+    }
   };
 
   const columns = [
@@ -184,12 +265,28 @@ const MakeInquiryTable = ({
   ];
 
   return (
-    <Table
-      columns={columns}
-      dataSource={items}
-      pagination={false}
-      rowKey="no"
-    />
+    <DndContext
+      sensors={sensors}
+      modifiers={[restrictToVerticalAxis]}
+      onDragEnd={onDragEnd}
+    >
+      <SortableContext
+        items={items.map((item) => item.position)}
+        strategy={verticalListSortingStrategy}
+      >
+        <Table
+          components={{
+            body: {
+              row: Row,
+            },
+          }}
+          columns={columns}
+          dataSource={items}
+          pagination={false}
+          rowKey="position"
+        />
+      </SortableContext>
+    </DndContext>
   );
 };
 
