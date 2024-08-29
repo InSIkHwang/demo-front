@@ -121,13 +121,11 @@ export interface MailData {
   content: string;
   ccRecipient?: string | null;
   bccRecipient?: string | null;
-  attachments: [
-    {
-      fileName: string;
-      content: string;
-      contentType: string;
-    }
-  ];
+  attachments: {
+    fileName: string;
+    content: string;
+    contentType: string;
+  }[];
 }
 
 export interface SupplierInquiryListIF {

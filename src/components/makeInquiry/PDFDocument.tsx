@@ -105,6 +105,7 @@ const styles = StyleSheet.create({
     borderRightWidth: 1,
     borderColor: "#000",
     padding: 5,
+    alignItems: "flex-start",
   },
   tableMedCol: {
     flex: 1.5,

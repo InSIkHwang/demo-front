@@ -8,8 +8,10 @@ import {
   Typography,
   Card,
   Checkbox,
+  Upload,
 } from "antd";
 import { SendOutlined, MailOutlined } from "@ant-design/icons";
+import { UploadOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 import { sendInquiryMail } from "../../api/api";
 import { MailData } from "../../types/types";
@@ -162,6 +164,31 @@ const MailSenderModal = ({
     }
   };
 
+  const handleFileUpload = (file: any, index: number) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const fileData = {
+        fileName: file.name,
+        content: reader.result as string,
+        contentType: file.type,
+      };
+
+      setCurrentMailDataList((prevMailDataList) => {
+        const updatedMailData = [...prevMailDataList];
+        updatedMailData[index] = {
+          ...updatedMailData[index],
+          attachments: [
+            ...(updatedMailData[index].attachments || []),
+            fileData,
+          ],
+        };
+        return updatedMailData;
+      });
+    };
+    reader.readAsDataURL(file);
+    return false;
+  };
+
   const tabsItems = currentMailDataList.map((mailData, index) => ({
     key: index.toString(),
     label: `${selectedSupplierTag[index]?.name || ` ${index + 1}`}`,
@@ -186,13 +213,19 @@ const MailSenderModal = ({
           <TextArea placeholder="내용" rows={6} />
         </StyledFormItem>
         <StyledFormItem name={["mails", index, "ccRecipient"]}>
-          <Input placeholder="참조 메일" />
+          <Input placeholder="참조 메일 1" />
         </StyledFormItem>
         <StyledFormItem name={["mails", index, "bccRecipient"]}>
-          <Input placeholder="참조 메일" />
+          <Input placeholder="참조 메일 2" />
         </StyledFormItem>
         <StyledFormItem>
           <Title level={5}>첨부파일</Title>
+          <Upload
+            customRequest={({ file }) => handleFileUpload(file, index)}
+            showUploadList={false}
+          >
+            <Button icon={<UploadOutlined />}>파일 업로드</Button>
+          </Upload>
           <AttachmentList>
             {mailData.attachments.map((attachment, attachIndex) => (
               <AttachmentItem key={attachIndex}>
