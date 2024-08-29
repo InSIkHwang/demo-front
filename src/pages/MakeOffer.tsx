@@ -115,6 +115,7 @@ const MakeOffer = () => {
     const formattedData = dataSource.map((item: ItemDataType) => ({
       position: item.position,
       itemDetailId: item.itemDetailId,
+      itemName: item.itemName,
       itemRemark: item.itemRemark || "",
       itemType: item.itemType,
       qty: item.qty,
