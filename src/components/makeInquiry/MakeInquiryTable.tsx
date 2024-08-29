@@ -81,6 +81,7 @@ const MakeInquiryTable = ({
   addItem,
 }: MakeInquiryTableProps) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  console.log(items);
 
   const handleApplyExcelData = (mappedItems: InquiryItem[]) => {
     setItems((prevItems) => [

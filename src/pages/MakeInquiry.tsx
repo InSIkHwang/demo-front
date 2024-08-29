@@ -336,7 +336,7 @@ const MakeInquiry = () => {
   const handleDelete = (index: number) => {
     const updatedItems = items
       .filter((_, i) => i !== index)
-      .map((item, idx) => ({ ...item, no: idx + 1 }));
+      .map((item, idx) => ({ ...item, position: idx + 1 }));
     setItems(updatedItems);
   };
 

@@ -410,6 +410,8 @@ const TableComponent = ({
     setDataSource(updatedDataSource);
   };
 
+  console.log(dataSource);
+
   const columns: ColumnsType<any> = [
     {
       title: "삭제",
@@ -819,7 +821,7 @@ const TableComponent = ({
             }}
             rowKey="position"
             columns={columns}
-            dataSource={dataSource.sort((a, b) => a.position - b.position)}
+            dataSource={dataSource}
             pagination={false}
             scroll={{ x: "max-content" }}
             bordered
