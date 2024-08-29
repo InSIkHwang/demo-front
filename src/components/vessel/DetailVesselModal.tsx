@@ -1,129 +1,19 @@
-import React, { useState } from "react";
-import styled, { keyframes } from "styled-components";
-import Form from "./Form";
+import React, { useState, useEffect } from "react";
 import axios from "../../api/axios";
+import {
+  Modal,
+  Button,
+  Form,
+  Input,
+  Typography,
+  Row,
+  Col,
+  message,
+} from "antd";
+import "antd/dist/reset.css"; // Make sure to include Ant Design styles
 import { Vessel } from "../../types/types";
 
-const fadeIn = keyframes`
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-`;
-
-const ModalBackdrop = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-`;
-
-const ModalContent = styled.div`
-  background: #ffffff;
-  padding: 30px;
-  border-radius: 12px;
-  width: 90%;
-  max-width: 700px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-  position: relative;
-  animation: ${fadeIn} 0.3s ease-out;
-`;
-
-const ModalTitle = styled.h2`
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 20px;
-  text-align: center;
-  color: #333;
-`;
-
-const CloseButton = styled.button`
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  border: none;
-  background: transparent;
-  font-size: 28px;
-  color: #333;
-  cursor: pointer;
-  transition: color 0.3s;
-
-  &:hover {
-    color: #e74c3c;
-  }
-`;
-
-const DetailItem = styled.div`
-  padding: 15px 0;
-  display: flex;
-  border-bottom: 1px solid #eee;
-  align-items: center;
-
-  &:last-child {
-    border-bottom: none;
-  }
-`;
-
-const PropName = styled.span`
-  font-weight: 600;
-  width: 150px;
-  color: #555;
-`;
-
-const PropValue = styled.span`
-  color: #333;
-  flex: 1;
-  word-break: break-word;
-`;
-
-const BtnWrap = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 20px;
-`;
-
-const UpdateButton = styled.button`
-  padding: 12px 24px;
-  font-size: 16px;
-  border: none;
-  background-color: ${(props) => props.theme.blue};
-  color: white;
-  border-radius: 8px;
-  cursor: pointer;
-  margin-right: 10px;
-  transition: background-color 0.3s, transform 0.3s;
-
-  &:hover {
-    background-color: ${(props) => props.theme.darkBlue};
-    transform: scale(1.05);
-  }
-`;
-
-const DeleteButton = styled.button`
-  padding: 12px 24px;
-  font-size: 16px;
-  border: none;
-  background-color: #e74c3c;
-  color: white;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s, transform 0.3s;
-
-  &:hover {
-    background-color: #c0392b;
-    transform: scale(1.05);
-  }
-`;
+const { Title, Text } = Typography;
 
 interface ModalProps {
   vessel: Vessel;
@@ -138,19 +28,19 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
     companyName: string;
     id: number;
   } | null>(null);
+  const [form] = Form.useForm();
 
-  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
+  useEffect(() => {
+    setFormData(vessel);
+  }, [vessel]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
+  useEffect(() => {
+    form.setFieldsValue({
       ...formData,
-      [e.target.name]: e.target.value,
+      customerCompanyName: formData.customer?.companyName || "없음",
     });
-  };
+  }, [formData, form]);
+  console.log(formData);
 
   // 데이터 수정 PUT API
   const editData = async () => {
@@ -163,10 +53,11 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
         hullNumber: formData.hullNumber,
         shipYard: formData.shipYard,
         originCustomerId: formData.customer.id,
-        newCustomerId: selectedCustomer?.id,
+        newCustomerId: selectedCustomer?.id || null,
       });
+      message.success("수정이 완료되었습니다.");
     } catch (error) {
-      console.log(error);
+      message.error("수정 중 오류가 발생했습니다.");
     }
   };
 
@@ -174,14 +65,14 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
   const deleteData = async () => {
     try {
       await axios.delete(`/api/vessels/${formData.id}`);
+      message.success("삭제가 완료되었습니다.");
     } catch (error) {
-      console.log(error);
+      message.error("삭제 중 오류가 발생했습니다.");
     }
   };
 
   // 수정 SUBMIT 비동기 처리, PUT 처리 후 FETCH
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (values: any) => {
     await editData();
     onUpdate();
     onClose();
@@ -189,81 +80,128 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
 
   // 삭제 SUBMIT 비동기 처리, DELETE 처리 후 FETCH
   const handleDelete = async () => {
-    if (window.confirm("정말 삭제하시겠습니까?")) {
-      await deleteData();
-      onUpdate();
-      onClose();
-    }
-  };
-
-  const readOnlyFields = {
-    code: true, // read-only
-    vesselName: !isEditing,
-    vesselCompanyName: !isEditing,
-    imoNumber: !isEditing,
-    hullNumber: !isEditing,
-    shipYard: !isEditing,
-    customerCompanyName: true,
+    Modal.confirm({
+      title: "정말 삭제하시겠습니까?",
+      okText: "삭제",
+      okType: "danger",
+      cancelText: "취소",
+      onOk: async () => {
+        await deleteData();
+        onUpdate();
+        onClose();
+      },
+    });
   };
 
   return (
-    <ModalBackdrop onClick={handleBackdropClick}>
-      <ModalContent>
-        <CloseButton onClick={onClose}>&times;</CloseButton>
-        <ModalTitle>선박 상세 정보</ModalTitle>
-        {isEditing ? (
-          <Form
-            formData={formData}
-            setFormData={setFormData}
-            onChange={handleChange}
-            onSubmit={handleSubmit}
-            setSelectedCustomer={setSelectedCustomer}
-            selectedCustomer={selectedCustomer}
-            readOnlyFields={readOnlyFields}
-            isEditing={isEditing}
-          />
-        ) : (
-          <>
-            <DetailItem>
-              <PropName>코드</PropName>
-              <PropValue>{formData.code}</PropValue>
-            </DetailItem>
-            <DetailItem>
-              <PropName>선명</PropName>
-              <PropValue>{formData.vesselName}</PropValue>
-            </DetailItem>
-            <DetailItem>
-              <PropName>선박회사</PropName>
-              <PropValue>{formData.vesselCompanyName}</PropValue>
-            </DetailItem>
-            <DetailItem>
-              <PropName>IMO No.</PropName>
-              <PropValue>{formData.imoNumber}</PropValue>
-            </DetailItem>
-            <DetailItem>
-              <PropName>HULL No.</PropName>
-              <PropValue>{formData.hullNumber}</PropValue>
-            </DetailItem>
-            <DetailItem>
-              <PropName>SHIPYARD</PropName>
-              <PropValue>{formData.shipYard}</PropValue>
-            </DetailItem>
-            <DetailItem>
-              <PropName>매출처</PropName>
-              <PropValue>{formData.customer?.companyName || "없음"}</PropValue>
-            </DetailItem>
-            <BtnWrap>
-              <UpdateButton type="button" onClick={() => setIsEditing(true)}>
+    <Modal
+      open={true}
+      onCancel={onClose}
+      footer={null}
+      title={<Title level={3}>선박 상세 정보</Title>}
+      width={700}
+    >
+      {isEditing ? (
+        <Form
+          form={form}
+          initialValues={formData}
+          layout="vertical"
+          onFinish={handleSubmit}
+        >
+          <Form.Item
+            label="코드"
+            name="code"
+            rules={[{ required: true, message: "코드를 입력하세요!" }]}
+          >
+            <Input disabled />
+          </Form.Item>
+
+          <Form.Item
+            label="선명"
+            name="vesselName"
+            rules={[{ required: true, message: "선명을 입력하세요!" }]}
+          >
+            <Input />
+          </Form.Item>
+
+          <Form.Item label="선박회사" name="vesselCompanyName">
+            <Input />
+          </Form.Item>
+
+          <Form.Item label="IMO No." name="imoNumber">
+            <Input type="number" />
+          </Form.Item>
+
+          <Form.Item label="HULL No." name="hullNumber">
+            <Input />
+          </Form.Item>
+
+          <Form.Item label="SHIPYARD" name="shipYard">
+            <Input />
+          </Form.Item>
+
+          <Form.Item
+            label="매출처"
+            name="customerCompanyName"
+            rules={[{ required: true, message: "매출처를 선택하세요!" }]}
+          >
+            <Input readOnly />
+          </Form.Item>
+
+          <Row justify="end">
+            <Col>
+              <Button
+                type="primary"
+                htmlType="submit"
+                style={{ marginRight: "8px" }}
+              >
+                저장
+              </Button>
+              <Button onClick={() => setIsEditing(false)}>취소</Button>
+            </Col>
+          </Row>
+        </Form>
+      ) : (
+        <>
+          <Form.Item>
+            <Text strong>코드:</Text> {formData.code}
+          </Form.Item>
+          <Form.Item>
+            <Text strong>선명:</Text> {formData.vesselName}
+          </Form.Item>
+          <Form.Item>
+            <Text strong>선박회사:</Text> {formData.vesselCompanyName}
+          </Form.Item>
+          <Form.Item>
+            <Text strong>IMO No.:</Text> {formData.imoNumber}
+          </Form.Item>
+          <Form.Item>
+            <Text strong>HULL No.:</Text> {formData.hullNumber}
+          </Form.Item>
+          <Form.Item>
+            <Text strong>SHIPYARD:</Text> {formData.shipYard}
+          </Form.Item>
+          <Form.Item>
+            <Text strong>매출처:</Text>{" "}
+            {formData.customer?.companyName || "없음"}
+          </Form.Item>
+          <Row justify="end">
+            <Col>
+              <Button
+                type="primary"
+                onClick={() => setIsEditing(true)}
+                style={{ marginRight: "8px" }}
+              >
                 수정
-              </UpdateButton>
-              <DeleteButton type="button" onClick={handleDelete}>
+              </Button>
+              <Button type="primary" danger onClick={handleDelete}>
                 삭제
-              </DeleteButton>
-            </BtnWrap>
-          </>
-        )}
-      </ModalContent>
-    </ModalBackdrop>
+              </Button>
+            </Col>
+          </Row>
+        </>
+      )}
+    </Modal>
   );
 };
 

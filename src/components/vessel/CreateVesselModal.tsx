@@ -1,57 +1,55 @@
-import axios from "../../api/axios";
 import React, { useState, useEffect } from "react";
+import axios from "../../api/axios";
 import styled from "styled-components";
-import { AutoComplete, Input, Button, Form } from "antd";
+import {
+  AutoComplete,
+  Input,
+  Button,
+  Form,
+  Modal,
+  Typography,
+  Row,
+  Col,
+} from "antd";
 import "antd/dist/reset.css"; // Make sure to include Ant Design styles
 
-const ModalBackdrop = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
+const { Title, Text } = Typography;
+
+const StyledModal = styled(Modal)`
+  .ant-modal-content {
+    border-radius: 8px;
+  }
+  .ant-modal-header {
+    border-bottom: none;
+    text-align: center;
+  }
+  .ant-modal-title {
+    font-size: 20px;
+    font-weight: 700;
+  }
+  .ant-modal-close {
+    top: 20px;
+    right: 20px;
+  }
+  .ant-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    border-top: none;
+  }
 `;
 
-const ModalContent = styled.div`
-  background: white;
-  padding: 30px;
-  border-radius: 8px;
-  width: 500px;
-  max-width: 90%;
-  position: relative;
-  overflow-y: auto;
-  max-height: 600px;
+const StyledForm = styled(Form)`
+  max-width: 100%;
 `;
 
-const ModalTitle = styled.div`
-  text-align: center;
-  font-size: 16px;
-  font-weight: 700;
-  padding: 15px;
-`;
-
-const CloseButton = styled.button`
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  border: none;
-  background: transparent;
-  font-size: 32px;
-  cursor: pointer;
-`;
-
-const FormGroup = styled.div`
+const FormGroup = styled(Form.Item)`
   margin-bottom: 15px;
 `;
 
-const ErrorMessage = styled.div`
+const ErrorMessage = styled(Text)`
   color: red;
   font-size: 12px;
+  display: block;
   margin-top: 5px;
 `;
 
@@ -197,147 +195,156 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
     onClose();
   };
 
-  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
-
   return (
-    <ModalBackdrop onClick={handleBackdropClick}>
-      <ModalContent>
-        <CloseButton onClick={onClose}>&times;</CloseButton>
-        <ModalTitle>신규 선박 등록</ModalTitle>
-        <Form onFinish={handleSubmit}>
-          <FormGroup>
-            <Form.Item
-              label="코드:"
+    <StyledModal
+      open={true}
+      onCancel={onClose}
+      footer={null}
+      title="신규 선박 등록"
+    >
+      <StyledForm
+        layout="vertical"
+        onFinish={handleSubmit}
+        initialValues={formData}
+      >
+        <FormGroup>
+          <Form.Item
+            label="코드:"
+            name="code"
+            validateStatus={
+              formData.code === ""
+                ? "error"
+                : !isCodeUnique
+                ? "error"
+                : "success"
+            }
+            help={
+              formData.code === ""
+                ? "코드를 입력하세요!"
+                : !isCodeUnique
+                ? "유효하지 않은 코드입니다."
+                : ""
+            }
+            rules={[{ required: true, message: "코드를 입력하세요!" }]}
+          >
+            <Input
               name="code"
-              validateStatus={
-                formData.code === ""
-                  ? "error"
-                  : !isCodeUnique
-                  ? "error"
-                  : "success"
-              }
-              help={
-                formData.code === ""
-                  ? "코드를 입력하세요!"
-                  : !isCodeUnique
-                  ? "유효하지 않은 코드입니다."
-                  : ""
-              }
-              rules={[{ required: true, message: "코드를 입력하세요!" }]}
-            >
-              <Input
-                name="code"
-                value={formData.code}
-                onChange={handleChange}
-                placeholder="BAS"
-              />
-            </Form.Item>
-          </FormGroup>
+              value={formData.code}
+              onChange={handleChange}
+              placeholder="BAS"
+            />
+          </Form.Item>
+        </FormGroup>
 
-          <FormGroup>
-            <Form.Item
-              label="선명:"
+        <FormGroup>
+          <Form.Item
+            label="선명:"
+            name="vesselName"
+            rules={[{ required: true, message: "선명을 입력하세요!" }]}
+          >
+            <Input
               name="vesselName"
-              rules={[{ required: true, message: "선명을 입력하세요!" }]}
+              value={formData.vesselName}
+              onChange={handleChange}
+              placeholder="BAS VESSEL1"
+            />
+          </Form.Item>
+        </FormGroup>
+
+        <FormGroup>
+          <Form.Item label="선박회사:" name="vesselCompanyName">
+            <Input
+              name="vesselCompanyName"
+              value={formData.vesselCompanyName}
+              onChange={handleChange}
+              placeholder="BAS KOREA"
+            />
+          </Form.Item>
+        </FormGroup>
+
+        <FormGroup>
+          <Form.Item label="IMO NO.:" name="imoNumber">
+            <Input
+              name="imoNumber"
+              value={formData.imoNumber}
+              onChange={handleChange}
+              placeholder="1234567"
+              type="number"
+            />
+          </Form.Item>
+        </FormGroup>
+
+        <FormGroup>
+          <Form.Item label="HULL No.:" name="hullNumber">
+            <Input
+              name="hullNumber"
+              value={formData.hullNumber}
+              onChange={handleChange}
+              placeholder="V001"
+            />
+          </Form.Item>
+        </FormGroup>
+
+        <FormGroup>
+          <Form.Item label="SHIPYARD:" name="shipYard">
+            <Input
+              name="shipYard"
+              value={formData.shipYard}
+              onChange={handleChange}
+              placeholder="B123"
+            />
+          </Form.Item>
+        </FormGroup>
+
+        <FormGroup>
+          <Form.Item
+            label="매출처명:"
+            name="customerName"
+            validateStatus={customerError ? "error" : ""}
+            help={customerError}
+            rules={[{ required: true, message: "매출처를 선택하세요!" }]}
+          >
+            <AutoComplete
+              onSearch={handleSearch}
+              onSelect={handleSelectCustomer}
+              value={formData.customerName}
+              placeholder="Customer Name"
+              options={customerSuggestions.map((customer) => ({
+                value: customer.companyName,
+                label: customer.companyName,
+                companyName: customer.companyName,
+                id: customer.id,
+              }))}
+              filterOption={(inputValue, option) =>
+                (option?.value as string)
+                  .toUpperCase()
+                  .includes(inputValue.toUpperCase())
+              }
             >
-              <Input
-                name="vesselName"
-                value={formData.vesselName}
-                onChange={handleChange}
-                placeholder="BAS VESSEL1"
-              />
-            </Form.Item>
-          </FormGroup>
-          <FormGroup>
-            <Form.Item label="선박회사:" name="vesselCompanyName">
-              <Input
-                name="vesselCompanyName"
-                value={formData.vesselCompanyName}
-                onChange={handleChange}
-                placeholder="BAS KOREA"
-              />
-            </Form.Item>
-          </FormGroup>
-          <FormGroup>
-            <Form.Item label="IMO NO.:" name="imoNumber">
-              <Input
-                name="imoNumber"
-                value={formData.imoNumber}
-                onChange={handleChange}
-                placeholder="1234567"
-                type="number"
-              />
-            </Form.Item>
-          </FormGroup>
-          <FormGroup>
-            <Form.Item label="HULL No.:" name="hullNumber">
-              <Input
-                name="hullNumber"
-                value={formData.hullNumber}
-                onChange={handleChange}
-                placeholder="V001"
-              />
-            </Form.Item>
-          </FormGroup>
-          <FormGroup>
-            <Form.Item label="SHIPYARD:" name="shipYard">
-              <Input
-                name="shipYard"
-                value={formData.shipYard}
-                onChange={handleChange}
-                placeholder="B123"
-              />
-            </Form.Item>
-          </FormGroup>
-          <FormGroup>
-            <Form.Item
-              label="매출처명:"
-              name="customerName"
-              rules={[{ required: true, message: "매출처를 선택하세요!" }]}
-            >
-              <AutoComplete
-                onSearch={handleSearch}
-                onSelect={handleSelectCustomer}
-                value={formData.customerName}
-                placeholder="Customer Name"
-                options={customerSuggestions.map((customer) => ({
-                  value: customer.companyName,
-                  label: customer.companyName,
-                  companyName: customer.companyName,
-                  id: customer.id,
-                }))}
-                filterOption={(inputValue, option) =>
-                  (option?.value as string)
-                    .toUpperCase()
-                    .includes(inputValue.toUpperCase())
+              <Input />
+            </AutoComplete>
+          </Form.Item>
+        </FormGroup>
+
+        <FormGroup>
+          <Row justify="end">
+            <Col>
+              <SubmitButton
+                type="primary"
+                htmlType="submit"
+                disabled={
+                  formData.customerId === undefined ||
+                  !isCodeUnique ||
+                  selectedCustomer?.companyName !== formData.customerName
                 }
               >
-                <Input />
-              </AutoComplete>
-              {customerError && <ErrorMessage>{customerError}</ErrorMessage>}
-            </Form.Item>
-          </FormGroup>
-          <FormGroup>
-            <span>선택된 매출처: {selectedCustomer?.companyName}</span>
-            <SubmitButton
-              type="primary"
-              htmlType="submit"
-              disabled={
-                formData.customerId === undefined ||
-                !isCodeUnique ||
-                selectedCustomer?.companyName !== formData.customerName
-              }
-            >
-              등록
-            </SubmitButton>
-          </FormGroup>
-        </Form>
-      </ModalContent>
-    </ModalBackdrop>
+                등록
+              </SubmitButton>
+            </Col>
+          </Row>
+        </FormGroup>
+      </StyledForm>
+    </StyledModal>
   );
 };
 

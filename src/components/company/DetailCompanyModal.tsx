@@ -1,128 +1,19 @@
 import React, { useState } from "react";
-import styled, { keyframes } from "styled-components";
-import Form from "./Form";
+import {
+  Modal,
+  Button,
+  Typography,
+  Divider,
+  message,
+  Row,
+  Col,
+  Form as AntForm,
+  Input,
+} from "antd";
 import axios from "../../api/axios";
+import styled from "styled-components";
 
-const fadeIn = keyframes`
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-`;
-
-const ModalBackdrop = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-`;
-
-const ModalContent = styled.div`
-  background: #ffffff;
-  padding: 30px;
-  border-radius: 12px;
-  width: 90%;
-  max-width: 700px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-  position: relative;
-  animation: ${fadeIn} 0.3s ease-out;
-`;
-
-const ModalTitle = styled.h2`
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 20px;
-  text-align: center;
-  color: #333;
-`;
-
-const CloseButton = styled.button`
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  border: none;
-  background: transparent;
-  font-size: 28px;
-  color: #333;
-  cursor: pointer;
-  transition: color 0.3s;
-
-  &:hover {
-    color: #e74c3c;
-  }
-`;
-
-const DetailItem = styled.div`
-  padding: 15px 0;
-  display: flex;
-  border-bottom: 1px solid #eee;
-  align-items: center;
-
-  &:last-child {
-    border-bottom: none;
-  }
-`;
-
-const PropName = styled.span`
-  font-weight: 600;
-  width: 150px;
-  color: #555;
-`;
-
-const PropValue = styled.span`
-  color: #333;
-  flex: 1;
-  word-break: break-word;
-`;
-
-const BtnWrap = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 20px;
-`;
-
-const UpdateButton = styled.button`
-  padding: 12px 24px;
-  font-size: 16px;
-  border: none;
-  background-color: ${(props) => props.theme.blue};
-  color: white;
-  border-radius: 8px;
-  cursor: pointer;
-  margin-right: 10px;
-  transition: background-color 0.3s, transform 0.3s;
-
-  &:hover {
-    background-color: ${({ disabled, theme }) =>
-      disabled ? theme.blue : theme.darkBlue};
-  }
-`;
-
-const DeleteButton = styled.button`
-  padding: 12px 24px;
-  font-size: 16px;
-  border: none;
-  background-color: #e74c3c;
-  color: white;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s, transform 0.3s;
-
-  &:hover {
-    background-color: #c0392b;
-    transform: scale(1.05);
-  }
-`;
+const { Title, Text } = Typography;
 
 interface Company {
   id: number;
@@ -144,6 +35,50 @@ interface ModalProps {
   onUpdate: () => void;
 }
 
+// 스타일 정의
+const InfoLabel = styled(Text)`
+  font-weight: 600;
+  color: #555;
+`;
+
+const InfoValue = styled(Text)`
+  color: #333;
+`;
+
+const StyledModal = styled(Modal)`
+  .ant-modal-content {
+    border-radius: 16px;
+    padding: 20px;
+  }
+
+  .ant-modal-header {
+    border-bottom: none;
+    text-align: center;
+  }
+
+  .ant-modal-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+  }
+
+  .ant-modal-close {
+    top: 20px;
+    right: 20px;
+  }
+
+  .ant-divider-horizontal {
+    margin: 12px 0;
+  }
+
+  .ant-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    border-top: none;
+    padding-top: 20px;
+  }
+`;
+
 const DetailCompanyModal = ({
   category,
   company,
@@ -152,18 +87,14 @@ const DetailCompanyModal = ({
 }: ModalProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(company);
-
-  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
+  const [loading, setLoading] = useState(false);
+  const [form] = AntForm.useForm();
 
   // 수정폼 데이터 입력 처리
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (changedValues: any) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      ...changedValues,
     });
   };
 
@@ -175,8 +106,9 @@ const DetailCompanyModal = ({
           ? `/api/customers/${formData.id}`
           : `/api/suppliers/${formData.id}`;
       await axios.put(endpoint, formData);
+      message.success("수정이 완료되었습니다.");
     } catch (error) {
-      console.log(error);
+      message.error("수정 중 오류가 발생했습니다.");
     }
   };
 
@@ -188,103 +120,203 @@ const DetailCompanyModal = ({
           ? `/api/customers/${formData.id}`
           : `/api/suppliers/${formData.id}`;
       await axios.delete(endpoint);
+      message.success("삭제가 완료되었습니다.");
     } catch (error) {
-      console.log(error);
+      message.error("삭제 중 오류가 발생했습니다.");
     }
   };
 
   // 수정 SUBMIT 비동기 처리, PUT 처리 후 FETCH
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (values: any) => {
+    setLoading(true);
     await editData();
+    setLoading(false);
     onUpdate();
     onClose();
   };
 
   // 삭제 SUBMIT 비동기 처리, DELETE 처리 후 FETCH
   const handleDelete = async () => {
-    if (window.confirm("정말 삭제하시겠습니까?")) {
-      await deleteData();
-      onUpdate();
-      onClose();
-    }
-  };
-
-  const readOnlyFields = {
-    code: true, // read-only
-    companyName: !isEditing,
-    phoneNumber: !isEditing,
-    representative: !isEditing,
-    email: !isEditing,
-    address: !isEditing,
-    communicationLanguage: !isEditing,
+    Modal.confirm({
+      title: "정말 삭제하시겠습니까?",
+      okText: "삭제",
+      okType: "danger",
+      cancelText: "취소",
+      onOk: async () => {
+        setLoading(true);
+        await deleteData();
+        setLoading(false);
+        onUpdate();
+        onClose();
+      },
+    });
   };
 
   return (
-    <ModalBackdrop onClick={handleBackdropClick}>
-      <ModalContent>
-        <CloseButton onClick={onClose}>&times;</CloseButton>
-        <ModalTitle>
-          {category === "customer" ? "매출처 상세 정보" : "매입처 상세 정보"}
-        </ModalTitle>
-        {isEditing ? (
-          <Form
-            formData={formData}
-            onChange={handleChange}
-            onSubmit={handleSubmit}
-            readOnlyFields={readOnlyFields}
-            isEditing={isEditing}
-          />
-        ) : (
-          <>
-            <DetailItem>
-              <PropName>코드</PropName>
-              <PropValue>{formData.code}</PropValue>
-            </DetailItem>
-            <DetailItem>
-              <PropName>상호명</PropName>
-              <PropValue>{formData.companyName}</PropValue>
-            </DetailItem>
-            <DetailItem>
-              <PropName>연락처</PropName>
-              <PropValue>{formData.phoneNumber}</PropValue>
-            </DetailItem>
-            <DetailItem>
-              <PropName>담당자</PropName>
-              <PropValue>{formData.representative}</PropValue>
-            </DetailItem>
-            <DetailItem>
-              <PropName>이메일</PropName>
-              <PropValue>{formData.email}</PropValue>
-            </DetailItem>
-            <DetailItem>
-              <PropName>주소</PropName>
-              <PropValue>{formData.address}</PropValue>
-            </DetailItem>
-            <DetailItem>
-              <PropName>사용 언어</PropName>
-              <PropValue>{formData.communicationLanguage}</PropValue>
-            </DetailItem>
-            <DetailItem>
-              <PropName>수정된 날짜</PropName>
-              <PropValue>{formData.modifiedAt}</PropValue>
-            </DetailItem>
-            <DetailItem>
-              <PropName>머릿글</PropName>
-              <PropValue>{formData.headerMessage}</PropValue>
-            </DetailItem>
-            <BtnWrap>
-              <UpdateButton type="button" onClick={() => setIsEditing(true)}>
-                수정
-              </UpdateButton>
-              <DeleteButton type="button" onClick={handleDelete}>
-                삭제
-              </DeleteButton>
-            </BtnWrap>
-          </>
+    <StyledModal
+      open={true}
+      onCancel={onClose}
+      footer={null}
+      title={category === "customer" ? "매출처 상세 정보" : "매입처 상세 정보"}
+    >
+      {isEditing ? (
+        <AntForm
+          form={form}
+          layout="vertical"
+          initialValues={formData}
+          onValuesChange={handleChange}
+        >
+          <Row gutter={16}>
+            <Col span={12}>
+              <AntForm.Item label="코드" name="code">
+                <Input readOnly={!isEditing} />
+              </AntForm.Item>
+            </Col>
+            <Col span={12}>
+              <AntForm.Item label="상호명" name="companyName">
+                <Input readOnly={!isEditing} />
+              </AntForm.Item>
+            </Col>
+            <Col span={12}>
+              <AntForm.Item label="연락처" name="phoneNumber">
+                <Input readOnly={!isEditing} />
+              </AntForm.Item>
+            </Col>
+            <Col span={12}>
+              <AntForm.Item label="담당자" name="representative">
+                <Input readOnly={!isEditing} />
+              </AntForm.Item>
+            </Col>
+            <Col span={12}>
+              <AntForm.Item label="이메일" name="email">
+                <Input readOnly={!isEditing} />
+              </AntForm.Item>
+            </Col>
+            <Col span={12}>
+              <AntForm.Item label="주소" name="address">
+                <Input readOnly={!isEditing} />
+              </AntForm.Item>
+            </Col>
+            <Col span={12}>
+              <AntForm.Item label="사용 언어" name="communicationLanguage">
+                <Input readOnly={!isEditing} />
+              </AntForm.Item>
+            </Col>
+            <Col span={12}>
+              <AntForm.Item label="수정된 날짜" name="modifiedAt">
+                <Input readOnly />
+              </AntForm.Item>
+            </Col>
+            <Col span={12}>
+              <AntForm.Item label="머릿글" name="headerMessage">
+                <Input readOnly={!isEditing} />
+              </AntForm.Item>
+            </Col>
+          </Row>
+
+          <Divider />
+
+          <div style={{ textAlign: "right" }}>
+            <Button
+              type="primary"
+              style={{ marginRight: 10 }}
+              onClick={handleSubmit}
+            >
+              수정
+            </Button>
+            <Button
+              type="primary"
+              danger
+              onClick={handleDelete}
+              loading={loading}
+            >
+              삭제
+            </Button>
+            <Button type="default" onClick={onClose} style={{ marginLeft: 10 }}>
+              닫기
+            </Button>
+          </div>
+        </AntForm>
+      ) : (
+        <Row gutter={[16, 16]}>
+          <Col span={8}>
+            <InfoLabel>코드:</InfoLabel>
+          </Col>
+          <Col span={16}>
+            <InfoValue>{formData.code}</InfoValue>
+          </Col>
+
+          <Col span={8}>
+            <InfoLabel>상호명:</InfoLabel>
+          </Col>
+          <Col span={16}>
+            <InfoValue>{formData.companyName}</InfoValue>
+          </Col>
+
+          <Col span={8}>
+            <InfoLabel>연락처:</InfoLabel>
+          </Col>
+          <Col span={16}>
+            <InfoValue>{formData.phoneNumber}</InfoValue>
+          </Col>
+
+          <Col span={8}>
+            <InfoLabel>담당자:</InfoLabel>
+          </Col>
+          <Col span={16}>
+            <InfoValue>{formData.representative}</InfoValue>
+          </Col>
+
+          <Col span={8}>
+            <InfoLabel>이메일:</InfoLabel>
+          </Col>
+          <Col span={16}>
+            <InfoValue>{formData.email}</InfoValue>
+          </Col>
+
+          <Col span={8}>
+            <InfoLabel>주소:</InfoLabel>
+          </Col>
+          <Col span={16}>
+            <InfoValue>{formData.address}</InfoValue>
+          </Col>
+
+          <Col span={8}>
+            <InfoLabel>사용 언어:</InfoLabel>
+          </Col>
+          <Col span={16}>
+            <InfoValue>{formData.communicationLanguage}</InfoValue>
+          </Col>
+
+          <Col span={8}>
+            <InfoLabel>수정된 날짜:</InfoLabel>
+          </Col>
+          <Col span={16}>
+            <InfoValue>{formData.modifiedAt}</InfoValue>
+          </Col>
+
+          <Col span={8}>
+            <InfoLabel>머릿글:</InfoLabel>
+          </Col>
+          <Col span={16}>
+            <InfoValue>{formData.headerMessage}</InfoValue>
+          </Col>
+        </Row>
+      )}
+
+      <Divider />
+      <div style={{ textAlign: "right" }}>
+        {!isEditing && (
+          <Button
+            type="primary"
+            style={{ marginRight: 10 }}
+            onClick={() => setIsEditing(true)}
+          >
+            수정
+          </Button>
         )}
-      </ModalContent>
-    </ModalBackdrop>
+      </div>
+    </StyledModal>
   );
 };
 

@@ -1,87 +1,18 @@
-import axios from "../../api/axios";
 import React, { useState, useEffect } from "react";
-import styled from "styled-components";
+import {
+  Modal,
+  Form as AntForm,
+  Input,
+  Button,
+  Typography,
+  Row,
+  Col,
+  Spin,
+  notification,
+} from "antd";
+import axios from "../../api/axios";
 
-const ModalBackdrop = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-`;
-
-const ModalContent = styled.div`
-  background: white;
-  padding: 30px;
-  border-radius: 8px;
-  width: 500px;
-  max-width: 90%;
-  position: relative;
-`;
-
-const ModalTitle = styled.div`
-  text-align: center;
-  font-size: 16px;
-  font-weight: 700;
-  padding: 15px;
-`;
-
-const CloseButton = styled.button`
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  border: none;
-  background: transparent;
-  font-size: 32px;
-  cursor: pointer;
-`;
-
-const FormGroup = styled.div`
-  margin-bottom: 15px;
-`;
-
-const Label = styled.label`
-  display: block;
-  margin-bottom: 5px;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 8px 0;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-`;
-
-const ErrorMessage = styled.div`
-  color: red;
-  font-size: 12px;
-  margin-top: 5px;
-`;
-
-const SubmitButton = styled.button<{ disabled: boolean }>`
-  padding: 10px 20px;
-  font-size: 16px;
-  border: none;
-  background-color: ${(props) => props.theme.blue};
-  color: white;
-  border-radius: 4px;
-  cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
-  display: block;
-  margin-left: auto;
-  transition: background-color 0.3s, opacity 0.3s;
-
-  opacity: ${({ disabled }) => (disabled ? 0.5 : 1)};
-
-  &:hover {
-    background-color: ${({ disabled, theme }) =>
-      disabled ? theme.blue : theme.darkBlue};
-  }
-`;
+const { Title, Text } = Typography;
 
 interface ModalProps {
   category: string;
@@ -92,26 +23,16 @@ interface ModalProps {
 const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
   const todayDate = new Date().toLocaleDateString("en-CA");
 
-  const [formData, setFormData] = useState({
-    code: "",
-    name: "",
-    contact: "",
-    manager: "",
-    email: "",
-    language: "",
-    address: "",
-    date: todayDate,
-    headerMessage: "",
-  });
-
+  const [form] = AntForm.useForm();
   const [isCodeUnique, setIsCodeUnique] = useState(true);
   const [isCheckingCode, setIsCheckingCode] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+  const handleChange = (changedValues: any) => {
+    const { code } = changedValues;
+    if (code !== undefined) {
+      checkCodeUnique(code);
+    }
   };
 
   const debounce = <T extends (...args: any[]) => void>(
@@ -125,8 +46,8 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
     };
   };
 
-  const checkCodeUnique = debounce(async () => {
-    if (formData.code.trim() === "") {
+  const checkCodeUnique = debounce(async (code: string) => {
+    if (code.trim() === "") {
       setIsCodeUnique(true);
       return;
     }
@@ -134,9 +55,8 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
     try {
       const endpoint =
         category === "customer"
-          ? `/api/customers/check-code/${formData.code}`
-          : `/api/suppliers/check-code/${formData.code}`;
-
+          ? `/api/customers/check-code/${code}`
+          : `/api/suppliers/check-code/${code}`;
       const response = await axios.get(endpoint);
       setIsCodeUnique(!response.data); // 응답 T/F를 반전시킴
     } catch (error) {
@@ -147,148 +67,129 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
     }
   }, 200);
 
-  useEffect(() => {
-    checkCodeUnique();
-  }, [formData.code]);
-
-  const postCreate = async () => {
+  const postCreate = async (values: any) => {
     try {
+      setLoading(true);
       const endpoint =
         category === "customer" ? "/api/customers" : "/api/suppliers";
-      const response = await axios.post(endpoint, {
-        code: formData.code,
-        companyName: formData.name,
-        phoneNumber: formData.contact,
-        representative: formData.manager,
-        email: formData.email,
-        address: formData.address,
-        communicationLanguage: formData.language,
+      await axios.post(endpoint, {
+        code: values.code,
+        companyName: values.name,
+        phoneNumber: values.contact,
+        representative: values.manager,
+        email: values.email,
+        address: values.address,
+        communicationLanguage: values.language,
       });
+      notification.success({
+        message: "등록 완료",
+        description: "회사가 성공적으로 등록되었습니다.",
+      });
+      onUpdate();
+      onClose();
     } catch (error) {
       console.error("Error posting data:", error);
+      notification.error({
+        message: "등록 실패",
+        description: "회사를 등록하는 중 오류가 발생했습니다.",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handlePostClick = async () => {
+  const handleSubmit = async (values: any) => {
     if (!isCodeUnique) return; // 코드가 유효하지 않으면 제출하지 않음
-    await postCreate();
-    onUpdate();
-    onClose();
-  };
-
-  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
+    await postCreate(values);
   };
 
   return (
-    <ModalBackdrop onClick={handleBackdropClick}>
-      <ModalContent>
-        <CloseButton onClick={onClose}>&times;</CloseButton>
-        <ModalTitle>
-          {category === "customer"
-            ? "신규 매출처 등록"
-            : category === "supplier"
-            ? "신규 매입처 등록"
-            : "등록"}
-        </ModalTitle>
-        <div>
-          <FormGroup>
-            <Label htmlFor="code">코드:</Label>
-            <Input
-              id="code"
+    <Modal
+      visible={true}
+      title={
+        category === "customer"
+          ? "신규 매출처 등록"
+          : category === "supplier"
+          ? "신규 매입처 등록"
+          : "등록"
+      }
+      onCancel={onClose}
+      footer={null}
+      width={600}
+    >
+      <AntForm
+        form={form}
+        layout="vertical"
+        onValuesChange={handleChange}
+        onFinish={handleSubmit}
+      >
+        <Row gutter={16}>
+          <Col span={24}>
+            <AntForm.Item
+              label="코드"
               name="code"
-              value={formData.code}
-              onChange={handleChange}
-              placeholder="BAS"
-              required
-            />
-            {!isCodeUnique && (
-              <ErrorMessage>이미 등록된 코드입니다.</ErrorMessage>
-            )}
-          </FormGroup>
-          <FormGroup>
-            <Label htmlFor="name">상호명:</Label>
-            <Input
-              id="name"
+              rules={[{ required: true, message: "코드를 입력하세요!" }]}
+            >
+              <Input placeholder="BAS" />
+              {!isCodeUnique && (
+                <Text type="danger">이미 등록된 코드입니다.</Text>
+              )}
+            </AntForm.Item>
+          </Col>
+          <Col span={24}>
+            <AntForm.Item
+              label="상호명"
               name="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="바스코리아"
-              required
-            />
-          </FormGroup>
-          <FormGroup>
-            <Label htmlFor="contact">연락처:</Label>
-            <Input
-              id="contact"
-              name="contact"
-              value={formData.contact}
-              onChange={handleChange}
-              placeholder="051-123-4567"
-            />
-          </FormGroup>
-          <FormGroup>
-            <Label htmlFor="manager">담당자:</Label>
-            <Input
-              id="manager"
-              name="manager"
-              value={formData.manager}
-              onChange={handleChange}
-              placeholder="김바스"
-            />
-          </FormGroup>
-          <FormGroup>
-            <Label htmlFor="email">이메일:</Label>
-            <Input
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="info@bas-korea.com"
-            />
-          </FormGroup>
-          <FormGroup>
-            <Label htmlFor="address">주소:</Label>
-            <Input
-              id="address"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              placeholder="부산광역시 해운대구"
-            />
-          </FormGroup>
-          <FormGroup>
-            <Label htmlFor="language">사용 언어:</Label>
-            <Input
-              id="language"
-              name="language"
-              value={formData.language}
-              onChange={handleChange}
-              placeholder="KOR"
-            />
-          </FormGroup>
-          <FormGroup>
-            <Label htmlFor="headerMessage">머릿글</Label>
-            <Input
-              id="headerMessage"
-              name="headerMessage"
-              value={formData.headerMessage}
-              onChange={handleChange}
-              placeholder="귀사의 무궁한 발전을 기원합니다."
-            />
-          </FormGroup>
-          <SubmitButton
-            type="button" // 타입을 button으로 변경
-            disabled={!isCodeUnique || isCheckingCode}
-            onClick={handlePostClick} // 클릭 시 POST 요청 처리
-          >
-            등록
-          </SubmitButton>
-        </div>
-      </ModalContent>
-    </ModalBackdrop>
+              rules={[{ required: true, message: "상호명을 입력하세요!" }]}
+            >
+              <Input placeholder="바스코리아" />
+            </AntForm.Item>
+          </Col>
+          <Col span={24}>
+            <AntForm.Item label="연락처" name="contact">
+              <Input placeholder="051-123-4567" />
+            </AntForm.Item>
+          </Col>
+          <Col span={24}>
+            <AntForm.Item label="담당자" name="manager">
+              <Input placeholder="김바스" />
+            </AntForm.Item>
+          </Col>
+          <Col span={24}>
+            <AntForm.Item label="이메일" name="email">
+              <Input placeholder="info@bas-korea.com" />
+            </AntForm.Item>
+          </Col>
+          <Col span={24}>
+            <AntForm.Item label="주소" name="address">
+              <Input placeholder="부산광역시 해운대구" />
+            </AntForm.Item>
+          </Col>
+          <Col span={24}>
+            <AntForm.Item label="사용 언어" name="language">
+              <Input placeholder="KOR" />
+            </AntForm.Item>
+          </Col>
+          <Col span={24}>
+            <AntForm.Item label="머릿글" name="headerMessage">
+              <Input placeholder="귀사의 무궁한 발전을 기원합니다." />
+            </AntForm.Item>
+          </Col>
+          <Col span={24}>
+            <AntForm.Item>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={loading}
+                disabled={!isCodeUnique || isCheckingCode}
+              >
+                등록
+              </Button>
+            </AntForm.Item>
+          </Col>
+        </Row>
+      </AntForm>
+    </Modal>
   );
 };
 
