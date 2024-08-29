@@ -81,7 +81,9 @@ const MakeInquiryTable = ({
   addItem,
 }: MakeInquiryTableProps) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
-  console.log(items);
+
+  // 입력된 단위들을 저장하는 상태 변수 추가
+  const [unitOptions, setUnitOptions] = useState<string[]>(["PCS", "SET"]);
 
   const handleApplyExcelData = (mappedItems: InquiryItem[]) => {
     setItems((prevItems) => [
@@ -156,6 +158,25 @@ const MakeInquiryTable = ({
     }
   };
 
+  const handleUnitBlur = (index: number, value: string) => {
+    handleInputChange(index, "unit", value);
+
+    // 새로운 단위가 입력되었을 경우, 단위 리스트에 추가
+    setUnitOptions((prevOptions) =>
+      prevOptions.includes(value) ? prevOptions : [...prevOptions, value]
+    );
+  };
+
+  // 일괄 단위 적용
+  const applyUnitToAllRows = (selectedUnit: string) => {
+    setItems((prevItems) =>
+      prevItems.map((item) => ({
+        ...item,
+        unit: selectedUnit,
+      }))
+    );
+  };
+
   const columns: ColumnsType<any> = [
     {
       title: "No.",
@@ -211,6 +232,34 @@ const MakeInquiryTable = ({
       width: 100,
     },
     {
+      title: (
+        <div>
+          <Select
+            placeholder="단위"
+            onChange={applyUnitToAllRows}
+            style={{ width: "100%" }}
+          >
+            {unitOptions.map((unit) => (
+              <Option key={unit} value={unit}>
+                {unit}
+              </Option>
+            ))}
+          </Select>
+        </div>
+      ),
+      dataIndex: "unit",
+      key: "unit",
+      render: (text: string, record: InquiryItem, index: number) =>
+        record.itemType === "ITEM" ? (
+          <Input
+            value={text}
+            onBlur={(e) => handleUnitBlur(index, e.target.value)}
+            onChange={(e) => handleInputChange(index, "unit", e.target.value)}
+          />
+        ) : null,
+      width: 100,
+    },
+    {
       title: "품명",
       dataIndex: "itemName",
       key: "itemName",
@@ -231,28 +280,17 @@ const MakeInquiryTable = ({
       title: "수량",
       dataIndex: "qty",
       key: "qty",
-      render: (text: number, record: InquiryItem, index: number) => (
-        <Input
-          type="number"
-          value={text}
-          onChange={(e) => {
-            const value = parseInt(e.target.value, 10);
-            handleInputChange(index, "qty", isNaN(value) ? 0 : value);
-          }}
-        />
-      ),
-      width: 100,
-    },
-    {
-      title: "단위",
-      dataIndex: "unit",
-      key: "unit",
-      render: (text: string, record: InquiryItem, index: number) => (
-        <Input
-          value={text}
-          onChange={(e) => handleInputChange(index, "unit", e.target.value)}
-        />
-      ),
+      render: (text: number, record: InquiryItem, index: number) =>
+        record.itemType === "ITEM" ? (
+          <Input
+            type="number"
+            value={text}
+            onChange={(e) => {
+              const value = parseInt(e.target.value, 10);
+              handleInputChange(index, "qty", isNaN(value) ? 0 : value);
+            }}
+          />
+        ) : null,
       width: 100,
     },
     {
