@@ -38,6 +38,7 @@ interface PDFDocumentProps {
   pdfHeader: string;
   supplierName: string; // 개별 공급자 이름
   viewMode: boolean;
+  language: string;
 }
 
 // 스타일 정의
@@ -147,6 +148,7 @@ const PDFDocument = ({
   pdfHeader,
   supplierName,
   viewMode,
+  language,
 }: PDFDocumentProps) => {
   const headerMessage = pdfHeader;
   let itemIndex = 0;
@@ -171,7 +173,9 @@ const PDFDocument = ({
               </View>
             </View>
             <View style={styles.section}>
-              <Text style={styles.title}>견 적 의 뢰 서</Text>
+              <Text style={styles.title}>
+                {language === "KOR" ? "견 적 의 뢰 서" : "I N Q U I R Y"}
+              </Text>
             </View>
             <View style={styles.inquiryInfoWrap}>
               <View style={styles.inquiryInfoColumn}>
@@ -192,10 +196,10 @@ const PDFDocument = ({
                 style={[styles.inquiryInfoColumn, { alignItems: "flex-end" }]}
               >
                 <Text style={styles.inquiryInfoText}>
-                  OUR REF No: {formValues.refNumber}
+                  OUR REF No: {formValues.docNumber}
                 </Text>
                 <Text style={styles.inquiryInfoText}>
-                  DATE: {dayjs(formValues.registerDate).format("YYYY-MM-DD")}
+                  DATE: {dayjs().format("YYYY-MM-DD")}
                 </Text>
               </View>
             </View>

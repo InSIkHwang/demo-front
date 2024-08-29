@@ -136,6 +136,7 @@ const MakeInquiry = () => {
   const [mailDataList, setMailDataList] = useState<MailData[]>([]);
   const [loadMailData, setLoadMailData] = useState<boolean>(false);
   const [isDuplicate, setIsDuplicate] = useState<boolean>(false);
+  const [language, setLanguage] = useState<string>("KOR");
 
   // Load document data
   const loadDocData = useCallback(async () => {
@@ -543,7 +544,6 @@ const MakeInquiry = () => {
     });
   };
 
-
   const handleSupplierSelect = (
     value: string,
     option: { value: string; id: number; code: string; email: string }
@@ -597,6 +597,9 @@ const MakeInquiry = () => {
   if (docDataloading) {
     return <LoadingSpinner />;
   }
+  const handleLanguageChange = (value: string) => {
+    setLanguage(value);
+  };
 
   return (
     <FormContainer>
@@ -696,6 +699,15 @@ const MakeInquiry = () => {
         >
           PDF 미리보기
         </Button>
+        <span style={{ marginLeft: 20 }}>LANGUAGE: </span>
+        <Select
+          style={{ width: 100, float: "left", marginLeft: 10 }}
+          value={language}
+          onChange={handleLanguageChange}
+        >
+          <Select.Option value="KOR">KOR</Select.Option>
+          <Select.Option value="ENG">ENG</Select.Option>
+        </Select>
         <HeaderEditModal
           open={headerEditModalVisible}
           onClose={handleCloseHeaderModal}
@@ -712,6 +724,7 @@ const MakeInquiry = () => {
         vesselInfo={selectedVessel}
         pdfHeader={pdfHeader}
         setMailDataList={setMailDataList}
+        language={language}
       />
       {showPDFPreview && (
         <PDFDocument
@@ -721,6 +734,7 @@ const MakeInquiry = () => {
           vesselInfo={selectedVessel}
           pdfHeader={pdfHeader}
           viewMode={true}
+          language={language}
         />
       )}
     </FormContainer>
