@@ -465,16 +465,13 @@ const MakeInquiry = () => {
     // });
   };
 
-  const handleItemCodeChange = async (
-    index: number,
-    value: string
-  ): Promise<{ itemId: number | null; itemName: string }> => {
+  const handleItemCodeChange = async (index: number, value: string) => {
     handleInputChange(index, "itemCode", value);
 
     if (value.trim() === "") {
       // itemCode가 비어있을 경우 itemId를 초기화
       updateItemId(index, null);
-      return { itemId: null, itemName: "" };
+      return;
     }
 
     try {
@@ -522,21 +519,17 @@ const MakeInquiry = () => {
       ]);
 
       // itemName 업데이트
-      const updatedItemName = newItemNameMap[value] || "";
-      handleInputChange(index, "itemName", updatedItemName);
+      if (newItemNameMap[value]) {
+        handleInputChange(index, "itemName", newItemNameMap[value]);
+      }
 
       // itemId 업데이트
       const newItemId = newItemIdMap[value] ?? null;
       updateItemId(index, newItemId);
-
-      // itemId와 itemName 반환
-      return { itemId: newItemId, itemName: updatedItemName };
     } catch (error) {
       console.error("Error fetching item codes and suppliers:", error);
-      return { itemId: null, itemName: "" };
     }
   };
-  
 
   // itemId 업데이트를 별도의 함수로 분리
   const updateItemId = (index: number, itemId: number | null) => {

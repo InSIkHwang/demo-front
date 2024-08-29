@@ -25,10 +25,7 @@ const { Option } = Select;
 interface MakeInquiryTableProps {
   items: InquiryItem[];
   handleInputChange: (index: number, key: string, value: any) => void;
-  handleItemCodeChange: (
-    index: number,
-    value: string
-  ) => Promise<{ itemId: number | null; itemName: string }>; // 반환 타입 명시
+  handleItemCodeChange: (index: number, value: string) => void;
   itemCodeOptions: { value: string }[];
   handleDelete: (index: number) => void;
   setIsDuplicate: Dispatch<SetStateAction<boolean>>;
@@ -84,17 +81,16 @@ const MakeInquiryTable = ({
   addItem,
 }: MakeInquiryTableProps) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  console.log(items);
 
   const handleApplyExcelData = (mappedItems: InquiryItem[]) => {
-    console.log("Mapped Items:", mappedItems);
-    setItems((prevItems) => {
-      const newItems = mappedItems.map((item, idx) => ({
+    setItems((prevItems) => [
+      ...prevItems,
+      ...mappedItems.map((item, idx) => ({
         ...item,
         position: prevItems.length + idx + 1, // position 값 설정
-      }));
-      console.log("New Items to be added:", newItems);
-      return [...prevItems, ...newItems];
-    });
+      })),
+    ]);
     setIsModalVisible(false);
   };
 
@@ -326,7 +322,6 @@ const MakeInquiryTable = ({
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         onApply={handleApplyExcelData}
-        handleItemCodeChange={handleItemCodeChange}
       />
     </>
   );
