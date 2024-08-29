@@ -8,14 +8,20 @@ interface ExcelUploadModalProps {
   open: boolean;
   onCancel: () => void;
   onApply: (mappedItems: InquiryItem[]) => void;
+  handleItemCodeChange: (
+    index: number,
+    value: string
+  ) => Promise<{ itemId: number | null; itemName: string }>; // 반환 타입 명시
 }
 
 const ExcelUploadModal = ({
   open,
   onCancel,
   onApply,
+  handleItemCodeChange,
 }: ExcelUploadModalProps) => {
   const [excelData, setExcelData] = useState<InquiryItem[]>([]);
+  const [rawExcelData, setRawExcelData] = useState<any[][]>([]);
 
   const handleExcelUpload = (file: any) => {
     const reader = new FileReader();
@@ -26,26 +32,48 @@ const ExcelUploadModal = ({
       const jsonData = XLSX.utils.sheet_to_json(firstSheet, {
         header: 1,
       }) as any[][];
-
-      // 엑셀 데이터에서 속성명이 고정된 형식을 사용하여 데이터 추출
-      const dataArray = jsonData.slice(1).map((row: any[], index: number) => ({
-        position: index + 1, // position 속성
-        itemCode: row[0] || "", // itemCode 속성
-        itemType: "ITEM" as "ITEM", // itemType은 고정값 'ITEM'
-        itemName: row[1] || "", // itemName 속성
-        qty: parseInt(row[2], 10) || 0, // qty 속성
-        unit: row[3] || "", // unit 속성
-        itemRemark: row[4] || "", // itemRemark 속성
-      }));
-
-      setExcelData(dataArray);
+      setRawExcelData(jsonData.slice(1)); // 첫 번째 행은 헤더이므로 제외
     };
     reader.readAsArrayBuffer(file);
     return false;
   };
 
-  const handleApplyExcelData = () => {
-    onApply(excelData);
+  const processExcelData = async () => {
+    const processedData = await Promise.all(
+      rawExcelData.map(async (row: any[], index: number) => {
+        const itemCode = row[0] || "";
+        let itemName = row[1] || "";
+        const qty = parseInt(row[2], 10) || 0;
+        const unit = row[3] || "";
+        const itemRemark = row[4] || "";
+
+        let itemId: number | null = null;
+
+        if (itemCode) {
+          const result = await handleItemCodeChange(index, itemCode);
+          itemId = result.itemId;
+          itemName = result.itemName || itemName;
+        }
+
+        return {
+          position: index + 1,
+          itemCode,
+          itemType: "ITEM" as "ITEM",
+          itemName,
+          qty,
+          unit,
+          itemRemark,
+          itemId,
+        };
+      })
+    );
+    setExcelData(processedData);
+    return processedData;
+  };
+
+  const handleOk = async () => {
+    const dataToApply = await processExcelData();
+    onApply(dataToApply); // 최종 데이터 전달
   };
 
   return (
@@ -53,7 +81,7 @@ const ExcelUploadModal = ({
       title="엑셀 파일 불러오기"
       open={open}
       onCancel={onCancel}
-      onOk={handleApplyExcelData}
+      onOk={handleOk} // `handleOk` 함수 사용
       okText="적용"
       cancelText="취소"
       width={1000}
@@ -61,9 +89,16 @@ const ExcelUploadModal = ({
       <Upload beforeUpload={handleExcelUpload} accept=".xlsx, .xls">
         <Button icon={<UploadOutlined />}>엑셀 파일 선택</Button>
       </Upload>
-      {excelData.length > 0 && (
+      {rawExcelData.length > 0 && (
         <Table
-          dataSource={excelData}
+          dataSource={rawExcelData.map((row, index) => ({
+            position: index + 1,
+            itemCode: row[0],
+            itemName: row[1],
+            qty: row[2],
+            unit: row[3],
+            itemRemark: row[4],
+          }))}
           columns={[
             { title: "No.", dataIndex: "position", key: "position" },
             { title: "Item Code", dataIndex: "itemCode", key: "itemCode" },
