@@ -121,6 +121,7 @@ export interface emailSendData {
   content: string;
   ccRecipient?: string | null;
   bccRecipient?: string | null;
+  supplierName: string;
 }
 
 export interface SupplierInquiryListIF {

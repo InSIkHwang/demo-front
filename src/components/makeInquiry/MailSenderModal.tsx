@@ -9,6 +9,8 @@ import {
   Card,
   Checkbox,
   Upload,
+  List,
+  Tag,
 } from "antd";
 import { SendOutlined, MailOutlined } from "@ant-design/icons";
 import { UploadOutlined } from "@ant-design/icons";
@@ -100,6 +102,18 @@ const MailSenderModal = ({
     new Set()
   );
 
+  const filteredFileData = fileData.filter((file) => {
+    return !selectedSupplierTag.some(
+      (tag) =>
+        file.name.startsWith(
+          `${tag.name} REQUEST FOR QUOTATION ${inquiryFormValues.refNumber}.pdf`
+        ) ||
+        file.name.startsWith(
+          `${tag.name} 견적의뢰서 ${inquiryFormValues.refNumber}.pdf`
+        )
+    );
+  });
+
   useEffect(() => {
     form.setFieldsValue({
       docNumber: inquiryFormValues.docNumber,
@@ -177,6 +191,16 @@ const MailSenderModal = ({
     return false;
   };
 
+  const handleFileRemove = (fileIndex: number) => {
+    setFileData((prevFileData) => {
+      // 파일 목록에서 선택된 파일을 제거
+      const updatedFileData = prevFileData.filter(
+        (_, index) => index !== fileIndex
+      );
+      return updatedFileData;
+    });
+  };
+
   const tabsItems = currentMailDataList.map((mailData, index) => ({
     key: index.toString(),
     label: `${selectedSupplierTag[index]?.name || ` ${index + 1}`}`,
@@ -214,6 +238,23 @@ const MailSenderModal = ({
           >
             <Button icon={<UploadOutlined />}>파일 업로드</Button>
           </Upload>
+          <Checkbox style={{ marginLeft: 15 }}>
+            PDF 파일 자동 업로드(PdfFileName)
+          </Checkbox>
+          {fileData.length > 0 && (
+            <div style={{ marginTop: "16px" }}>
+              {filteredFileData.map((file, fileIndex) => (
+                <Tag
+                  key={fileIndex}
+                  closable
+                  onClose={() => handleFileRemove(fileIndex)}
+                  style={{ marginBottom: "8px" }}
+                >
+                  {file.name}
+                </Tag>
+              ))}
+            </div>
+          )}
         </StyledFormItem>
       </StyledCard>
     ),

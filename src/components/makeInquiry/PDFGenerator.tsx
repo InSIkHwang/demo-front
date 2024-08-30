@@ -97,6 +97,7 @@ const PDFGenerator = ({
                 vesselInfo?.hullNumber || ""
               }\nShip Yard: ${vesselInfo?.shipYard || ""}`,
         ccRecipient: "",
+        supplierName: supplierTag.name,
       };
 
       mailDataList.push(mailData);

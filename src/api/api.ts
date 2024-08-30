@@ -219,6 +219,7 @@ export const sendInquiryMail = async (
     content: string;
     ccRecipient: string;
     bccRecipient: string;
+    supplierName: string;
   }[]
 ) => {
   // FormData 객체 생성
