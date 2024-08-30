@@ -1,7 +1,7 @@
 import React, { Dispatch, SetStateAction, useEffect } from "react";
 import { pdf } from "@react-pdf/renderer";
 import PDFDocument from "./PDFDocument";
-import { InquiryItem, MailData, VesselList } from "../../types/types";
+import { emailSendData, InquiryItem, VesselList } from "../../types/types";
 import dayjs from "dayjs";
 
 interface FormValues {
@@ -28,8 +28,10 @@ interface PDFGeneratorProps {
   items: InquiryItem[];
   vesselInfo: VesselList | null;
   pdfHeader: string;
-  setMailDataList: Dispatch<SetStateAction<MailData[]>>;
+  setMailDataList: Dispatch<SetStateAction<emailSendData[]>>;
   language: string;
+  fileData: File[];
+  setFileData: Dispatch<SetStateAction<File[]>>;
 }
 
 const PDFGenerator = ({
@@ -40,9 +42,12 @@ const PDFGenerator = ({
   pdfHeader,
   setMailDataList,
   language,
+  fileData,
+  setFileData,
 }: PDFGeneratorProps) => {
   const generateAndSendPDFs = async () => {
-    const mailDataList: MailData[] = [];
+    const mailDataList: emailSendData[] = [];
+    const updatedFiles: File[] = [];
 
     for (const supplierTag of selectedSupplierTag) {
       const doc = (
@@ -58,9 +63,19 @@ const PDFGenerator = ({
       );
 
       const pdfBlob = await pdf(doc).toBlob();
-      const pdfBase64 = await convertBlobToBase64(pdfBlob);
+      const fileName =
+        language === "ENG"
+          ? `${supplierTag.name} REQUEST FOR QUOTATION ${formValues.refNumber}.pdf`
+          : `${supplierTag.name} 견적의뢰서 ${formValues.refNumber}.pdf`;
+      const newFile = new File([pdfBlob], fileName, {
+        type: "application/pdf",
+      });
 
-      const mailData: MailData = {
+      // 최종 파일 리스트에 저장
+      updatedFiles.push(newFile);
+
+      // 메일 데이터 생성
+      const mailData: emailSendData = {
         supplierId: supplierTag.id,
         toRecipient: supplierTag.email,
         subject:
@@ -69,7 +84,7 @@ const PDFGenerator = ({
             : `BASKOREA 견적의뢰  ${formValues.docNumber}  ${formValues.vesselName}`,
         content:
           language === "ENG"
-            ? `<URGENT>\nGood day,\nThanks for your cooperation\nPlease give us your best price and delivery time.\nYpur kind reply will be much appreciated \n\n<VESSEL INFO>\nVESSEL: ${
+            ? `<URGENT>\nGood day,\nThanks for your cooperation\nPlease give us your best price and delivery time.\nYour kind reply will be much appreciated \n\n<VESSEL INFO>\nVESSEL: ${
                 vesselInfo?.vesselName
               }\nIMO No: ${vesselInfo?.imoNumber || ""}\nHull No: ${
                 vesselInfo?.hullNumber || ""
@@ -82,26 +97,16 @@ const PDFGenerator = ({
                 vesselInfo?.hullNumber || ""
               }\nShip Yard: ${vesselInfo?.shipYard || ""}`,
         ccRecipient: "",
-        attachments: [
-          {
-            fileName: `document${formValues.refNumber}_${supplierTag.name}.pdf`,
-            content: pdfBase64,
-            contentType: "application/pdf",
-          },
-        ],
       };
+
       mailDataList.push(mailData);
     }
-    setMailDataList(mailDataList);
-  };
 
-  const convertBlobToBase64 = (blob: Blob): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
+    // 모든 루프가 끝난 후 최종 파일 리스트를 상태에 저장
+    setFileData(updatedFiles);
+
+    // 최종 메일 데이터 리스트 상태에 저장
+    setMailDataList(mailDataList);
   };
 
   useEffect(() => {

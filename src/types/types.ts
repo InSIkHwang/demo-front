@@ -114,18 +114,13 @@ export interface Inquiry {
   inquiryItemDetails: InquiryItem[];
 }
 
-export interface MailData {
+export interface emailSendData {
   supplierId: number;
   toRecipient: string;
   subject: string;
   content: string;
   ccRecipient?: string | null;
   bccRecipient?: string | null;
-  attachments: {
-    fileName: string;
-    content: string;
-    contentType: string;
-  }[];
 }
 
 export interface SupplierInquiryListIF {

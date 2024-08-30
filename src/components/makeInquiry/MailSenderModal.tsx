@@ -14,7 +14,7 @@ import { SendOutlined, MailOutlined } from "@ant-design/icons";
 import { UploadOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 import { sendInquiryMail } from "../../api/api";
-import { MailData } from "../../types/types";
+import { emailSendData } from "../../types/types";
 import dayjs from "dayjs";
 import { CheckboxChangeEvent } from "antd/es/checkbox";
 
@@ -76,8 +76,10 @@ const MailSenderModal = ({
   handleSubmit,
   setIsMailSenderVisible,
   selectedSupplierTag,
+  fileData,
+  setFileData,
 }: {
-  mailDataList: MailData[];
+  mailDataList: emailSendData[];
   inquiryFormValues: FormValue;
   handleSubmit: () => Promise<unknown>;
   setIsMailSenderVisible: Dispatch<SetStateAction<boolean>>;
@@ -87,6 +89,8 @@ const MailSenderModal = ({
     code: string;
     email: string;
   }[];
+  fileData: File[];
+  setFileData: Dispatch<SetStateAction<File[]>>;
 }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -149,8 +153,8 @@ const MailSenderModal = ({
           ...values.mails[index],
         }));
 
-        // 선택된 의뢰처에 메일 전송
-        await sendInquiryMail(values.docNumber, mailDataToSend);
+        // `fileData`와 함께 `sendInquiryMail` 호출
+        await sendInquiryMail(values.docNumber, fileData, mailDataToSend);
 
         message.success("선택된 이메일이 성공적으로 전송되었습니다!");
       } else {
@@ -165,27 +169,11 @@ const MailSenderModal = ({
   };
 
   const handleFileUpload = (file: any, index: number) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const fileData = {
-        fileName: file.name,
-        content: reader.result as string,
-        contentType: file.type,
-      };
+    const fileDataItem = file;
 
-      setCurrentMailDataList((prevMailDataList) => {
-        const updatedMailData = [...prevMailDataList];
-        updatedMailData[index] = {
-          ...updatedMailData[index],
-          attachments: [
-            ...(updatedMailData[index].attachments || []),
-            fileData,
-          ],
-        };
-        return updatedMailData;
-      });
-    };
-    reader.readAsDataURL(file);
+    // `fileData` 배열에 파일 추가
+    setFileData((prevFileData: any) => [...prevFileData, fileDataItem]);
+
     return false;
   };
 
@@ -226,13 +214,6 @@ const MailSenderModal = ({
           >
             <Button icon={<UploadOutlined />}>파일 업로드</Button>
           </Upload>
-          <AttachmentList>
-            {mailData.attachments.map((attachment, attachIndex) => (
-              <AttachmentItem key={attachIndex}>
-                {attachment.fileName}
-              </AttachmentItem>
-            ))}
-          </AttachmentList>
         </StyledFormItem>
       </StyledCard>
     ),

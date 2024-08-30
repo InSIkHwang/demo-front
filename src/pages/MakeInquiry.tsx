@@ -16,7 +16,7 @@ import {
   Inquiry,
   InquiryItem,
   InquiryListSupplier,
-  MailData,
+  emailSendData,
   VesselList,
 } from "../types/types";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
@@ -133,10 +133,11 @@ const MakeInquiry = () => {
   const [pdfHeader, setPdfHeader] = useState<string>("");
   const [formValues, setFormValues] = useState(INITIAL_FORM_VALUES);
   const [isMailSenderVisible, setIsMailSenderVisible] = useState(false);
-  const [mailDataList, setMailDataList] = useState<MailData[]>([]);
+  const [mailDataList, setMailDataList] = useState<emailSendData[]>([]);
   const [loadMailData, setLoadMailData] = useState<boolean>(false);
   const [isDuplicate, setIsDuplicate] = useState<boolean>(false);
   const [language, setLanguage] = useState<string>("KOR");
+  const [fileData, setFileData] = useState<File[]>([]);
 
   // Load document data
   const loadDocData = useCallback(async () => {
@@ -445,7 +446,6 @@ const MakeInquiry = () => {
     if (isEditMode) {
       requestData.documentNumber = formValues.docNumber;
     }
-    console.log(requestData);
 
     // Submit the inquiry and get the response
     const response = await submitInquiry(
@@ -662,6 +662,8 @@ const MakeInquiry = () => {
           handleSubmit={handleSubmit}
           setIsMailSenderVisible={setIsMailSenderVisible}
           selectedSupplierTag={selectedSupplierTag}
+          fileData={fileData}
+          setFileData={setFileData}
         />
       </Modal>
       <div
@@ -726,6 +728,8 @@ const MakeInquiry = () => {
         pdfHeader={pdfHeader}
         setMailDataList={setMailDataList}
         language={language}
+        fileData={fileData}
+        setFileData={setFileData}
       />
       {showPDFPreview && (
         <PDFDocument

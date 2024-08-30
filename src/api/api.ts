@@ -4,10 +4,10 @@ import { AxiosError } from "axios";
 
 import {
   Customer,
+  emailSendData,
   Inquiry,
   Item,
   ItemDataType,
-  MailData,
   Supplier,
   SupplierInquiryListIF,
 } from "../types/types";
@@ -209,14 +209,38 @@ export const searchInquiryList = async (
   return response.data;
 };
 
-//Inquiry 메일 발송
 export const sendInquiryMail = async (
   docNumber: string,
-  mailData: MailData[]
+  files: File[], // `file`의 타입에 맞게 구체화할 수 있습니다 (예: File, Blob)
+  emailSendData: {
+    supplierId: number;
+    toRecipient: string;
+    subject: string;
+    content: string;
+    ccRecipient: string;
+    bccRecipient: string;
+  }[]
 ) => {
+  // FormData 객체 생성
+  const formData = new FormData();
+
+  // `file` 추가
+  files.forEach((file) => {
+    formData.append("file", file); // 동일한 이름으로 여러 파일 추가
+  });
+
+  // `emailSendData`를 JSON 문자열로 변환하여 추가
+  formData.append("emailSendData", JSON.stringify(emailSendData));
+
+  // POST 요청
   const response = await axios.post(
     `/api/customer-inquiries/send-email?docNumber=${docNumber}`,
-    mailData
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
   );
 
   return response.data;
