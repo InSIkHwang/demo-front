@@ -448,22 +448,22 @@ const MakeInquiry = () => {
     console.log(requestData);
 
     // Submit the inquiry and get the response
-    // const response = await submitInquiry(
-    //   formValues.docNumber,
-    //   Number(customerInquiryId),
-    //   requestData,
-    //   isEditMode
-    // );
+    const response = await submitInquiry(
+      formValues.docNumber,
+      Number(customerInquiryId),
+      requestData,
+      isEditMode
+    );
 
-    // message.success("성공적으로 저장 되었습니다!");
+    message.success("성공적으로 저장 되었습니다!");
 
-    // const newInquiryDetail = await fetchInquiryDetail(
-    //   Number(isEditMode ? customerInquiryId : response)
-    // );
+    const newInquiryDetail = await fetchInquiryDetail(
+      Number(isEditMode ? customerInquiryId : response)
+    );
 
-    // navigate(`/makeinquiry/${response}`, {
-    //   state: { inquiry: newInquiryDetail },
-    // });
+    navigate(`/makeinquiry/${response}`, {
+      state: { inquiry: newInquiryDetail },
+    });
   };
 
   const handleItemCodeChange = async (index: number, value: string) => {
@@ -592,8 +592,9 @@ const MakeInquiry = () => {
   };
 
   const handlePDFPreview = () => {
-    setShowPDFPreview(true);
+    setShowPDFPreview((prevState) => !prevState);
   };
+
   if (docDataloading) {
     return <LoadingSpinner />;
   }
@@ -697,7 +698,7 @@ const MakeInquiry = () => {
           onClick={handlePDFPreview}
           style={{ marginLeft: "10px" }}
         >
-          PDF 미리보기
+          {showPDFPreview ? "미리보기 닫기" : "PDF 미리보기"}
         </Button>
         <span style={{ marginLeft: 20 }}>LANGUAGE: </span>
         <Select
