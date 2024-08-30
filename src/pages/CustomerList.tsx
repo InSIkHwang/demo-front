@@ -66,29 +66,31 @@ const CustomerList = () => {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
     null
   );
+  const [totalCount, setTotalCount] = useState<number>();
 
   const category = "customer";
-
   //데이터 FETCH
+  useEffect(() => {
+    fetchData();
+  }, [currentPage, itemsPerPage]); // 페이지와 페이지 크기 변경 시 데이터를 새로 불러옴
+
   const fetchData = async () => {
     try {
       const response = await axios.get("/api/customers", {
         params: {
-          page: currentPage - 1, // 페이지는 0
-          size: itemsPerPage,
+          page: currentPage - 1, // 페이지는 0부터 시작
+          pageSize: itemsPerPage, // 페이지당 아이템 수
         },
       });
       setData(response.data.customers);
+      setTotalCount(response.data.totalCount);
       setLoading(false);
     } catch (error) {
+      setData([]); // 오류 발생 시 빈 배열로 초기화
       console.error("Error fetching data:", error);
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   // 모달 열릴 때 스크롤 방지
   useEffect(() => {
@@ -193,12 +195,6 @@ const CustomerList = () => {
     setIsDetailCompanyModalOpen(false);
   };
 
-  //한 페이지에 보일 데이터
-  const paginatedData = data.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
   const handlePageSizeChange = (current: number, size: number) => {
     setItemsPerPage(size);
     setCurrentPage(1);
@@ -232,36 +228,40 @@ const CustomerList = () => {
             신규 등록
           </Button>
         </TableHeader>
-        <Table
-          columns={columns}
-          dataSource={paginatedData}
-          pagination={false}
-          loading={loading}
-          rowKey="code"
-          onRow={(record) => ({
-            onClick: () => openDetailCompanyModal(record),
-          })}
-          style={{ cursor: "pointer" }}
-        />
-        <PaginationWrapper
-          current={currentPage}
-          pageSize={itemsPerPage}
-          total={data.length}
-          onChange={handlePageChange}
-          onShowSizeChange={handlePageSizeChange}
-          showSizeChanger
-          pageSizeOptions={[10, 15, 30, 50, 100]}
-          showQuickJumper
-          itemRender={(page, type, originalElement) => {
-            if (type === "prev") {
-              return <LeftOutlined />;
-            }
-            if (type === "next") {
-              return <RightOutlined />;
-            }
-            return originalElement;
-          }}
-        />
+        {data.length > 0 && ( // 데이터가 있을 때만 페이지네이션을 표시
+          <>
+            <Table
+              columns={columns}
+              dataSource={data}
+              pagination={false}
+              loading={loading}
+              rowKey="code"
+              onRow={(record) => ({
+                onClick: () => openDetailCompanyModal(record),
+              })}
+              style={{ cursor: "pointer" }}
+            />
+            <PaginationWrapper
+              current={currentPage}
+              pageSize={itemsPerPage}
+              total={totalCount}
+              onChange={handlePageChange}
+              onShowSizeChange={handlePageSizeChange}
+              showSizeChanger
+              pageSizeOptions={[10, 15, 30, 50, 100]}
+              showQuickJumper
+              itemRender={(page, type, originalElement) => {
+                if (type === "prev") {
+                  return <LeftOutlined />;
+                }
+                if (type === "next") {
+                  return <RightOutlined />;
+                }
+                return originalElement;
+              }}
+            />
+          </>
+        )}
       </Container>
       {isModalOpen && (
         <CreateCompanyModal

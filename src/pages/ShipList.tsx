@@ -64,6 +64,11 @@ const ShipList = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage, setItemsPerPage] = useState<number>(10);
   const [selectedVessel, setSelectedVessel] = useState<Vessel | null>(null);
+  const [totalCount, setTotalCount] = useState<number>();
+
+  useEffect(() => {
+    fetchData();
+  }, [currentPage, itemsPerPage]);
 
   //데이터 FETCH
   const fetchData = async () => {
@@ -75,8 +80,10 @@ const ShipList = () => {
         },
       });
       setData(response.data.vessels);
+      setTotalCount(response.data.totalCount);
       setLoading(false);
     } catch (error) {
+      setData([]); // 오류 발생 시 빈 배열로 초기화
       console.error("Error fetching data:", error);
       setLoading(false);
     }
@@ -179,11 +186,6 @@ const ShipList = () => {
     setIsDetailVesselModalOpen(false);
   };
 
-  const paginatedData = data.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
   const handlePageSizeChange = (current: number, size: number) => {
     setItemsPerPage(size);
     setCurrentPage(1);
@@ -217,36 +219,40 @@ const ShipList = () => {
             신규 등록
           </Button>
         </TableHeader>
-        <Table
-          columns={columns}
-          dataSource={paginatedData}
-          pagination={false}
-          loading={loading}
-          rowKey="code"
-          onRow={(record) => ({
-            onClick: () => openDetailVesselModal(record),
-          })}
-          style={{ cursor: "pointer" }}
-        />
-        <PaginationWrapper
-          current={currentPage}
-          pageSize={itemsPerPage}
-          total={data.length}
-          onChange={handlePageChange}
-          onShowSizeChange={handlePageSizeChange}
-          showSizeChanger
-          pageSizeOptions={[10, 15, 30, 50, 100]}
-          showQuickJumper
-          itemRender={(page, type, originalElement) => {
-            if (type === "prev") {
-              return <LeftOutlined />;
-            }
-            if (type === "next") {
-              return <RightOutlined />;
-            }
-            return originalElement;
-          }}
-        />
+        {data.length > 0 && ( // 데이터가 있을 때만 페이지네이션을 표시
+          <>
+            <Table
+              columns={columns}
+              dataSource={data}
+              pagination={false}
+              loading={loading}
+              rowKey="code"
+              onRow={(record) => ({
+                onClick: () => openDetailVesselModal(record),
+              })}
+              style={{ cursor: "pointer" }}
+            />
+            <PaginationWrapper
+              current={currentPage}
+              pageSize={itemsPerPage}
+              total={data.length}
+              onChange={handlePageChange}
+              onShowSizeChange={handlePageSizeChange}
+              showSizeChanger
+              pageSizeOptions={[10, 15, 30, 50, 100]}
+              showQuickJumper
+              itemRender={(page, type, originalElement) => {
+                if (type === "prev") {
+                  return <LeftOutlined />;
+                }
+                if (type === "next") {
+                  return <RightOutlined />;
+                }
+                return originalElement;
+              }}
+            />
+          </>
+        )}
       </Container>
       {isModalOpen && (
         <CreateVesselModal onUpdate={fetchData} onClose={closeModal} />

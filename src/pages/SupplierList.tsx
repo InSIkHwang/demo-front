@@ -66,22 +66,29 @@ const SupplierList = () => {
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(
     null
   );
+  const [totalCount, setTotalCount] = useState<number>();
 
   const category = "supplier";
+
+  useEffect(() => {
+    fetchData();
+  }, [currentPage, itemsPerPage]); // 페이지와 페이지 크기 변경 시 데이터를 새로 불러옴
 
   //데이터 FETCH
   const fetchData = async () => {
     try {
       const response = await axios.get("/api/suppliers", {
         params: {
-          page: currentPage - 1, // 페이지는 0
+          page: currentPage - 1,
           size: itemsPerPage,
         },
       });
-      setData(response.data.suppliers);
+      setData(response.data.customers || []); // 빈 배열로 초기화
+      setTotalCount(response.data.totalCount || 0); // totalCount도 초기화
       setLoading(false);
     } catch (error) {
       console.error("Error fetching data:", error);
+      setData([]); // 오류 발생 시 빈 배열로 초기화
       setLoading(false);
     }
   };
@@ -191,12 +198,6 @@ const SupplierList = () => {
     setIsDetailCompanyModalOpen(false);
   };
 
-  //한 페이지에 보일 데이터
-  const paginatedData = data.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
   const handlePageSizeChange = (current: number, size: number) => {
     setItemsPerPage(size);
     setCurrentPage(1);
@@ -230,36 +231,40 @@ const SupplierList = () => {
             신규 등록
           </Button>
         </TableHeader>
-        <Table
-          columns={columns}
-          dataSource={paginatedData}
-          pagination={false}
-          loading={loading}
-          rowKey="code"
-          onRow={(record) => ({
-            onClick: () => openDetailCompanyModal(record),
-          })}
-          style={{ cursor: "pointer" }}
-        />
-        <PaginationWrapper
-          current={currentPage}
-          pageSize={itemsPerPage}
-          total={data.length}
-          onChange={handlePageChange}
-          onShowSizeChange={handlePageSizeChange}
-          showSizeChanger
-          pageSizeOptions={[10, 15, 30, 50, 100]}
-          showQuickJumper
-          itemRender={(page, type, originalElement) => {
-            if (type === "prev") {
-              return <LeftOutlined />;
-            }
-            if (type === "next") {
-              return <RightOutlined />;
-            }
-            return originalElement;
-          }}
-        />
+        {data.length > 0 && ( // 데이터가 있을 때만 페이지네이션을 표시
+          <>
+            <Table
+              columns={columns}
+              dataSource={data}
+              pagination={false}
+              loading={loading}
+              rowKey="code"
+              onRow={(record) => ({
+                onClick: () => openDetailCompanyModal(record),
+              })}
+              style={{ cursor: "pointer" }}
+            />
+            <PaginationWrapper
+              current={currentPage}
+              pageSize={itemsPerPage}
+              total={data.length}
+              onChange={handlePageChange}
+              onShowSizeChange={handlePageSizeChange}
+              showSizeChanger
+              pageSizeOptions={[10, 15, 30, 50, 100]}
+              showQuickJumper
+              itemRender={(page, type, originalElement) => {
+                if (type === "prev") {
+                  return <LeftOutlined />;
+                }
+                if (type === "next") {
+                  return <RightOutlined />;
+                }
+                return originalElement;
+              }}
+            />
+          </>
+        )}
       </Container>
       {isModalOpen && (
         <CreateCompanyModal
