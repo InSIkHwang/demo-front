@@ -80,6 +80,7 @@ const MailSenderModal = ({
   selectedSupplierTag,
   fileData,
   setFileData,
+  pdfFileData,
 }: {
   mailDataList: emailSendData[];
   inquiryFormValues: FormValue;
@@ -93,6 +94,7 @@ const MailSenderModal = ({
   }[];
   fileData: File[];
   setFileData: Dispatch<SetStateAction<File[]>>;
+  pdfFileData: File[];
 }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -101,6 +103,29 @@ const MailSenderModal = ({
   const [selectedMailIndexes, setSelectedMailIndexes] = useState<Set<number>>(
     new Set()
   );
+  const [isPdfAutoUploadChecked, setIsPdfAutoUploadChecked] = useState(true);
+  console.log(fileData);
+
+  useEffect(() => {
+    if (isPdfAutoUploadChecked) {
+      setFileData((prevFileData) => [...prevFileData, ...pdfFileData]);
+    }
+  }, [isPdfAutoUploadChecked, pdfFileData, setFileData]);
+
+  const handlePdfAutoUploadChange = (e: CheckboxChangeEvent) => {
+    setIsPdfAutoUploadChecked(e.target.checked);
+    if (e.target.checked) {
+      // PDF 파일 자동 업로드 활성화
+      setFileData((prevFileData) => [...prevFileData, ...pdfFileData]);
+    } else {
+      // PDF 파일 자동 업로드 비활성화
+      setFileData((prevFileData) =>
+        prevFileData.filter(
+          (file) => !pdfFileData.some((pdfFile) => pdfFile.name === file.name)
+        )
+      );
+    }
+  };
 
   const filteredFileData = fileData.filter((file) => {
     return !selectedSupplierTag.some(
@@ -238,8 +263,12 @@ const MailSenderModal = ({
           >
             <Button icon={<UploadOutlined />}>파일 업로드</Button>
           </Upload>
-          <Checkbox style={{ marginLeft: 15 }}>
-            PDF 파일 자동 업로드(PdfFileName)
+          <Checkbox
+            checked={isPdfAutoUploadChecked}
+            onChange={handlePdfAutoUploadChange}
+            style={{ marginLeft: 15 }}
+          >
+            PDF 파일 자동 업로드
           </Checkbox>
           {fileData.length > 0 && (
             <div style={{ marginTop: "16px" }}>
@@ -298,12 +327,21 @@ const MailSenderModal = ({
           <Input disabled placeholder="vesselName" />
         </StyledFormItem>
       </FormRow>
-      <Tabs
-        defaultActiveKey="0"
-        type="card"
-        onChange={handleTabChange}
-        items={tabsItems}
-      />
+      {selectedSupplierTag.length === 0 ? (
+        <Typography.Paragraph
+          style={{ textAlign: "center", padding: 20, color: "red" }}
+        >
+          선택된 의뢰처가 없습니다!
+        </Typography.Paragraph>
+      ) : (
+        <Tabs
+          defaultActiveKey="0"
+          type="card"
+          onChange={handleTabChange}
+          items={tabsItems}
+        />
+      )}
+
       <div>
         <Checkbox
           checked={currentMailDataList.length === selectedMailIndexes.size}

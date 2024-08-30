@@ -30,8 +30,8 @@ interface PDFGeneratorProps {
   pdfHeader: string;
   setMailDataList: Dispatch<SetStateAction<emailSendData[]>>;
   language: string;
-  fileData: File[];
-  setFileData: Dispatch<SetStateAction<File[]>>;
+  pdfFileData: File[];
+  setPdfFileData: Dispatch<SetStateAction<File[]>>;
 }
 
 const PDFGenerator = ({
@@ -42,8 +42,8 @@ const PDFGenerator = ({
   pdfHeader,
   setMailDataList,
   language,
-  fileData,
-  setFileData,
+  pdfFileData,
+  setPdfFileData,
 }: PDFGeneratorProps) => {
   const generateAndSendPDFs = async () => {
     const mailDataList: emailSendData[] = [];
@@ -104,7 +104,7 @@ const PDFGenerator = ({
     }
 
     // 모든 루프가 끝난 후 최종 파일 리스트를 상태에 저장
-    setFileData(updatedFiles);
+    setPdfFileData(updatedFiles);
 
     // 최종 메일 데이터 리스트 상태에 저장
     setMailDataList(mailDataList);

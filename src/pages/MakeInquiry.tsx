@@ -138,6 +138,7 @@ const MakeInquiry = () => {
   const [isDuplicate, setIsDuplicate] = useState<boolean>(false);
   const [language, setLanguage] = useState<string>("KOR");
   const [fileData, setFileData] = useState<File[]>([]);
+  const [pdfFileData, setPdfFileData] = useState<File[]>([]);
 
   // Load document data
   const loadDocData = useCallback(async () => {
@@ -664,6 +665,7 @@ const MakeInquiry = () => {
           selectedSupplierTag={selectedSupplierTag}
           fileData={fileData}
           setFileData={setFileData}
+          pdfFileData={pdfFileData}
         />
       </Modal>
       <div
@@ -728,8 +730,8 @@ const MakeInquiry = () => {
         pdfHeader={pdfHeader}
         setMailDataList={setMailDataList}
         language={language}
-        fileData={fileData}
-        setFileData={setFileData}
+        pdfFileData={pdfFileData}
+        setPdfFileData={setPdfFileData}
       />
       {showPDFPreview && (
         <PDFDocument
