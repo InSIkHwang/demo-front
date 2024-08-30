@@ -104,7 +104,6 @@ const MailSenderModal = ({
     new Set()
   );
   const [isPdfAutoUploadChecked, setIsPdfAutoUploadChecked] = useState(true);
-  console.log(fileData);
 
   useEffect(() => {
     if (isPdfAutoUploadChecked) {

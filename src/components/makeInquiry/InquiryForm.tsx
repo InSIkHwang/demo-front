@@ -33,6 +33,31 @@ const SearchBox = styled.div`
   align-items: center !important;
 `;
 
+const categoryList = [
+  "ENGINE_AUX_ENGINE",
+  "COMPRESSOR",
+  "PUMP",
+  "BOILER_INCINERATOR",
+  "PURIFIER",
+  "ELEC_EQUIPMENTS",
+  "SEPARATOR",
+  "CRANE",
+  "SHIP_SUPPLIES",
+  "VALVE",
+  "CRANE_GRAB",
+  "BLOWER_MOTOR",
+  "THE_OTHERS",
+  "ANODE",
+  "FIRE_FIGHTING",
+  "STEERING_GEAR",
+  "LIFE_BOAT",
+  "GALLEY_EQUIPMENTS",
+  "HATCHCOVER",
+  "COOLER",
+  "AIR_DRYER",
+  "BWTS",
+];
+
 interface FormValues {
   docNumber: string;
   registerDate: any;
@@ -86,13 +111,17 @@ const InquiryForm = ({
   const [isVesselModalOpen, setIsVesselModalOpen] = useState(false);
   const [tagColors, setTagColors] = useState<{ [id: number]: string }>({});
   const [supplierSearch, setSupplierSearch] = useState("");
-  const [selectedType, setSelectedType] = useState("의뢰처");
+  const [selectedType, setSelectedType] = useState("MAKER");
   const [supplierList, setSupplierList] = useState<
     { name: string; id: number; code: string; email: string }[]
   >([]);
   const [autoSearchSupCompleteOptions, setAutoSearchSupCompleteOptions] =
     useState<{ value: string }[]>([]);
   const [makerOptions, setMakerOptions] = useState<{ value: string }[]>([]);
+  const [categoryOptions, setCategoryOptions] = useState<{ value: string }[]>(
+    []
+  );
+  const [categoryWord, setCategoryWord] = useState<string>("");
   const [makerSupplierList, setMakerSupplierList] = useState<
     {
       maker: string;
@@ -155,7 +184,7 @@ const InquiryForm = ({
     });
   };
 
-  const handleSearch = async (value: string) => {
+  const handleSearch = async (value: string, categoryType: string | null) => {
     setSupplierSearch(value);
     if (value) {
       try {
@@ -176,7 +205,7 @@ const InquiryForm = ({
               .map((supplier) => ({ value: supplier.name }))
           );
         } else if (selectedType === "MAKER") {
-          const data = await searchSupplierUseMaker(value);
+          const data = await searchSupplierUseMaker(value, categoryType);
           const makerSupplierList = data.makerSupplierList.map((maker) => ({
             maker: maker.maker,
             supplierList: maker.supplierList.map((supplier) => ({
@@ -280,6 +309,21 @@ const InquiryForm = ({
       message.warning(
         "검색된 의뢰처 목록에서 일치하는 항목을 찾을 수 없습니다."
       );
+    }
+  };
+
+  const handleCategorySearch = (searchText: string) => {
+    setCategoryWord(searchText);
+    if (searchText.length > 0) {
+      const filteredOptions = categoryList
+        .filter((category) =>
+          category.toLowerCase().includes(searchText.toLowerCase())
+        )
+        .map((category) => ({ value: category }));
+
+      setCategoryOptions(filteredOptions);
+    } else {
+      setCategoryOptions([]);
     }
   };
 
@@ -443,18 +487,27 @@ const InquiryForm = ({
         </FormRow>
         <FormRow>
           <SearchBox>
+            <AutoComplete
+              value={categoryWord}
+              options={categoryOptions}
+              style={{ width: 250, marginRight: 5 }}
+              onChange={handleCategorySearch}
+              placeholder="search for category"
+            >
+              <Input />
+            </AutoComplete>
             <Select
               value={selectedType}
               onChange={(value) => setSelectedType(value)}
               style={{ width: 100, marginRight: 10 }}
             >
-              <Option value="의뢰처">의뢰처</Option>
               <Option value="MAKER">MAKER</Option>
+              <Option value="의뢰처">의뢰처</Option>
             </Select>
             <InquiryItemForm name="searchSupplier">
               <AutoComplete
                 value={supplierSearch}
-                onChange={(value) => handleSearch(value)}
+                onChange={(value) => handleSearch(value, categoryWord)}
                 options={
                   selectedType === "MAKER"
                     ? makerOptions
@@ -466,7 +519,7 @@ const InquiryForm = ({
               </AutoComplete>
             </InquiryItemForm>
             <Button onClick={handleAddSupplier} style={{ marginRight: 20 }}>
-              추가
+              search
             </Button>
             <span style={{ marginRight: 10 }}>검색된 의뢰처 목록: </span>
             {uniqueSuppliers.map((supplier) => (

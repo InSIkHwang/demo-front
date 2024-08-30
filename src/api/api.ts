@@ -105,14 +105,19 @@ export const searchSupplier = async (companyName: string) => {
   return response.data;
 };
 //Maker이름으로 Supplier 검색
-export const searchSupplierUseMaker = async (maker: string) => {
+export const searchSupplierUseMaker = async (
+  maker: string,
+  categoryType: string | null
+) => {
   const response = await axios.get<{
     makerSupplierList: {
       category: string;
       maker: string;
       supplierList: Supplier[];
     }[];
-  }>(`/api/items/search/maker?maker=${maker}&itemType=MAKER`);
+  }>(
+    `/api/items/search/maker?maker=${maker}&itemType=MAKER&categoryType=${categoryType}`
+  );
 
   return response.data;
 };
