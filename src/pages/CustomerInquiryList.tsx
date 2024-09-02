@@ -281,7 +281,7 @@ const CustomerInquiryList = () => {
       </Container>
       {selectedInquiryId !== null && (
         <DetailInquiryModal
-          visible={isDetailCompanyModalOpen}
+          open={isDetailCompanyModalOpen}
           onClose={() => setIsDetailCompanyModalOpen(false)}
           inquiryId={selectedInquiryId}
           fetchData={fetchData}

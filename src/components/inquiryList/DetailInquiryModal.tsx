@@ -15,7 +15,7 @@ import { useNavigate } from "react-router-dom";
 import { deleteInquiry, fetchInquiryDetail } from "../../api/api";
 
 interface DetailInquiryModalProps {
-  visible: boolean;
+  open: boolean;
   onClose: () => void;
   inquiryId: number;
   fetchData: () => Promise<void>;
@@ -67,7 +67,7 @@ const SPECIAL_ITEM_TYPES = ["MAKER", "TYPE", "DESC"];
 const isSpecialItemType = (type: string) => SPECIAL_ITEM_TYPES.includes(type);
 
 const DetailInquiryModal = ({
-  visible,
+  open,
   onClose,
   inquiryId,
   fetchData,
@@ -78,7 +78,7 @@ const DetailInquiryModal = ({
 
   useEffect(() => {
     const fetchDetails = async () => {
-      if (visible) {
+      if (open) {
         try {
           const data = await fetchInquiryDetail(inquiryId);
           setInquiryDetail(data);
@@ -91,7 +91,7 @@ const DetailInquiryModal = ({
     };
 
     fetchDetails();
-  }, [visible, inquiryId]);
+  }, [open, inquiryId]);
 
   const handleEditClick = () => {
     if (inquiryDetail) {
@@ -208,7 +208,7 @@ const DetailInquiryModal = ({
   return (
     <StyledModal
       title="상세 정보"
-      visible={visible}
+      open={open}
       onCancel={onClose}
       footer={[
         <Button type="primary" key="edit" onClick={handleEditClick}>

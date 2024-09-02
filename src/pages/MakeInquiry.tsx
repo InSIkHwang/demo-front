@@ -166,8 +166,36 @@ const MakeInquiry = () => {
   }, []);
 
   useEffect(() => {
+    if (!customerInquiryId) {
+      // 데이터 초기화
+      setFormValues(INITIAL_FORM_VALUES);
+      setItems([]);
+      setSelectedSuppliers([]);
+      setSelectedSupplierTag([]);
+      setPdfSupplierTag([]);
+      setVesselList([]);
+      setVesselNameList([]);
+      setAutoCompleteOptions([]);
+      setItemCodeOptions([]);
+      setItemNameMap({});
+      setItemIdMap({});
+      setSupplierOptions([]);
+      setDocDataLoading(true); // 데이터 로딩 상태를 true로 설정
+
+      loadDocData(); // 초기 데이터 로딩 호출
+    } else {
+      setDocDataLoading(false); // 데이터 로딩이 완료되면 false로 설정
+    }
+  }, [customerInquiryId, loadDocData]);
+
+  // 데이터 로딩 후 상태 업데이트
+  useEffect(() => {
+    if (docDataloading) {
+      return;
+    }
+
     if (customerInquiryId) {
-      setIsEditMode(true);
+      // Edit 모드에서의 로직
       if (inquiryDetail) {
         const {
           documentNumber,
@@ -213,19 +241,8 @@ const MakeInquiry = () => {
         setSelectedSupplierTag(suppliers);
         setSelectedSuppliers(suppliers);
       }
-    } else {
-      setIsEditMode(false);
-      setFormValues(INITIAL_FORM_VALUES);
     }
-  }, [customerInquiryId, inquiryDetail]);
-
-  useEffect(() => {
-    if (!customerInquiryId) {
-      loadDocData();
-    } else {
-      setDocDataLoading(false);
-    }
-  }, [customerInquiryId, loadDocData]);
+  }, [docDataloading, customerInquiryId, inquiryDetail]);
 
   useEffect(() => {
     const searchCompanyName = async (customerName: string) => {
@@ -606,18 +623,20 @@ const MakeInquiry = () => {
   return (
     <FormContainer>
       <Title>견적요청서 작성</Title>
-      <InquiryForm
-        formValues={formValues}
-        autoCompleteOptions={autoCompleteOptions}
-        vesselNameList={vesselNameList}
-        supplierOptions={supplierOptions}
-        selectedSuppliers={selectedSuppliers}
-        handleFormChange={handleFormChange}
-        customerUnreg={!selectedCustomerId}
-        vesselUnreg={!selectedVessel?.id}
-        setSelectedSupplierTag={setSelectedSupplierTag}
-        setSelectedSuppliers={setSelectedSuppliers}
-      />
+      {formValues.docNumber && (
+        <InquiryForm
+          formValues={formValues}
+          autoCompleteOptions={autoCompleteOptions}
+          vesselNameList={vesselNameList}
+          supplierOptions={supplierOptions}
+          selectedSuppliers={selectedSuppliers}
+          handleFormChange={handleFormChange}
+          customerUnreg={!selectedCustomerId}
+          vesselUnreg={!selectedVessel?.id}
+          setSelectedSupplierTag={setSelectedSupplierTag}
+          setSelectedSuppliers={setSelectedSuppliers}
+        />
+      )}
       <MakeInquiryTable
         items={items}
         handleInputChange={handleInputChange}

@@ -61,7 +61,7 @@ const HeaderMenuBtnIcon = styled(FontAwesomeIcon)`
 
 const UserBox = styled.div`
   cursor: pointer;
-  margin-right: 20px;
+  margin-right: 50px;
   display: flex;
   align-items: center;
 `;
