@@ -74,7 +74,7 @@ interface FormValues {
 interface InquiryFormProps {
   formValues: FormValues;
   autoCompleteOptions: { value: string }[];
-  vesselNameList: string[];
+  vesselNameList: { id: number; name: string }[];
   supplierOptions: { value: string; id: number; code: string; email: string }[];
   selectedSuppliers: {
     id: number;
@@ -332,7 +332,7 @@ const InquiryForm = ({
       <Form layout="vertical" initialValues={formValues}>
         <FormRow>
           <InquiryItemForm
-            label="문서번호"
+            label="문서번호(Document No.)"
             name="docNumber"
             style={{ maxWidth: 200 }}
           >
@@ -343,10 +343,10 @@ const InquiryForm = ({
             />
           </InquiryItemForm>
           <InquiryItemForm
-            label="작성일자"
+            label="작성일자(Register Date)"
             name="registerDate"
             rules={[{ required: true, message: "Please select register date" }]}
-            style={{ maxWidth: 150 }}
+            style={{ maxWidth: 180 }}
           >
             <DatePicker
               value={formValues.registerDate}
@@ -354,10 +354,10 @@ const InquiryForm = ({
             />
           </InquiryItemForm>
           <InquiryItemForm
-            label="선적일자"
+            label="선적일자(Shipment date)"
             name="shippingDate"
             rules={[{ required: true, message: "Please select shipping date" }]}
-            style={{ maxWidth: 150 }}
+            style={{ maxWidth: 180 }}
           >
             <DatePicker
               value={formValues.shippingDate}
@@ -365,7 +365,7 @@ const InquiryForm = ({
             />
           </InquiryItemForm>
           <InquiryItemForm
-            label="화폐"
+            label="화폐(Currency)"
             name="currencyType"
             rules={[{ required: true, message: "Please select currency type" }]}
           >
@@ -381,7 +381,7 @@ const InquiryForm = ({
             </Select>
           </InquiryItemForm>
           <InquiryItemForm
-            label="환율"
+            label="환율(Exchange Rate)"
             name="currency"
             rules={[
               {
@@ -401,7 +401,7 @@ const InquiryForm = ({
         </FormRow>
         <FormRow>
           <InquiryItemForm
-            label="매출처"
+            label="매출처(Customer)"
             name="customer"
             validateStatus={
               validateCustomer().status as
@@ -420,7 +420,7 @@ const InquiryForm = ({
               style={{ position: "absolute", top: "-35px", right: "0" }}
               onClick={() => setIsCustomerModalOpen(true)}
             >
-              신규 등록
+              Register
             </Button>
             <AutoComplete
               value={formValues.customer}
@@ -432,7 +432,7 @@ const InquiryForm = ({
             </AutoComplete>
           </InquiryItemForm>
           <InquiryItemForm
-            label="선박명"
+            label="선명(Vessel Name)"
             name="vesselName"
             validateStatus={
               validateVessel().status as
@@ -451,12 +451,17 @@ const InquiryForm = ({
               style={{ position: "absolute", top: "-35px", right: "0" }}
               onClick={() => setIsVesselModalOpen(true)}
             >
-              신규 등록
+              Register
             </Button>
             <AutoComplete
               value={formValues.vesselName}
-              onChange={(value) => handleFormChange("vesselName", value)}
-              options={vesselNameList.map((name) => ({ value: name }))}
+              onChange={(value, option) => {
+                handleFormChange("vesselName", value);
+              }}
+              options={vesselNameList.map((vessel) => ({
+                value: vessel.name, // UI에 표시될 이름
+                key: vessel.id, // 각 항목의 고유 ID
+              }))}
               style={{ width: "100%" }}
               filterOption={(inputValue, option) =>
                 option!.value.toLowerCase().includes(inputValue.toLowerCase())
@@ -478,7 +483,11 @@ const InquiryForm = ({
           </InquiryItemForm>
         </FormRow>
         <FormRow>
-          <InquiryItemForm label="비고" name="remark" style={{ flex: "50%" }}>
+          <InquiryItemForm
+            label="비고(Remark)"
+            name="remark"
+            style={{ flex: "50%" }}
+          >
             <Input
               value={formValues.remark}
               onChange={(e) => handleFormChange("remark", e.target.value)}
@@ -502,7 +511,7 @@ const InquiryForm = ({
               style={{ width: 100, marginRight: 10 }}
             >
               <Option value="MAKER">MAKER</Option>
-              <Option value="의뢰처">의뢰처</Option>
+              <Option value="의뢰처">Supplier</Option>
             </Select>
             <InquiryItemForm name="searchSupplier">
               <AutoComplete
@@ -514,14 +523,15 @@ const InquiryForm = ({
                     : autoSearchSupCompleteOptions
                 }
                 style={{ width: "100%" }}
+                placeholder="search Maker or Supplier"
               >
                 <Input style={{ marginTop: 3 }} />
               </AutoComplete>
             </InquiryItemForm>
             <Button onClick={handleAddSupplier} style={{ marginRight: 20 }}>
-              search
+              ADD
             </Button>
-            <span style={{ marginRight: 10 }}>검색된 의뢰처 목록: </span>
+            <span style={{ marginRight: 10 }}>Added Suplliers : </span>
             {uniqueSuppliers.map((supplier) => (
               <Tag
                 key={supplier.id}

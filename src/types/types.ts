@@ -161,25 +161,7 @@ export interface SupplierInquiryDetailIF {
   documentStatus: string;
   pdfUrl: string | null; // pdfUrl can be null or a string
   inquiryType: string;
-  inquiryItemDetails: {
-    itemDetailId: number;
-    itemId: number;
-    itemType: string;
-    itemCode: string;
-    itemName: string;
-    itemRemark: string | null; // itemRemark can be null
-    qty: number;
-    unit: string;
-    salesPriceKRW: number;
-    salesPriceGlobal: number;
-    salesAmountKRW: number;
-    salesAmountGlobal: number;
-    margin: number;
-    purchasePriceKRW: number;
-    purchasePriceGlobal: number;
-    purchaseAmountKRW: number;
-    purchaseAmountGlobal: number;
-  }[];
+  inquiryItemDetails: ItemDataType[];
   supplierInfo: {
     inquiryItemDetailId: number | null;
     supplierId: number;
@@ -191,7 +173,7 @@ export interface SupplierInquiryDetailIF {
 }
 
 export interface ItemDataType {
-  position: number;
+  position?: number;
   itemCode: string;
   itemType: string;
   itemName: string;

@@ -223,42 +223,42 @@ const MailSenderModal = ({
       <StyledCard>
         <StyledFormItem
           name={["mails", index, "toRecipient"]}
-          rules={[{ required: true, message: "받는 사람을 입력하세요." }]}
+          rules={[{ required: true, message: "Please enter the recipient" }]}
         >
-          <Input prefix={<MailOutlined />} placeholder="받는 사람" />
+          <Input prefix={<MailOutlined />} placeholder="Recipient" />
         </StyledFormItem>
         <StyledFormItem
           name={["mails", index, "subject"]}
-          rules={[{ required: true, message: "제목을 입력하세요." }]}
+          rules={[{ required: true, message: "Please enter a title." }]}
         >
-          <Input placeholder="제목" />
+          <Input placeholder="Title" />
         </StyledFormItem>
         <StyledFormItem
           name={["mails", index, "content"]}
-          rules={[{ required: true, message: "내용을 입력하세요." }]}
+          rules={[{ required: true, message: "Please enter the contents." }]}
         >
-          <TextArea placeholder="내용" rows={6} />
+          <TextArea placeholder="Content" rows={6} />
         </StyledFormItem>
         <StyledFormItem name={["mails", index, "ccRecipient"]}>
-          <Input placeholder="참조 메일 1" />
+          <Input placeholder="CC Recipient" />
         </StyledFormItem>
         <StyledFormItem name={["mails", index, "bccRecipient"]}>
-          <Input placeholder="참조 메일 2" />
+          <Input placeholder="BCC Recipient" />
         </StyledFormItem>
         <StyledFormItem>
-          <Title level={5}>첨부파일</Title>
+          <Title level={5}>Attached File</Title>
           <Upload
             customRequest={({ file }) => handleFileUpload(file, index)}
             showUploadList={false}
           >
-            <Button icon={<UploadOutlined />}>파일 업로드</Button>
+            <Button icon={<UploadOutlined />}>Upload File</Button>
           </Upload>
           <Checkbox
             checked={isPdfAutoUploadChecked}
             onChange={handlePdfAutoUploadChange}
             style={{ marginLeft: 15 }}
           >
-            PDF 파일 자동 업로드
+            Automatic PDF File Upload
           </Checkbox>
           {fileData.length > 0 && (
             <div style={{ marginTop: "16px" }}>
@@ -284,7 +284,7 @@ const MailSenderModal = ({
       <FormRow style={{ marginBottom: 0 }}>
         <StyledFormItem
           name="docNumber"
-          label="문서 번호"
+          label="DocNumber"
           initialValue={inquiryFormValues.docNumber}
           style={{ flex: 0.8 }}
         >
@@ -302,7 +302,7 @@ const MailSenderModal = ({
       <FormRow>
         <StyledFormItem
           name="customer"
-          label="매출처"
+          label="Customer"
           initialValue={inquiryFormValues.customer}
           style={{ flex: 1 }}
         >
@@ -310,7 +310,7 @@ const MailSenderModal = ({
         </StyledFormItem>
         <StyledFormItem
           name="vesselName"
-          label="선명"
+          label="Vessel Name"
           initialValue={inquiryFormValues.vesselName}
           style={{ flex: 0.8 }}
         >
@@ -321,7 +321,7 @@ const MailSenderModal = ({
         <Typography.Paragraph
           style={{ textAlign: "center", padding: 20, color: "red" }}
         >
-          선택된 의뢰처가 없습니다!
+          No customer selected!
         </Typography.Paragraph>
       ) : (
         <Tabs
@@ -342,7 +342,7 @@ const MailSenderModal = ({
           onChange={handleSelectAllChange}
           style={{ marginRight: 20 }}
         >
-          전체 선택
+          All
         </Checkbox>
         {currentMailDataList.map((_, index) => (
           <Checkbox
@@ -364,7 +364,7 @@ const MailSenderModal = ({
         size="large"
         block
       >
-        메일 보내기
+        Send Email
       </StyledButton>
     </StyledForm>
   );

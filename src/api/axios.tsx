@@ -14,7 +14,8 @@ import {
 
 // Axios 인스턴스 생성
 const instance = axios.create({
-  baseURL: "https://test.bas-korea.org/",
+  // baseURL: "https://test.bas-korea.org/", //dev
+  baseURL: "https://pro-api.bas-korea.org/", //배포
 });
 
 // Axios 요청 인터셉터 설정

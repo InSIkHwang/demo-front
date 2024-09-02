@@ -74,16 +74,16 @@ const ExcelUploadModal = ({
 
   return (
     <Modal
-      title="엑셀 파일 불러오기"
+      title="Load Excel File"
       open={open}
       onCancel={onCancel}
       onOk={handleApplyExcelData}
-      okText="적용"
-      cancelText="취소"
+      okText="Ok"
+      cancelText="Cancel"
       width={1000}
     >
       <Upload beforeUpload={handleExcelUpload} accept=".xlsx, .xls">
-        <Button icon={<UploadOutlined />}>엑셀 파일 선택</Button>
+        <Button icon={<UploadOutlined />}>Select Excel File</Button>
       </Upload>
       {excelData.length > 0 && (
         <Table

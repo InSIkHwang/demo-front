@@ -11,6 +11,7 @@ import { editOffer, fetchOfferDetail } from "../api/api";
 import { ItemDataType } from "../types/types";
 import MergedTableComponent from "../components/makeOffer/MergedTableComponent";
 import OfferHeaderEditModal from "../components/makeOffer/OfferHeaderEditModal";
+import OfferPDFDocument from "../components/makeOffer/OfferPDFDocument";
 
 const FormContainer = styled.div`
   position: relative;
@@ -284,17 +285,15 @@ const MakeOffer = () => {
           </Button>
         </div>
       )}
-      {/* {showPDFPreview && (
+      {showPDFPreview && (
         <OfferPDFDocument
-          formValues={formValues}
-          items={items}
+          info={info}
           supplierName={pdfCustomerTag ? pdfCustomerTag.name : ""}
-          vesselInfo={selectedVessel}
           pdfHeader={pdfHeader}
           viewMode={true}
           language={language}
         />
-      )} */}
+      )}
     </FormContainer>
   );
 };

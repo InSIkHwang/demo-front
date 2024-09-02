@@ -14,7 +14,12 @@ import malgunGothic from "../../assets/font/malgun.ttf";
 import NotoSerifKRExtraBold from "../../assets/font/NotoSerifKR-ExtraBold.ttf";
 import NotoSerifKR from "../../assets/font/NotoSerifKR-Medium.ttf";
 import logoUrl from "../../assets/logo/baskorea_logo-removebg.png";
-import { InquiryItem, VesselList } from "../../types/types";
+import {
+  InquiryItem,
+  ItemDataType,
+  SupplierInquiryDetailIF,
+  VesselList,
+} from "../../types/types";
 
 // 한글 글꼴 등록
 Font.register({
@@ -30,21 +35,8 @@ Font.register({
   src: NotoSerifKR,
 });
 
-interface FormValues {
-  docNumber: string;
-  registerDate: string | dayjs.Dayjs;
-  shippingDate: string | dayjs.Dayjs;
-  customer: string;
-  vesselName: string;
-  refNumber: string;
-  currencyType: string;
-  remark: string;
-}
-
 interface PDFDocumentProps {
-  formValues: FormValues;
-  items: InquiryItem[];
-  vesselInfo: VesselList | null;
+  info: SupplierInquiryDetailIF;
   pdfHeader: string;
   supplierName: string; // 개별 공급자 이름
   viewMode: boolean;
@@ -164,7 +156,7 @@ const getDisplayNo = (itemType: string, itemIndex: number) => {
 };
 
 // 테이블 행을 렌더링하는 함수
-const renderTableRows = (items: InquiryItem[]) => {
+const renderTableRows = (items: ItemDataType[]) => {
   let itemIndex = 0;
   return items.map((item) => {
     const isItemType = item.itemType === "ITEM";
@@ -196,7 +188,10 @@ const renderTableRows = (items: InquiryItem[]) => {
               <Text style={styles.tableCell}>{item.unit}</Text>
             </View>
             <View style={styles.tableMedCol}>
-              <Text style={styles.tableCell}>{item.itemRemark}</Text>
+              <Text style={styles.tableCell}>{item.salesPriceGlobal}</Text>
+            </View>
+            <View style={styles.tableMedCol}>
+              <Text style={styles.tableCell}>{item.salesAmountGlobal}</Text>
             </View>
           </>
         )}
@@ -215,11 +210,12 @@ const renderHeader = (
   logoUrl: string,
   supplierName: string,
   vesselName: string,
-  vesselInfo: VesselList | null,
   docNumber: string,
   registerDate: string | dayjs.Dayjs,
   pdfHeader: string,
-  language: string
+  language: string,
+  // imoNumber: string,
+  hullNumber: string
 ) => (
   <>
     <View style={styles.header}>
@@ -246,11 +242,9 @@ const renderHeader = (
         <Text style={[styles.inquiryInfoText, { marginBottom: 10 }]}>
           VESSEL: {vesselName}
         </Text>
+        <Text style={styles.inquiryInfoText}>{/* IMO NO: {imoNumber} */}</Text>
         <Text style={styles.inquiryInfoText}>
-          IMO NO: {vesselInfo?.imoNumber}
-        </Text>
-        <Text style={styles.inquiryInfoText}>
-          HULL NO: {vesselInfo?.hullNumber}
+          {/* HULL NO: {hullNumber} */}
         </Text>
       </View>
       <View style={[styles.inquiryInfoColumn, { alignItems: "flex-end" }]}>
@@ -266,16 +260,21 @@ const renderHeader = (
   </>
 );
 
-const PDFDocument = ({
-  formValues,
-  items,
-  vesselInfo,
+const OfferPDFDocument = ({
+  info,
+
   pdfHeader,
   supplierName,
   viewMode,
   language,
 }: PDFDocumentProps) => {
   const headerMessage = pdfHeader;
+  const calculateTotalSalesAmount = (items: ItemDataType[]) => {
+    return items.reduce((total, item) => total + item.salesAmountGlobal, 0);
+  };
+  const totalSalesAmountGlobal = calculateTotalSalesAmount(
+    info.inquiryItemDetails
+  );
 
   if (viewMode) {
     return (
@@ -285,12 +284,13 @@ const PDFDocument = ({
             {renderHeader(
               logoUrl,
               supplierName,
-              formValues.vesselName,
-              vesselInfo,
-              formValues.docNumber,
+              info.vesselName,
+              info.documentNumber || "",
               dayjs().format("YYYY-MM-DD"),
               headerMessage,
-              language
+              language,
+              // info.veeselImoNo,
+              info.veeselHullNo
             )}
             <View style={styles.table}>
               <View style={styles.tableRow}>
@@ -310,10 +310,16 @@ const PDFDocument = ({
                   <Text style={styles.tableCell}>UNIT</Text>
                 </View>
                 <View style={styles.tableMedCol}>
-                  <Text style={styles.tableCell}>REMARK</Text>
+                  <Text style={styles.tableCell}>U/PRICE</Text>
+                </View>
+                <View style={styles.tableMedCol}>
+                  <Text style={styles.tableCell}>AMOUNT</Text>
                 </View>
               </View>
-              {renderTableRows(items)}
+              {renderTableRows(info.inquiryItemDetails)}
+              <View>
+                <Text>TOTAL: {totalSalesAmountGlobal}</Text>
+              </View>
             </View>
           </Page>
         </Document>
@@ -327,12 +333,13 @@ const PDFDocument = ({
         {renderHeader(
           logoUrl,
           supplierName,
-          formValues.vesselName,
-          vesselInfo,
-          formValues.docNumber,
+          info.vesselName,
+          info.documentNumber || "",
           dayjs().format("YYYY-MM-DD"),
           headerMessage,
-          language
+          language,
+          // info.veeselImoNo,
+          info.veeselHullNo
         )}
         <View style={styles.table}>
           <View style={styles.tableRow}>
@@ -352,14 +359,17 @@ const PDFDocument = ({
               <Text style={styles.tableCell}>UNIT</Text>
             </View>
             <View style={styles.tableMedCol}>
-              <Text style={styles.tableCell}>REMARK</Text>
+              <Text style={styles.tableCell}>U/PRICE</Text>
+            </View>
+            <View style={styles.tableMedCol}>
+              <Text style={styles.tableCell}>AMOUNT</Text>
             </View>
           </View>
-          {renderTableRows(items)}
+          {renderTableRows(info.inquiryItemDetails)}
         </View>
       </Page>
     </Document>
   );
 };
 
-export default PDFDocument;
+export default OfferPDFDocument;

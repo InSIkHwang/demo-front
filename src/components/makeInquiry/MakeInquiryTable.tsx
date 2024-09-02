@@ -188,7 +188,7 @@ const MakeInquiryTable = ({
       width: 50,
     },
     {
-      title: "품목코드",
+      title: "Code",
       dataIndex: "itemCode",
       key: "itemCode",
       render: (text: string, record: InquiryItem, index: number) =>
@@ -235,7 +235,7 @@ const MakeInquiryTable = ({
       title: (
         <div>
           <Select
-            placeholder="단위"
+            placeholder="Unit"
             onChange={applyUnitToAllRows}
             style={{ width: "100%" }}
           >
@@ -260,7 +260,7 @@ const MakeInquiryTable = ({
       width: 100,
     },
     {
-      title: "품명",
+      title: "Name",
       dataIndex: "itemName",
       key: "itemName",
       render: (text: string, record: InquiryItem, index: number) => (
@@ -277,7 +277,7 @@ const MakeInquiryTable = ({
       width: 250,
     },
     {
-      title: "수량",
+      title: "QTY",
       dataIndex: "qty",
       key: "qty",
       render: (text: number, record: InquiryItem, index: number) =>
@@ -294,7 +294,7 @@ const MakeInquiryTable = ({
       width: 100,
     },
     {
-      title: "비고",
+      title: "Remark",
       dataIndex: "itemRemark",
       key: "itemRemark",
       render: (text: string, record: InquiryItem, index: number) => (
@@ -324,14 +324,14 @@ const MakeInquiryTable = ({
     <>
       <div>
         <Button type="primary" onClick={addItem} style={{ margin: "20px 5px" }}>
-          품목 추가
+          Add item
         </Button>
         <Button
           type="dashed"
           style={{ margin: "20px 5px" }}
           onClick={() => setIsModalVisible(true)}
         >
-          액셀 불러오기
+          Load Excel File
         </Button>
       </div>
       <DndContext

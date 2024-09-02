@@ -101,7 +101,9 @@ const MakeInquiry = () => {
   const [companyNameList, setCompanyNameList] = useState<
     { companyName: string; code: string }[]
   >([]);
-  const [vesselNameList, setVesselNameList] = useState<string[]>([]);
+  const [vesselNameList, setVesselNameList] = useState<
+    { id: number; name: string }[]
+  >([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(
     null
   );
@@ -265,7 +267,10 @@ const MakeInquiry = () => {
           if (selectedCustomer) {
             setSelectedCustomerId(selectedCustomer.id);
             setVesselNameList(
-              selectedCustomer.vesselList.map((v) => v.vesselName)
+              selectedCustomer.vesselList.map((v) => ({
+                id: v.id,
+                name: v.vesselName,
+              }))
             );
             setVesselList(selectedCustomer.vesselList);
           } else {
@@ -622,7 +627,7 @@ const MakeInquiry = () => {
 
   return (
     <FormContainer>
-      <Title>견적요청서 작성</Title>
+      <Title>견적요청서 작성(MAKE INQUIRY)</Title>
       {formValues.docNumber && (
         <InquiryForm
           formValues={formValues}
@@ -652,21 +657,21 @@ const MakeInquiry = () => {
         onClick={handleSubmit}
         style={{ margin: "20px 0 0 15px", float: "right" }}
       >
-        저장하기
+        Save
       </Button>
       <Button
         type="primary"
         onClick={showMailSenderModal}
         style={{ margin: "20px 0 0 15px", float: "right" }}
       >
-        메일 발송
+        Send Email
       </Button>
       <Button
         type="default"
         onClick={() => navigate("/customerInquirylist")}
         style={{ margin: "20px 0 0 15px", float: "right" }}
       >
-        목록
+        Back
       </Button>
       <Modal
         title="Send Mail"
@@ -695,7 +700,7 @@ const MakeInquiry = () => {
           paddingLeft: 20,
         }}
       >
-        <span>의뢰처: </span>
+        <span>Supplier: </span>
         <Select
           style={{ width: 200, float: "left", marginLeft: 10 }}
           onChange={(value) => {
@@ -714,14 +719,14 @@ const MakeInquiry = () => {
           ))}
         </Select>
         <Button onClick={handleOpenHeaderModal} style={{ marginLeft: 20 }}>
-          머릿글 수정
+          Edit Header Text
         </Button>
         <Button
           type="default"
           onClick={handlePDFPreview}
           style={{ marginLeft: "10px" }}
         >
-          {showPDFPreview ? "미리보기 닫기" : "PDF 미리보기"}
+          {showPDFPreview ? "Close Preview" : "PDF Preview"}
         </Button>
         <span style={{ marginLeft: 20 }}>LANGUAGE: </span>
         <Select
