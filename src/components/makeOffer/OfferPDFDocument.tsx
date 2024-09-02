@@ -136,6 +136,18 @@ const styles = StyleSheet.create({
     fontSize: 9,
     textAlign: "center",
   },
+  tableTotalAmount: {
+    marginLeft: "auto",
+    width: 250,
+    marginTop: 10,
+    borderTop: "1px dotted #000",
+    padding: 5,
+    fontSize: 10,
+    textAlign: "right",
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
 });
 
 // 번호를 결정하는 함수
@@ -317,8 +329,9 @@ const OfferPDFDocument = ({
                 </View>
               </View>
               {renderTableRows(info.inquiryItemDetails)}
-              <View>
-                <Text>TOTAL: {totalSalesAmountGlobal}</Text>
+              <View style={styles.tableTotalAmount}>
+                <Text>T O T A L :</Text>
+                <Text> {totalSalesAmountGlobal}</Text>
               </View>
             </View>
           </Page>
