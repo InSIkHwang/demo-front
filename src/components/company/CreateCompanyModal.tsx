@@ -1,18 +1,50 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Modal,
   Form as AntForm,
   Input,
   Button,
   Typography,
-  Row,
-  Col,
-  Spin,
   notification,
 } from "antd";
 import axios from "../../api/axios";
+import styled from "styled-components";
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
+
+const StyledModal = styled(Modal)`
+  .ant-modal-content {
+    border-radius: 16px;
+    padding: 20px;
+  }
+
+  .ant-modal-header {
+    border-bottom: none;
+    text-align: center;
+  }
+
+  .ant-modal-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+  }
+
+  .ant-modal-close {
+    top: 20px;
+    right: 20px;
+  }
+
+  .ant-divider-horizontal {
+    margin: 12px 0;
+  }
+
+  .ant-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    border-top: none;
+    padding-top: 20px;
+  }
+`;
 
 interface ModalProps {
   category: string;
@@ -21,8 +53,6 @@ interface ModalProps {
 }
 
 const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
-  const todayDate = new Date().toLocaleDateString("en-CA");
-
   const [form] = AntForm.useForm();
   const [isCodeUnique, setIsCodeUnique] = useState(true);
   const [isCheckingCode, setIsCheckingCode] = useState(false);
@@ -83,7 +113,7 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
       });
       notification.success({
         message: "등록 완료",
-        description: "회사가 성공적으로 등록되었습니다.",
+        description: "성공적으로 등록되었습니다.",
       });
       onUpdate();
       onClose();
@@ -91,7 +121,7 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
       console.error("Error posting data:", error);
       notification.error({
         message: "등록 실패",
-        description: "회사를 등록하는 중 오류가 발생했습니다.",
+        description: "등록하는 중 오류가 발생했습니다.",
       });
     } finally {
       setLoading(false);
@@ -104,8 +134,8 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
   };
 
   return (
-    <Modal
-      visible={true}
+    <StyledModal
+      open={true}
       title={
         category === "customer"
           ? "신규 매출처 등록"
@@ -119,77 +149,65 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
     >
       <AntForm
         form={form}
-        layout="vertical"
+        layout="horizontal"
+        labelCol={{ span: 4 }}
         onValuesChange={handleChange}
         onFinish={handleSubmit}
       >
-        <Row gutter={16}>
-          <Col span={24}>
-            <AntForm.Item
-              label="코드"
-              name="code"
-              rules={[{ required: true, message: "코드를 입력하세요!" }]}
-            >
-              <Input placeholder="BAS" />
-              {!isCodeUnique && (
-                <Text type="danger">이미 등록된 코드입니다.</Text>
-              )}
-            </AntForm.Item>
-          </Col>
-          <Col span={24}>
-            <AntForm.Item
-              label="상호명"
-              name="name"
-              rules={[{ required: true, message: "상호명을 입력하세요!" }]}
-            >
-              <Input placeholder="바스코리아" />
-            </AntForm.Item>
-          </Col>
-          <Col span={24}>
-            <AntForm.Item label="연락처" name="contact">
-              <Input placeholder="051-123-4567" />
-            </AntForm.Item>
-          </Col>
-          <Col span={24}>
-            <AntForm.Item label="담당자" name="manager">
-              <Input placeholder="김바스" />
-            </AntForm.Item>
-          </Col>
-          <Col span={24}>
-            <AntForm.Item label="이메일" name="email">
-              <Input placeholder="info@bas-korea.com" />
-            </AntForm.Item>
-          </Col>
-          <Col span={24}>
-            <AntForm.Item label="주소" name="address">
-              <Input placeholder="부산광역시 해운대구" />
-            </AntForm.Item>
-          </Col>
-          <Col span={24}>
-            <AntForm.Item label="사용 언어" name="language">
-              <Input placeholder="KOR" />
-            </AntForm.Item>
-          </Col>
-          <Col span={24}>
-            <AntForm.Item label="머릿글" name="headerMessage">
-              <Input placeholder="귀사의 무궁한 발전을 기원합니다." />
-            </AntForm.Item>
-          </Col>
-          <Col span={24}>
-            <AntForm.Item>
-              <Button
-                type="primary"
-                htmlType="submit"
-                loading={loading}
-                disabled={!isCodeUnique || isCheckingCode}
-              >
-                등록
-              </Button>
-            </AntForm.Item>
-          </Col>
-        </Row>
+        <AntForm.Item
+          label="코드"
+          name="code"
+          rules={[{ required: true, message: "코드를 입력하세요!" }]}
+        >
+          <Input placeholder="BAS" />
+          {!isCodeUnique && <Text type="danger">이미 등록된 코드입니다.</Text>}
+        </AntForm.Item>
+
+        <AntForm.Item
+          label="상호명"
+          name="name"
+          rules={[{ required: true, message: "상호명을 입력하세요!" }]}
+        >
+          <Input placeholder="바스코리아" />
+        </AntForm.Item>
+
+        <AntForm.Item label="연락처" name="contact">
+          <Input placeholder="051-123-4567" />
+        </AntForm.Item>
+
+        <AntForm.Item label="담당자" name="manager">
+          <Input placeholder="김바스" />
+        </AntForm.Item>
+
+        <AntForm.Item label="이메일" name="email">
+          <Input placeholder="info@bas-korea.com" />
+        </AntForm.Item>
+
+        <AntForm.Item label="주소" name="address">
+          <Input placeholder="부산광역시 해운대구" />
+        </AntForm.Item>
+
+        <AntForm.Item label="사용 언어" name="language">
+          <Input placeholder="KOR" />
+        </AntForm.Item>
+
+        <AntForm.Item label="머릿글" name="headerMessage">
+          <Input.TextArea placeholder="귀사의 무궁한 발전을 기원합니다." />
+        </AntForm.Item>
+
+        <AntForm.Item>
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={loading}
+            disabled={!isCodeUnique || isCheckingCode}
+            block
+          >
+            등록
+          </Button>
+        </AntForm.Item>
       </AntForm>
-    </Modal>
+    </StyledModal>
   );
 };
 

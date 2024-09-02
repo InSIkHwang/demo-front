@@ -35,16 +35,6 @@ interface ModalProps {
   onUpdate: () => void;
 }
 
-// 스타일 정의
-const InfoLabel = styled(Text)`
-  font-weight: 600;
-  color: #555;
-`;
-
-const InfoValue = styled(Text)`
-  color: #333;
-`;
-
 const StyledModal = styled(Modal)`
   .ant-modal-content {
     border-radius: 16px;
@@ -90,7 +80,6 @@ const DetailCompanyModal = ({
   const [loading, setLoading] = useState(false);
   const [form] = AntForm.useForm();
 
-  // 수정폼 데이터 입력 처리
   const handleChange = (changedValues: any) => {
     setFormData({
       ...formData,
@@ -98,7 +87,6 @@ const DetailCompanyModal = ({
     });
   };
 
-  // 데이터 수정 PUT API
   const editData = async () => {
     try {
       const endpoint =
@@ -112,7 +100,6 @@ const DetailCompanyModal = ({
     }
   };
 
-  // 데이터 삭제 DELETE API
   const deleteData = async () => {
     try {
       const endpoint =
@@ -126,8 +113,7 @@ const DetailCompanyModal = ({
     }
   };
 
-  // 수정 SUBMIT 비동기 처리, PUT 처리 후 FETCH
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async () => {
     setLoading(true);
     await editData();
     setLoading(false);
@@ -135,7 +121,6 @@ const DetailCompanyModal = ({
     onClose();
   };
 
-  // 삭제 SUBMIT 비동기 처리, DELETE 처리 후 FETCH
   const handleDelete = async () => {
     Modal.confirm({
       title: "정말 삭제하시겠습니까?",
@@ -159,163 +144,92 @@ const DetailCompanyModal = ({
       footer={null}
       title={category === "customer" ? "매출처 상세 정보" : "매입처 상세 정보"}
     >
-      {isEditing ? (
-        <AntForm
-          form={form}
-          layout="vertical"
-          initialValues={formData}
-          onValuesChange={handleChange}
-        >
-          <Row gutter={16}>
-            <Col span={12}>
-              <AntForm.Item label="코드" name="code">
-                <Input readOnly={!isEditing} />
-              </AntForm.Item>
-            </Col>
-            <Col span={12}>
-              <AntForm.Item label="상호명" name="companyName">
-                <Input readOnly={!isEditing} />
-              </AntForm.Item>
-            </Col>
-            <Col span={12}>
-              <AntForm.Item label="연락처" name="phoneNumber">
-                <Input readOnly={!isEditing} />
-              </AntForm.Item>
-            </Col>
-            <Col span={12}>
-              <AntForm.Item label="담당자" name="representative">
-                <Input readOnly={!isEditing} />
-              </AntForm.Item>
-            </Col>
-            <Col span={12}>
-              <AntForm.Item label="이메일" name="email">
-                <Input readOnly={!isEditing} />
-              </AntForm.Item>
-            </Col>
-            <Col span={12}>
-              <AntForm.Item label="주소" name="address">
-                <Input readOnly={!isEditing} />
-              </AntForm.Item>
-            </Col>
-            <Col span={12}>
-              <AntForm.Item label="사용 언어" name="communicationLanguage">
-                <Input readOnly={!isEditing} />
-              </AntForm.Item>
-            </Col>
-            <Col span={12}>
-              <AntForm.Item label="수정된 날짜" name="modifiedAt">
-                <Input readOnly />
-              </AntForm.Item>
-            </Col>
-            <Col span={12}>
-              <AntForm.Item label="머릿글" name="headerMessage">
-                <Input readOnly={!isEditing} />
-              </AntForm.Item>
-            </Col>
-          </Row>
+      <AntForm
+        form={form}
+        layout="horizontal"
+        labelCol={{ span: 4 }}
+        initialValues={formData}
+        onValuesChange={handleChange}
+      >
+        <AntForm.Item label="코드" name="code">
+          <Input readOnly={!isEditing} />
+        </AntForm.Item>
 
-          <Divider />
+        <AntForm.Item label="상호명" name="companyName">
+          <Input readOnly={!isEditing} />
+        </AntForm.Item>
 
-          <div style={{ textAlign: "right" }}>
+        <AntForm.Item label="연락처" name="phoneNumber">
+          <Input readOnly={!isEditing} />
+        </AntForm.Item>
+
+        <AntForm.Item label="담당자" name="representative">
+          <Input readOnly={!isEditing} />
+        </AntForm.Item>
+
+        <AntForm.Item label="이메일" name="email">
+          <Input readOnly={!isEditing} />
+        </AntForm.Item>
+
+        <AntForm.Item label="주소" name="address">
+          <Input readOnly={!isEditing} />
+        </AntForm.Item>
+
+        <AntForm.Item label="사용 언어" name="communicationLanguage">
+          <Input readOnly={!isEditing} />
+        </AntForm.Item>
+
+        <AntForm.Item label="수정된 날짜" name="modifiedAt">
+          <Input readOnly />
+        </AntForm.Item>
+
+        <AntForm.Item label="머릿글" name="headerMessage">
+          <Input.TextArea readOnly={!isEditing} />
+        </AntForm.Item>
+
+        <Divider />
+
+        <div style={{ textAlign: "right" }}>
+          {isEditing ? (
+            <>
+              <Button
+                type="primary"
+                style={{ marginRight: 10 }}
+                onClick={handleSubmit}
+                loading={loading}
+              >
+                저장
+              </Button>
+              <Button
+                type="default"
+                style={{ marginRight: 10 }}
+                onClick={() => setIsEditing(false)}
+              >
+                취소
+              </Button>
+            </>
+          ) : (
             <Button
               type="primary"
               style={{ marginRight: 10 }}
-              onClick={handleSubmit}
+              onClick={() => setIsEditing(true)}
             >
               수정
             </Button>
-            <Button
-              type="primary"
-              danger
-              onClick={handleDelete}
-              loading={loading}
-            >
-              삭제
-            </Button>
-            <Button type="default" onClick={onClose} style={{ marginLeft: 10 }}>
-              닫기
-            </Button>
-          </div>
-        </AntForm>
-      ) : (
-        <Row gutter={[16, 16]}>
-          <Col span={8}>
-            <InfoLabel>코드:</InfoLabel>
-          </Col>
-          <Col span={16}>
-            <InfoValue>{formData.code}</InfoValue>
-          </Col>
-
-          <Col span={8}>
-            <InfoLabel>상호명:</InfoLabel>
-          </Col>
-          <Col span={16}>
-            <InfoValue>{formData.companyName}</InfoValue>
-          </Col>
-
-          <Col span={8}>
-            <InfoLabel>연락처:</InfoLabel>
-          </Col>
-          <Col span={16}>
-            <InfoValue>{formData.phoneNumber}</InfoValue>
-          </Col>
-
-          <Col span={8}>
-            <InfoLabel>담당자:</InfoLabel>
-          </Col>
-          <Col span={16}>
-            <InfoValue>{formData.representative}</InfoValue>
-          </Col>
-
-          <Col span={8}>
-            <InfoLabel>이메일:</InfoLabel>
-          </Col>
-          <Col span={16}>
-            <InfoValue>{formData.email}</InfoValue>
-          </Col>
-
-          <Col span={8}>
-            <InfoLabel>주소:</InfoLabel>
-          </Col>
-          <Col span={16}>
-            <InfoValue>{formData.address}</InfoValue>
-          </Col>
-
-          <Col span={8}>
-            <InfoLabel>사용 언어:</InfoLabel>
-          </Col>
-          <Col span={16}>
-            <InfoValue>{formData.communicationLanguage}</InfoValue>
-          </Col>
-
-          <Col span={8}>
-            <InfoLabel>수정된 날짜:</InfoLabel>
-          </Col>
-          <Col span={16}>
-            <InfoValue>{formData.modifiedAt}</InfoValue>
-          </Col>
-
-          <Col span={8}>
-            <InfoLabel>머릿글:</InfoLabel>
-          </Col>
-          <Col span={16}>
-            <InfoValue>{formData.headerMessage}</InfoValue>
-          </Col>
-        </Row>
-      )}
-
-      <Divider />
-      <div style={{ textAlign: "right" }}>
-        {!isEditing && (
+          )}
           <Button
             type="primary"
-            style={{ marginRight: 10 }}
-            onClick={() => setIsEditing(true)}
+            danger
+            onClick={handleDelete}
+            loading={loading}
           >
-            수정
+            삭제
           </Button>
-        )}
-      </div>
+          <Button type="default" onClick={onClose} style={{ marginLeft: 10 }}>
+            닫기
+          </Button>
+        </div>
+      </AntForm>
     </StyledModal>
   );
 };

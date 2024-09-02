@@ -10,7 +10,6 @@ import {
   Col,
   message,
 } from "antd";
-import "antd/dist/reset.css"; // Make sure to include Ant Design styles
 import { Vessel } from "../../types/types";
 
 const { Title, Text } = Typography;
@@ -40,7 +39,6 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
       customerCompanyName: formData.customer?.companyName || "없음",
     });
   }, [formData, form]);
-  console.log(formData);
 
   // 데이터 수정 PUT API
   const editData = async () => {
@@ -72,7 +70,7 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
   };
 
   // 수정 SUBMIT 비동기 처리, PUT 처리 후 FETCH
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async () => {
     await editData();
     onUpdate();
     onClose();
@@ -101,92 +99,59 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
       title={<Title level={3}>선박 상세 정보</Title>}
       width={700}
     >
-      {isEditing ? (
-        <Form
-          form={form}
-          initialValues={formData}
-          layout="vertical"
-          onFinish={handleSubmit}
+      <Form
+        form={form}
+        initialValues={formData}
+        layout="horizontal"
+        labelCol={{ span: 4 }}
+      >
+        <Form.Item
+          label="코드"
+          name="code"
+          rules={[{ required: true, message: "코드를 입력하세요!" }]}
         >
-          <Form.Item
-            label="코드"
-            name="code"
-            rules={[{ required: true, message: "코드를 입력하세요!" }]}
-          >
-            <Input disabled />
-          </Form.Item>
-
-          <Form.Item
-            label="선명"
-            name="vesselName"
-            rules={[{ required: true, message: "선명을 입력하세요!" }]}
-          >
-            <Input />
-          </Form.Item>
-
-          <Form.Item label="선박회사" name="vesselCompanyName">
-            <Input />
-          </Form.Item>
-
-          <Form.Item label="IMO No." name="imoNumber">
-            <Input type="number" />
-          </Form.Item>
-
-          <Form.Item label="HULL No." name="hullNumber">
-            <Input />
-          </Form.Item>
-
-          <Form.Item label="SHIPYARD" name="shipYard">
-            <Input />
-          </Form.Item>
-
-          <Form.Item
-            label="매출처"
-            name="customerCompanyName"
-            rules={[{ required: true, message: "매출처를 선택하세요!" }]}
-          >
-            <Input readOnly />
-          </Form.Item>
-
-          <Row justify="end">
-            <Col>
+          <Input readOnly={!isEditing} />
+        </Form.Item>
+        <Form.Item
+          label="선명"
+          name="vesselName"
+          rules={[{ required: true, message: "선명을 입력하세요!" }]}
+        >
+          <Input readOnly={!isEditing} />
+        </Form.Item>
+        <Form.Item label="선박회사" name="vesselCompanyName">
+          <Input readOnly={!isEditing} />
+        </Form.Item>
+        <Form.Item label="IMO No." name="imoNumber">
+          <Input type="number" readOnly={!isEditing} />
+        </Form.Item>
+        <Form.Item label="HULL No." name="hullNumber">
+          <Input readOnly={!isEditing} />
+        </Form.Item>
+        <Form.Item label="SHIPYARD" name="shipYard">
+          <Input readOnly={!isEditing} />
+        </Form.Item>
+        <Form.Item
+          label="매출처"
+          name="customerCompanyName"
+          rules={[{ required: true, message: "매출처를 선택하세요!" }]}
+        >
+          <Input readOnly />
+        </Form.Item>
+        <div style={{ textAlign: "right" }}>
+          {isEditing ? (
+            <>
               <Button
                 type="primary"
-                htmlType="submit"
+                onClick={handleSubmit}
                 style={{ marginRight: "8px" }}
               >
                 저장
               </Button>
               <Button onClick={() => setIsEditing(false)}>취소</Button>
-            </Col>
-          </Row>
-        </Form>
-      ) : (
-        <>
-          <Form.Item>
-            <Text strong>코드:</Text> {formData.code}
-          </Form.Item>
-          <Form.Item>
-            <Text strong>선명:</Text> {formData.vesselName}
-          </Form.Item>
-          <Form.Item>
-            <Text strong>선박회사:</Text> {formData.vesselCompanyName}
-          </Form.Item>
-          <Form.Item>
-            <Text strong>IMO No.:</Text> {formData.imoNumber}
-          </Form.Item>
-          <Form.Item>
-            <Text strong>HULL No.:</Text> {formData.hullNumber}
-          </Form.Item>
-          <Form.Item>
-            <Text strong>SHIPYARD:</Text> {formData.shipYard}
-          </Form.Item>
-          <Form.Item>
-            <Text strong>매출처:</Text>{" "}
-            {formData.customer?.companyName || "없음"}
-          </Form.Item>
-          <Row justify="end">
-            <Col>
+            </>
+          ) : (
+            <>
               <Button
                 type="primary"
                 onClick={() => setIsEditing(true)}
@@ -196,11 +161,14 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
               </Button>
               <Button type="primary" danger onClick={handleDelete}>
                 삭제
+              </Button>{" "}
+              <Button type="default" onClick={onClose}>
+                닫기
               </Button>
-            </Col>
-          </Row>
-        </>
-      )}
+            </>
+          )}
+        </div>
+      </Form>
     </Modal>
   );
 };

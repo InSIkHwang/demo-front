@@ -11,9 +11,6 @@ import {
   Row,
   Col,
 } from "antd";
-import "antd/dist/reset.css"; // Make sure to include Ant Design styles
-
-const { Title, Text } = Typography;
 
 const StyledModal = styled(Modal)`
   .ant-modal-content {
@@ -44,18 +41,6 @@ const StyledForm = styled(Form)`
 
 const FormGroup = styled(Form.Item)`
   margin-bottom: 15px;
-`;
-
-const ErrorMessage = styled(Text)`
-  color: red;
-  font-size: 12px;
-  display: block;
-  margin-top: 5px;
-`;
-
-const SubmitButton = styled(Button)`
-  display: block;
-  margin-left: auto;
 `;
 
 interface ModalProps {
@@ -203,7 +188,7 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
       title="신규 선박 등록"
     >
       <StyledForm
-        layout="vertical"
+        layout="horizontal"
         onFinish={handleSubmit}
         initialValues={formData}
       >
@@ -327,21 +312,18 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
         </FormGroup>
 
         <FormGroup>
-          <Row justify="end">
-            <Col>
-              <SubmitButton
-                type="primary"
-                htmlType="submit"
-                disabled={
-                  formData.customerId === undefined ||
-                  !isCodeUnique ||
-                  selectedCustomer?.companyName !== formData.customerName
-                }
-              >
-                등록
-              </SubmitButton>
-            </Col>
-          </Row>
+          <Button
+            type="primary"
+            htmlType="submit"
+            disabled={
+              formData.customerId === undefined ||
+              !isCodeUnique ||
+              selectedCustomer?.companyName !== formData.customerName
+            }
+            block
+          >
+            등록
+          </Button>
         </FormGroup>
       </StyledForm>
     </StyledModal>
