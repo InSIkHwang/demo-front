@@ -118,6 +118,7 @@ const CustomerList = () => {
       }
       const response = await axios.get("/api/customers/search", { params });
       setData(response.data.customers);
+      setTotalCount(response.data.totalCount);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching filtered data:", error);

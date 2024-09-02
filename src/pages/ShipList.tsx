@@ -115,6 +115,7 @@ const ShipList = () => {
       }
       const response = await axios.get("/api/vessels/search", { params });
       setData(response.data.vessels);
+      setTotalCount(response.data.totalCount);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching filtered data:", error);
@@ -235,7 +236,7 @@ const ShipList = () => {
             <PaginationWrapper
               current={currentPage}
               pageSize={itemsPerPage}
-              total={data.length}
+              total={totalCount}
               onChange={handlePageChange}
               onShowSizeChange={handlePageSizeChange}
               showSizeChanger

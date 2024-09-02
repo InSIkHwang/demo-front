@@ -47,7 +47,6 @@ const HeaderEditModal = ({
     null
   );
   const prevSupplierIdRef = useRef<number | undefined>(undefined);
-  console.log(pdfCompanyTag);
 
   useEffect(() => {
     if (open) {

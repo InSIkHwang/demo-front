@@ -41,10 +41,12 @@ const MakeOffer = () => {
   const [headerEditModalVisible, setHeaderEditModalVisible] =
     useState<boolean>(false);
   const [pdfHeader, setPdfHeader] = useState<string>("");
-  const [pdfSupplierTag, setPdfSupplierTag] = useState<{
+  const [pdfCustomerTag, setPdfCustomerTag] = useState<{
     id: number;
     name: string;
-  }>();
+  }>({ id: 99, name: "test" });
+
+  console.log(info);
 
   useEffect(() => {
     const loadOfferDetail = async () => {
@@ -191,9 +193,9 @@ const MakeOffer = () => {
   };
 
   const handleOpenHeaderModal = () => {
-    setPdfSupplierTag({
-      id: info.supplierInfo?.supplierId,
-      name: info.supplierInfo?.supplierName,
+    setPdfCustomerTag({
+      id: info.supplierInfo?.customerId, //api 응답값 추가 필요
+      name: info.supplierInfo?.customerName,
     });
     setHeaderEditModalVisible(true);
   };
@@ -271,7 +273,7 @@ const MakeOffer = () => {
             open={headerEditModalVisible}
             onClose={handleCloseHeaderModal}
             onSave={handleHeaderSave}
-            pdfCompanyTag={pdfSupplierTag!}
+            pdfCompanyTag={pdfCustomerTag!}
           />
           <Button
             style={{ marginLeft: 10 }}
@@ -282,6 +284,17 @@ const MakeOffer = () => {
           </Button>
         </div>
       )}
+      {/* {showPDFPreview && (
+        <OfferPDFDocument
+          formValues={formValues}
+          items={items}
+          supplierName={pdfCustomerTag ? pdfCustomerTag.name : ""}
+          vesselInfo={selectedVessel}
+          pdfHeader={pdfHeader}
+          viewMode={true}
+          language={language}
+        />
+      )} */}
     </FormContainer>
   );
 };

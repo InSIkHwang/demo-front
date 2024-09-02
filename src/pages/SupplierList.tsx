@@ -69,7 +69,6 @@ const SupplierList = () => {
   const [totalCount, setTotalCount] = useState<number>();
 
   const category = "supplier";
-
   useEffect(() => {
     fetchData();
   }, [currentPage, itemsPerPage]); // 페이지와 페이지 크기 변경 시 데이터를 새로 불러옴
@@ -83,7 +82,8 @@ const SupplierList = () => {
           size: itemsPerPage,
         },
       });
-      setData(response.data.customers || []); // 빈 배열로 초기화
+
+      setData(response.data.suppliers || []); // 빈 배열로 초기화
       setTotalCount(response.data.totalCount || 0); // totalCount도 초기화
       setLoading(false);
     } catch (error) {
@@ -119,6 +119,7 @@ const SupplierList = () => {
       }
       const response = await axios.get("/api/suppliers/search", { params });
       setData(response.data.suppliers);
+      setTotalCount(response.data.totalCount);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching filtered data:", error);
@@ -247,7 +248,7 @@ const SupplierList = () => {
             <PaginationWrapper
               current={currentPage}
               pageSize={itemsPerPage}
-              total={data.length}
+              total={totalCount}
               onChange={handlePageChange}
               onShowSizeChange={handlePageSizeChange}
               showSizeChanger
