@@ -50,15 +50,6 @@ const StyledButton = styled(Button)`
   margin-top: 24px;
 `;
 
-const AttachmentList = styled.ul`
-  list-style-type: none;
-  padding-left: 0;
-`;
-
-const AttachmentItem = styled.li`
-  margin-bottom: 8px;
-`;
-
 interface FormValue {
   docNumber: string;
   registerDate: dayjs.Dayjs;

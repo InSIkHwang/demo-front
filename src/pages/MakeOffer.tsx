@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { Button, message, Modal } from "antd";
+import { Button, message, Modal, Select } from "antd";
 import styled from "styled-components";
 import dayjs from "dayjs";
 import FormComponent from "../components/makeOffer/FormComponent";
@@ -10,6 +10,7 @@ import TableComponent, {
 import { editOffer, fetchOfferDetail } from "../api/api";
 import { ItemDataType } from "../types/types";
 import MergedTableComponent from "../components/makeOffer/MergedTableComponent";
+import OfferHeaderEditModal from "../components/makeOffer/OfferHeaderEditModal";
 
 const FormContainer = styled.div`
   position: relative;
@@ -35,6 +36,15 @@ const MakeOffer = () => {
   const [dataSource, setDataSource] = useState(info?.inquiryItemDetails || []);
   const isReadOnly = window.location.pathname === "/makeoffer/mergedoffer";
   const [isDuplicate, setIsDuplicate] = useState<boolean>(false);
+  const [showPDFPreview, setShowPDFPreview] = useState(false);
+  const [language, setLanguage] = useState<string>("KOR");
+  const [headerEditModalVisible, setHeaderEditModalVisible] =
+    useState<boolean>(false);
+  const [pdfHeader, setPdfHeader] = useState<string>("");
+  const [pdfSupplierTag, setPdfSupplierTag] = useState<{
+    id: number;
+    name: string;
+  }>();
 
   useEffect(() => {
     const loadOfferDetail = async () => {
@@ -172,6 +182,30 @@ const MakeOffer = () => {
     setDataSource(response.inquiryItemDetails || []);
   };
 
+  const handlePDFPreview = () => {
+    setShowPDFPreview((prevState) => !prevState);
+  };
+
+  const handleLanguageChange = (value: string) => {
+    setLanguage(value);
+  };
+
+  const handleOpenHeaderModal = () => {
+    setPdfSupplierTag({
+      id: info.supplierInfo?.supplierId,
+      name: info.supplierInfo?.supplierName,
+    });
+    setHeaderEditModalVisible(true);
+  };
+
+  const handleCloseHeaderModal = () => {
+    setHeaderEditModalVisible(false);
+  };
+
+  const handleHeaderSave = (text: string) => {
+    setPdfHeader(text);
+  };
+
   return (
     <FormContainer>
       <Title>견적 제안 - Offers</Title>
@@ -221,8 +255,31 @@ const MakeOffer = () => {
       )}
       {isReadOnly && (
         <div style={{ marginTop: 20 }}>
-          <Button type="default">PDF 미리보기</Button>
-          <Button style={{ marginLeft: 10 }}>머릿글 수정</Button>
+          <Button style={{ marginLeft: 10 }} onClick={handleOpenHeaderModal}>
+            머릿글 수정
+          </Button>
+          <span style={{ marginLeft: 20 }}>LANGUAGE: </span>
+          <Select
+            style={{ width: 100, marginLeft: 10 }}
+            value={language}
+            onChange={handleLanguageChange}
+          >
+            <Select.Option value="KOR">KOR</Select.Option>
+            <Select.Option value="ENG">ENG</Select.Option>
+          </Select>
+          <OfferHeaderEditModal
+            open={headerEditModalVisible}
+            onClose={handleCloseHeaderModal}
+            onSave={handleHeaderSave}
+            pdfCompanyTag={pdfSupplierTag!}
+          />
+          <Button
+            style={{ marginLeft: 10 }}
+            onClick={handlePDFPreview}
+            type="default"
+          >
+            {showPDFPreview ? "미리보기 닫기" : "PDF 미리보기"}
+          </Button>
         </div>
       )}
     </FormContainer>
