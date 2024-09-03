@@ -6,7 +6,6 @@ import {
   InquiryItem,
   SupplierInquiryDetailIF,
 } from "../../types/types";
-import dayjs from "dayjs";
 
 interface PDFGeneratorProps {
   isVisible: boolean;

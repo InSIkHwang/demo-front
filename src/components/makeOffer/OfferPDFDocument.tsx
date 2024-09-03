@@ -14,12 +14,7 @@ import malgunGothic from "../../assets/font/malgun.ttf";
 import NotoSerifKRExtraBold from "../../assets/font/NotoSerifKR-ExtraBold.ttf";
 import NotoSerifKR from "../../assets/font/NotoSerifKR-Medium.ttf";
 import logoUrl from "../../assets/logo/baskorea_logo-removebg.png";
-import {
-  InquiryItem,
-  ItemDataType,
-  SupplierInquiryDetailIF,
-  VesselList,
-} from "../../types/types";
+import { ItemDataType, SupplierInquiryDetailIF } from "../../types/types";
 
 // 한글 글꼴 등록
 Font.register({
@@ -148,6 +143,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
   },
+  nonItemtypeCell: {
+    marginLeft: 40,
+    fontSize: 9,
+    textDecoration: "underline",
+    fontFamily: "NotoSerifKR",
+  },
 });
 
 // 번호를 결정하는 함수
@@ -178,14 +179,14 @@ const renderTableRows = (items: ItemDataType[]) => {
 
     return (
       <View style={styles.tableRow} key={item.position}>
-        <View style={styles.tableSmallCol}>
-          <Text style={styles.tableCell}>
-            {isItemType
-              ? getDisplayNo(item.itemType, itemIndex - 1)
-              : getDisplayNo(item.itemType, 0)}
-          </Text>
-        </View>
         {isItemType && (
+          <View style={styles.tableSmallCol}>
+            <Text style={styles.tableCell}>
+              {getDisplayNo(item.itemType, itemIndex - 1)}
+            </Text>
+          </View>
+        )}
+        {isItemType ? (
           <>
             <View style={styles.tableMedCol}>
               <Text style={styles.tableCell}>{item.itemCode}</Text>
@@ -200,16 +201,19 @@ const renderTableRows = (items: ItemDataType[]) => {
               <Text style={styles.tableCell}>{item.unit}</Text>
             </View>
             <View style={styles.tableMedCol}>
-              <Text style={styles.tableCell}>{item.salesPriceGlobal}</Text>
+              <Text style={styles.tableCell}>
+                {item.salesPriceGlobal.toFixed(2).toLocaleString()}
+              </Text>
             </View>
             <View style={styles.tableMedCol}>
-              <Text style={styles.tableCell}>{item.salesAmountGlobal}</Text>
+              <Text style={styles.tableCell}>
+                {item.salesAmountGlobal.toFixed(2).toLocaleString()}
+              </Text>
             </View>
           </>
-        )}
-        {!isItemType && (
-          <View style={[styles.tableBigCol, { flex: 7.65 }]}>
-            <Text style={styles.tableCell}>{item.itemName}</Text>
+        ) : (
+          <View style={[styles.tableBigCol, { flex: 1 }]}>
+            <Text style={styles.nonItemtypeCell}>{item.itemName}</Text>
           </View>
         )}
       </View>
@@ -220,14 +224,13 @@ const renderTableRows = (items: ItemDataType[]) => {
 // 헤더를 렌더링하는 함수
 const renderHeader = (
   logoUrl: string,
-  supplierName: string,
+  customerName: string,
   vesselName: string,
   docNumber: string,
   registerDate: string | dayjs.Dayjs,
   pdfHeader: string,
   language: string,
-  // imoNumber: string,
-  hullNumber: string
+  refNumber: string
 ) => (
   <>
     <View style={styles.header}>
@@ -245,24 +248,25 @@ const renderHeader = (
     </View>
     <View style={styles.section}>
       <Text style={styles.title}>
-        {language === "KOR" ? "견 적 의 뢰 서" : "I N Q U I R Y"}
+        {language === "KOR" ? "Q U O T A T I O N" : "Q U O T A T I O N"}
       </Text>
     </View>
     <View style={styles.inquiryInfoWrap}>
       <View style={styles.inquiryInfoColumn}>
-        <Text style={styles.inquiryInfoText}>MESSRS: {supplierName}</Text>
+        <Text style={styles.inquiryInfoText}>MESSRS: {customerName}</Text>
+        <Text style={[styles.inquiryInfoText]}>VESSEL NAME: {vesselName}</Text>
         <Text style={[styles.inquiryInfoText, { marginBottom: 10 }]}>
-          VESSEL: {vesselName}
-        </Text>
-        <Text style={styles.inquiryInfoText}>{/* IMO NO: {imoNumber} */}</Text>
-        <Text style={styles.inquiryInfoText}>
-          {/* HULL NO: {hullNumber} */}
+          YOUR REF NO: {refNumber}
         </Text>
       </View>
       <View style={[styles.inquiryInfoColumn, { alignItems: "flex-end" }]}>
-        <Text style={styles.inquiryInfoText}>OUR REF No: {docNumber}</Text>
+        <Text style={styles.inquiryInfoText}>REF No: {docNumber}</Text>
         <Text style={styles.inquiryInfoText}>
-          DATE: {dayjs(registerDate).format("YYYY-MM-DD")}
+          {language === "KOR"
+            ? "DATE: " +
+              dayjs(registerDate).format("DD MMM, YYYY").toUpperCase()
+            : "DATE: " +
+              dayjs(registerDate).format("DD MMM, YYYY").toUpperCase()}
         </Text>
       </View>
     </View>
@@ -274,9 +278,7 @@ const renderHeader = (
 
 const OfferPDFDocument = ({
   info,
-
   pdfHeader,
-  supplierName,
   viewMode,
   language,
 }: PDFDocumentProps) => {
@@ -295,14 +297,13 @@ const OfferPDFDocument = ({
           <Page size="A4" style={styles.page}>
             {renderHeader(
               logoUrl,
-              supplierName,
+              info.customerName,
               info.vesselName,
               info.documentNumber || "",
               dayjs().format("YYYY-MM-DD"),
               headerMessage,
               language,
-              // info.veeselImoNo,
-              info.veeselHullNo
+              info.refNumber
             )}
             <View style={styles.table}>
               <View style={styles.tableRow}>
@@ -330,8 +331,33 @@ const OfferPDFDocument = ({
               </View>
               {renderTableRows(info.inquiryItemDetails)}
               <View style={styles.tableTotalAmount}>
-                <Text>T O T A L :</Text>
-                <Text> {totalSalesAmountGlobal}</Text>
+                <Text>T O T A L ({info.currencyType}):</Text>
+                <Text>
+                  {(() => {
+                    switch (info.currencyType) {
+                      case "USD":
+                        return `$${totalSalesAmountGlobal
+                          .toFixed(2)
+                          .toLocaleString()}`;
+                      case "EUR":
+                        return `€${totalSalesAmountGlobal
+                          .toFixed(2)
+                          .toLocaleString()}`;
+                      case "INR":
+                        return `₹${totalSalesAmountGlobal
+                          .toFixed(2)
+                          .toLocaleString()}`;
+                      case "JPY":
+                        return `¥${totalSalesAmountGlobal
+                          .toFixed(2)
+                          .toLocaleString()}`;
+                      default:
+                        return `${totalSalesAmountGlobal
+                          .toFixed(2)
+                          .toLocaleString()}`;
+                    }
+                  })()}
+                </Text>
               </View>
             </View>
           </Page>
@@ -345,14 +371,13 @@ const OfferPDFDocument = ({
       <Page size="A4" style={styles.page}>
         {renderHeader(
           logoUrl,
-          supplierName,
+          info.customerName,
           info.vesselName,
           info.documentNumber || "",
           dayjs().format("YYYY-MM-DD"),
           headerMessage,
           language,
-          // info.veeselImoNo,
-          info.veeselHullNo
+          info.refNumber
         )}
         <View style={styles.table}>
           <View style={styles.tableRow}>
@@ -379,6 +404,35 @@ const OfferPDFDocument = ({
             </View>
           </View>
           {renderTableRows(info.inquiryItemDetails)}
+          <View style={styles.tableTotalAmount}>
+            <Text>T O T A L ({info.currencyType}):</Text>
+            <Text>
+              {(() => {
+                switch (info.currencyType) {
+                  case "USD":
+                    return `$${totalSalesAmountGlobal
+                      .toFixed(2)
+                      .toLocaleString()}`;
+                  case "EUR":
+                    return `€${totalSalesAmountGlobal
+                      .toFixed(2)
+                      .toLocaleString()}`;
+                  case "INR":
+                    return `₹${totalSalesAmountGlobal
+                      .toFixed(2)
+                      .toLocaleString()}`;
+                  case "JPY":
+                    return `¥${totalSalesAmountGlobal
+                      .toFixed(2)
+                      .toLocaleString()}`;
+                  default:
+                    return `${totalSalesAmountGlobal
+                      .toFixed(2)
+                      .toLocaleString()}`;
+                }
+              })()}
+            </Text>
+          </View>
         </View>
       </Page>
     </Document>

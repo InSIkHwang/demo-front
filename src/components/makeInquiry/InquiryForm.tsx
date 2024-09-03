@@ -148,11 +148,11 @@ const InquiryForm = ({
   const validateCustomer = () => {
     if (customerUnreg) {
       return {
-        status: formValues.customer.trim() === "" ? "error" : undefined,
+        status: formValues.customer.trim() === "" ? "error" : "error",
         message:
           formValues.customer.trim() === ""
             ? "Please enter a customer"
-            : "등록되지 않은 매출처입니다.",
+            : "This is an unregistered customer",
       };
     }
     return { status: undefined, message: undefined };
@@ -161,11 +161,11 @@ const InquiryForm = ({
   const validateVessel = () => {
     if (vesselUnreg) {
       return {
-        status: formValues.vesselName.trim() === "" ? "error" : undefined,
+        status: formValues.vesselName.trim() === "" ? "error" : "error",
         message:
           formValues.vesselName.trim() === ""
             ? "Please enter a vessel"
-            : "등록되지 않은 선박입니다.",
+            : "This is an unregistered vessel",
       };
     }
     return { status: undefined, message: undefined };
@@ -224,7 +224,7 @@ const InquiryForm = ({
           setMakerOptions(makerOptions);
         }
       } catch (error) {
-        message.error("검색 중 오류가 발생했습니다.");
+        message.error("An error occurred while searching.");
       }
     } else {
       setSupplierList([]);
@@ -244,7 +244,7 @@ const InquiryForm = ({
 
         if (newTag) {
           if (currentTags.length >= 5) {
-            message.error("최대 5개의 의뢰처만 등록 가능합니다.");
+            message.error("Only up to 5 supplier can be registered.");
             return currentTags;
           }
           setTagColors((prevColors) => ({ ...prevColors, [id]: "#007bff" }));
@@ -287,7 +287,7 @@ const InquiryForm = ({
         );
 
         if (newSuppliers.length === 0) {
-          message.warning("이미 추가된 의뢰처입니다.");
+          message.warning("This request has already been added.");
           return prevSuppliers;
         }
 
@@ -307,7 +307,7 @@ const InquiryForm = ({
       setAutoSearchSupCompleteOptions([]);
     } else {
       message.warning(
-        "검색된 의뢰처 목록에서 일치하는 항목을 찾을 수 없습니다."
+        "No matching items were found in the searched supplier list."
       );
     }
   };

@@ -47,8 +47,6 @@ const MakeOffer = () => {
     name: string;
   }>({ id: 99, name: "test" });
 
-  console.log(info);
-
   useEffect(() => {
     const loadOfferDetail = async () => {
       if (info?.supplierInquiryId && info?.supplierInfo?.supplierId) {

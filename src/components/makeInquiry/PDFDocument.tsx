@@ -144,6 +144,12 @@ const styles = StyleSheet.create({
     fontSize: 9,
     textAlign: "center",
   },
+  nonItemtypeCell: {
+    marginLeft: 40,
+    fontSize: 9,
+    textDecoration: "underline",
+    fontFamily: "NotoSerifKR",
+  },
 });
 
 // 번호를 결정하는 함수
@@ -174,14 +180,14 @@ const renderTableRows = (items: InquiryItem[]) => {
 
     return (
       <View style={styles.tableRow} key={item.position}>
-        <View style={styles.tableSmallCol}>
-          <Text style={styles.tableCell}>
-            {isItemType
-              ? getDisplayNo(item.itemType, itemIndex - 1)
-              : getDisplayNo(item.itemType, 0)}
-          </Text>
-        </View>
         {isItemType && (
+          <View style={styles.tableSmallCol}>
+            <Text style={styles.tableCell}>
+              {getDisplayNo(item.itemType, itemIndex - 1)}
+            </Text>
+          </View>
+        )}
+        {isItemType ? (
           <>
             <View style={styles.tableMedCol}>
               <Text style={styles.tableCell}>{item.itemCode}</Text>
@@ -199,10 +205,9 @@ const renderTableRows = (items: InquiryItem[]) => {
               <Text style={styles.tableCell}>{item.itemRemark}</Text>
             </View>
           </>
-        )}
-        {!isItemType && (
-          <View style={[styles.tableBigCol, { flex: 7.65 }]}>
-            <Text style={styles.tableCell}>{item.itemName}</Text>
+        ) : (
+          <View style={[styles.tableBigCol, { flex: 1 }]}>
+            <Text style={styles.nonItemtypeCell}>{item.itemName}</Text>
           </View>
         )}
       </View>
@@ -256,7 +261,10 @@ const renderHeader = (
       <View style={[styles.inquiryInfoColumn, { alignItems: "flex-end" }]}>
         <Text style={styles.inquiryInfoText}>OUR REF No: {docNumber}</Text>
         <Text style={styles.inquiryInfoText}>
-          DATE: {dayjs(registerDate).format("YYYY-MM-DD")}
+          {language === "KOR"
+            ? "DATE: " + dayjs(registerDate).format("YYYY-MM-DD")
+            : "DATE: " +
+              dayjs(registerDate).format("DD MMM, YYYY").toUpperCase()}
         </Text>
       </View>
     </View>

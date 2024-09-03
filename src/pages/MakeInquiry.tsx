@@ -92,9 +92,7 @@ const MakeInquiry = () => {
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
   const { customerInquiryId } = useParams<{ customerInquiryId?: string }>();
   const navigate = useNavigate();
-  const location = useLocation();
-  const inquiryDetail = location.state?.inquiry as Inquiry;
-
+  const [inquiryDetail, setInquiryDetail] = useState<Inquiry>();
   const [docDataloading, setDocDataLoading] = useState(true);
   const [items, setItems] = useState<InquiryItem[]>([]);
   const [vesselList, setVesselList] = useState<VesselList[]>([]);
@@ -141,6 +139,13 @@ const MakeInquiry = () => {
   const [language, setLanguage] = useState<string>("KOR");
   const [fileData, setFileData] = useState<File[]>([]);
   const [pdfFileData, setPdfFileData] = useState<File[]>([]);
+  console.log(items);
+
+  useEffect(() => {
+    if (customerInquiryId) {
+      fetchDetail();
+    }
+  }, []);
 
   // Load document data
   const loadDocData = useCallback(async () => {
@@ -169,6 +174,7 @@ const MakeInquiry = () => {
 
   useEffect(() => {
     if (!customerInquiryId) {
+      setIsEditMode(false);
       // 데이터 초기화
       setFormValues(INITIAL_FORM_VALUES);
       setItems([]);
@@ -190,6 +196,15 @@ const MakeInquiry = () => {
     }
   }, [customerInquiryId, loadDocData]);
 
+  const fetchDetail = async () => {
+    try {
+      const data = await fetchInquiryDetail(Number(customerInquiryId));
+      setInquiryDetail(data);
+    } catch (error) {
+      console.error("An error occurred while retrieving details:", error);
+    }
+  };
+
   // 데이터 로딩 후 상태 업데이트
   useEffect(() => {
     if (docDataloading) {
@@ -197,6 +212,8 @@ const MakeInquiry = () => {
     }
 
     if (customerInquiryId) {
+      setIsEditMode(true);
+
       // Edit 모드에서의 로직
       if (inquiryDetail) {
         const {
@@ -388,50 +405,57 @@ const MakeInquiry = () => {
 
   const handleSubmit = async () => {
     try {
+      // 중복 검사 여부에 따라 적절한 처리를 수행합니다.
       if (isDuplicate) {
-        return new Promise((resolve, reject) => {
+        // Modal.confirm을 사용하여 사용자에게 확인을 요청합니다.
+        const result = await new Promise((resolve, reject) => {
           Modal.confirm({
-            title: "중복된 품목이 있습니다.",
-            content: "저장하시겠습니까?",
-            okText: "확인",
-            cancelText: "취소",
-            onOk: async () => {
-              try {
-                await saveInquiry();
-                resolve(true); // 저장 성공
-              } catch (error) {
-                console.error("견적서 저장 중 오류 발생:", error);
-                message.error("다시 시도해 주세요");
-                reject(false); // 저장 실패
-              }
-            },
-            onCancel: () => {
-              reject(false); // 저장 취소
-            },
+            title: "There are duplicate items.",
+            content: "Do you want to save?",
+            okText: "Ok",
+            cancelText: "Cancel",
+            onOk: () => resolve(true), // 확인 버튼 클릭 시 true를 resolve
+            onCancel: () => resolve(false), // 취소 버튼 클릭 시 false를 resolve
           });
         });
-      } else {
-        try {
+
+        if (result) {
+          // 확인 버튼을 클릭한 경우 저장 작업을 수행합니다.
           await saveInquiry();
           return true; // 저장 성공
-        } catch (error) {
-          console.error("견적서 저장 중 오류 발생:", error);
-          message.error("다시 시도해 주세요");
-          return false; // 저장 실패
+        } else {
+          return false; // 저장 취소
         }
+      } else {
+        // 중복 검사가 필요 없는 경우 직접 저장 작업을 수행합니다.
+        await saveInquiry();
+        return true; // 저장 성공
       }
     } catch (error) {
-      console.error("견적서 저장 중 오류 발생:", error);
-      message.error("다시 시도해 주세요");
+      // 모든 오류는 이곳에서 처리합니다.
+      console.error("An error occurred while saving inquiry:", error);
+      message.error("Retry Please");
       return false; // 저장 실패
     }
   };
 
   // 저장 로직을 함수로 분리
   const saveInquiry = async () => {
+    // 선택된 vessel 및 customer 확인
     const selectedVessel = vesselList.find(
       (v) => v.vesselName === formValues.vesselName
     );
+
+    if (!selectedVessel) {
+      message.error("Please register Vessel!");
+      return;
+    }
+
+    if (!selectedCustomerId) {
+      message.error("Please register Customer!");
+      return;
+    }
+
     const inquiryItemDetails = items.map((item) => {
       const matchingItemDetail = inquiryDetail?.inquiryItemDetails.find(
         (detail) => detail.itemId === item.itemId
@@ -478,7 +502,7 @@ const MakeInquiry = () => {
       isEditMode
     );
 
-    message.success("성공적으로 저장 되었습니다!");
+    message.success("Saved successfully!");
 
     const newInquiryDetail = await fetchInquiryDetail(
       Number(isEditMode ? customerInquiryId : response)
@@ -493,7 +517,7 @@ const MakeInquiry = () => {
     handleInputChange(index, "itemCode", value);
 
     if (value.trim() === "") {
-      // itemCode가 비어있을 경우 itemId를 초기화
+      // itemCode가 비어있을 경우 itemId와 itemName을 초기화
       updateItemId(index, null);
       return;
     }

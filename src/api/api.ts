@@ -159,6 +159,8 @@ export const submitInquiry = async (
       // 수정 모드일 때 PUT 요청 사용
       response = await axios.put(`/api/customer-inquiries/${inquiryId}`, data);
 
+      console.log("EDIT");
+      console.log(response.data);
       // 응답을 반환
       return inquiryId;
     } else {
@@ -167,7 +169,8 @@ export const submitInquiry = async (
         `/api/customer-inquiries?docNumber=${docNumber}`,
         data
       );
-
+      console.log("CREATE");
+      console.log(response.data);
       // 응답을 반환
       return response.data.inquiryId;
     }

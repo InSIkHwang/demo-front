@@ -193,19 +193,26 @@ const MakeInquiryTable = ({
       key: "itemCode",
       render: (text: string, record: InquiryItem, index: number) =>
         record.itemType === "ITEM" ? (
-          <AutoComplete
-            value={text}
-            onChange={(value) => handleItemCodeChange(index, value)}
-            options={itemCodeOptions}
-          >
-            <Input
-              style={{
-                borderColor: checkDuplicate("itemCode", text, index)
-                  ? "red"
-                  : "#d9d9d9", // 중복 시 배경색 빨간색
-              }}
-            />
-          </AutoComplete>
+          <div>
+            <AutoComplete
+              value={text}
+              onChange={(value) => handleItemCodeChange(index, value)}
+              options={itemCodeOptions}
+            >
+              <Input
+                style={{
+                  borderColor: checkDuplicate("itemCode", text, index)
+                    ? "#faad14"
+                    : "#d9d9d9", // 중복 시 경고색
+                }}
+              />
+            </AutoComplete>
+            {checkDuplicate("itemCode", text, index) && (
+              <div style={{ color: "#faad14", marginTop: "5px" }}>
+                duplicate code.
+              </div>
+            )}
+          </div>
         ) : null,
       width: 150,
     },
@@ -264,15 +271,24 @@ const MakeInquiryTable = ({
       dataIndex: "itemName",
       key: "itemName",
       render: (text: string, record: InquiryItem, index: number) => (
-        <Input
-          value={text}
-          onChange={(e) => handleInputChange(index, "itemName", e.target.value)}
-          style={{
-            borderColor: checkDuplicate("itemName", text, index)
-              ? "red"
-              : "#d9d9d9", // 중복 시 배경색 빨간색
-          }}
-        />
+        <div>
+          <Input
+            value={text}
+            onChange={(e) =>
+              handleInputChange(index, "itemName", e.target.value)
+            }
+            style={{
+              borderColor: checkDuplicate("itemName", text, index)
+                ? "#faad14"
+                : "#d9d9d9", // 중복 시 경고색
+            }}
+          />
+          {checkDuplicate("itemName", text, index) && (
+            <div style={{ color: "#faad14", marginTop: "5px" }}>
+              duplicate name.
+            </div>
+          )}
+        </div>
       ),
       width: 250,
     },

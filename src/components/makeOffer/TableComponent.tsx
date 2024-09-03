@@ -21,6 +21,8 @@ import {
 } from "@dnd-kit/sortable";
 
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import ChargeInputModal from "./ChargeInputPopover";
+import ChargeInputPopover from "./ChargeInputPopover";
 
 const CustomTable = styled(Table)`
   .ant-table-cell {
@@ -180,6 +182,11 @@ const TableComponent = ({
   const [supplierOptions, setSupplierOptions] = useState<
     { value: string; id: number; itemId: number; code: string; email: string }[]
   >([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const showChargeModal = () => {
+    setIsModalVisible(true);
+  };
 
   const checkDuplicate = (key: string, value: string, index: number) => {
     if (!value?.trim()) {
@@ -334,7 +341,6 @@ const TableComponent = ({
     }
   };
 
-
   useEffect(() => {
     const updatedDataSource = dataSource.map((item, index) => ({
       ...item,
@@ -409,8 +415,6 @@ const TableComponent = ({
     );
     setDataSource(updatedDataSource);
   };
-
-  console.log(dataSource);
 
   const columns: ColumnsType<any> = [
     {
@@ -807,6 +811,7 @@ const TableComponent = ({
       >
         추가
       </Button>
+      <ChargeInputPopover />
       <DndContext
         sensors={sensors}
         modifiers={[restrictToVerticalAxis]}

@@ -96,7 +96,7 @@ const DetailInquiryModal = ({
   const handleEditClick = () => {
     if (inquiryDetail) {
       const path = inquiryId ? `/makeinquiry/${inquiryId}` : "/makeinquiry";
-      navigate(path, { state: { inquiry: inquiryDetail } });
+      navigate(path);
     }
   };
 
