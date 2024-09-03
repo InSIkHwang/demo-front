@@ -1,16 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "../../api/axios";
 import styled from "styled-components";
-import {
-  AutoComplete,
-  Input,
-  Button,
-  Form,
-  Modal,
-  Typography,
-  Row,
-  Col,
-} from "antd";
+import { AutoComplete, Input, Button, Form, Modal, notification } from "antd";
 
 const StyledModal = styled(Modal)`
   .ant-modal-content {
@@ -157,8 +148,16 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
         shipYard: formData.shipYard,
         customerId: formData.customerId,
       });
+      notification.success({
+        message: "Registration complete",
+        description: "You have registered successfully.",
+      });
     } catch (error) {
-      console.log(error);
+      console.error("Error posting data:", error);
+      notification.error({
+        message: "Registration failed",
+        description: "An error occurred while registering.",
+      });
     }
   };
 
@@ -166,12 +165,12 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
     if (!isCodeUnique) return;
 
     if (formData.customerId === undefined) {
-      setCustomerError("매출처를 선택하세요.");
+      setCustomerError("Please select a customer");
       return;
     }
 
     if (selectedCustomer && selectedCustomer.id !== formData.customerId) {
-      setCustomerError("유효하지 않은 매출처.");
+      setCustomerError("Invalid customer");
       return;
     }
 
@@ -185,7 +184,7 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
       open={true}
       onCancel={onClose}
       footer={null}
-      title="신규 선박 등록"
+      title="New vessel registration"
     >
       <StyledForm
         layout="horizontal"
@@ -194,7 +193,7 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
       >
         <FormGroup>
           <Form.Item
-            label="코드:"
+            label="code:"
             name="code"
             validateStatus={
               formData.code === ""
@@ -205,12 +204,12 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
             }
             help={
               formData.code === ""
-                ? "코드를 입력하세요!"
+                ? "Enter code!"
                 : !isCodeUnique
-                ? "유효하지 않은 코드입니다."
+                ? "Invalid code."
                 : ""
             }
-            rules={[{ required: true, message: "코드를 입력하세요!" }]}
+            rules={[{ required: true, message: "Enter code!" }]}
           >
             <Input
               name="code"
@@ -223,9 +222,9 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
 
         <FormGroup>
           <Form.Item
-            label="선명:"
+            label="Vessel Name:"
             name="vesselName"
-            rules={[{ required: true, message: "선명을 입력하세요!" }]}
+            rules={[{ required: true, message: "Enter vessel name!" }]}
           >
             <Input
               name="vesselName"
@@ -237,7 +236,7 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
         </FormGroup>
 
         <FormGroup>
-          <Form.Item label="선박회사:" name="vesselCompanyName">
+          <Form.Item label="Vessel Company Name:" name="vesselCompanyName">
             <Input
               name="vesselCompanyName"
               value={formData.vesselCompanyName}
@@ -283,11 +282,11 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
 
         <FormGroup>
           <Form.Item
-            label="매출처명:"
+            label="Customer Name:"
             name="customerName"
             validateStatus={customerError ? "error" : ""}
             help={customerError}
-            rules={[{ required: true, message: "매출처를 선택하세요!" }]}
+            rules={[{ required: true, message: "Select a customer!" }]}
           >
             <AutoComplete
               onSearch={handleSearch}
@@ -322,7 +321,7 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
             }
             block
           >
-            등록
+            Submit
           </Button>
         </FormGroup>
       </StyledForm>
