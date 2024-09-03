@@ -139,7 +139,6 @@ const MakeInquiry = () => {
   const [language, setLanguage] = useState<string>("KOR");
   const [fileData, setFileData] = useState<File[]>([]);
   const [pdfFileData, setPdfFileData] = useState<File[]>([]);
-  console.log(items);
 
   useEffect(() => {
     if (customerInquiryId) {

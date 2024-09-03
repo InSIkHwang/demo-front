@@ -19,6 +19,7 @@ import { sendInquiryMail } from "../../api/api";
 import { emailSendData } from "../../types/types";
 import dayjs from "dayjs";
 import { CheckboxChangeEvent } from "antd/es/checkbox";
+import { useNavigate } from "react-router-dom";
 
 const { TextArea } = Input;
 const { Title } = Typography;
@@ -95,6 +96,7 @@ const MailSenderModal = ({
     new Set()
   );
   const [isPdfAutoUploadChecked, setIsPdfAutoUploadChecked] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (isPdfAutoUploadChecked) {
@@ -170,6 +172,9 @@ const MailSenderModal = ({
   };
 
   const onFinish = async (values: any) => {
+    if (selectedMailIndexes.size === 0) {
+      return message.error("There is no selected mail destination");
+    }
     setLoading(true);
 
     try {
@@ -185,13 +190,14 @@ const MailSenderModal = ({
         // `fileData`와 함께 `sendInquiryMail` 호출
         await sendInquiryMail(values.docNumber, fileData, mailDataToSend);
 
-        message.success("선택된 이메일이 성공적으로 전송되었습니다!");
+        message.success("The selected email has been sent successfully!");
+        navigate("/");
       } else {
-        message.error("중복된 품목이 있어 저장을 취소했습니다.");
+        message.error("Save failed.");
       }
     } catch (error) {
       console.error("Error sending email:", error);
-      message.error("이메일 전송에 실패했습니다. 다시 시도해 주세요.");
+      message.error("Email sending failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -333,6 +339,7 @@ const MailSenderModal = ({
       )}
 
       <div>
+        <span style={{ marginRight: 10 }}>Email destination:</span>
         <Checkbox
           checked={currentMailDataList.length === selectedMailIndexes.size}
           indeterminate={
