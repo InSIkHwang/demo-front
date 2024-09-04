@@ -69,10 +69,14 @@ const CustomerList = () => {
   const [totalCount, setTotalCount] = useState<number>();
 
   const category = "customer";
-  //데이터 FETCH
+
   useEffect(() => {
-    fetchData();
-  }, [currentPage, itemsPerPage]); // 페이지와 페이지 크기 변경 시 데이터를 새로 불러옴
+    if (searchText) {
+      fetchFilteredData();
+    } else {
+      fetchData();
+    }
+  }, [currentPage, itemsPerPage]);
 
   const fetchData = async () => {
     try {
@@ -105,10 +109,25 @@ const CustomerList = () => {
     };
   }, [isModalOpen, isDetailCompanyModalOpen]);
 
+  const debounce = <T extends (...args: any[]) => void>(
+    func: T,
+    delay: number
+  ) => {
+    let timer: NodeJS.Timeout;
+    return (...args: Parameters<T>) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => func(...args), delay);
+    };
+  };
+
   //검색 API 로직
-  const fetchFilteredData = async () => {
+  const fetchFilteredData = debounce(async () => {
     try {
-      const params: any = {};
+      const params: any = {
+        page: currentPage - 1, // 페이지는 0부터 시작
+        pageSize: itemsPerPage, // 페이지당 아이템 수
+      };
+
       if (searchCategory === "code") {
         params.code = searchText;
       } else if (searchCategory === "companyName") {
@@ -116,6 +135,7 @@ const CustomerList = () => {
       } else if (searchCategory === "all") {
         params.query = searchText;
       }
+
       const response = await axios.get("/api/customers/search", { params });
       setData(response.data.customers);
       setTotalCount(response.data.totalCount);
@@ -124,7 +144,7 @@ const CustomerList = () => {
       console.error("Error fetching filtered data:", error);
       setLoading(false);
     }
-  };
+  }, 200);
 
   //최초 렌더링 시 데이터 FETCH
   useEffect(() => {

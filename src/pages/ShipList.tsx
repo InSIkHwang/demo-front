@@ -67,7 +67,11 @@ const ShipList = () => {
   const [totalCount, setTotalCount] = useState<number>();
 
   useEffect(() => {
-    fetchData();
+    if (searchText) {
+      fetchFilteredData();
+    } else {
+      fetchData();
+    }
   }, [currentPage, itemsPerPage]);
 
   //데이터 FETCH
@@ -105,7 +109,10 @@ const ShipList = () => {
   //검색 API 로직
   const fetchFilteredData = async () => {
     try {
-      const params: any = {};
+      const params: any = {
+        page: currentPage - 1, // 페이지는 0부터 시작
+        pageSize: itemsPerPage, // 페이지당 아이템 수
+      };
       if (searchCategory === "code") {
         params.code = searchText;
       } else if (searchCategory === "vesselName") {
