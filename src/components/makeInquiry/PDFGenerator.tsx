@@ -25,14 +25,101 @@ interface PDFGeneratorProps {
     email: string;
   }[];
   formValues: FormValues;
+  setMailDataList: Dispatch<SetStateAction<emailSendData[]>>;
+  pdfFileData: File[];
   items: InquiryItem[];
   vesselInfo: VesselList | null;
   pdfHeader: string;
-  setMailDataList: Dispatch<SetStateAction<emailSendData[]>>;
   language: string;
-  pdfFileData: File[];
   setPdfFileData: Dispatch<SetStateAction<File[]>>;
+  isSendMail: boolean;
+  isPdfAutoUploadChecked: boolean;
+  setIsPdfAutoUploadChecked: Dispatch<SetStateAction<boolean>>;
 }
+
+export const generateMailData = (
+  selectedSupplierTag: PDFGeneratorProps["selectedSupplierTag"],
+  formValues: FormValues,
+  vesselInfo: VesselList | null,
+  language: string,
+  setMailDataList: Dispatch<SetStateAction<emailSendData[]>>
+) => {
+  const mailDataList: emailSendData[] = [];
+
+  for (const supplierTag of selectedSupplierTag) {
+    const mailData: emailSendData = {
+      supplierId: supplierTag.id,
+      toRecipient: supplierTag.email,
+      subject:
+        language === "ENG"
+          ? `BASKOREA REQUEST FOR QUOTATION  ${formValues.docNumber}  ${formValues.vesselName}`
+          : `BASKOREA 견적의뢰  ${formValues.docNumber}  ${formValues.vesselName}`,
+      content:
+        language === "ENG"
+          ? `<URGENT>\nGood day,\nThanks for your cooperation\nPlease give us your best price and delivery time.\nYour kind reply will be much appreciated \n\n<VESSEL INFO>\nVESSEL: ${
+              vesselInfo?.vesselName
+            }\nIMO No: ${vesselInfo?.imoNumber || ""}\nHull No: ${
+              vesselInfo?.hullNumber || ""
+            }\nShip Yard: ${vesselInfo?.shipYard || ""}`
+          : `수신: ${
+              supplierTag.name
+            } 영업부 담당자님\n발신: 바스코리아 드림\n\n업무에 노고가 많으십니다.\n상기 건 견적의뢰 부탁드립니다.\n제품 확인을 위한 추가 자료가 있다면 함께 전달 부탁 드립니다.\n항상 도움 주셔서 감사합니다.\n\n<VESSEL INFO>\nVESSEL: ${
+              vesselInfo?.vesselName
+            }\nIMO No: ${vesselInfo?.imoNumber || ""}\nHull No: ${
+              vesselInfo?.hullNumber || ""
+            }\nShip Yard: ${vesselInfo?.shipYard || ""}`,
+      ccRecipient: "",
+      supplierName: supplierTag.name,
+    };
+
+    mailDataList.push(mailData);
+  }
+
+  setMailDataList(mailDataList);
+};
+
+export const generatePDFs = async (
+  selectedSupplierTag: PDFGeneratorProps["selectedSupplierTag"],
+  formValues: FormValues,
+  items: InquiryItem[],
+  vesselInfo: VesselList | null,
+  pdfHeader: string,
+  language: string,
+  setPdfFileData: Dispatch<SetStateAction<File[]>>,
+  selectedSupplierIndex: number // 추가된 파라미터
+): Promise<File[]> => {
+  const updatedFiles: File[] = [];
+
+  // 특정 인덱스의 supplierTag만 사용
+  const supplierTag = selectedSupplierTag[selectedSupplierIndex];
+
+  if (supplierTag) {
+    const doc = (
+      <PDFDocument
+        language={language}
+        formValues={formValues}
+        items={items}
+        supplierName={supplierTag.name}
+        vesselInfo={vesselInfo}
+        pdfHeader={pdfHeader}
+        viewMode={false}
+      />
+    );
+    const pdfBlob = await pdf(doc).toBlob();
+
+    const fileName =
+      language === "ENG"
+        ? `${supplierTag.name} REQUEST FOR QUOTATION ${formValues.refNumber}.pdf`
+        : `${supplierTag.name} 견적의뢰서 ${formValues.refNumber}.pdf`;
+    const newFile = new File([pdfBlob], fileName, {
+      type: "application/pdf",
+    });
+
+    updatedFiles.push(newFile);
+  }
+  setPdfFileData(updatedFiles);
+  return updatedFiles;
+};
 
 const PDFGenerator = ({
   selectedSupplierTag,
@@ -42,77 +129,20 @@ const PDFGenerator = ({
   pdfHeader,
   setMailDataList,
   language,
-  pdfFileData,
   setPdfFileData,
+  isSendMail,
+  isPdfAutoUploadChecked,
 }: PDFGeneratorProps) => {
-  const generateAndSendPDFs = async () => {
-    const mailDataList: emailSendData[] = [];
-    const updatedFiles: File[] = [];
-
-    for (const supplierTag of selectedSupplierTag) {
-      const doc = (
-        <PDFDocument
-          language={language}
-          formValues={formValues}
-          items={items}
-          supplierName={supplierTag.name}
-          vesselInfo={vesselInfo}
-          pdfHeader={pdfHeader}
-          viewMode={false}
-        />
-      );
-
-      const pdfBlob = await pdf(doc).toBlob();
-      const fileName =
-        language === "ENG"
-          ? `${supplierTag.name} REQUEST FOR QUOTATION ${formValues.refNumber}.pdf`
-          : `${supplierTag.name} 견적의뢰서 ${formValues.refNumber}.pdf`;
-      const newFile = new File([pdfBlob], fileName, {
-        type: "application/pdf",
-      });
-
-      // 최종 파일 리스트에 저장
-      updatedFiles.push(newFile);
-
-      // 메일 데이터 생성
-      const mailData: emailSendData = {
-        supplierId: supplierTag.id,
-        toRecipient: supplierTag.email,
-        subject:
-          language === "ENG"
-            ? `BASKOREA REQUEST FOR QUOTATION  ${formValues.docNumber}  ${formValues.vesselName}`
-            : `BASKOREA 견적의뢰  ${formValues.docNumber}  ${formValues.vesselName}`,
-        content:
-          language === "ENG"
-            ? `<URGENT>\nGood day,\nThanks for your cooperation\nPlease give us your best price and delivery time.\nYour kind reply will be much appreciated \n\n<VESSEL INFO>\nVESSEL: ${
-                vesselInfo?.vesselName
-              }\nIMO No: ${vesselInfo?.imoNumber || ""}\nHull No: ${
-                vesselInfo?.hullNumber || ""
-              }\nShip Yard: ${vesselInfo?.shipYard || ""}`
-            : `수신: ${
-                supplierTag.name
-              } 영업부 담당자님\n발신: 바스코리아 드림\n\n업무에 노고가 많으십니다.\n상기 건 견적의뢰 부탁드립니다.\n제품 확인을 위한 추가 자료가 있다면 함께 전달 부탁 드립니다.\n항상 도움 주셔서 감사합니다.\n\n<VESSEL INFO>\nVESSEL: ${
-                vesselInfo?.vesselName
-              }\nIMO No: ${vesselInfo?.imoNumber || ""}\nHull No: ${
-                vesselInfo?.hullNumber || ""
-              }\nShip Yard: ${vesselInfo?.shipYard || ""}`,
-        ccRecipient: "",
-        supplierName: supplierTag.name,
-      };
-
-      mailDataList.push(mailData);
-    }
-
-    // 모든 루프가 끝난 후 최종 파일 리스트를 상태에 저장
-    setPdfFileData(updatedFiles);
-
-    // 최종 메일 데이터 리스트 상태에 저장
-    setMailDataList(mailDataList);
-  };
-
+  // 메일 데이터 생성 로직을 useEffect에서 실행
   useEffect(() => {
-    generateAndSendPDFs();
-  }, [selectedSupplierTag, formValues, items, vesselInfo, pdfHeader, language]);
+    generateMailData(
+      selectedSupplierTag,
+      formValues,
+      vesselInfo,
+      language,
+      setMailDataList
+    );
+  }, [selectedSupplierTag, formValues, vesselInfo, language, setMailDataList]);
 
   return null;
 };

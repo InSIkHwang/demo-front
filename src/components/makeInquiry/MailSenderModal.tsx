@@ -16,10 +16,11 @@ import { SendOutlined, MailOutlined } from "@ant-design/icons";
 import { UploadOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 import { sendInquiryMail } from "../../api/api";
-import { emailSendData } from "../../types/types";
+import { emailSendData, InquiryItem, VesselList } from "../../types/types";
 import dayjs from "dayjs";
 import { CheckboxChangeEvent } from "antd/es/checkbox";
 import { useNavigate } from "react-router-dom";
+import { generatePDFs } from "./PDFGenerator";
 
 const { TextArea } = Input;
 const { Title } = Typography;
@@ -73,6 +74,15 @@ const MailSenderModal = ({
   fileData,
   setFileData,
   pdfFileData,
+  setIsSendMail,
+  isSendMail,
+  isPdfAutoUploadChecked,
+  setIsPdfAutoUploadChecked,
+  items,
+  vesselInfo,
+  pdfHeader,
+  language,
+  setPdfFileData,
 }: {
   mailDataList: emailSendData[];
   inquiryFormValues: FormValue;
@@ -87,6 +97,15 @@ const MailSenderModal = ({
   fileData: File[];
   setFileData: Dispatch<SetStateAction<File[]>>;
   pdfFileData: File[];
+  setIsSendMail: Dispatch<SetStateAction<boolean>>;
+  isSendMail: boolean;
+  isPdfAutoUploadChecked: boolean;
+  setIsPdfAutoUploadChecked: Dispatch<SetStateAction<boolean>>;
+  items: InquiryItem[];
+  vesselInfo: VesselList | null;
+  pdfHeader: string;
+  language: string;
+  setPdfFileData: Dispatch<SetStateAction<File[]>>;
 }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -95,41 +114,17 @@ const MailSenderModal = ({
   const [selectedMailIndexes, setSelectedMailIndexes] = useState<Set<number>>(
     new Set()
   );
-  const [isPdfAutoUploadChecked, setIsPdfAutoUploadChecked] = useState(true);
-  const navigate = useNavigate();
+  const [uploadFile, setUploadFile] = useState<File[]>([]);
 
-  useEffect(() => {
-    if (isPdfAutoUploadChecked) {
-      setFileData((prevFileData) => [...prevFileData, ...pdfFileData]);
-    }
-  }, [isPdfAutoUploadChecked, pdfFileData, setFileData]);
+  const navigate = useNavigate();
 
   const handlePdfAutoUploadChange = (e: CheckboxChangeEvent) => {
     setIsPdfAutoUploadChecked(e.target.checked);
-    if (e.target.checked) {
-      // PDF 파일 자동 업로드 활성화
-      setFileData((prevFileData) => [...prevFileData, ...pdfFileData]);
-    } else {
-      // PDF 파일 자동 업로드 비활성화
-      setFileData((prevFileData) =>
-        prevFileData.filter(
-          (file) => !pdfFileData.some((pdfFile) => pdfFile.name === file.name)
-        )
-      );
-    }
   };
 
-  const filteredFileData = fileData.filter((file) => {
-    return !selectedSupplierTag.some(
-      (tag) =>
-        file.name.startsWith(
-          `${tag.name} REQUEST FOR QUOTATION ${inquiryFormValues.refNumber}.pdf`
-        ) ||
-        file.name.startsWith(
-          `${tag.name} 견적의뢰서 ${inquiryFormValues.refNumber}.pdf`
-        )
-    );
-  });
+  const filteredSupplierTags = selectedSupplierTag.filter((_, index) =>
+    selectedMailIndexes.has(index)
+  );
 
   useEffect(() => {
     form.setFieldsValue({
@@ -170,28 +165,58 @@ const MailSenderModal = ({
       return newSelection;
     });
   };
-
   const onFinish = async (values: any) => {
     if (selectedMailIndexes.size === 0) {
       return message.error("There is no selected mail destination");
     }
     setLoading(true);
+    setIsSendMail(true);
 
     try {
       const submitSuccess = await handleSubmit();
 
       if (submitSuccess) {
-        // 선택된 의뢰처의 메일 데이터만 필터링
-        const mailDataToSend = Array.from(selectedMailIndexes).map((index) => ({
-          ...currentMailDataList[index],
-          ...values.mails[index],
-        }));
+        for (const index of Array.from(selectedMailIndexes)) {
+          // 파일 데이터 초기화 및 uploadFile 추가
+          const updatedFileData = [...uploadFile];
+          setFileData(updatedFileData);
 
-        // `fileData`와 함께 `sendInquiryMail` 호출
-        await sendInquiryMail(values.docNumber, fileData, mailDataToSend);
+          // PDF 자동 업로드가 체크되었을 경우에만 PDF 생성
+          if (isPdfAutoUploadChecked) {
+            const pdfFiles = await generatePDFs(
+              filteredSupplierTags,
+              inquiryFormValues,
+              items,
+              vesselInfo,
+              pdfHeader,
+              language,
+              setPdfFileData,
+              index
+            );
+
+            // 생성된 PDF 파일을 fileData에 추가
+            const finalFileData = [...updatedFileData, ...pdfFiles];
+            setFileData(finalFileData);
+
+            // 메일 전송
+            await sendInquiryMail(values.docNumber, finalFileData, [
+              {
+                ...currentMailDataList[index],
+                ...values.mails[index],
+              },
+            ]);
+          } else {
+            // PDF 자동 업로드가 체크되지 않은 경우 바로 메일 전송
+            await sendInquiryMail(values.docNumber, updatedFileData, [
+              {
+                ...currentMailDataList[index],
+                ...values.mails[index],
+              },
+            ]);
+          }
+        }
 
         message.success("The selected email has been sent successfully!");
-        navigate("/");
       } else {
         message.error("Save failed.");
       }
@@ -203,17 +228,17 @@ const MailSenderModal = ({
     }
   };
 
-  const handleFileUpload = (file: any, index: number) => {
+  const handleFileUpload = (file: any) => {
     const fileDataItem = file;
 
     // `fileData` 배열에 파일 추가
-    setFileData((prevFileData: any) => [...prevFileData, fileDataItem]);
+    setUploadFile((prevFileData: any) => [...prevFileData, fileDataItem]);
 
     return false;
   };
 
   const handleFileRemove = (fileIndex: number) => {
-    setFileData((prevFileData) => {
+    setUploadFile((prevFileData) => {
       // 파일 목록에서 선택된 파일을 제거
       const updatedFileData = prevFileData.filter(
         (_, index) => index !== fileIndex
@@ -250,36 +275,6 @@ const MailSenderModal = ({
         </StyledFormItem>
         <StyledFormItem name={["mails", index, "bccRecipient"]}>
           <Input placeholder="BCC Recipient" />
-        </StyledFormItem>
-        <StyledFormItem>
-          <Title level={5}>Attached File</Title>
-          <Upload
-            customRequest={({ file }) => handleFileUpload(file, index)}
-            showUploadList={false}
-          >
-            <Button icon={<UploadOutlined />}>Upload File</Button>
-          </Upload>
-          <Checkbox
-            checked={isPdfAutoUploadChecked}
-            onChange={handlePdfAutoUploadChange}
-            style={{ marginLeft: 15 }}
-          >
-            Automatic PDF File Upload
-          </Checkbox>
-          {fileData.length > 0 && (
-            <div style={{ marginTop: "16px" }}>
-              {filteredFileData.map((file, fileIndex) => (
-                <Tag
-                  key={fileIndex}
-                  closable
-                  onClose={() => handleFileRemove(fileIndex)}
-                  style={{ marginBottom: "8px" }}
-                >
-                  {file.name}
-                </Tag>
-              ))}
-            </div>
-          )}
         </StyledFormItem>
       </StyledCard>
     ),
@@ -339,7 +334,9 @@ const MailSenderModal = ({
       )}
 
       <div>
-        <span style={{ marginRight: 10 }}>Email destination:</span>
+        <span style={{ marginRight: 10, fontWeight: 700 }}>
+          Email destination:
+        </span>
         <Checkbox
           checked={currentMailDataList.length === selectedMailIndexes.size}
           indeterminate={
@@ -363,6 +360,36 @@ const MailSenderModal = ({
           </Checkbox>
         ))}
       </div>
+      <StyledFormItem>
+        <Title level={5}>Attached File</Title>
+        <Upload
+          customRequest={({ file }) => handleFileUpload(file)}
+          showUploadList={false}
+        >
+          <Button icon={<UploadOutlined />}>Upload File</Button>
+        </Upload>
+        <Checkbox
+          checked={isPdfAutoUploadChecked}
+          onChange={handlePdfAutoUploadChange}
+          style={{ marginLeft: 15 }}
+        >
+          Automatic PDF File Upload
+        </Checkbox>
+        {uploadFile.length > 0 && (
+          <div style={{ marginTop: "16px" }}>
+            {uploadFile.map((file, fileIndex) => (
+              <Tag
+                key={fileIndex}
+                closable
+                onClose={() => handleFileRemove(fileIndex)}
+                style={{ marginBottom: "8px" }}
+              >
+                {file?.name}
+              </Tag>
+            ))}
+          </div>
+        )}
+      </StyledFormItem>
       <StyledButton
         type="primary"
         htmlType="submit"

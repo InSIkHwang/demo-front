@@ -22,7 +22,9 @@ import {
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import HeaderEditModal from "../components/makeInquiry/HeaderEditModal";
 import MailSenderModal from "../components/makeInquiry/MailSenderModal";
-import PDFGenerator from "../components/makeInquiry/PDFGenerator";
+import PDFGenerator, {
+  generatePDFs,
+} from "../components/makeInquiry/PDFGenerator";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 // Styles
@@ -139,6 +141,8 @@ const MakeInquiry = () => {
   const [language, setLanguage] = useState<string>("KOR");
   const [fileData, setFileData] = useState<File[]>([]);
   const [pdfFileData, setPdfFileData] = useState<File[]>([]);
+  const [isSendMail, setIsSendMail] = useState<boolean>(false);
+  const [isPdfAutoUploadChecked, setIsPdfAutoUploadChecked] = useState(true);
 
   useEffect(() => {
     if (customerInquiryId) {
@@ -713,6 +717,15 @@ const MakeInquiry = () => {
           fileData={fileData}
           setFileData={setFileData}
           pdfFileData={pdfFileData}
+          setIsSendMail={setIsSendMail}
+          isSendMail={isSendMail}
+          isPdfAutoUploadChecked={isPdfAutoUploadChecked}
+          setIsPdfAutoUploadChecked={setIsPdfAutoUploadChecked}
+          items={items}
+          vesselInfo={selectedVessel}
+          pdfHeader={pdfHeader}
+          language={language}
+          setPdfFileData={setPdfFileData}
         />
       </Modal>
       <div
@@ -768,17 +781,20 @@ const MakeInquiry = () => {
         />
       </div>
       <PDFGenerator
+        isSendMail={isSendMail}
         isVisible={loadMailData}
         onClose={() => setLoadMailData(false)}
         selectedSupplierTag={selectedSupplierTag}
         formValues={formValues}
+        setMailDataList={setMailDataList}
+        pdfFileData={pdfFileData}
         items={items}
         vesselInfo={selectedVessel}
         pdfHeader={pdfHeader}
-        setMailDataList={setMailDataList}
         language={language}
-        pdfFileData={pdfFileData}
         setPdfFileData={setPdfFileData}
+        isPdfAutoUploadChecked={isPdfAutoUploadChecked}
+        setIsPdfAutoUploadChecked={setIsPdfAutoUploadChecked}
       />
       {showPDFPreview && (
         <PDFDocument
