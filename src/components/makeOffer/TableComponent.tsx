@@ -804,13 +804,6 @@ const TableComponent = ({
           </span>
         </TotalCard>
       </TotalCards>
-      <Button
-        type="primary"
-        style={{ margin: "5px 0 10px 0" }}
-        onClick={handleAddItem}
-      >
-        추가
-      </Button>
       <ChargeInputPopover />
       <DndContext
         sensors={sensors}
@@ -833,6 +826,13 @@ const TableComponent = ({
           />
         </SortableContext>
       </DndContext>
+      <Button
+        type="primary"
+        style={{ margin: "5px 0 10px 0" }}
+        onClick={handleAddItem}
+      >
+        Add item
+      </Button>
     </div>
   );
 };

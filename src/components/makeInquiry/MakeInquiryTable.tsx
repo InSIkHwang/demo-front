@@ -339,9 +339,6 @@ const MakeInquiryTable = ({
   return (
     <>
       <div>
-        <Button type="primary" onClick={addItem} style={{ margin: "20px 5px" }}>
-          Add item
-        </Button>
         <Button
           type="dashed"
           style={{ margin: "20px 5px" }}
@@ -372,6 +369,9 @@ const MakeInquiryTable = ({
           />
         </SortableContext>
       </DndContext>
+      <Button type="primary" onClick={addItem} style={{ margin: "20px 5px" }}>
+        Add item
+      </Button>
       <ExcelUploadModal
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}

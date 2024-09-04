@@ -39,7 +39,7 @@ const ChargeInputPopover = () => {
       trigger="click"
       placement="bottom"
     >
-      <Button type="dashed" style={{ float: "right" }}>
+      <Button type="dashed" style={{ float: "right", marginBottom: 10 }}>
         Open Charge Input
       </Button>
     </Popover>
