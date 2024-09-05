@@ -303,7 +303,12 @@ const TableComponent = ({
         }))
       );
 
-      setItemCodeOptions(itemArray.map((item) => ({ value: item.itemCode })));
+      setItemCodeOptions(
+        itemArray.map((item) => ({
+          value: item.itemCode,
+          key: item.itemId, // 고유한 key 사용
+        }))
+      );
       setItemNameMap(newItemNameMap);
       setItemIdMap(newItemIdMap);
 

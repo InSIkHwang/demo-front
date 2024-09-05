@@ -106,6 +106,7 @@ const InquiryForm = ({
   vesselUnreg,
   setSelectedSupplierTag,
   setSelectedSuppliers,
+  supplierOptions,
 }: InquiryFormProps) => {
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
   const [isVesselModalOpen, setIsVesselModalOpen] = useState(false);

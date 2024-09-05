@@ -18,6 +18,7 @@ import {
   InquiryListSupplier,
   emailSendData,
   VesselList,
+  Item,
 } from "../types/types";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import HeaderEditModal from "../components/makeInquiry/HeaderEditModal";
@@ -345,36 +346,6 @@ const MakeInquiry = () => {
     setAutoCompleteOptions(filteredOptions);
   }, [companyNameList, formValues.customer]);
 
-  useEffect(() => {
-    const selectedSupplierIds = new Set<number>(
-      selectedSuppliers.map((s) => s.id)
-    );
-
-    items.forEach((item) => {
-      const supplierIds = supplierOptions
-        .filter((option) => itemIdMap[item.itemCode] === option.itemId)
-        .map((option) => option.id);
-
-      supplierIds.forEach((id) => selectedSupplierIds.add(id));
-    });
-
-    const newSelectedSuppliers = supplierOptions
-      .filter((option) => selectedSupplierIds.has(option.id))
-      .map((supplier) => ({
-        id: supplier.id,
-        name: supplier.value,
-        code: supplier.code,
-        email: supplier.email,
-      }));
-
-    setSelectedSuppliers((prev) => [
-      ...prev,
-      ...Array.from(
-        new Map(newSelectedSuppliers.map((s) => [s.id, s])).values()
-      ),
-    ]);
-  }, [itemIdMap, items, supplierOptions]);
-
   const addItem = () => {
     const nextNo =
       items.length > 0
@@ -530,54 +501,80 @@ const MakeInquiry = () => {
     }
 
     try {
-      const { items } = await fetchItemData(value);
-      const itemArray = Array.isArray(items) ? items : [items];
+      const itemArray = await fetchAndProcessItemData(value);
 
-      // Ensure consistency between itemCodeOptions and itemNameMap
-      const newItemNameMap = itemArray.reduce<{ [key: number]: string }>(
-        (acc, item) => {
-          acc[item.itemId] = item.itemName;
-          return acc;
-        },
-        {}
-      );
+      updateItemCodeOptions(itemArray);
+      updateItemMaps(itemArray);
+      await updateSupplierOptions(itemArray);
 
-      const newItemIdMap = itemArray.reduce<{ [key: number]: number }>(
-        (acc, item) => {
-          acc[item.itemId] = item.itemId;
-          return acc;
-        },
-        {}
-      );
-
-      setItemCodeOptions(
-        itemArray.map((item) => ({
-          value: item.itemCode,
-          name: item.itemName,
-          key: item.itemId.toString(), // Ensure key is a string
-          label: `${item.itemCode}: ${item.itemName}`,
-          itemId: item.itemId, // Add itemId to options
-        }))
-      );
-
-      setItemNameMap(newItemNameMap);
-      setItemIdMap(newItemIdMap);
-
-      // Check if selected item exists and update itemId
       const selectedItem = itemArray.find((item) => item.itemCode === value);
       if (selectedItem) {
-        handleInputChange(
-          index,
-          "itemName",
-          newItemNameMap[selectedItem.itemId]
-        );
+        handleInputChange(index, "itemName", itemNameMap[selectedItem.itemId]);
         updateItemId(index, selectedItem.itemId);
       }
     } catch (error) {
       console.error("Error fetching item codes and suppliers:", error);
     }
   };
-  console.log(items);
+
+  const fetchAndProcessItemData = async (value: string) => {
+    const { items } = await fetchItemData(value);
+    return Array.isArray(items) ? items : [items];
+  };
+
+  const updateItemCodeOptions = (itemArray: Item[]) => {
+    setItemCodeOptions(
+      itemArray.map((item) => ({
+        value: item.itemCode,
+        name: item.itemName,
+        key: item.itemId.toString(),
+        label: `${item.itemCode}: ${item.itemName}`,
+        itemId: item.itemId,
+      }))
+    );
+  };
+
+  const updateItemMaps = (itemArray: Item[]) => {
+    const newItemNameMap = itemArray.reduce<{ [key: number]: string }>(
+      (acc, item) => {
+        acc[item.itemId] = item.itemName;
+        return acc;
+      },
+      {}
+    );
+
+    const newItemIdMap = itemArray.reduce<{ [key: number]: number }>(
+      (acc, item) => {
+        acc[item.itemId] = item.itemId;
+        return acc;
+      },
+      {}
+    );
+
+    setItemNameMap(newItemNameMap);
+    setItemIdMap(newItemIdMap);
+  };
+
+  const updateSupplierOptions = (itemArray: Item[]) => {
+    const newSupplierOptions = itemArray.flatMap((item) =>
+      item.supplierList.map((supplier) => ({
+        id: supplier.id,
+        name: supplier.companyName,
+        code: supplier.code,
+        email: supplier.email,
+      }))
+    );
+
+    setSelectedSuppliers((prevSuppliers) => [
+      ...prevSuppliers.filter(
+        (existingSupplier) =>
+          !newSupplierOptions.some(
+            (newSupplier) => existingSupplier.id === newSupplier.id
+          )
+      ),
+      ...newSupplierOptions,
+    ]);
+  };
 
   // itemId 업데이트를 별도의 함수로 분리
   const updateItemId = (index: number, itemId: number | null) => {
@@ -589,29 +586,6 @@ const MakeInquiry = () => {
       };
       return updatedItems;
     });
-  };
-
-  const handleSupplierSelect = (
-    value: string,
-    option: { value: string; id: number; code: string; email: string }
-  ) => {
-    setSelectedSuppliers((prev) => {
-      const existingSuppliers = new Map(prev.map((s) => [s.id, s]));
-      existingSuppliers.set(option.id, {
-        id: option.id,
-        name: value,
-        code: option.code,
-        email: option.email,
-      });
-      return Array.from(existingSuppliers.values());
-    });
-    handleFormChange("supplierName", "");
-  };
-
-  const handleTagClose = (id: number) => {
-    setSelectedSuppliers((prev) =>
-      prev.filter((supplier) => supplier.id !== id)
-    );
   };
 
   const handleOpenHeaderModal = () => {

@@ -223,7 +223,6 @@ const MakeInquiryTable = ({
                 }}
               />
             </AutoComplete>
-
             {duplicateStates[record.position] && (
               <div style={{ color: "#faad14", marginTop: "5px" }}>
                 duplicate code.

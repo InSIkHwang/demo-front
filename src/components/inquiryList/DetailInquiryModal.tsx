@@ -80,6 +80,7 @@ const DetailInquiryModal = ({
     const fetchDetails = async () => {
       if (open) {
         try {
+          setInquiryDetail(null);
           const data = await fetchInquiryDetail(inquiryId);
           setInquiryDetail(data);
         } catch (error) {
