@@ -112,9 +112,14 @@ const MakeInquiry = () => {
   const [autoCompleteOptions, setAutoCompleteOptions] = useState<
     { value: string }[]
   >([]);
-  const [itemCodeOptions, setItemCodeOptions] = useState<{ value: string }[]>(
-    []
-  );
+  const [itemCodeOptions, setItemCodeOptions] = useState<
+    {
+      value: string;
+      name: string;
+      key: string;
+      label: string;
+    }[]
+  >([]);
   const [itemNameMap, setItemNameMap] = useState<{ [key: string]: string }>({});
   const [itemIdMap, setItemIdMap] = useState<{ [key: string]: number }>({});
   const [supplierOptions, setSupplierOptions] = useState<
@@ -520,7 +525,6 @@ const MakeInquiry = () => {
     handleInputChange(index, "itemCode", value);
 
     if (value.trim() === "") {
-      // itemCode가 비어있을 경우 itemId와 itemName을 초기화
       updateItemId(index, null);
       return;
     }
@@ -529,58 +533,51 @@ const MakeInquiry = () => {
       const { items } = await fetchItemData(value);
       const itemArray = Array.isArray(items) ? items : [items];
 
-      const newItemNameMap = itemArray.reduce<{ [key: string]: string }>(
+      // Ensure consistency between itemCodeOptions and itemNameMap
+      const newItemNameMap = itemArray.reduce<{ [key: number]: string }>(
         (acc, item) => {
-          acc[item.itemCode] = item.itemName;
+          acc[item.itemId] = item.itemName;
           return acc;
         },
         {}
       );
 
-      const newItemIdMap = itemArray.reduce<{ [key: string]: number }>(
+      const newItemIdMap = itemArray.reduce<{ [key: number]: number }>(
         (acc, item) => {
-          acc[item.itemCode] = item.itemId;
+          acc[item.itemId] = item.itemId;
           return acc;
         },
         {}
       );
 
-      const newSupplierOptions = itemArray.flatMap((item) =>
-        item.supplierList.map((supplier) => ({
-          value: supplier.companyName,
-          id: supplier.id,
-          itemId: supplier.itemId,
-          code: supplier.code,
-          email: supplier.email,
+      setItemCodeOptions(
+        itemArray.map((item) => ({
+          value: item.itemCode,
+          name: item.itemName,
+          key: item.itemId.toString(), // Ensure key is a string
+          label: `${item.itemCode}: ${item.itemName}`,
+          itemId: item.itemId, // Add itemId to options
         }))
       );
 
-      setItemCodeOptions(itemArray.map((item) => ({ value: item.itemCode })));
       setItemNameMap(newItemNameMap);
       setItemIdMap(newItemIdMap);
 
-      setSupplierOptions((prevOptions) => [
-        ...prevOptions,
-        ...newSupplierOptions.filter(
-          (newSupplier) =>
-            !prevOptions.some(
-              (existingSupplier) => existingSupplier.id === newSupplier.id
-            )
-        ),
-      ]);
-
-      // itemName 업데이트
-      if (newItemNameMap[value]) {
-        handleInputChange(index, "itemName", newItemNameMap[value]);
+      // Check if selected item exists and update itemId
+      const selectedItem = itemArray.find((item) => item.itemCode === value);
+      if (selectedItem) {
+        handleInputChange(
+          index,
+          "itemName",
+          newItemNameMap[selectedItem.itemId]
+        );
+        updateItemId(index, selectedItem.itemId);
       }
-
-      // itemId 업데이트
-      const newItemId = newItemIdMap[value] ?? null;
-      updateItemId(index, newItemId);
     } catch (error) {
       console.error("Error fetching item codes and suppliers:", error);
     }
   };
+  console.log(items);
 
   // itemId 업데이트를 별도의 함수로 분리
   const updateItemId = (index: number, itemId: number | null) => {
@@ -678,6 +675,7 @@ const MakeInquiry = () => {
         setIsDuplicate={setIsDuplicate}
         setItems={setItems}
         addItem={addItem}
+        updateItemId={updateItemId}
       />
       <Button
         type="primary"

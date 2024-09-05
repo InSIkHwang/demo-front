@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useState } from "react";
+import React, { Dispatch, SetStateAction, useState, useEffect } from "react";
 import { Table, AutoComplete, Input, Select, Button } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import { InquiryItem } from "../../types/types";
@@ -26,11 +26,12 @@ interface MakeInquiryTableProps {
   items: InquiryItem[];
   handleInputChange: (index: number, key: string, value: any) => void;
   handleItemCodeChange: (index: number, value: string) => void;
-  itemCodeOptions: { value: string }[];
+  itemCodeOptions: { value: string; key: string; label: string }[];
   handleDelete: (index: number) => void;
   setIsDuplicate: Dispatch<SetStateAction<boolean>>;
   setItems: React.Dispatch<React.SetStateAction<InquiryItem[]>>;
   addItem: () => void;
+  updateItemId: (index: number, itemId: number | null) => void;
 }
 
 const Row = (props: any) => {
@@ -79,18 +80,20 @@ const MakeInquiryTable = ({
   setIsDuplicate,
   setItems,
   addItem,
+  updateItemId,
 }: MakeInquiryTableProps) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
-
-  // 입력된 단위들을 저장하는 상태 변수 추가
   const [unitOptions, setUnitOptions] = useState<string[]>(["PCS", "SET"]);
+  const [duplicateStates, setDuplicateStates] = useState<{
+    [key: string]: boolean;
+  }>({});
 
   const handleApplyExcelData = (mappedItems: InquiryItem[]) => {
     setItems((prevItems) => [
       ...prevItems,
       ...mappedItems.map((item, idx) => ({
         ...item,
-        position: prevItems.length + idx + 1, // position 값 설정
+        position: prevItems.length + idx + 1,
       })),
     ]);
     setIsModalVisible(false);
@@ -99,7 +102,7 @@ const MakeInquiryTable = ({
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 5, // Customize the distance for drag start
+        distance: 5,
       },
     })
   );
@@ -122,22 +125,29 @@ const MakeInquiryTable = ({
   const checkDuplicate = (key: string, value: string, index: number) => {
     // 빈 값인 경우 false 반환
     if (!value?.trim()) {
-      setIsDuplicate(false); // 빈 값일 때 중복 아님으로 설정
       return false;
     }
 
     const isDuplicate = items.some(
-      (item: any, idx) => item[key] === value && idx !== index
+      (item, idx) => item[key] === value && idx !== index
     );
-
-    if (isDuplicate) {
-      setIsDuplicate(true);
-    } else {
-      setIsDuplicate(false); // 중복이 아닌 경우 false 설정
-    }
 
     return isDuplicate;
   };
+
+  useEffect(() => {
+    const newDuplicateStates = items.reduce((acc, item, index) => {
+      const isDuplicateCode = checkDuplicate("itemCode", item.itemCode, index);
+      const isDuplicateName = checkDuplicate("itemName", item.itemName, index);
+      if (isDuplicateCode || isDuplicateName) {
+        acc[item.position] = isDuplicateCode || isDuplicateName;
+      }
+      return acc;
+    }, {} as { [key: string]: boolean });
+
+    setDuplicateStates(newDuplicateStates);
+    setIsDuplicate(Object.values(newDuplicateStates).includes(true));
+  }, [items]);
 
   const onDragEnd = ({ active, over }: any) => {
     if (active.id !== over?.id) {
@@ -160,14 +170,11 @@ const MakeInquiryTable = ({
 
   const handleUnitBlur = (index: number, value: string) => {
     handleInputChange(index, "unit", value);
-
-    // 새로운 단위가 입력되었을 경우, 단위 리스트에 추가
     setUnitOptions((prevOptions) =>
       prevOptions.includes(value) ? prevOptions : [...prevOptions, value]
     );
   };
 
-  // 일괄 단위 적용
   const applyUnitToAllRows = (selectedUnit: string) => {
     setItems((prevItems) =>
       prevItems.map((item) => ({
@@ -182,9 +189,7 @@ const MakeInquiryTable = ({
       title: "No.",
       dataIndex: "position",
       key: "position",
-      render: (text: string, record: InquiryItem, index: number) => (
-        <span>{text}</span>
-      ),
+      render: (text: string) => <span>{text}</span>,
       width: 50,
     },
     {
@@ -195,19 +200,31 @@ const MakeInquiryTable = ({
         record.itemType === "ITEM" ? (
           <div>
             <AutoComplete
-              value={text}
+              value={record.itemCode}
               onChange={(value) => handleItemCodeChange(index, value)}
-              options={itemCodeOptions}
+              options={itemCodeOptions.map((option) => ({
+                ...option,
+                value: option.value,
+                key: option.key,
+                label: option.label,
+              }))}
+              onSelect={(value: string, option: any) => {
+                const itemId = option.itemId; // AutoComplete의 옵션에서 itemId를 가져옴
+                updateItemId(index, itemId); // itemId로 아이템 업데이트
+                handleInputChange(index, "itemCode", value); // itemCode 업데이트
+                handleInputChange(index, "itemName", option.name); // itemName 업데이트
+              }}
             >
               <Input
                 style={{
-                  borderColor: checkDuplicate("itemCode", text, index)
+                  borderColor: duplicateStates[record.position]
                     ? "#faad14"
-                    : "#d9d9d9", // 중복 시 경고색
+                    : "#d9d9d9",
                 }}
               />
             </AutoComplete>
-            {checkDuplicate("itemCode", text, index) && (
+
+            {duplicateStates[record.position] && (
               <div style={{ color: "#faad14", marginTop: "5px" }}>
                 duplicate code.
               </div>
@@ -274,16 +291,17 @@ const MakeInquiryTable = ({
         <div>
           <Input
             value={text}
-            onChange={(e) =>
-              handleInputChange(index, "itemName", e.target.value)
-            }
+            onChange={(e) => {
+              handleInputChange(index, "itemName", e.target.value);
+              updateItemId(index, null);
+            }}
             style={{
-              borderColor: checkDuplicate("itemName", text, index)
+              borderColor: duplicateStates[record.position]
                 ? "#faad14"
-                : "#d9d9d9", // 중복 시 경고색
+                : "#d9d9d9",
             }}
           />
-          {checkDuplicate("itemName", text, index) && (
+          {duplicateStates[record.position] && (
             <div style={{ color: "#faad14", marginTop: "5px" }}>
               duplicate name.
             </div>

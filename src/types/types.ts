@@ -66,6 +66,7 @@ export interface InquiryItem {
   qty: number;
   unit: string;
   suppliers?: InquiryListSupplier[];
+  [key: string]: any;
 }
 
 export interface Item {
