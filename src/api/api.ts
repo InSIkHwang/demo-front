@@ -55,21 +55,31 @@ export const fetchDocData = async () => {
 };
 
 //Inquiry 조회
-export const fetchInquiryList = async () => {
+export const fetchInquiryList = async (page: number, pageSize: number) => {
   const response = await axios.get<{
     totalCount: number;
     customerInquiryList: Inquiry[];
-  }>("/api/customer-inquiries");
+  }>("/api/customer-inquiries", {
+    params: {
+      page: page - 1, // 페이지는 0부터 시작
+      pageSize: pageSize, // 페이지당 아이템 수
+    },
+  });
 
   return response.data;
 };
 
 //Offer(Supplier Inquiry) 조회
-export const fetchOfferList = async () => {
+export const fetchOfferList = async (page: number, pageSize: number) => {
   const response = await axios.get<{
     totalCount: number;
     supplierInquiryList: SupplierInquiryListIF[];
-  }>("/api/supplier-inquiries");
+  }>("/api/supplier-inquiries", {
+    params: {
+      page: page - 1, // 페이지는 0부터 시작
+      pageSize: pageSize, // 페이지당 아이템 수
+    },
+  });
 
   return response.data;
 };
@@ -188,7 +198,9 @@ export const searchInquiryList = async (
   registerEndDate: string = "",
   documentNumber: string = "",
   refNumber: string = "",
-  customerName: string = ""
+  customerName: string = "",
+  page: number,
+  pageSize: number
 ): Promise<{
   totalCount: number;
   customerInquiryList: Inquiry[];
@@ -200,12 +212,17 @@ export const searchInquiryList = async (
     documentNumber,
     refNumber,
     customerName,
+    page: (page - 1).toString(), // 페이지는 0부터 시작
+    pageSize: pageSize.toString(), // 페이지당 아이템 수
   };
 
   // 쿼리 문자열을 생성
-  const queryString = new URLSearchParams(queryParams).toString();
+  const queryString = Object.keys(queryParams)
+    .filter((key) => queryParams[key] !== "") // 빈 문자열 필터링
+    .map((key) => `${key}=${encodeURIComponent(queryParams[key])}`)
+    .join("&");
 
-  // GET 요청을 보냄
+  // GET 요청을 보냄 (POST가 아닌 GET으로 보내야 할 경우)
   const response = await axios.post<{
     totalCount: number;
     customerInquiryList: Inquiry[];
@@ -247,7 +264,7 @@ export const sendInquiryMail = async (
         "Content-Type": "multipart/form-data",
       },
     }
-  );  
+  );
 
   return response.data;
 };

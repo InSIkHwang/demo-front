@@ -136,9 +136,17 @@ const CustomerInquiryList = () => {
   const [registerStartDate, setRegisterStartDate] = useState<string>("");
   const [registerEndDate, setRegisterEndDate] = useState<string>("");
 
+  useEffect(() => {
+    if (searchText) {
+      handleSearch();
+    } else {
+      fetchData();
+    }
+  }, [currentPage, itemsPerPage]);
+
   const fetchData = async () => {
     try {
-      const response = await fetchInquiryList();
+      const response = await fetchInquiryList(currentPage, itemsPerPage);
       setData(response.customerInquiryList);
       setTotalCount(response.totalCount);
     } catch (error) {
@@ -171,23 +179,19 @@ const CustomerInquiryList = () => {
         registerEndDate,
         searchCategory === "documentNumber" ? searchText : "",
         searchCategory === "refNumber" ? searchText : "",
-        searchCategory === "customerName" ? searchText : ""
+        searchCategory === "customerName" ? searchText : "",
+        currentPage,
+        itemsPerPage
       );
 
       setData(response.customerInquiryList);
       setTotalCount(response.totalCount);
-      setCurrentPage(1); // 검색 후 첫 페이지로 이동
     } catch (error) {
       console.error("검색 중 오류가 발생했습니다:", error);
     } finally {
       setLoading(false);
     }
   };
-
-  const paginatedData = data.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
 
   const handleRowClick = (record: Inquiry) => {
     setSelectedInquiryId(record.customerInquiryId);
@@ -248,36 +252,40 @@ const CustomerInquiryList = () => {
             신규 등록
           </Button>
         </TableHeader>
-        <Table
-          columns={columns}
-          dataSource={paginatedData}
-          pagination={false}
-          loading={loading}
-          rowKey="customerInquiryId"
-          style={{ cursor: "pointer" }}
-          onRow={(record) => ({
-            onClick: () => handleRowClick(record),
-          })}
-        />
-        <PaginationWrapper
-          current={currentPage}
-          pageSize={itemsPerPage}
-          total={totalCount}
-          onChange={handlePageChange}
-          onShowSizeChange={handlePageSizeChange}
-          showSizeChanger
-          pageSizeOptions={[10, 15, 30, 50, 100]}
-          showQuickJumper
-          itemRender={(page, type, originalElement) => {
-            if (type === "prev") {
-              return <LeftOutlined />;
-            }
-            if (type === "next") {
-              return <RightOutlined />;
-            }
-            return originalElement;
-          }}
-        />
+        {data.length > 0 && ( // 데이터가 있을 때만 페이지네이션을 표시
+          <>
+            <Table
+              columns={columns}
+              dataSource={data}
+              pagination={false}
+              loading={loading}
+              rowKey="customerInquiryId"
+              style={{ cursor: "pointer" }}
+              onRow={(record) => ({
+                onClick: () => handleRowClick(record),
+              })}
+            />
+            <PaginationWrapper
+              current={currentPage}
+              pageSize={itemsPerPage}
+              total={totalCount}
+              onChange={handlePageChange}
+              onShowSizeChange={handlePageSizeChange}
+              showSizeChanger
+              pageSizeOptions={[10, 15, 30, 50, 100]}
+              showQuickJumper
+              itemRender={(page, type, originalElement) => {
+                if (type === "prev") {
+                  return <LeftOutlined />;
+                }
+                if (type === "next") {
+                  return <RightOutlined />;
+                }
+                return originalElement;
+              }}
+            />
+          </>
+        )}
       </Container>
       {selectedInquiryId !== null && (
         <DetailInquiryModal

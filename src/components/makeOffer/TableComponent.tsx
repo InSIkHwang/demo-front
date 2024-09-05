@@ -233,6 +233,7 @@ const TableComponent = ({
         }));
 
         // 상태 업데이트
+
         return updatedItems;
       });
     }
@@ -254,12 +255,11 @@ const TableComponent = ({
     handleInputChange(index, "itemCode", value);
 
     if (value.trim() === "") {
-      // itemCode가 비어있을 경우 itemId를 초기화
       setDataSource((prevItems) => {
         const updatedItems = [...prevItems];
         updatedItems[index] = {
           ...updatedItems[index],
-          itemId: null, // itemId를 초기화
+          itemId: null,
         };
         return updatedItems;
       });
@@ -268,11 +268,17 @@ const TableComponent = ({
 
     try {
       const { items } = await fetchItemData(value);
-      const itemArray = Array.isArray(items) ? items : [items];
+      if (!Array.isArray(items)) {
+        console.error("Items data is not an array:", items);
+        return;
+      }
+
+      const itemArray = items;
 
       const newItemNameMap = itemArray.reduce<{ [key: string]: string }>(
         (acc, item) => {
-          acc[item.itemCode] = item.itemName;
+          const key = `${item.itemId}@#${item.itemCode}`;
+          acc[key] = item.itemName;
           return acc;
         },
         {}
@@ -280,7 +286,8 @@ const TableComponent = ({
 
       const newItemIdMap = itemArray.reduce<{ [key: string]: number }>(
         (acc, item) => {
-          acc[item.itemCode] = item.itemId;
+          const key = `${item.itemId}@#${item.itemCode}`;
+          acc[key] = item.itemId;
           return acc;
         },
         {}
@@ -310,23 +317,24 @@ const TableComponent = ({
         ),
       ]);
 
-      // itemName 업데이트
-      if (newItemNameMap[value]) {
-        handleInputChange(index, "itemName", newItemNameMap[value]);
+      const currentKey = Object.keys(newItemNameMap).find((key) =>
+        key.includes(value)
+      );
+
+      if (currentKey && newItemNameMap[currentKey]) {
+        handleInputChange(index, "itemName", newItemNameMap[currentKey]);
       }
 
-      // itemId 업데이트
-      if (newItemIdMap[value] !== undefined) {
+      if (currentKey && newItemIdMap[currentKey] !== undefined) {
         setDataSource((prevItems) => {
           const updatedItems = [...prevItems];
           updatedItems[index] = {
             ...updatedItems[index],
-            itemId: newItemIdMap[value],
+            itemId: newItemIdMap[currentKey],
           };
           return updatedItems;
         });
       } else {
-        // 값이 유효하지 않은 경우 itemId를 초기화
         setDataSource((prevItems) => {
           const updatedItems = [...prevItems];
           updatedItems[index] = {

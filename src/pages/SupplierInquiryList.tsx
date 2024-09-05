@@ -204,65 +204,62 @@ const SupplierInquiryList = () => {
   >(new Map());
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetchOfferList();
-        setData(response.supplierInquiryList);
-        setTotalCount(response.totalCount);
-      } catch (error) {
-        console.error("데이터를 가져오는 중 오류가 발생했습니다:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
-  }, []);
-
-  const paginatedData = data.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-const handleRowClick = async (record: SupplierInquiryListIF) => {
-  setSelectedSupplierIds(new Map<number, string>());
-
-  if (currentDetail && record.documentNumber === currentDetail.documentNumber) {
-    // 현재 열려있는 항목을 다시 클릭하면 currentDetail을 숨깁니다.
-    setCurrentDetail(null);
-    setSupplierInfoList([]);
-    setExpandedRowKeys([]);
-  } else {
-    // 새 항목을 클릭하면 supplierInfoList의 모든 항목에 대해 fetchOfferDetail을 호출합니다.
+  }, [currentPage, itemsPerPage]);
+  const fetchData = async () => {
     try {
-      // 선택한 항목의 세부정보를 가져오기 전에 기존 세부정보를 지웁니다.
-      setSupplierInfoList([]);
-
-      // 선택한 항목의 세부정보를 가져옵니다.
-      const detailPromises = record.supplierInfoList.map(async (info) => {
-        const { supplierId, supplierInquiryId } = info;
-        const detailResponse = await fetchOfferDetail(
-          supplierInquiryId,
-          supplierId
-        );
-
-        return {
-          info,
-          detail: detailResponse,
-        };
-      });
-
-      // 모든 요청이 완료된 후 결과를 상태에 저장
-      const details = await Promise.all(detailPromises);
-
-      setCurrentDetail(record); // 현재 항목을 현재 세부정보로 설정
-      setSupplierInfoList(details);
-      setExpandedRowKeys([record.documentNumber]); // 행을 확장합니다.
+      const response = await fetchOfferList(currentPage, itemsPerPage);
+      setData(response.supplierInquiryList);
+      setTotalCount(response.totalCount);
     } catch (error) {
-      console.error("세부정보를 가져오는 중 오류가 발생했습니다:", error);
+      console.error("데이터를 가져오는 중 오류가 발생했습니다:", error);
+    } finally {
+      setLoading(false);
     }
-  }
-};
+  };
+
+  const handleRowClick = async (record: SupplierInquiryListIF) => {
+    setSelectedSupplierIds(new Map<number, string>());
+
+    if (
+      currentDetail &&
+      record.documentNumber === currentDetail.documentNumber
+    ) {
+      // 현재 열려있는 항목을 다시 클릭하면 currentDetail을 숨깁니다.
+      setCurrentDetail(null);
+      setSupplierInfoList([]);
+      setExpandedRowKeys([]);
+    } else {
+      // 새 항목을 클릭하면 supplierInfoList의 모든 항목에 대해 fetchOfferDetail을 호출합니다.
+      try {
+        // 선택한 항목의 세부정보를 가져오기 전에 기존 세부정보를 지웁니다.
+        setSupplierInfoList([]);
+
+        // 선택한 항목의 세부정보를 가져옵니다.
+        const detailPromises = record.supplierInfoList.map(async (info) => {
+          const { supplierId, supplierInquiryId } = info;
+          const detailResponse = await fetchOfferDetail(
+            supplierInquiryId,
+            supplierId
+          );
+
+          return {
+            info,
+            detail: detailResponse,
+          };
+        });
+
+        // 모든 요청이 완료된 후 결과를 상태에 저장
+        const details = await Promise.all(detailPromises);
+
+        setCurrentDetail(record); // 현재 항목을 현재 세부정보로 설정
+        setSupplierInfoList(details);
+        setExpandedRowKeys([record.documentNumber]); // 행을 확장합니다.
+      } catch (error) {
+        console.error("세부정보를 가져오는 중 오류가 발생했습니다:", error);
+      }
+    }
+  };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -387,168 +384,175 @@ const handleRowClick = async (record: SupplierInquiryListIF) => {
               style={{ marginRight: 10 }}
             />
           </SearchBar>
-        </TableHeader>
-        <Table
-          columns={columns}
-          dataSource={paginatedData}
-          pagination={false}
-          loading={loading}
-          rowKey="documentNumber" // Use documentNumber as key for expansion
-          expandedRowRender={(record) => {
-            if (
-              currentDetail &&
-              record.documentNumber === currentDetail.documentNumber
-            ) {
-              return (
-                <CardContainer>
-                  <Button
-                    type="primary"
-                    style={{ position: "absolute", right: 20 }}
-                    onClick={() => handleSendMailClick()}
-                  >
-                    메일전송
-                  </Button>
-                  <SelectedSupplierNameBox>
-                    선택된 의뢰처:{" "}
-                    {Array.from(selectedSupplierIds.values()).map(
-                      (companyName, index) => (
-                        <span key={index}>{companyName}</span>
-                      )
-                    )}
-                    {selectedSupplierIds.size === 0 &&
-                      "선택된 의뢰처가 없습니다."}
-                  </SelectedSupplierNameBox>
-
-                  {supplierInfoList.map(({ info, detail }) => {
-                    const totals = calculateTotals(detail.inquiryItemDetails);
-                    return (
-                      <StyledCard
-                        key={info.supplierInquiryId}
-                        title={
-                          <CardTitle
-                            onClick={() => {
-                              const isChecked = selectedSupplierIds.has(
-                                info.supplierInquiryId
-                              );
-                              handleCheckboxChange(
-                                info.supplierInquiryId,
-                                info.companyName,
-                                !isChecked
-                              );
-                            }}
-                          >
-                            <input
-                              type="checkbox"
-                              checked={selectedSupplierIds.has(
-                                info.supplierInquiryId
-                              )}
-                              onChange={(e) =>
-                                handleCheckboxChange(
-                                  info.supplierInquiryId,
-                                  info.companyName,
-                                  e.target.checked
-                                )
-                              }
-                              style={{ marginRight: 8 }}
-                            />
-                            {info.code} ({info.companyName})
-                          </CardTitle>
-                        }
+        </TableHeader>{" "}
+        {data.length > 0 && ( // 데이터가 있을 때만 페이지네이션을 표시
+          <>
+            <Table
+              columns={columns}
+              dataSource={data}
+              pagination={false}
+              loading={loading}
+              rowKey="documentNumber" // Use documentNumber as key for expansion
+              expandedRowRender={(record) => {
+                if (
+                  currentDetail &&
+                  record.documentNumber === currentDetail.documentNumber
+                ) {
+                  return (
+                    <CardContainer>
+                      <Button
+                        type="primary"
+                        style={{ position: "absolute", right: 20 }}
+                        onClick={() => handleSendMailClick()}
                       >
-                        <CardContent>
-                          <Section>
-                            <InfoText>
-                              매입액 (KRW):{" "}
-                              {totals.totalPurchaseAmountKRW.toLocaleString()}
-                            </InfoText>
-                            <InfoText>
-                              매출액 (KRW):{" "}
-                              {totals.totalSalesAmountKRW.toLocaleString()}
-                            </InfoText>
-                            <InfoText style={{ color: "#000" }}>
-                              총 이익 (KRW):{" "}
-                              {totals.totalProfitKRW.toLocaleString()}
-                            </InfoText>
-                          </Section>
-                          <Divider />
-                          <Section>
-                            <InfoText>
-                              매입액 (F):{" "}
-                              {totals.totalPurchaseAmountGlobal.toLocaleString()}
-                            </InfoText>
-                            <InfoText>
-                              매출액 (F):{" "}
-                              {totals.totalSalesAmountGlobal.toLocaleString()}
-                            </InfoText>
-                            <InfoText style={{ color: "#000" }}>
-                              총 이익 (F):{" "}
-                              {totals.totalProfitGlobal.toLocaleString()}
-                            </InfoText>
-                          </Section>
-                        </CardContent>
-                        <InfoText style={{ color: "#000" }}>
-                          이익율: {totals.profitMarginKRW}% (F:{" "}
-                          {totals.profitMarginGlobal}%)
-                        </InfoText>
-                        <div
-                          style={{
-                            display: "grid",
-                            height: 50,
-                            margin: "5px 0",
-                          }}
-                        >
-                          <InfoText>
-                            적용환율: {record.currency} ({record.currencyType})
-                          </InfoText>
-                          <Button
-                            type="primary"
-                            onClick={() => handleEditClick(detail)}
-                          >
-                            수정
-                          </Button>
-                        </div>
-                      </StyledCard>
-                    );
-                  })}
-                </CardContainer>
-              );
-            }
-            return null;
-          }}
-          expandedRowKeys={expandedRowKeys}
-          onRow={(record) => ({
-            onClick: () => handleRowClick(record),
-          })}
-          onExpand={(expanded, record) => {
-            if (expanded) {
-              handleRowClick(record);
-            } else {
-              setCurrentDetail(null);
-              setSupplierInfoList([]);
-              setExpandedRowKeys([]);
-            }
-          }}
-        />
+                        메일전송
+                      </Button>
+                      <SelectedSupplierNameBox>
+                        선택된 의뢰처:{" "}
+                        {Array.from(selectedSupplierIds.values()).map(
+                          (companyName, index) => (
+                            <span key={index}>{companyName}</span>
+                          )
+                        )}
+                        {selectedSupplierIds.size === 0 &&
+                          "선택된 의뢰처가 없습니다."}
+                      </SelectedSupplierNameBox>
 
-        <PaginationWrapper
-          current={currentPage}
-          pageSize={itemsPerPage}
-          total={totalCount}
-          onChange={handlePageChange}
-          onShowSizeChange={handlePageSizeChange}
-          showSizeChanger
-          pageSizeOptions={[10, 15, 30, 50, 100]}
-          showQuickJumper
-          itemRender={(page, type, originalElement) => {
-            if (type === "prev") {
-              return <LeftOutlined />;
-            }
-            if (type === "next") {
-              return <RightOutlined />;
-            }
-            return originalElement;
-          }}
-        />
+                      {supplierInfoList.map(({ info, detail }) => {
+                        const totals = calculateTotals(
+                          detail.inquiryItemDetails
+                        );
+                        return (
+                          <StyledCard
+                            key={info.supplierInquiryId}
+                            title={
+                              <CardTitle
+                                onClick={() => {
+                                  const isChecked = selectedSupplierIds.has(
+                                    info.supplierInquiryId
+                                  );
+                                  handleCheckboxChange(
+                                    info.supplierInquiryId,
+                                    info.companyName,
+                                    !isChecked
+                                  );
+                                }}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={selectedSupplierIds.has(
+                                    info.supplierInquiryId
+                                  )}
+                                  onChange={(e) =>
+                                    handleCheckboxChange(
+                                      info.supplierInquiryId,
+                                      info.companyName,
+                                      e.target.checked
+                                    )
+                                  }
+                                  style={{ marginRight: 8 }}
+                                />
+                                {info.code} ({info.companyName})
+                              </CardTitle>
+                            }
+                          >
+                            <CardContent>
+                              <Section>
+                                <InfoText>
+                                  매입액 (KRW):{" "}
+                                  {totals.totalPurchaseAmountKRW.toLocaleString()}
+                                </InfoText>
+                                <InfoText>
+                                  매출액 (KRW):{" "}
+                                  {totals.totalSalesAmountKRW.toLocaleString()}
+                                </InfoText>
+                                <InfoText style={{ color: "#000" }}>
+                                  총 이익 (KRW):{" "}
+                                  {totals.totalProfitKRW.toLocaleString()}
+                                </InfoText>
+                              </Section>
+                              <Divider />
+                              <Section>
+                                <InfoText>
+                                  매입액 (F):{" "}
+                                  {totals.totalPurchaseAmountGlobal.toLocaleString()}
+                                </InfoText>
+                                <InfoText>
+                                  매출액 (F):{" "}
+                                  {totals.totalSalesAmountGlobal.toLocaleString()}
+                                </InfoText>
+                                <InfoText style={{ color: "#000" }}>
+                                  총 이익 (F):{" "}
+                                  {totals.totalProfitGlobal.toLocaleString()}
+                                </InfoText>
+                              </Section>
+                            </CardContent>
+                            <InfoText style={{ color: "#000" }}>
+                              이익율: {totals.profitMarginKRW}% (F:{" "}
+                              {totals.profitMarginGlobal}%)
+                            </InfoText>
+                            <div
+                              style={{
+                                display: "grid",
+                                height: 50,
+                                margin: "5px 0",
+                              }}
+                            >
+                              <InfoText>
+                                적용환율: {record.currency} (
+                                {record.currencyType})
+                              </InfoText>
+                              <Button
+                                type="primary"
+                                onClick={() => handleEditClick(detail)}
+                              >
+                                수정
+                              </Button>
+                            </div>
+                          </StyledCard>
+                        );
+                      })}
+                    </CardContainer>
+                  );
+                }
+                return null;
+              }}
+              expandedRowKeys={expandedRowKeys}
+              onRow={(record) => ({
+                onClick: () => handleRowClick(record),
+              })}
+              onExpand={(expanded, record) => {
+                if (expanded) {
+                  handleRowClick(record);
+                } else {
+                  setCurrentDetail(null);
+                  setSupplierInfoList([]);
+                  setExpandedRowKeys([]);
+                }
+              }}
+            />
+
+            <PaginationWrapper
+              current={currentPage}
+              pageSize={itemsPerPage}
+              total={totalCount}
+              onChange={handlePageChange}
+              onShowSizeChange={handlePageSizeChange}
+              showSizeChanger
+              pageSizeOptions={[10, 15, 30, 50, 100]}
+              showQuickJumper
+              itemRender={(page, type, originalElement) => {
+                if (type === "prev") {
+                  return <LeftOutlined />;
+                }
+                if (type === "next") {
+                  return <RightOutlined />;
+                }
+                return originalElement;
+              }}
+            />
+          </>
+        )}
       </Container>
     </>
   );
