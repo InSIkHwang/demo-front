@@ -204,19 +204,6 @@ const TableComponent = ({
   );
   const [unitOptions, setUnitOptions] = useState<string[]>(["PCS", "SET"]);
 
-  const checkDuplicate = useCallback(
-    (key: string, value: string, index: number) => {
-      if (!value?.trim()) {
-        return false;
-      }
-
-      return dataSource.some(
-        (item: any, idx) => item[key] === value && idx !== index
-      );
-    },
-    [dataSource]
-  );
-
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -268,19 +255,6 @@ const TableComponent = ({
     },
     [setDataSource]
   );
-
-  // 컴포넌트 최초 렌더링 시 중복 여부를 확인
-  useEffect(() => {
-    // 중복 여부를 전체적으로 확인합니다.
-    const hasDuplicate = dataSource.some((item: any, index) =>
-      ["itemCode", "itemName"].some((key) =>
-        checkDuplicate(key, item[key], index)
-      )
-    );
-
-    setIsDuplicate(hasDuplicate);
-  }, [checkDuplicate, dataSource, setIsDuplicate]);
-
   const handleItemCodeChange = async (index: number, value: string) => {
     handleInputChange(index, "itemCode", value);
 
@@ -367,6 +341,30 @@ const TableComponent = ({
       return updatedItems;
     });
   };
+
+  const checkDuplicate = useCallback(
+    (key: string, value: string, index: number) => {
+      if (!value?.trim()) {
+        return false;
+      }
+
+      return dataSource.some(
+        (item: any, idx) => item[key] === value && idx !== index
+      );
+    },
+    [dataSource]
+  );
+  // 컴포넌트 최초 렌더링 시 중복 여부를 확인
+  useEffect(() => {
+    // 중복 여부를 전체적으로 확인합니다.
+    const hasDuplicate = dataSource.some((item: any, index) =>
+      ["itemCode", "itemName"].some((key) =>
+        checkDuplicate(key, item[key], index)
+      )
+    );
+
+    setIsDuplicate(hasDuplicate);
+  }, [checkDuplicate, dataSource, setIsDuplicate]);
 
   useEffect(() => {
     const totalSalesAmountKRW = dataSource.reduce(
@@ -470,6 +468,7 @@ const TableComponent = ({
       title: "No.",
       dataIndex: "no", // No. 값 표시
       key: "no",
+      width: 40,
       render: (_: any, __: any, index: number) => <span>{index + 1}</span>,
     },
     {
@@ -483,9 +482,19 @@ const TableComponent = ({
           <>
             <AutoComplete
               value={text}
-              onChange={(value) => handleItemCodeChange(index, value)}
+              onChange={(value) => {
+                handleItemCodeChange(index, value);
+                updateItemId(index, null);
+              }}
               options={itemCodeOptions}
+              onSelect={(value: string, option: any) => {
+                const itemId = option.itemId; // AutoComplete의 옵션에서 itemId를 가져옴
+                updateItemId(index, itemId); // itemId로 아이템 업데이트
+                handleInputChange(index, "itemCode", value); // itemCode 업데이트
+                handleInputChange(index, "itemName", option.name); // itemName 업데이트
+              }}
               style={{ borderRadius: "4px", width: "100%" }}
+              dropdownStyle={{ width: 250 }}
             >
               <Input
                 style={{
@@ -530,7 +539,6 @@ const TableComponent = ({
       width: 250,
       render: (text: string, record: any, index: number) => (
         <>
-          {" "}
           <Input
             value={text}
             onChange={(e) => {
@@ -557,7 +565,7 @@ const TableComponent = ({
       title: "수량",
       dataIndex: "qty",
       key: "qty",
-      width: 60,
+      width: 75,
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <InputNumber
@@ -674,36 +682,38 @@ const TableComponent = ({
       dataIndex: "salesAmountKRW",
       key: "salesAmountKRW",
       width: 130,
-      render: (text: number, record: any, index: number) => (
-        <InputNumber
-          value={calculateTotalAmount(
-            record.salesPriceKRW,
-            record.qty
-          ).toLocaleString()}
-          style={{ width: "100%" }}
-          readOnly
-          className="highlight-cell"
-          addonBefore="₩"
-        />
-      ),
+      render: (text: number, record: any, index: number) =>
+        record.itemType === "ITEM" ? (
+          <InputNumber
+            value={calculateTotalAmount(
+              record.salesPriceKRW,
+              record.qty
+            ).toLocaleString()}
+            style={{ width: "100%" }}
+            readOnly
+            className="highlight-cell"
+            addonBefore="₩"
+          />
+        ) : null,
     },
     {
       title: "매출총액(F)",
       dataIndex: "salesAmountGlobal",
       key: "salesAmountGlobal",
       width: 130,
-      render: (text: number, record: any, index: number) => (
-        <InputNumber
-          value={calculateTotalAmount(
-            record.salesPriceGlobal,
-            record.qty
-          ).toLocaleString()}
-          style={{ width: "100%" }}
-          readOnly
-          className="highlight-cell"
-          addonBefore="F"
-        />
-      ),
+      render: (text: number, record: any, index: number) =>
+        record.itemType === "ITEM" ? (
+          <InputNumber
+            value={calculateTotalAmount(
+              record.salesPriceGlobal,
+              record.qty
+            ).toLocaleString()}
+            style={{ width: "100%" }}
+            readOnly
+            className="highlight-cell"
+            addonBefore="F"
+          />
+        ) : null,
     },
     {
       title: "매입단가(KRW)",
@@ -766,36 +776,38 @@ const TableComponent = ({
       dataIndex: "purchaseAmountKRW",
       key: "purchaseAmountKRW",
       width: 130,
-      render: (text: number, record: any, index: number) => (
-        <InputNumber
-          value={calculateTotalAmount(
-            record.purchasePriceKRW,
-            record.qty
-          ).toLocaleString()}
-          style={{ width: "100%" }}
-          readOnly
-          className="highlight-cell"
-          addonBefore="₩"
-        />
-      ),
+      render: (text: number, record: any, index: number) =>
+        record.itemType === "ITEM" ? (
+          <InputNumber
+            value={calculateTotalAmount(
+              record.purchasePriceKRW,
+              record.qty
+            ).toLocaleString()}
+            style={{ width: "100%" }}
+            readOnly
+            className="highlight-cell"
+            addonBefore="₩"
+          />
+        ) : null,
     },
     {
       title: "매입총액(F)",
       dataIndex: "purchaseAmountGlobal",
       key: "purchaseAmountGlobal",
       width: 130,
-      render: (text: number, record: any, index: number) => (
-        <InputNumber
-          value={calculateTotalAmount(
-            record.purchasePriceGlobal,
-            record.qty
-          ).toLocaleString()}
-          style={{ width: "100%" }}
-          readOnly
-          className="highlight-cell"
-          addonBefore="F"
-        />
-      ),
+      render: (text: number, record: any, index: number) =>
+        record.itemType === "ITEM" ? (
+          <InputNumber
+            value={calculateTotalAmount(
+              record.purchasePriceGlobal,
+              record.qty
+            ).toLocaleString()}
+            style={{ width: "100%" }}
+            readOnly
+            className="highlight-cell"
+            addonBefore="F"
+          />
+        ) : null,
     },
     {
       title: "마진(%)",
@@ -889,7 +901,6 @@ const TableComponent = ({
             columns={columns}
             dataSource={dataSource}
             pagination={false}
-            bordered
           />
         </SortableContext>
       </DndContext>

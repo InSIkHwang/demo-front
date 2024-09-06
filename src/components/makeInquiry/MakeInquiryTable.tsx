@@ -254,6 +254,7 @@ const MakeInquiryTable = ({
                 handleInputChange(index, "itemCode", value); // itemCode 업데이트
                 handleInputChange(index, "itemName", option.name); // itemName 업데이트
               }}
+              dropdownStyle={{ width: 250 }}
             >
               <Input
                 style={{

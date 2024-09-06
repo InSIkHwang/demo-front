@@ -450,7 +450,6 @@ const MakeInquiry = () => {
         supplierIdList: selectedSupplierTag.map((supplier) => supplier.id),
       };
     });
-    console.log(inquiryItemDetails);
     const requestData = {
       documentNumber: formValues.docNumber,
       vesselId: selectedVessel ? selectedVessel.id : null,

@@ -127,6 +127,7 @@ const MakeOffer = () => {
       position: item.position,
       itemDetailId: item.itemDetailId,
       itemName: item.itemName,
+      itemCode: item.itemCode,
       itemRemark: item.itemRemark || "",
       itemType: item.itemType,
       qty: item.qty,
@@ -142,7 +143,6 @@ const MakeOffer = () => {
       purchaseAmountKRW: item.purchaseAmountKRW,
       purchaseAmountGlobal: item.purchaseAmountGlobal,
     }));
-
     try {
       if (isDuplicate) {
         // 중복된 품목이 있을 경우 사용자에게 확인 메시지 표시
