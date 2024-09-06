@@ -22,6 +22,12 @@ import { ColumnsType } from "antd/es/table";
 
 const { Option } = Select;
 
+interface DuplicateState {
+  code: boolean;
+  name: boolean;
+  all: boolean;
+}
+
 interface MakeInquiryTableProps {
   items: InquiryItem[];
   handleInputChange: (index: number, key: string, value: any) => void;
@@ -85,7 +91,7 @@ const MakeInquiryTable = ({
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [unitOptions, setUnitOptions] = useState<string[]>(["PCS", "SET"]);
   const [duplicateStates, setDuplicateStates] = useState<{
-    [key: string]: boolean;
+    [key: string]: DuplicateState;
   }>({});
 
   const handleApplyExcelData = (mappedItems: InquiryItem[]) => {
@@ -122,28 +128,49 @@ const MakeInquiryTable = ({
     }
   };
 
-  const checkDuplicate = (key: string, value: string, index: number) => {
+  const checkDuplicates = (
+    key: string,
+    value: string,
+    index: number,
+    items: any[]
+  ) => {
     // 빈 값인 경우 false 반환
     if (!value?.trim()) {
       return false;
     }
 
-    const isDuplicate = items.some(
-      (item, idx) => item[key] === value && idx !== index
-    );
+    // 값이 같은지 검사하고, 현재 인덱스를 제외한 다른 인덱스와 비교
+    return items.some((item, idx) => item[key] === value && idx !== index);
+  };
 
-    return isDuplicate;
+  const getDuplicateStates = (items: any[]) => {
+    return items.reduce((acc, item, index) => {
+      const isDuplicateCode = checkDuplicates(
+        "itemCode",
+        item.itemCode,
+        index,
+        items
+      );
+      const isDuplicateName = checkDuplicates(
+        "itemName",
+        item.itemName,
+        index,
+        items
+      );
+
+      if (isDuplicateCode || isDuplicateName) {
+        acc[item.position] = {
+          code: isDuplicateCode,
+          name: isDuplicateName,
+          all: isDuplicateCode || isDuplicateName,
+        };
+      }
+      return acc;
+    }, {} as { [key: string]: DuplicateState });
   };
 
   useEffect(() => {
-    const newDuplicateStates = items.reduce((acc, item, index) => {
-      const isDuplicateCode = checkDuplicate("itemCode", item.itemCode, index);
-      const isDuplicateName = checkDuplicate("itemName", item.itemName, index);
-      if (isDuplicateCode || isDuplicateName) {
-        acc[item.position] = isDuplicateCode || isDuplicateName;
-      }
-      return acc;
-    }, {} as { [key: string]: boolean });
+    const newDuplicateStates = getDuplicateStates(items);
 
     setDuplicateStates(newDuplicateStates);
     setIsDuplicate(Object.values(newDuplicateStates).includes(true));
@@ -217,13 +244,13 @@ const MakeInquiryTable = ({
             >
               <Input
                 style={{
-                  borderColor: duplicateStates[record.position]
+                  borderColor: duplicateStates[record.position]?.code
                     ? "#faad14"
                     : "#d9d9d9",
                 }}
               />
             </AutoComplete>
-            {duplicateStates[record.position] && (
+            {duplicateStates[record.position]?.code && (
               <div style={{ color: "#faad14", marginTop: "5px" }}>
                 duplicate code.
               </div>
@@ -295,12 +322,12 @@ const MakeInquiryTable = ({
               updateItemId(index, null);
             }}
             style={{
-              borderColor: duplicateStates[record.position]
+              borderColor: duplicateStates[record.position]?.name
                 ? "#faad14"
                 : "#d9d9d9",
             }}
           />
-          {duplicateStates[record.position] && (
+          {duplicateStates[record.position]?.name && (
             <div style={{ color: "#faad14", marginTop: "5px" }}>
               duplicate name.
             </div>
@@ -346,7 +373,13 @@ const MakeInquiryTable = ({
         <Button
           icon={<DeleteOutlined />}
           type="default"
-          onClick={() => handleDelete(index)}
+          onClick={() => {
+            handleDelete(index);
+            const newDuplicateStates = getDuplicateStates(items);
+
+            setDuplicateStates(newDuplicateStates);
+            setIsDuplicate(Object.values(newDuplicateStates).includes(true));
+          }}
         />
       ),
       width: 80,

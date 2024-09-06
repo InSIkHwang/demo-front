@@ -162,8 +162,6 @@ export const submitInquiry = async (
   data: any,
   isEditMode: boolean
 ) => {
-  console.log(data);
-  
   try {
     let response;
 

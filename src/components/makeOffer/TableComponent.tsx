@@ -1,4 +1,11 @@
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { Table, Input, Select, InputNumber, Button, AutoComplete } from "antd";
 import { ColumnsType } from "antd/es/table";
 import styled, { CSSProperties } from "styled-components";
@@ -12,6 +19,7 @@ import {
   useSensors,
   PointerSensor,
   UniqueIdentifier,
+  DragStartEvent,
 } from "@dnd-kit/core";
 import {
   arrayMove,
@@ -21,7 +29,6 @@ import {
 } from "@dnd-kit/sortable";
 
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
-import ChargeInputModal from "./ChargeInputPopover";
 import ChargeInputPopover from "./ChargeInputPopover";
 
 const CustomTable = styled(Table)`
@@ -182,11 +189,9 @@ const TableComponent = ({
   const [supplierOptions, setSupplierOptions] = useState<
     { value: string; id: number; itemId: number; code: string; email: string }[]
   >([]);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-
-  const showChargeModal = () => {
-    setIsModalVisible(true);
-  };
+  const [activeDragItem, setActiveDragItem] = useState<UniqueIdentifier | null>(
+    null
+  );
 
   const checkDuplicate = (key: string, value: string, index: number) => {
     if (!value?.trim()) {
@@ -206,38 +211,49 @@ const TableComponent = ({
     })
   );
 
-  const itemIds: UniqueIdentifier[] = dataSource.map(
-    (item) => item.position as UniqueIdentifier
+  const itemIds: UniqueIdentifier[] = useMemo(
+    () => dataSource.map((item) => item.position as UniqueIdentifier),
+    [dataSource]
   );
 
-  const onDragEnd = ({ active, over }: DragEndEvent) => {
-    if (active.id !== over?.id) {
-      setDataSource((prev) => {
-        // 활성화된 아이템과 오버된 아이템의 인덱스 찾기
-        const activeIndex = prev.findIndex(
-          (item) => item.position === active.id
-        );
-        const overIndex = prev.findIndex((item) => item.position === over?.id);
+  const onDragStart = useCallback((event: DragStartEvent) => {
+    setActiveDragItem(event.active.id); // 드래그 시작 시 현재 아이템 ID 저장
+  }, []);
 
-        if (activeIndex === -1 || overIndex === -1) {
-          return prev; // 인덱스가 잘못된 경우 원래 상태 반환
-        }
+  const onDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      setActiveDragItem(null); // 드래그가 끝나면 초기화
 
-        // 아이템의 순서를 변경
-        const reorderedItems = arrayMove(prev, activeIndex, overIndex);
+      const { active, over } = event; // event에서 active와 over 추출
 
-        // position 속성을 업데이트
-        const updatedItems = reorderedItems.map((item, index) => ({
-          ...item,
-          position: index + 1, // position 속성 업데이트 (1부터 시작)
-        }));
+      if (active.id !== over?.id) {
+        setDataSource((prev) => {
+          const activeIndex = prev.findIndex(
+            (item) => item.position === active.id
+          );
+          const overIndex = prev.findIndex(
+            (item) => item.position === over?.id
+          );
 
-        // 상태 업데이트
+          if (activeIndex === -1 || overIndex === -1) {
+            return prev; // 인덱스가 잘못된 경우 원래 상태 반환
+          }
 
-        return updatedItems;
-      });
-    }
-  };
+          // 아이템의 순서를 변경
+          const reorderedItems = arrayMove(prev, activeIndex, overIndex);
+
+          // position 속성을 업데이트
+          const updatedItems = reorderedItems.map((item, index) => ({
+            ...item,
+            position: index + 1, // position 속성 업데이트 (1부터 시작)
+          }));
+
+          return updatedItems;
+        });
+      }
+    },
+    [setDataSource]
+  );
 
   // 컴포넌트 최초 렌더링 시 중복 여부를 확인
   useEffect(() => {
@@ -255,19 +271,13 @@ const TableComponent = ({
     handleInputChange(index, "itemCode", value);
 
     if (value.trim() === "") {
-      setDataSource((prevItems) => {
-        const updatedItems = [...prevItems];
-        updatedItems[index] = {
-          ...updatedItems[index],
-          itemId: null,
-        };
-        return updatedItems;
-      });
+      updateItemId(index, null);
       return;
     }
 
     try {
       const { items } = await fetchItemData(value);
+
       if (!Array.isArray(items)) {
         console.error("Items data is not an array:", items);
         return;
@@ -330,28 +340,21 @@ const TableComponent = ({
         handleInputChange(index, "itemName", newItemNameMap[currentKey]);
       }
 
-      if (currentKey && newItemIdMap[currentKey] !== undefined) {
-        setDataSource((prevItems) => {
-          const updatedItems = [...prevItems];
-          updatedItems[index] = {
-            ...updatedItems[index],
-            itemId: newItemIdMap[currentKey],
-          };
-          return updatedItems;
-        });
-      } else {
-        setDataSource((prevItems) => {
-          const updatedItems = [...prevItems];
-          updatedItems[index] = {
-            ...updatedItems[index],
-            itemId: null,
-          };
-          return updatedItems;
-        });
-      }
+      updateItemId(index, currentKey ? newItemIdMap[currentKey] : null);
     } catch (error) {
       console.error("Error fetching item codes and suppliers:", error);
     }
+  };
+
+  const updateItemId = (index: number, itemId: number | null) => {
+    setDataSource((prevItems) => {
+      const updatedItems = [...prevItems];
+      updatedItems[index] = {
+        ...updatedItems[index],
+        itemId,
+      };
+      return updatedItems;
+    });
   };
 
   useEffect(() => {
@@ -501,7 +504,10 @@ const TableComponent = ({
       render: (text: string, record: any, index: number) => (
         <Input
           value={text}
-          onChange={(e) => handleInputChange(index, "itemName", e.target.value)}
+          onChange={(e) => {
+            handleInputChange(index, "itemName", e.target.value);
+            updateItemId(index, null);
+          }}
           style={{
             borderRadius: "4px",
             width: "100%",
@@ -821,6 +827,7 @@ const TableComponent = ({
       <DndContext
         sensors={sensors}
         modifiers={[restrictToVerticalAxis]}
+        onDragStart={onDragStart}
         onDragEnd={onDragEnd}
       >
         <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
