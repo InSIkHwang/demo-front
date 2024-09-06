@@ -20,7 +20,7 @@ const FormContainer = styled.div`
   padding-bottom: 80px;
   border: 1px solid #ccc;
   border-radius: 8px;
-  max-width: 70vw;
+  max-width: 95vw;
   margin: 0 auto;
   margin-bottom: 200px;
 `;

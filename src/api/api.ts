@@ -280,6 +280,8 @@ export const editOffer = async (
     supplierId,
     itemCostEditList,
   };
+  console.log(requestData);
+  
 
   await axios.put(`/api/supplier-inquiries/${supplierInquiryId}`, requestData);
 };

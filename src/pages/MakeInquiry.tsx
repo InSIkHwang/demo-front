@@ -385,6 +385,7 @@ const MakeInquiry = () => {
   const handleSubmit = async () => {
     try {
       // 중복 검사 여부에 따라 적절한 처리를 수행합니다.
+
       if (isDuplicate) {
         // Modal.confirm을 사용하여 사용자에게 확인을 요청합니다.
         const result = await new Promise((resolve, reject) => {
@@ -436,15 +437,9 @@ const MakeInquiry = () => {
     }
 
     const inquiryItemDetails = items.map((item) => {
-      const matchingItemDetail = inquiryDetail?.inquiryItemDetails.find(
-        (detail) => detail.itemId === item.itemId
-      );
-
       return {
         position: item.position,
-        itemDetailId: matchingItemDetail
-          ? matchingItemDetail.itemDetailId
-          : null,
+        itemDetailId: item.itemDetailId,
         itemId: item.itemId || null,
         itemCode: item.itemCode,
         itemName: item.itemName,
@@ -455,7 +450,7 @@ const MakeInquiry = () => {
         supplierIdList: selectedSupplierTag.map((supplier) => supplier.id),
       };
     });
-
+    console.log(inquiryItemDetails);
     const requestData = {
       documentNumber: formValues.docNumber,
       vesselId: selectedVessel ? selectedVessel.id : null,

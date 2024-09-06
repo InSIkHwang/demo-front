@@ -32,6 +32,10 @@ import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import ChargeInputPopover from "./ChargeInputPopover";
 
 const CustomTable = styled(Table)`
+  .ant-table * {
+    font-size: 13px;
+  }
+
   .ant-table-cell {
     padding: 12px !important;
     text-align: center !important;
@@ -39,7 +43,13 @@ const CustomTable = styled(Table)`
 
   .highlight-cell {
     font-weight: bold;
-    background-color: #dff4ff;
+
+    .ant-input-number-group-addon {
+      background-color: #dff4ff;
+    }
+  }
+  .ant-input-number-group-addon {
+    padding: 0 2px;
   }
 `;
 
@@ -192,6 +202,7 @@ const TableComponent = ({
   const [activeDragItem, setActiveDragItem] = useState<UniqueIdentifier | null>(
     null
   );
+  const [unitOptions, setUnitOptions] = useState<string[]>(["PCS", "SET"]);
 
   const checkDuplicate = useCallback(
     (key: string, value: string, index: number) => {
@@ -426,6 +437,22 @@ const TableComponent = ({
     setDataSource(updatedDataSource);
   };
 
+  const handleUnitBlur = (index: number, value: string) => {
+    handleInputChange(index, "unit", value);
+    setUnitOptions((prevOptions) =>
+      prevOptions.includes(value) ? prevOptions : [...prevOptions, value]
+    );
+  };
+
+  const applyUnitToAllRows = (selectedUnit: string) => {
+    setDataSource((prevItems) =>
+      prevItems.map((item) => ({
+        ...item,
+        unit: selectedUnit,
+      }))
+    );
+  };
+
   const columns: ColumnsType<any> = [
     {
       title: "삭제",
@@ -444,14 +471,13 @@ const TableComponent = ({
       dataIndex: "no", // No. 값 표시
       key: "no",
       render: (_: any, __: any, index: number) => <span>{index + 1}</span>,
-      width: 50,
     },
     {
       title: "품목코드",
       dataIndex: "itemCode",
       key: "itemCode",
       fixed: "left",
-      width: 150,
+      width: 130,
       render: (text: string, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <>
@@ -481,7 +507,7 @@ const TableComponent = ({
       title: "OPT",
       dataIndex: "itemType",
       key: "itemType",
-      width: 120,
+      width: 80,
       render: (text: string, record: any, index: number) => (
         <Select
           value={text}
@@ -501,7 +527,7 @@ const TableComponent = ({
       dataIndex: "itemName",
       key: "itemName",
       fixed: "left",
-      width: 300,
+      width: 250,
       render: (text: string, record: any, index: number) => (
         <>
           {" "}
@@ -531,7 +557,7 @@ const TableComponent = ({
       title: "수량",
       dataIndex: "qty",
       key: "qty",
-      width: 80,
+      width: 60,
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <InputNumber
@@ -545,16 +571,30 @@ const TableComponent = ({
         ) : null,
     },
     {
-      title: "단위",
+      title: (
+        <div>
+          <Select
+            placeholder="Unit"
+            onChange={applyUnitToAllRows}
+            style={{ width: "100%" }}
+          >
+            {unitOptions.map((unit) => (
+              <Select.Option key={unit} value={unit}>
+                {unit}
+              </Select.Option>
+            ))}
+          </Select>
+        </div>
+      ),
       dataIndex: "unit",
       key: "unit",
-      width: 80,
+      width: 70,
       render: (text: string, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <Input
             value={text}
+            onBlur={(e) => handleUnitBlur(index, e.target.value)}
             onChange={(e) => handleInputChange(index, "unit", e.target.value)}
-            style={{ borderRadius: "4px", width: "100%" }}
           />
         ) : null,
     },
@@ -577,8 +617,7 @@ const TableComponent = ({
       title: "매출단가(KRW)",
       dataIndex: "salesPriceKRW",
       key: "salesPriceKRW",
-
-      width: 150,
+      width: 130,
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <InputNumber
@@ -606,7 +645,7 @@ const TableComponent = ({
       title: "매출단가(F)",
       dataIndex: "salesPriceGlobal",
       key: "salesPriceGlobal",
-      width: 150,
+      width: 130,
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <InputNumber
@@ -634,7 +673,7 @@ const TableComponent = ({
       title: "매출총액(KRW)",
       dataIndex: "salesAmountKRW",
       key: "salesAmountKRW",
-      width: 150,
+      width: 130,
       render: (text: number, record: any, index: number) => (
         <InputNumber
           value={calculateTotalAmount(
@@ -652,7 +691,7 @@ const TableComponent = ({
       title: "매출총액(F)",
       dataIndex: "salesAmountGlobal",
       key: "salesAmountGlobal",
-      width: 150,
+      width: 130,
       render: (text: number, record: any, index: number) => (
         <InputNumber
           value={calculateTotalAmount(
@@ -670,7 +709,7 @@ const TableComponent = ({
       title: "매입단가(KRW)",
       dataIndex: "purchasePriceKRW",
       key: "purchasePriceKRW",
-      width: 150,
+      width: 130,
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <InputNumber
@@ -698,7 +737,7 @@ const TableComponent = ({
       title: "매입단가(F)",
       dataIndex: "purchasePriceGlobal",
       key: "purchasePriceGlobal",
-      width: 150,
+      width: 130,
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <InputNumber
@@ -726,7 +765,7 @@ const TableComponent = ({
       title: "매입총액(KRW)",
       dataIndex: "purchaseAmountKRW",
       key: "purchaseAmountKRW",
-      width: 150,
+      width: 130,
       render: (text: number, record: any, index: number) => (
         <InputNumber
           value={calculateTotalAmount(
@@ -744,7 +783,7 @@ const TableComponent = ({
       title: "매입총액(F)",
       dataIndex: "purchaseAmountGlobal",
       key: "purchaseAmountGlobal",
-      width: 150,
+      width: 130,
       render: (text: number, record: any, index: number) => (
         <InputNumber
           value={calculateTotalAmount(
@@ -762,7 +801,7 @@ const TableComponent = ({
       title: "마진(%)",
       dataIndex: "margin",
       key: "margin",
-      width: 120,
+      width: 80,
       render: (text: number, record: any, index: number) => {
         const salesAmountKRW = calculateTotalAmount(
           record.salesPriceKRW,
@@ -850,7 +889,6 @@ const TableComponent = ({
             columns={columns}
             dataSource={dataSource}
             pagination={false}
-            scroll={{ x: "max-content" }}
             bordered
           />
         </SortableContext>

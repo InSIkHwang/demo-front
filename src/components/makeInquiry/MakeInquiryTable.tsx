@@ -176,10 +176,17 @@ const MakeInquiryTable = ({
   }, []);
 
   useEffect(() => {
-    const newDuplicateStates = getDuplicateStates(items);
+    const newDuplicateStates: {
+      [key: string]: { code: boolean; name: boolean; all: boolean };
+    } = getDuplicateStates(items);
+
+    // 중첩된 객체 내에 하나라도 true가 있으면 true 반환
+    const hasDuplicate = Object.values(newDuplicateStates).some((state) =>
+      Object.values(state).some((value) => value === true)
+    );
 
     setDuplicateStates(newDuplicateStates);
-    setIsDuplicate(Object.values(newDuplicateStates).includes(true));
+    setIsDuplicate(hasDuplicate);
   }, [getDuplicateStates, items, setIsDuplicate]);
 
   const onDragEnd = ({ active, over }: any) => {
