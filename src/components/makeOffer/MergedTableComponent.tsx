@@ -1,5 +1,5 @@
 import React, { Dispatch, useEffect, useState } from "react";
-import { Table, Button } from "antd";
+import { Table } from "antd";
 import { ColumnsType } from "antd/es/table";
 import styled from "styled-components";
 
@@ -110,12 +110,6 @@ const MergedTableComponent = ({
         );
 
   useEffect(() => {
-    const updatedDataSource = dataSource.map((item, position) => ({
-      ...item,
-      position: position, // No. 추가
-    }));
-
-    setDataSource(updatedDataSource);
     const totalSalesAmountKRW = dataSource.reduce(
       (acc, record) =>
         acc + calculateTotalAmount(record.salesPriceKRW, record.qty),

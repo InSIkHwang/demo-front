@@ -1,4 +1,10 @@
-import React, { Dispatch, SetStateAction, useState, useEffect } from "react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 import { Table, AutoComplete, Input, Select, Button } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import { InquiryItem } from "../../types/types";
@@ -143,7 +149,7 @@ const MakeInquiryTable = ({
     return items.some((item, idx) => item[key] === value && idx !== index);
   };
 
-  const getDuplicateStates = (items: any[]) => {
+  const getDuplicateStates = useCallback((items: any[]) => {
     return items.reduce((acc, item, index) => {
       const isDuplicateCode = checkDuplicates(
         "itemCode",
@@ -167,14 +173,14 @@ const MakeInquiryTable = ({
       }
       return acc;
     }, {} as { [key: string]: DuplicateState });
-  };
+  }, []);
 
   useEffect(() => {
     const newDuplicateStates = getDuplicateStates(items);
 
     setDuplicateStates(newDuplicateStates);
     setIsDuplicate(Object.values(newDuplicateStates).includes(true));
-  }, [items]);
+  }, [getDuplicateStates, items, setIsDuplicate]);
 
   const onDragEnd = ({ active, over }: any) => {
     if (active.id !== over?.id) {

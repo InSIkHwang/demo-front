@@ -1,15 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "../../api/axios";
-import {
-  Modal,
-  Button,
-  Form,
-  Input,
-  Typography,
-  Row,
-  Col,
-  message,
-} from "antd";
+import { Modal, Button, Form, Input, Typography, message } from "antd";
 import { Vessel } from "../../types/types";
 
 const { Title, Text } = Typography;

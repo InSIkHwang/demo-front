@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Modal, Form, Input, Button, Typography, notification } from "antd";
+import { Modal, Form, Input, Button, notification } from "antd";
 import axios from "../../api/axios";
 import styled from "styled-components";
 

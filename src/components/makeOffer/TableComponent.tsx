@@ -193,15 +193,18 @@ const TableComponent = ({
     null
   );
 
-  const checkDuplicate = (key: string, value: string, index: number) => {
-    if (!value?.trim()) {
-      return false;
-    }
+  const checkDuplicate = useCallback(
+    (key: string, value: string, index: number) => {
+      if (!value?.trim()) {
+        return false;
+      }
 
-    return dataSource.some(
-      (item: any, idx) => item[key] === value && idx !== index
-    );
-  };
+      return dataSource.some(
+        (item: any, idx) => item[key] === value && idx !== index
+      );
+    },
+    [dataSource]
+  );
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -265,7 +268,7 @@ const TableComponent = ({
     );
 
     setIsDuplicate(hasDuplicate);
-  }, [dataSource]);
+  }, [checkDuplicate, dataSource, setIsDuplicate]);
 
   const handleItemCodeChange = async (index: number, value: string) => {
     handleInputChange(index, "itemCode", value);
@@ -285,19 +288,17 @@ const TableComponent = ({
 
       const itemArray = items;
 
-      const newItemNameMap = itemArray.reduce<{ [key: string]: string }>(
+      const newItemNameMap = itemArray.reduce<{ [key: number]: string }>(
         (acc, item) => {
-          const key = `${item.itemId}@#${item.itemCode}`;
-          acc[key] = item.itemName;
+          acc[item.itemId] = item.itemName;
           return acc;
         },
         {}
       );
 
-      const newItemIdMap = itemArray.reduce<{ [key: string]: number }>(
+      const newItemIdMap = itemArray.reduce<{ [key: number]: number }>(
         (acc, item) => {
-          const key = `${item.itemId}@#${item.itemCode}`;
-          acc[key] = item.itemId;
+          acc[item.itemId] = item.itemId;
           return acc;
         },
         {}
@@ -316,7 +317,10 @@ const TableComponent = ({
       setItemCodeOptions(
         itemArray.map((item) => ({
           value: item.itemCode,
-          key: item.itemId, // 고유한 key 사용
+          name: item.itemName,
+          key: item.itemId.toString(),
+          label: `${item.itemCode}: ${item.itemName}`,
+          itemId: item.itemId,
         }))
       );
       setItemNameMap(newItemNameMap);
@@ -332,15 +336,11 @@ const TableComponent = ({
         ),
       ]);
 
-      const currentKey = Object.keys(newItemNameMap).find((key) =>
-        key.includes(value)
-      );
-
-      if (currentKey && newItemNameMap[currentKey]) {
-        handleInputChange(index, "itemName", newItemNameMap[currentKey]);
+      const selectedItem = itemArray.find((item) => item.itemCode === value);
+      if (selectedItem) {
+        handleInputChange(index, "itemName", itemNameMap[selectedItem.itemId]);
+        updateItemId(index, selectedItem.itemId);
       }
-
-      updateItemId(index, currentKey ? newItemIdMap[currentKey] : null);
     } catch (error) {
       console.error("Error fetching item codes and suppliers:", error);
     }
@@ -358,12 +358,6 @@ const TableComponent = ({
   };
 
   useEffect(() => {
-    const updatedDataSource = dataSource.map((item, index) => ({
-      ...item,
-      no: item.position, // No. 추가
-    }));
-
-    setDataSource(updatedDataSource);
     const totalSalesAmountKRW = dataSource.reduce(
       (acc, record) =>
         acc + calculateTotalAmount(record.salesPriceKRW, record.qty),
@@ -460,20 +454,27 @@ const TableComponent = ({
       width: 150,
       render: (text: string, record: any, index: number) =>
         record.itemType === "ITEM" ? (
-          <AutoComplete
-            value={text}
-            onChange={(value) => handleItemCodeChange(index, value)}
-            options={itemCodeOptions}
-            style={{ borderRadius: "4px", width: "100%" }}
-          >
-            <Input
-              style={{
-                borderColor: checkDuplicate("itemCode", text, index)
-                  ? "red"
-                  : "#d9d9d9", // 중복 시 배경색 빨간색
-              }}
-            />
-          </AutoComplete>
+          <>
+            <AutoComplete
+              value={text}
+              onChange={(value) => handleItemCodeChange(index, value)}
+              options={itemCodeOptions}
+              style={{ borderRadius: "4px", width: "100%" }}
+            >
+              <Input
+                style={{
+                  borderColor: checkDuplicate("itemCode", text, index)
+                    ? "#faad14"
+                    : "#d9d9d9", // 중복 시 배경색 빨간색
+                }}
+              />
+            </AutoComplete>
+            {checkDuplicate("itemCode", text, index) && (
+              <div style={{ color: "#faad14", marginTop: "5px" }}>
+                duplicate code.
+              </div>
+            )}
+          </>
         ) : null,
     },
     {
@@ -502,20 +503,28 @@ const TableComponent = ({
       fixed: "left",
       width: 300,
       render: (text: string, record: any, index: number) => (
-        <Input
-          value={text}
-          onChange={(e) => {
-            handleInputChange(index, "itemName", e.target.value);
-            updateItemId(index, null);
-          }}
-          style={{
-            borderRadius: "4px",
-            width: "100%",
-            borderColor: checkDuplicate("itemName", text, index)
-              ? "red"
-              : "#d9d9d9", // 중복 시 배경색 빨간색
-          }}
-        />
+        <>
+          {" "}
+          <Input
+            value={text}
+            onChange={(e) => {
+              handleInputChange(index, "itemName", e.target.value);
+              updateItemId(index, null);
+            }}
+            style={{
+              borderRadius: "4px",
+              width: "100%",
+              borderColor: checkDuplicate("itemName", text, index)
+                ? "#faad14"
+                : "#d9d9d9", // 중복 시 배경색 빨간색
+            }}
+          />{" "}
+          {checkDuplicate("itemName", text, index) && (
+            <div style={{ color: "#faad14", marginTop: "5px" }}>
+              duplicate name.
+            </div>
+          )}
+        </>
       ),
     },
     {

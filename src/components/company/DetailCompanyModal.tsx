@@ -1,19 +1,7 @@
 import React, { useState } from "react";
-import {
-  Modal,
-  Button,
-  Typography,
-  Divider,
-  message,
-  Row,
-  Col,
-  Form as AntForm,
-  Input,
-} from "antd";
+import { Modal, Button, Divider, message, Form as AntForm, Input } from "antd";
 import axios from "../../api/axios";
 import styled from "styled-components";
-
-const { Title, Text } = Typography;
 
 interface Company {
   id: number;
