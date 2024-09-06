@@ -97,7 +97,7 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
 
   useEffect(() => {
     checkCodeUnique();
-  }, [formData.code]);
+  }, [checkCodeUnique, formData.code]);
 
   // Fetch customer suggestions
   const fetchCustomerSuggestions = async (customerName: string) => {

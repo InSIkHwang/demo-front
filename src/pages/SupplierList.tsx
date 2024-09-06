@@ -69,9 +69,14 @@ const SupplierList = () => {
   const [totalCount, setTotalCount] = useState<number>();
 
   const category = "supplier";
+
   useEffect(() => {
-    fetchData();
-  }, [currentPage, itemsPerPage]); // 페이지와 페이지 크기 변경 시 데이터를 새로 불러옴
+    if (searchText) {
+      fetchFilteredData();
+    } else {
+      fetchData();
+    }
+  }, [currentPage, itemsPerPage]);
 
   //데이터 FETCH
   const fetchData = async () => {
@@ -129,14 +134,6 @@ const SupplierList = () => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    if (searchText) {
-      fetchFilteredData();
-    } else {
-      fetchData();
-    }
-  }, [currentPage, itemsPerPage]);
 
   const columns: ColumnsType<Supplier> = [
     {

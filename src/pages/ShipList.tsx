@@ -130,11 +130,6 @@ const ShipList = () => {
     }
   };
 
-  //최초 렌더링 시 데이터 FETCH
-  useEffect(() => {
-    fetchData();
-  }, []);
-
   const columns: ColumnsType<Vessel> = [
     {
       title: "코드",

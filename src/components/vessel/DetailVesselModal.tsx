@@ -3,7 +3,7 @@ import axios from "../../api/axios";
 import { Modal, Button, Form, Input, Typography, message } from "antd";
 import { Vessel } from "../../types/types";
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 interface ModalProps {
   vessel: Vessel;

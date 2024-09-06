@@ -155,9 +155,6 @@ const CustomerInquiryList = () => {
       setLoading(false);
     }
   };
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   useEffect(() => {
     if (isDetailCompanyModalOpen) {

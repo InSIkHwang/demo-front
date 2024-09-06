@@ -146,11 +146,6 @@ const CustomerList = () => {
     }
   }, 200);
 
-  //최초 렌더링 시 데이터 FETCH
-  useEffect(() => {
-    fetchData();
-  }, []);
-
   const columns: ColumnsType<Customer> = [
     {
       title: "코드",
