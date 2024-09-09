@@ -101,6 +101,8 @@ const MergedTableComponent = ({
     totalProfitPercent: 0,
   });
 
+  console.log(dataSource);
+
   // 마진을 계산하는 함수
   const calculateMargin = (salesAmount: number, purchaseAmount: number) =>
     purchaseAmount === 0
@@ -110,6 +112,10 @@ const MergedTableComponent = ({
         );
 
   useEffect(() => {
+    const sortedData = [...dataSource].sort(
+      (a, b) => a.position! - b.position!
+    );
+
     const totalSalesAmountKRW = dataSource.reduce(
       (acc, record) =>
         acc + calculateTotalAmount(record.salesPriceKRW, record.qty),
@@ -135,6 +141,8 @@ const MergedTableComponent = ({
       ((totalProfit / totalSalesAmountKRW) * 100).toFixed(2)
     );
 
+    setDataSource(sortedData);
+
     setTotals({
       totalSalesAmountKRW,
       totalSalesAmountGlobal,
@@ -143,7 +151,7 @@ const MergedTableComponent = ({
       totalProfit,
       totalProfitPercent,
     });
-  }, [dataSource, currency]);
+  }, [dataSource, currency, setDataSource]);
 
   const columns: ColumnsType<any> = [
     {

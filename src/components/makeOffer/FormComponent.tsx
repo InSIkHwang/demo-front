@@ -1,6 +1,9 @@
 import React from "react";
 import { Form, Input, DatePicker, Select, InputNumber } from "antd";
 import styled from "styled-components";
+import { FormValuesType } from "../../types/types";
+
+const { Option } = Select;
 
 const Row = styled.div`
   display: flex;
@@ -14,16 +17,21 @@ const FormItem = styled(Form.Item)`
 `;
 
 interface FormComponentProps {
-  initialValues: any;
+  formValues: any;
   readOnly?: boolean; // readOnly prop 추가
+  handleFormChange: <K extends keyof FormValuesType>(
+    key: K,
+    value: FormValuesType[K]
+  ) => void;
 }
 
 const FormComponent = ({
-  initialValues,
-  readOnly = false,
+  formValues,
+  readOnly,
+  handleFormChange,
 }: FormComponentProps) => {
   return (
-    <Form layout="vertical" initialValues={initialValues}>
+    <Form layout="vertical" initialValues={formValues}>
       <Row>
         <FormItem
           label="문서번호"
@@ -31,7 +39,7 @@ const FormComponent = ({
           rules={[{ required: true, message: "문서번호를 입력하세요!" }]}
           style={{ maxWidth: 200 }}
         >
-          <Input readOnly={readOnly} />
+          <Input readOnly />
         </FormItem>
         <FormItem label="문서상태" name="documentStatus">
           <Input readOnly />
@@ -42,7 +50,12 @@ const FormComponent = ({
           rules={[{ required: true, message: "등록 날짜를 입력하세요!" }]}
           style={{ maxWidth: 150 }}
         >
-          <DatePicker format="YYYY-MM-DD" disabled={readOnly} />
+          <DatePicker
+            value={formValues.registerDate}
+            onChange={(date) => handleFormChange("registerDate", date!)}
+            format="YYYY-MM-DD"
+            disabled={readOnly}
+          />
         </FormItem>
         <FormItem
           label="선적일자"
@@ -50,16 +63,28 @@ const FormComponent = ({
           rules={[{ required: true, message: "선적 날짜를 입력하세요!" }]}
           style={{ maxWidth: 150 }}
         >
-          <DatePicker format="YYYY-MM-DD" disabled={readOnly} />
+          <DatePicker
+            value={formValues.shippingDate}
+            onChange={(date) => handleFormChange("shippingDate", date!)}
+            format="YYYY-MM-DD"
+            disabled={readOnly}
+          />
         </FormItem>
         <FormItem
           label="화폐"
           name="currencyType"
           rules={[{ required: true, message: "화폐를 선택하세요!" }]}
         >
-          <Select disabled={readOnly}>
-            <Select.Option value="USD">USD</Select.Option>
-            <Select.Option value="KRW">KRW</Select.Option>
+          <Select
+            value={formValues.currencyType}
+            onChange={(value) => handleFormChange("currencyType", value)}
+            disabled={readOnly}
+          >
+            {["USD", "EUR", "INR"].map((currencyType) => (
+              <Option key={currencyType} value={currencyType}>
+                {currencyType}
+              </Option>
+            ))}
           </Select>
         </FormItem>
         <FormItem
@@ -67,7 +92,15 @@ const FormComponent = ({
           name="currency"
           rules={[{ required: true, message: "환율을 입력하세요!" }]}
         >
-          <InputNumber min={0} style={{ width: "100%" }} disabled={readOnly} />
+          <InputNumber
+            value={formValues.currency}
+            onChange={(value) =>
+              handleFormChange("currency", parseFloat(value))
+            }
+            min={0}
+            style={{ width: "100%" }}
+            disabled={readOnly}
+          />
         </FormItem>
       </Row>
 
@@ -77,17 +110,21 @@ const FormComponent = ({
           name="customerName"
           rules={[{ required: true, message: "매출처를 입력하세요!" }]}
         >
-          <Input readOnly={readOnly} />
+          <Input readOnly />
         </FormItem>
         <FormItem
           label="선박명"
           name="vesselName"
           rules={[{ required: true, message: "선박명을 입력하세요!" }]}
         >
-          <Input readOnly={readOnly} />
+          <Input readOnly />
         </FormItem>
         <FormItem label="HULL NO." name="veeselHullNo">
-          <Input readOnly={readOnly} />
+          <Input
+            value={formValues.veeselHullNo}
+            onChange={(e) => handleFormChange("veeselHullNo", e.target.value)}
+            readOnly={readOnly}
+          />
         </FormItem>
         <FormItem
           label="REF NO."
@@ -95,7 +132,7 @@ const FormComponent = ({
           rules={[{ required: true, message: "REF NO.를 입력하세요!" }]}
           style={{ flex: "20%" }}
         >
-          <Input readOnly={readOnly} />
+          <Input readOnly />
         </FormItem>
       </Row>
       <Row>
@@ -105,10 +142,15 @@ const FormComponent = ({
           rules={[{ required: true, message: "의뢰처를 입력하세요!" }]}
           style={{ flex: 3 }}
         >
-          <Input readOnly={readOnly} />
+          <Input readOnly />
         </FormItem>
         <FormItem label="비고" name="docRemark" style={{ flex: 7 }}>
-          <Input.TextArea rows={1} readOnly={readOnly} />
+          <Input.TextArea
+            value={formValues.docRemark}
+            onChange={(e) => handleFormChange("docRemark", e.target.value)}
+            rows={1}
+            readOnly={readOnly}
+          />
         </FormItem>
       </Row>
     </Form>

@@ -1,14 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import { Button, message, Modal, Select } from "antd";
 import styled from "styled-components";
 import dayjs from "dayjs";
 import FormComponent from "../components/makeOffer/FormComponent";
-import TableComponent, {
-  calculateTotalAmount,
-} from "../components/makeOffer/TableComponent";
+import TableComponent from "../components/makeOffer/TableComponent";
 import { editOffer, fetchOfferDetail } from "../api/api";
-import { ItemDataType } from "../types/types";
+import { FormValuesType, ItemDataType } from "../types/types";
 import MergedTableComponent from "../components/makeOffer/MergedTableComponent";
 import OfferHeaderEditModal from "../components/makeOffer/OfferHeaderEditModal";
 import OfferPDFDocument from "../components/makeOffer/OfferPDFDocument";
@@ -35,6 +33,21 @@ const MakeOffer = () => {
   const { state } = useLocation();
   const [info, setInfo] = useState(state?.info || {});
   const [dataSource, setDataSource] = useState(info?.inquiryItemDetails || []);
+  const [formValues, setFormValues] = useState<FormValuesType>({
+    supplierInquiryId: info?.supplierInquiryId || "",
+    supplierName: info?.supplierName || "",
+    documentNumber: info?.documentNumber || "",
+    registerDate: dayjs(info?.registerDate) || "",
+    shippingDate: dayjs(info?.shippingDate) || "",
+    currencyType: info?.currencyType || "",
+    currency: info?.currency || 0,
+    customerName: info?.customerName || "",
+    vesselName: info?.vesselName || "",
+    refNumber: info?.refNumber || "",
+    docRemark: info?.docRemark || "",
+    documentStatus: info?.documentStatus || "",
+    veeselHullNo: info?.veeselHullNo || "",
+  });
   const isReadOnly = window.location.pathname === "/makeoffer/mergedoffer";
   const [isDuplicate, setIsDuplicate] = useState<boolean>(false);
   const [showPDFPreview, setShowPDFPreview] = useState(false);
@@ -46,6 +59,17 @@ const MakeOffer = () => {
     id: number;
     name: string;
   }>({ id: 99, name: "test" });
+
+  const debounce = <T extends (...args: any[]) => void>(
+    func: T,
+    delay: number
+  ) => {
+    let timer: NodeJS.Timeout;
+    return (...args: Parameters<T>) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => func(...args), delay);
+    };
+  };
 
   useEffect(() => {
     const loadOfferDetail = async () => {
@@ -69,6 +93,21 @@ const MakeOffer = () => {
   useEffect(() => {
     if (info?.inquiryItemDetails) {
       setDataSource(info.inquiryItemDetails);
+      setFormValues({
+        supplierInquiryId: info.supplierInquiryId,
+        supplierName: info.supplierName,
+        documentNumber: info.documentNumber,
+        registerDate: dayjs(info.registerDate),
+        shippingDate: dayjs(info.shippingDate),
+        currencyType: info.currencyType,
+        currency: info.currency,
+        customerName: info.customerName,
+        vesselName: info.vesselName,
+        refNumber: info.refNumber,
+        docRemark: info.docRemark,
+        documentStatus: info.documentStatus,
+        veeselHullNo: info.veeselHullNo,
+      });
     }
   }, [info]);
 
@@ -116,6 +155,77 @@ const MakeOffer = () => {
 
     setDataSource(updatedDataSource);
   };
+
+  const handleFormChange = debounce(
+    <K extends keyof typeof formValues>(
+      key: K,
+      value: (typeof formValues)[K]
+    ) => {
+      if (!isReadOnly) {
+        setFormValues((prev) => ({ ...prev, [key]: value }));
+      }
+    },
+    500
+  );
+
+  // 소수점 둘째자리까지 반올림하는 함수
+  const roundToTwoDecimalPlaces = (value: number) => {
+    return Math.round(value * 100) / 100;
+  };
+
+  // 환율을 적용하여 KRW와 USD를 상호 변환하는 함수
+  const convertCurrency = (
+    value: number,
+    currency: number,
+    toCurrency: "KRW" | "USD" | "EUR" | "INR"
+  ) => {
+    if (toCurrency === "KRW") {
+      return roundToTwoDecimalPlaces(value * currency);
+    }
+    return roundToTwoDecimalPlaces(value / currency);
+  };
+
+  const updateGlobalPrices = () => {
+    dataSource.forEach((record: any, index: number) => {
+      if (record.itemType === "ITEM") {
+        const updatedSalesPriceGlobal = convertCurrency(
+          record.salesPriceKRW,
+          formValues.currency,
+          "USD"
+        );
+        const updatedPurchasePriceGlobal = convertCurrency(
+          record.purchasePriceKRW,
+          formValues.currency,
+          "USD"
+        );
+
+        handleInputChange(index, "salesPriceGlobal", updatedSalesPriceGlobal);
+        handleInputChange(
+          index,
+          "purchasePriceGlobal",
+          updatedPurchasePriceGlobal
+        );
+      }
+    });
+  };
+
+  const calculateTotalAmount = (price: number, qty: number) =>
+    roundToTwoDecimalPlaces(price * qty);
+
+  // 마진을 계산하는 함수
+  const calculateMargin = (salesAmount: number, purchaseAmount: number) =>
+    purchaseAmount === 0
+      ? 0
+      : roundToTwoDecimalPlaces(
+          ((salesAmount - purchaseAmount) / purchaseAmount) * 100
+        );
+
+  // formValues의 currency가 변경될 때 updateGlobalPrices 호출
+  useEffect(() => {
+    if (formValues?.currency) {
+      updateGlobalPrices();
+    }
+  }, [formValues.currency]);
 
   const handleSave = async () => {
     if (dataSource.length === 0) {
@@ -211,38 +321,32 @@ const MakeOffer = () => {
   return (
     <FormContainer>
       <Title>견적 제안 - Offers</Title>
-      <FormComponent
-        initialValues={{
-          supplierInquiryId: info.supplierInquiryId,
-          supplierName: info.supplierName,
-          documentNumber: info.documentNumber,
-          registerDate: info.registerDate ? dayjs(info.registerDate) : null,
-          shippingDate: info.shippingDate ? dayjs(info.shippingDate) : null,
-          currencyType: info.currencyType,
-          currency: info.currency,
-          customerName: info.customerName,
-          vesselName: info.vesselName,
-          refNumber: info.refNumber,
-          docRemark: info.docRemark,
-          documentStatus: info.documentStatus,
-          veeselHullNo: info.veeselHullNo,
-        }}
-        readOnly={isReadOnly}
-      />
+      {formValues && (
+        <FormComponent
+          formValues={formValues}
+          readOnly={isReadOnly}
+          handleFormChange={handleFormChange}
+        />
+      )}
       {!isReadOnly && (
         <TableComponent
           dataSource={dataSource}
           setDataSource={setDataSource}
           handleInputChange={handleInputChange}
-          currency={info.currency}
+          currency={formValues.currency}
           setIsDuplicate={setIsDuplicate}
+          roundToTwoDecimalPlaces={roundToTwoDecimalPlaces}
+          convertCurrency={convertCurrency}
+          updateGlobalPrices={updateGlobalPrices}
+          calculateTotalAmount={calculateTotalAmount}
+          calculateMargin={calculateMargin}
         />
       )}
       {isReadOnly && (
         <MergedTableComponent
           dataSource={dataSource}
           setDataSource={setDataSource}
-          currency={info.currency}
+          currency={formValues.currency}
         />
       )}
       {!isReadOnly && (

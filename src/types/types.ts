@@ -1,3 +1,5 @@
+import { Dayjs } from "dayjs";
+
 export interface Customer {
   id: number;
   code: string;
@@ -171,6 +173,22 @@ export interface SupplierInquiryDetailIF {
     representative: string;
     email: string;
   };
+}
+
+export interface FormValuesType {
+  supplierInquiryId: number;
+  supplierName: string;
+  documentNumber: string;
+  registerDate: string | Dayjs;
+  shippingDate: string | Dayjs;
+  currencyType: string;
+  currency: number;
+  customerName: string;
+  vesselName: string;
+  refNumber: string;
+  docRemark: string;
+  documentStatus: string;
+  veeselHullNo: string;
 }
 
 export interface ItemDataType {

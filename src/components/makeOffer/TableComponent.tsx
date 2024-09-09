@@ -92,35 +92,6 @@ const TotalCard = styled.div<{ $isHighlight?: boolean; $isPositive?: boolean }>`
   }
 `;
 
-// 소수점 둘째자리까지 반올림하는 함수
-const roundToTwoDecimalPlaces = (value: number) => {
-  return Math.round(value * 100) / 100;
-};
-
-// 환율을 적용하여 KRW와 USD를 상호 변환하는 함수
-const convertCurrency = (
-  value: number,
-  currency: number,
-  toCurrency: "KRW" | "USD" | "EUR" | "INR"
-) => {
-  if (toCurrency === "KRW") {
-    return roundToTwoDecimalPlaces(value * currency);
-  }
-  return roundToTwoDecimalPlaces(value / currency);
-};
-
-// 수량과 단가를 곱하여 총액을 계산하는 함수
-export const calculateTotalAmount = (price: number, qty: number) =>
-  roundToTwoDecimalPlaces(price * qty);
-
-// 마진을 계산하는 함수
-const calculateMargin = (salesAmount: number, purchaseAmount: number) =>
-  purchaseAmount === 0
-    ? 0
-    : roundToTwoDecimalPlaces(
-        ((salesAmount - purchaseAmount) / purchaseAmount) * 100
-      );
-
 interface TableComponentProps {
   dataSource: ItemDataType[];
   setDataSource: Dispatch<SetStateAction<ItemDataType[]>>;
@@ -131,6 +102,15 @@ interface TableComponentProps {
   ) => void;
   currency: number;
   setIsDuplicate: Dispatch<SetStateAction<boolean>>;
+  roundToTwoDecimalPlaces: (value: number) => number;
+  convertCurrency: (
+    value: number,
+    currency: number,
+    toCurrency: "KRW" | "USD" | "EUR" | "INR"
+  ) => number;
+  updateGlobalPrices: () => void;
+  calculateTotalAmount: (price: number, qty: number) => number;
+  calculateMargin: (salesAmount: number, purchaseAmount: number) => number;
 }
 
 interface RowProps extends React.HTMLAttributes<HTMLTableRowElement> {
@@ -181,6 +161,11 @@ const TableComponent = ({
   currency,
   setDataSource,
   setIsDuplicate,
+  roundToTwoDecimalPlaces,
+  convertCurrency,
+  updateGlobalPrices,
+  calculateTotalAmount,
+  calculateMargin,
 }: TableComponentProps) => {
   const [totals, setTotals] = useState({
     totalSalesAmountKRW: 0,
