@@ -19,6 +19,7 @@ interface PDFGeneratorProps {
   info: SupplierInquiryDetailIF;
   items: InquiryItem[];
   pdfHeader: string;
+  pdfFooter: string;
   setMailDataList: Dispatch<SetStateAction<emailSendData[]>>;
   language: string;
   pdfFileData: File[];
@@ -30,6 +31,7 @@ const OfferPDFGenerator = ({
   info,
   items,
   pdfHeader,
+  pdfFooter,
   setMailDataList,
   language,
   pdfFileData,
@@ -46,6 +48,7 @@ const OfferPDFGenerator = ({
           info={info}
           supplierName={supplierTag.name}
           pdfHeader={pdfHeader}
+          pdfFooter={pdfFooter}
           viewMode={false}
         />
       );

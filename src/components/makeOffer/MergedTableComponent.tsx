@@ -101,7 +101,10 @@ const MergedTableComponent = ({
     totalProfitPercent: 0,
   });
 
+  const [sortedData, setSortedData] = useState<ItemDataType[]>(dataSource);
+
   console.log(dataSource);
+  console.log(sortedData);
 
   // 마진을 계산하는 함수
   const calculateMargin = (salesAmount: number, purchaseAmount: number) =>
@@ -112,9 +115,7 @@ const MergedTableComponent = ({
         );
 
   useEffect(() => {
-    const sortedData = [...dataSource].sort(
-      (a, b) => a.position! - b.position!
-    );
+    const sorted = [...dataSource].sort((a, b) => a.position! - b.position!);
 
     const totalSalesAmountKRW = dataSource.reduce(
       (acc, record) =>
@@ -141,7 +142,8 @@ const MergedTableComponent = ({
       ((totalProfit / totalSalesAmountKRW) * 100).toFixed(2)
     );
 
-    setDataSource(sortedData);
+    setDataSource(sorted);
+    setSortedData(sorted);
 
     setTotals({
       totalSalesAmountKRW,
@@ -151,7 +153,7 @@ const MergedTableComponent = ({
       totalProfit,
       totalProfitPercent,
     });
-  }, [dataSource, currency, setDataSource]);
+  }, []);
 
   const columns: ColumnsType<any> = [
     {
@@ -182,55 +184,80 @@ const MergedTableComponent = ({
       title: "수량",
       dataIndex: "qty",
       key: "qty",
-      render: (text: number) => <span>{text}</span>,
+      render: (text: number, record: ItemDataType) =>
+        record.itemType === "ITEM" ? <span>{text}</span> : null,
     },
     {
       title: "단가 (KRW)",
       dataIndex: "salesPriceKRW",
       key: "salesPriceKRW",
-      render: (text: number) => <span>{text?.toLocaleString()}</span>,
+      render: (text: number, record: ItemDataType) =>
+        record.itemType === "ITEM" ? (
+          <span>{text?.toLocaleString()}</span>
+        ) : null,
     },
     {
       title: "단가 (F)",
       dataIndex: "salesPriceGlobal",
       key: "salesPriceGlobal",
-      render: (text: number) => <span>{text?.toLocaleString()}</span>,
+      render: (text: number, record: ItemDataType) =>
+        record.itemType === "ITEM" ? (
+          <span>{text?.toLocaleString()}</span>
+        ) : null,
     },
     {
       title: "총액 (KRW)",
       dataIndex: "salesAmountKRW",
       key: "salesAmountKRW",
-      render: (text: number) => <span>{text?.toLocaleString()}</span>,
+      render: (text: number, record: ItemDataType) =>
+        record.itemType === "ITEM" ? (
+          <span>{text?.toLocaleString()}</span>
+        ) : null,
     },
     {
       title: "총액 (F)",
       dataIndex: "salesAmountGlobal",
       key: "salesAmountGlobal",
-      render: (text: number) => <span>{text?.toLocaleString()}</span>,
+      render: (text: number, record: ItemDataType) =>
+        record.itemType === "ITEM" ? (
+          <span>{text?.toLocaleString()}</span>
+        ) : null,
     },
     {
       title: "구매단가 (KRW)",
       dataIndex: "purchasePriceKRW",
       key: "purchasePriceKRW",
-      render: (text: number) => <span>{text?.toLocaleString()}</span>,
+      render: (text: number, record: ItemDataType) =>
+        record.itemType === "ITEM" ? (
+          <span>{text?.toLocaleString()}</span>
+        ) : null,
     },
     {
       title: "구매단가 (F)",
       dataIndex: "purchasePriceGlobal",
       key: "purchasePriceGlobal",
-      render: (text: number) => <span>{text?.toLocaleString()}</span>,
+      render: (text: number, record: ItemDataType) =>
+        record.itemType === "ITEM" ? (
+          <span>{text?.toLocaleString()}</span>
+        ) : null,
     },
     {
       title: "구매총액 (KRW)",
       dataIndex: "purchaseAmountKRW",
       key: "purchaseAmountKRW",
-      render: (text: number) => <span>{text?.toLocaleString()}</span>,
+      render: (text: number, record: ItemDataType) =>
+        record.itemType === "ITEM" ? (
+          <span>{text?.toLocaleString()}</span>
+        ) : null,
     },
     {
       title: "구매총액 (F)",
       dataIndex: "purchaseAmountGlobal",
       key: "purchaseAmountGlobal",
-      render: (text: number) => <span>{text?.toLocaleString()}</span>,
+      render: (text: number, record: ItemDataType) =>
+        record.itemType === "ITEM" ? (
+          <span>{text?.toLocaleString()}</span>
+        ) : null,
     },
     {
       title: "마진 (%)",
@@ -243,11 +270,9 @@ const MergedTableComponent = ({
           salesAmountKRW,
           purchaseAmountKRW
         );
-        return !isNaN(marginPercent) ? (
+        return !isNaN(marginPercent) && record.itemType === "ITEM" ? (
           <span>{marginPercent}%</span>
-        ) : (
-          <span></span>
-        );
+        ) : null;
       },
     },
   ];
@@ -291,9 +316,9 @@ const MergedTableComponent = ({
         </TotalCard>
       </TotalCards>
       <CustomTable
-        dataSource={dataSource}
+        dataSource={sortedData}
         columns={columns}
-        rowKey="itemCode"
+        rowKey="position"
         pagination={false}
       />
     </>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Document,
   Page,
@@ -36,6 +36,7 @@ interface PDFDocumentProps {
   supplierName: string; // 개별 공급자 이름
   viewMode: boolean;
   language: string;
+  pdfFooter: string;
 }
 
 // 스타일 정의
@@ -74,6 +75,13 @@ const styles = StyleSheet.create({
     padding: "10px 0",
     borderBottom: "1px dotted #000",
   },
+  footerMessage: {
+    fontSize: 10,
+    textAlign: "left",
+    marginTop: 30,
+    padding: "10px 0",
+    borderTop: "1px dotted #000",
+  },
   inquiryInfoWrap: {
     flexDirection: "row",
     marginBottom: 20,
@@ -89,6 +97,7 @@ const styles = StyleSheet.create({
   page: {
     padding: 20,
     fontFamily: "malgunGothic",
+    paddingBottom: 100,
   },
   section: {
     marginBottom: 10,
@@ -134,7 +143,7 @@ const styles = StyleSheet.create({
   tableTotalAmount: {
     marginLeft: "auto",
     width: 250,
-    marginTop: 10,
+    marginTop: 20,
     borderTop: "1px dotted #000",
     padding: 5,
     fontSize: 10,
@@ -148,6 +157,15 @@ const styles = StyleSheet.create({
     fontSize: 9,
     textDecoration: "underline",
     fontFamily: "NotoSerifKR",
+  },
+  pageNumber: {
+    position: "absolute",
+    fontSize: 10,
+    bottom: 10,
+    left: 0,
+    right: 0,
+    textAlign: "center",
+    color: "grey",
   },
 });
 
@@ -178,9 +196,11 @@ const renderTableRows = (items: ItemDataType[]) => {
     }
 
     return (
-      <View style={styles.tableRow} key={item.position}>
+      <View style={[styles.tableRow]} key={item.position}>
         {isItemType && (
-          <View style={styles.tableSmallCol}>
+          <View
+            style={[styles.tableSmallCol, { borderLeft: "0.5px solid #000" }]}
+          >
             <Text style={styles.tableCell}>
               {getDisplayNo(item.itemType, itemIndex - 1)}
             </Text>
@@ -212,7 +232,12 @@ const renderTableRows = (items: ItemDataType[]) => {
             </View>
           </>
         ) : (
-          <View style={[styles.tableBigCol, { flex: 1 }]}>
+          <View
+            style={[
+              styles.tableBigCol,
+              { flex: 1, borderLeft: "0.5px solid #000" },
+            ]}
+          >
             <Text style={styles.nonItemtypeCell}>{item.itemName}</Text>
           </View>
         )}
@@ -281,6 +306,7 @@ const OfferPDFDocument = ({
   pdfHeader,
   viewMode,
   language,
+  pdfFooter,
 }: PDFDocumentProps) => {
   const headerMessage = pdfHeader;
   const calculateTotalSalesAmount = (items: ItemDataType[]) => {
@@ -289,6 +315,8 @@ const OfferPDFDocument = ({
   const totalSalesAmountGlobal = calculateTotalSalesAmount(
     info.inquiryItemDetails
   );
+
+  console.log(info);
 
   if (viewMode) {
     return (
@@ -305,9 +333,69 @@ const OfferPDFDocument = ({
               language,
               info.refNumber
             )}
+            <View
+              style={{
+                fontSize: 10,
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "space-between",
+                marginBottom: 10,
+              }}
+              fixed
+              render={() => (
+                <>
+                  <View>
+                    <Text
+                      render={() => `OUR RED NO. : ${info.documentNumber}`}
+                      style={{ textAlign: "right" }}
+                    />
+                  </View>
+                  <View style={{ display: "flex", flexDirection: "row" }}>
+                    <Text
+                      render={() => {
+                        switch (info.currencyType) {
+                          case "USD":
+                            return `UNIT USD $`;
+                          case "EUR":
+                            return `UNIT EUR €`;
+                          case "INR":
+                            return `UNIT INR ₹`;
+                          case "JPY":
+                            return `UNIT JPY ¥`;
+                          default:
+                            return ``;
+                        }
+                      }}
+                      fixed
+                      style={{ marginRight: 60 }}
+                    />
+                    <Text
+                      render={({ pageNumber, totalPages }) =>
+                        `PAGE: ${pageNumber} / ${totalPages}`
+                      }
+                      style={{ textAlign: "right" }}
+                    />
+                  </View>
+                </>
+              )}
+            ></View>
             <View style={styles.table}>
-              <View style={styles.tableRow}>
-                <View style={styles.tableSmallCol}>
+              <View
+                style={[
+                  styles.tableRow,
+                  {
+                    borderBottom: "1px solid #000",
+                    borderTop: "1px solid #000",
+                  },
+                ]}
+                fixed
+              >
+                <View
+                  style={[
+                    styles.tableSmallCol,
+                    { borderLeft: "0.5px solid #000" },
+                  ]}
+                >
                   <Text style={styles.tableCell}>NO.</Text>
                 </View>
                 <View style={styles.tableMedCol}>
@@ -331,8 +419,8 @@ const OfferPDFDocument = ({
               </View>
               {renderTableRows(info.inquiryItemDetails)}
               <View style={styles.tableTotalAmount}>
-                <Text>T O T A L ({info.currencyType}):</Text>
-                <Text>
+                <Text wrap>T O T A L ({info.currencyType}):</Text>
+                <Text wrap>
                   {(() => {
                     switch (info.currencyType) {
                       case "USD":
@@ -360,6 +448,9 @@ const OfferPDFDocument = ({
                 </Text>
               </View>
             </View>
+            <View style={styles.section}>
+              <Text style={styles.footerMessage}>{pdfFooter}</Text>
+            </View>
           </Page>
         </Document>
       </PDFViewer>
@@ -379,9 +470,66 @@ const OfferPDFDocument = ({
           language,
           info.refNumber
         )}
+        <View
+          style={{
+            fontSize: 10,
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-between",
+            marginBottom: 10,
+          }}
+          fixed
+          render={() => (
+            <>
+              <View>
+                <Text
+                  render={() => `OUR RED NO. : ${info.documentNumber}`}
+                  style={{ textAlign: "right" }}
+                />
+              </View>
+              <View style={{ display: "flex", flexDirection: "row" }}>
+                <Text
+                  render={() => {
+                    switch (info.currencyType) {
+                      case "USD":
+                        return `UNIT USD $`;
+                      case "EUR":
+                        return `UNIT EUR €`;
+                      case "INR":
+                        return `UNIT INR ₹`;
+                      case "JPY":
+                        return `UNIT JPY ¥`;
+                      default:
+                        return ``;
+                    }
+                  }}
+                  fixed
+                  style={{ marginRight: 60 }}
+                />
+                <Text
+                  render={({ pageNumber, totalPages }) =>
+                    `PAGE: ${pageNumber} / ${totalPages}`
+                  }
+                  style={{ textAlign: "right" }}
+                />
+              </View>
+            </>
+          )}
+        ></View>
         <View style={styles.table}>
-          <View style={styles.tableRow}>
-            <View style={styles.tableSmallCol}>
+          <View
+            style={[
+              styles.tableRow,
+              {
+                borderBottom: "1px solid #000",
+                borderTop: "1px solid #000",
+              },
+            ]}
+            fixed
+          >
+            <View
+              style={[styles.tableSmallCol, { borderLeft: "0.5px solid #000" }]}
+            >
               <Text style={styles.tableCell}>NO.</Text>
             </View>
             <View style={styles.tableMedCol}>
@@ -405,8 +553,8 @@ const OfferPDFDocument = ({
           </View>
           {renderTableRows(info.inquiryItemDetails)}
           <View style={styles.tableTotalAmount}>
-            <Text>T O T A L ({info.currencyType}):</Text>
-            <Text>
+            <Text wrap>T O T A L ({info.currencyType}):</Text>
+            <Text wrap>
               {(() => {
                 switch (info.currencyType) {
                   case "USD":
@@ -433,6 +581,9 @@ const OfferPDFDocument = ({
               })()}
             </Text>
           </View>
+        </View>
+        <View style={styles.section}>
+          <Text style={styles.footerMessage}>{pdfFooter}</Text>
         </View>
       </Page>
     </Document>

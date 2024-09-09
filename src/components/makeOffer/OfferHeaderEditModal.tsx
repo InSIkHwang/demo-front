@@ -1,8 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Modal, Button, Input } from "antd";
+import React, { useState, useEffect } from "react";
+import { Modal, Button, Input, Checkbox } from "antd";
 import styled from "styled-components";
-import { Supplier } from "../../types/types";
-import { fetchSupplierDetail } from "../../api/api";
 
 const StyledModal = styled(Modal)`
   .ant-modal-content {
@@ -31,7 +29,7 @@ const StyledTextArea = styled(Input.TextArea)`
 interface HeaderEditModalProps {
   open: boolean;
   onClose: () => void;
-  onSave: (text: string) => void;
+  onSave: (header: string, footer: string) => void;
   pdfCompanyTag: { id: number; name: string };
 }
 
@@ -41,44 +39,44 @@ const HeaderEditModal = ({
   onSave,
   pdfCompanyTag,
 }: HeaderEditModalProps) => {
-  const [text, setText] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(true);
-  const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(
-    null
-  );
-  const prevSupplierIdRef = useRef<number | undefined>(undefined);
+  const [headerChk, setHeaderChk] = useState<boolean>(false);
+  const [footerChk, setFooterChk] = useState<boolean>(false);
+  const [headerText, setHeaderText] = useState<string>("");
+  const [footerText, setFooterText] = useState<string>("");
+
+  const placeholderHeaderText = `PORT OF SHIPMENT : BUSAN, KOREA
+DELIVERY TIME    : 
+TERMS OF PAYMENT : 
+OFFER VALIDITY   : 
+PART CONDITION   : `;
+  const placeholderRemarkText = `**REMARK
+         
+  1.`;
 
   useEffect(() => {
-    if (open) {
-      const currentSupplierId = pdfCompanyTag?.id;
-      if (prevSupplierIdRef.current !== currentSupplierId) {
-        fetchData();
-        prevSupplierIdRef.current = currentSupplierId;
-      }
+    if (headerChk) {
+      setHeaderText(placeholderHeaderText);
+    } else {
+      setHeaderText("");
     }
-  }, [open, pdfCompanyTag]);
+  }, [headerChk]);
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const response = await fetchSupplierDetail(pdfCompanyTag.id);
-      setSelectedSupplier(response);
-      setText(response.headerMessage || "");
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (footerChk) {
+      setFooterText(placeholderRemarkText);
+    } else {
+      setFooterText("");
     }
-  };
+  }, [footerChk]);
 
   const handleSave = () => {
-    onSave(text);
+    onSave(headerText, footerText);
     onClose();
   };
 
   return (
     <StyledModal
-      title="머릿글 수정"
+      title="Header / Remark"
       open={open}
       onCancel={onClose}
       footer={[
@@ -90,10 +88,30 @@ const HeaderEditModal = ({
         </Button>,
       ]}
     >
+      <Checkbox
+        style={{ fontSize: 20 }}
+        checked={headerChk}
+        onChange={(e) => setHeaderChk(e.target.checked)}
+      >
+        Header
+      </Checkbox>
       <StyledTextArea
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        placeholder="여기에 텍스트를 입력하세요. (엔터키로 줄바꿈 가능합니다.)"
+        value={headerText}
+        onChange={(e) => setHeaderText(e.target.value)}
+        placeholder={placeholderHeaderText}
+        autoSize={{ minRows: 5 }}
+      />
+      <Checkbox
+        style={{ fontSize: 20 }}
+        checked={footerChk}
+        onChange={(e) => setFooterChk(e.target.checked)}
+      >
+        Remark
+      </Checkbox>
+      <StyledTextArea
+        value={footerText}
+        onChange={(e) => setFooterText(e.target.value)}
+        placeholder={placeholderRemarkText}
         autoSize={{ minRows: 5 }}
       />
     </StyledModal>

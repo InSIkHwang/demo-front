@@ -55,6 +55,7 @@ const MakeOffer = () => {
   const [headerEditModalVisible, setHeaderEditModalVisible] =
     useState<boolean>(false);
   const [pdfHeader, setPdfHeader] = useState<string>("");
+  const [pdfFooter, setPdfFooter] = useState<string>("");
   const [pdfCustomerTag, setPdfCustomerTag] = useState<{
     id: number;
     name: string;
@@ -314,8 +315,9 @@ const MakeOffer = () => {
     setHeaderEditModalVisible(false);
   };
 
-  const handleHeaderSave = (text: string) => {
-    setPdfHeader(text);
+  const handleHeaderSave = (header: string, footer: string) => {
+    setPdfHeader(header);
+    setPdfFooter(footer);
   };
 
   return (
@@ -362,7 +364,7 @@ const MakeOffer = () => {
       {isReadOnly && (
         <div style={{ marginTop: 20 }}>
           <Button style={{ marginLeft: 10 }} onClick={handleOpenHeaderModal}>
-            머릿글 수정
+            Edit Header / Remark
           </Button>
           <span style={{ marginLeft: 20 }}>LANGUAGE: </span>
           <Select
@@ -393,6 +395,7 @@ const MakeOffer = () => {
           info={info}
           supplierName={pdfCustomerTag ? pdfCustomerTag.name : ""}
           pdfHeader={pdfHeader}
+          pdfFooter={pdfFooter}
           viewMode={true}
           language={language}
         />
