@@ -274,7 +274,7 @@ export const sendInquiryMail = async (
 export const editOffer = async (
   supplierInquiryId: number,
   supplierId: number,
-  documentEdit: {
+  documentEditInfo: {
     registerDate: string | dayjs.Dayjs;
     shippingDate: string | dayjs.Dayjs;
     currencyType: string;
@@ -288,6 +288,16 @@ export const editOffer = async (
   // 서버로 보내는 데이터의 포맷을 맞추기 위해 수정
   const requestData = {
     supplierId,
+    discount: 0,
+    invCharge: [
+      // {
+      //   invChargeId: null,
+      //   customCharge: "",
+      //   chargePriceGlobal: 0,
+      //   chargePriceKRW: 0,
+      // },
+    ],
+    documentEditInfo,
     itemCostEditList,
   };
 
@@ -298,6 +308,14 @@ export const editMurgedOffer = async (supplierInquiryIds: number[]) => {
   const response = await axios.post(`/api/supplier-inquiries/merged`, {
     supplierInquiryIds,
   });
+
+  return response.data;
+};
+
+export const handleExport = async (inquiryId: number) => {
+  const response = await axios.post(
+    `/api/customer-inquiries/make-excel/${inquiryId}`
+  );
 
   return response.data;
 };

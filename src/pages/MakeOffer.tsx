@@ -5,11 +5,12 @@ import styled from "styled-components";
 import dayjs from "dayjs";
 import FormComponent from "../components/makeOffer/FormComponent";
 import TableComponent from "../components/makeOffer/TableComponent";
-import { editOffer, fetchOfferDetail } from "../api/api";
+import { editMurgedOffer, editOffer, fetchOfferDetail } from "../api/api";
 import { FormValuesType, ItemDataType } from "../types/types";
 import MergedTableComponent from "../components/makeOffer/MergedTableComponent";
 import OfferHeaderEditModal from "../components/makeOffer/OfferHeaderEditModal";
 import OfferPDFDocument from "../components/makeOffer/OfferPDFDocument";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const FormContainer = styled.div`
   position: relative;
@@ -31,22 +32,26 @@ const Title = styled.h1`
 
 const MakeOffer = () => {
   const { state } = useLocation();
-  const [info, setInfo] = useState(state?.info || {});
-  const [dataSource, setDataSource] = useState(info?.inquiryItemDetails || []);
+  const [idList, setIdList] = useState({
+    offerId: state?.info.supplierInquiryId || [],
+    supplierId: state?.info.supplierInfo?.supplierId,
+  });
+  const [info, setInfo] = useState<any>(null);
+  const [dataSource, setDataSource] = useState<ItemDataType[]>([]);
   const [formValues, setFormValues] = useState<FormValuesType>({
-    supplierInquiryId: info?.supplierInquiryId || "",
-    supplierName: info?.supplierName || "",
-    documentNumber: info?.documentNumber || "",
-    registerDate: dayjs(info?.registerDate) || "",
-    shippingDate: dayjs(info?.shippingDate) || "",
-    currencyType: info?.currencyType || "",
-    currency: info?.currency || 0,
-    customerName: info?.customerName || "",
-    vesselName: info?.vesselName || "",
-    refNumber: info?.refNumber || "",
-    docRemark: info?.docRemark || "",
-    documentStatus: info?.documentStatus || "",
-    veeselHullNo: info?.veeselHullNo || "",
+    supplierInquiryId: 0,
+    supplierName: "",
+    documentNumber: "",
+    registerDate: dayjs(),
+    shippingDate: dayjs(),
+    currencyType: "",
+    currency: 0,
+    customerName: "",
+    vesselName: "",
+    refNumber: "",
+    docRemark: "",
+    documentStatus: "",
+    veeselHullNo: "",
   });
   const isReadOnly = window.location.pathname === "/makeoffer/mergedoffer";
   const [isDuplicate, setIsDuplicate] = useState<boolean>(false);
@@ -60,8 +65,7 @@ const MakeOffer = () => {
     id: number;
     name: string;
   }>({ id: 99, name: "test" });
-
-  console.log(formValues);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const debounce = <T extends (...args: any[]) => void>(
     func: T,
@@ -74,53 +78,55 @@ const MakeOffer = () => {
     };
   };
 
-  useEffect(() => {
-    const loadOfferDetail = async () => {
-      if (info?.supplierInquiryId && info?.supplierInfo?.supplierId) {
-        try {
-          const response = await fetchOfferDetail(
-            info.supplierInquiryId,
-            info.supplierInfo.supplierId
-          );
-          setInfo(response);
-          setDataSource(response.inquiryItemDetails || []);
-        } catch (error) {
-          message.error("데이터를 가져오는 중 오류가 발생했습니다.");
-        }
+  // 데이터 로드 및 상태 업데이트 함수
+  const loadOfferDetail = async () => {
+    setIsLoading(true);
+    if (idList) {
+      try {
+        const response = isReadOnly
+          ? await editMurgedOffer(idList.offerId) // 배열로 전달
+          : await fetchOfferDetail(idList.offerId, idList.supplierId);
+
+        // 공통 작업 처리
+        setInfo(response);
+        setDataSource(response.inquiryItemDetails || []);
+        setFormValues({
+          supplierInquiryId: response.supplierInquiryId,
+          supplierName: response.supplierName,
+          documentNumber: response.documentNumber,
+          registerDate: dayjs(response.registerDate),
+          shippingDate: dayjs(response.shippingDate),
+          currencyType: response.currencyType,
+          currency: response.currency,
+          customerName: response.customerName,
+          vesselName: response.vesselName,
+          refNumber: response.refNumber,
+          docRemark: response.docRemark,
+          documentStatus: response.documentStatus,
+          veeselHullNo: response.veeselHullNo,
+        });
+      } catch (error) {
+        message.error("데이터를 가져오는 중 오류가 발생했습니다.");
       }
-    };
-
-    loadOfferDetail();
-  }, [info.supplierInquiryId, info.supplierInfo?.supplierId]);
+    }
+    setIsLoading(false);
+  };
 
   useEffect(() => {
-    if (info?.inquiryItemDetails) {
-      setDataSource(info.inquiryItemDetails);
-      setFormValues({
-        supplierInquiryId: info.supplierInquiryId,
-        supplierName: info.supplierName,
-        documentNumber: info.documentNumber,
-        registerDate: dayjs(info.registerDate),
-        shippingDate: dayjs(info.shippingDate),
-        currencyType: info.currencyType,
-        currency: info.currency,
-        customerName: info.customerName,
-        vesselName: info.vesselName,
-        refNumber: info.refNumber,
-        docRemark: info.docRemark,
-        documentStatus: info.documentStatus,
-        veeselHullNo: info.veeselHullNo,
-      });
-    }
-  }, [info]);
+    loadOfferDetail();
+  }, []);
 
   const handleInputChange = (
     index: number,
     key: keyof ItemDataType,
     value: any
   ) => {
-    const updatedDataSource = [...dataSource];
-    updatedDataSource[index][key] = value;
+    const updatedDataSource = [...dataSource] as ItemDataType[]; // 타입 명시
+
+    updatedDataSource[index] = {
+      ...updatedDataSource[index],
+      [key]: value,
+    };
 
     // 값이 변경된 항목이 "salesPriceKRW", "salesPriceGlobal", "purchasePriceKRW", "purchasePriceGlobal"일 경우 계산하여 업데이트
     if (
@@ -280,31 +286,37 @@ const MakeOffer = () => {
 
   // 저장 로직을 함수로 분리
   const saveData = async (formattedData: any) => {
-    const formData = {
-      registerDate: formValues.registerDate,
-      shippingDate: formValues.shippingDate,
-      currencyType: formValues.currencyType,
-      currency: formValues.currency,
-      vesselId: info.vesselId,
-      veeselHullNo: formValues.veeselHullNo,
-      docRemark: formValues.docRemark,
-    };
-    await editOffer(
-      info.supplierInquiryId,
-      info.supplierInfo.supplierId,
-      formData,
-      formattedData
-    );
+    try {
+      const formData = {
+        registerDate: formValues.registerDate.format("YYYY-MM-DD"),
+        shippingDate: formValues.shippingDate.format("YYYY-MM-DD"),
+        currencyType: formValues.currencyType,
+        currency: formValues.currency,
+        vesselId: info.vesselId,
+        veeselHullNo: formValues.veeselHullNo,
+        docRemark: formValues.docRemark,
+      };
 
-    message.success("성공적으로 저장 되었습니다!");
+      await editOffer(
+        info.supplierInquiryId,
+        info.supplierInfo.supplierId,
+        formData,
+        formattedData
+      );
 
-    // 저장 후 최신 데이터로 업데이트
-    const response = await fetchOfferDetail(
-      info.supplierInquiryId,
-      info.supplierInfo.supplierId
-    );
-    setInfo(response);
-    setDataSource(response.inquiryItemDetails || []);
+      message.success("성공적으로 저장 되었습니다!");
+
+      // 저장 후 최신 데이터로 업데이트
+      const response = await fetchOfferDetail(
+        info.supplierInquiryId,
+        info.supplierInfo.supplierId
+      );
+      setInfo(response);
+      setDataSource(response.inquiryItemDetails || []);
+    } catch (error) {
+      console.error("Error saving data:", error);
+      message.error("데이터 저장 중 오류가 발생했습니다.");
+    }
   };
 
   const handlePDFPreview = () => {
@@ -331,6 +343,10 @@ const MakeOffer = () => {
     setPdfHeader(header);
     setPdfFooter(footer);
   };
+
+  if (isLoading) {
+    return <LoadingSpinner />; // 로딩 중 화면
+  }
 
   return (
     <FormContainer>

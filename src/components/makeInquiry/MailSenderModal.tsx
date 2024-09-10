@@ -215,9 +215,8 @@ const MailSenderModal = ({
             ]);
           }
         }
-
         message.success("The selected email has been sent successfully!");
-        navigate(`/customerInquirylist`);
+        navigate("/customerInquirylist");
       } else {
         message.error("Save failed.");
       }

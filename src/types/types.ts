@@ -179,8 +179,8 @@ export interface FormValuesType {
   supplierInquiryId: number;
   supplierName: string;
   documentNumber: string;
-  registerDate: string | Dayjs;
-  shippingDate: string | Dayjs;
+  registerDate: Dayjs;
+  shippingDate: Dayjs;
   currencyType: string;
   currency: number;
   customerName: string;

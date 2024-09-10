@@ -1,25 +1,8 @@
-import React, { Dispatch, useEffect, useState } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Table } from "antd";
 import { ColumnsType } from "antd/es/table";
 import styled from "styled-components";
-
-// ItemDataType을 정의
-interface ItemDataType {
-  position?: number;
-  itemCode: string;
-  itemName: string;
-  itemType: string;
-  qty: number;
-  salesPriceKRW: number;
-  salesPriceGlobal: number;
-  salesAmountKRW: number;
-  salesAmountGlobal: number;
-  purchasePriceKRW: number;
-  purchasePriceGlobal: number;
-  purchaseAmountKRW: number;
-  purchaseAmountGlobal: number;
-  margin?: number;
-}
+import { ItemDataType } from "../../types/types";
 
 const CustomTable = styled(Table)`
   .ant-table-cell {
@@ -83,7 +66,7 @@ export const calculateTotalAmount = (price: number, qty: number) =>
 
 interface MergedTableComponentProps {
   dataSource: ItemDataType[];
-  setDataSource: Dispatch<ItemDataType[]>;
+  setDataSource: Dispatch<SetStateAction<ItemDataType[]>>;
   currency: number;
 }
 

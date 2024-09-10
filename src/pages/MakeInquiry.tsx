@@ -644,6 +644,7 @@ const MakeInquiry = () => {
         setItems={setItems}
         addItem={addItem}
         updateItemId={updateItemId}
+        customerInquiryId={Number(customerInquiryId)}
       />
       <Button
         type="primary"

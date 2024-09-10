@@ -321,9 +321,10 @@ const SupplierInquiryList = () => {
   const handleSendMailClick = async () => {
     if (selectedSupplierIds.size > 0) {
       try {
-        const info = await editMurgedOffer(
-          Array.from(selectedSupplierIds.keys())
-        );
+        // selectedSupplierIds의 모든 키(offerId)를 배열로 추출하여 info 객체 생성
+        const info = {
+          supplierInquiryId: Array.from(selectedSupplierIds.keys()),
+        };
 
         // navigate를 사용하여 상태와 함께 페이지 이동
         navigate("/makeoffer/mergedoffer", { state: { info } });

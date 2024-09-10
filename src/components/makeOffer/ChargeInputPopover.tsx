@@ -1,5 +1,11 @@
 import React, { useState } from "react";
 import { Button, Popover, Input, Form } from "antd";
+import styled from "styled-components";
+
+const InputGroup = styled.div`
+  display: flex;
+  gap: 8px;
+`;
 
 const ChargeInputPopover = () => {
   const [dcValue, setDcValue] = useState("");
@@ -9,25 +15,30 @@ const ChargeInputPopover = () => {
   const content = (
     <Form layout="horizontal">
       <Form.Item label="D/C">
-        <Input
-          value={dcValue}
-          onChange={(e) => setDcValue(e.target.value)}
-          placeholder="Enter D/C value"
-        />
+        <InputGroup>
+          <Input
+            value={dcValue}
+            onChange={(e) => setDcValue(e.target.value)}
+            placeholder="Enter D/C value"
+            addonAfter="%"
+          />
+          <Input placeholder="Enter D/C value" addonAfter="₩" />
+          <Input placeholder="Enter D/C value" addonAfter="F" />
+        </InputGroup>
       </Form.Item>
       <Form.Item label="Charge Name">
-        <Input
-          value={chargeName}
-          onChange={(e) => setChargeName(e.target.value)}
-          placeholder="Enter charge name"
-        />
-      </Form.Item>
-      <Form.Item label="Charges">
-        <Input
-          value={chargeValue}
-          onChange={(e) => setChargeValue(e.target.value)}
-          placeholder="Enter charge value"
-        />
+        <InputGroup>
+          <Input
+            value={chargeName}
+            onChange={(e) => setChargeName(e.target.value)}
+            placeholder="Enter charge name"
+          />
+          <Input
+            value={chargeValue}
+            onChange={(e) => setChargeValue(e.target.value)}
+            placeholder="Enter charge value"
+          />
+        </InputGroup>
       </Form.Item>
     </Form>
   );
