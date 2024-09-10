@@ -211,3 +211,22 @@ export interface ItemDataType {
   purchaseAmountGlobal: number;
   itemDetailId: number | null;
 }
+
+export interface ItemCodeCellProps {
+  text: string;
+  index: number;
+  handleItemCodeChange: (index: number, value: string) => void;
+  updateItemId: (index: number, itemId: number | null) => void;
+  itemCodeOptions: { value: string; itemId: number }[];
+}
+
+export interface ItemNameCellProps {
+  text: string;
+  index: number;
+  handleInputChange: (
+    index: number,
+    key: keyof ItemDataType,
+    value: string
+  ) => void;
+  updateItemId: (index: number, itemId: number | null) => void;
+}

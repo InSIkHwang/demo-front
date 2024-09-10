@@ -123,8 +123,9 @@ const MakeOffer = () => {
   ) => {
     const updatedDataSource = [...dataSource] as ItemDataType[]; // 타입 명시
 
-    updatedDataSource[index] = {
-      ...updatedDataSource[index],
+    const currentItem = updatedDataSource[index];
+    const updatedItem = {
+      ...currentItem,
       [key]: value,
     };
 
@@ -135,34 +136,38 @@ const MakeOffer = () => {
       key === "purchasePriceKRW" ||
       key === "purchasePriceGlobal"
     ) {
-      const record = updatedDataSource[index];
       const updatedSalesAmountKRW = calculateTotalAmount(
-        record.salesPriceKRW,
-        record.qty
+        updatedItem.salesPriceKRW,
+        updatedItem.qty
       );
       const updatedSalesAmountGlobal = calculateTotalAmount(
-        record.salesPriceGlobal,
-        record.qty
+        updatedItem.salesPriceGlobal,
+        updatedItem.qty
       );
       const updatedPurchaseAmountKRW = calculateTotalAmount(
-        record.purchasePriceKRW,
-        record.qty
+        updatedItem.purchasePriceKRW,
+        updatedItem.qty
       );
       const updatedPurchaseAmountGlobal = calculateTotalAmount(
-        record.purchasePriceGlobal,
-        record.qty
+        updatedItem.purchasePriceGlobal,
+        updatedItem.qty
       );
 
       updatedDataSource[index] = {
-        ...record,
+        ...updatedItem,
         salesAmountKRW: updatedSalesAmountKRW,
         salesAmountGlobal: updatedSalesAmountGlobal,
         purchaseAmountKRW: updatedPurchaseAmountKRW,
         purchaseAmountGlobal: updatedPurchaseAmountGlobal,
       };
+    } else {
+      updatedDataSource[index] = updatedItem;
     }
 
-    setDataSource(updatedDataSource);
+    // 데이터가 실제로 변경된 경우에만 상태를 업데이트
+    if (JSON.stringify(dataSource) !== JSON.stringify(updatedDataSource)) {
+      setDataSource(updatedDataSource);
+    }
   };
 
   const handleFormChange = debounce(

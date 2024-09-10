@@ -117,8 +117,6 @@ const MakeInquiryTable = ({
     ]);
     setIsModalVisible(false);
   };
-  console.log(items);
-  
 
   const sensors = useSensors(
     useSensor(PointerSensor, {

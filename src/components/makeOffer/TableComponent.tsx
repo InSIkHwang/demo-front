@@ -117,6 +117,12 @@ interface RowProps extends React.HTMLAttributes<HTMLTableRowElement> {
   "data-row-key": number;
 }
 
+interface SelectedItemData {
+  index: number;
+  itemName: string;
+  itemId: number;
+}
+
 const Row = (props: RowProps) => {
   const {
     attributes,
@@ -188,7 +194,9 @@ const TableComponent = ({
     null
   );
   const [unitOptions, setUnitOptions] = useState<string[]>(["PCS", "SET"]);
-
+  const [updatedIndex, setUpdatedIndex] = useState<number | null>(null);
+  const [selectedItemData, setSelectedItemData] =
+    useState<SelectedItemData | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -240,13 +248,15 @@ const TableComponent = ({
     },
     [setDataSource]
   );
-  const handleItemCodeChange = async (index: number, value: string) => {
-    handleInputChange(index, "itemCode", value);
 
+  const handleItemCodeChange = async (index: number, value: string) => {
     if (value.trim() === "") {
       updateItemId(index, null);
       return;
     }
+
+    handleInputChange(index, "itemCode", value);
+    setUpdatedIndex(index);
 
     try {
       const { items } = await fetchItemData(value);
@@ -256,36 +266,32 @@ const TableComponent = ({
         return;
       }
 
-      const itemArray = items;
+      const newItemNameMap: { [key: number]: string } = {};
+      const newItemIdMap: { [key: number]: number } = {};
+      const newSupplierOptions: {
+        value: string;
+        id: number;
+        itemId: number;
+        code: string;
+        email: string;
+      }[] = [];
 
-      const newItemNameMap = itemArray.reduce<{ [key: number]: string }>(
-        (acc, item) => {
-          acc[item.itemId] = item.itemName;
-          return acc;
-        },
-        {}
-      );
-
-      const newItemIdMap = itemArray.reduce<{ [key: number]: number }>(
-        (acc, item) => {
-          acc[item.itemId] = item.itemId;
-          return acc;
-        },
-        {}
-      );
-
-      const newSupplierOptions = itemArray.flatMap((item) =>
-        item.supplierList.map((supplier) => ({
-          value: supplier.companyName,
-          id: supplier.id,
-          itemId: supplier.itemId,
-          code: supplier.code,
-          email: supplier.email,
-        }))
-      );
+      items.forEach((item) => {
+        newItemNameMap[item.itemId] = item.itemName;
+        newItemIdMap[item.itemId] = item.itemId;
+        newSupplierOptions.push(
+          ...item.supplierList.map((supplier) => ({
+            value: supplier.companyName,
+            id: supplier.id,
+            itemId: supplier.itemId,
+            code: supplier.code,
+            email: supplier.email,
+          }))
+        );
+      });
 
       setItemCodeOptions(
-        itemArray.map((item) => ({
+        items.map((item) => ({
           value: item.itemCode,
           name: item.itemName,
           key: item.itemId.toString(),
@@ -293,8 +299,9 @@ const TableComponent = ({
           itemId: item.itemId,
         }))
       );
-      setItemNameMap(newItemNameMap);
-      setItemIdMap(newItemIdMap);
+
+      setItemNameMap((prevMap) => ({ ...prevMap, ...newItemNameMap }));
+      setItemIdMap((prevMap) => ({ ...prevMap, ...newItemIdMap }));
 
       setSupplierOptions((prevOptions) => [
         ...prevOptions,
@@ -306,26 +313,48 @@ const TableComponent = ({
         ),
       ]);
 
-      const selectedItem = itemArray.find((item) => item.itemCode === value);
+      const selectedItem = items.find((item) => item.itemCode === value);
       if (selectedItem) {
-        handleInputChange(index, "itemName", itemNameMap[selectedItem.itemId]);
-        updateItemId(index, selectedItem.itemId);
+        setSelectedItemData({
+          index,
+          itemName: selectedItem.itemName,
+          itemId: selectedItem.itemId,
+        });
       }
     } catch (error) {
       console.error("Error fetching item codes and suppliers:", error);
     }
   };
 
-  const updateItemId = (index: number, itemId: number | null) => {
-    setDataSource((prevItems) => {
-      const updatedItems = [...prevItems];
-      updatedItems[index] = {
-        ...updatedItems[index],
-        itemId,
-      };
-      return updatedItems;
-    });
-  };
+  const updateItemId = useCallback(
+    (index: number, itemId: number | null) => {
+      setDataSource((prevItems) => {
+        const updatedItems = [...prevItems];
+        updatedItems[index] = {
+          ...updatedItems[index],
+          itemId,
+        };
+        return updatedItems;
+      });
+    },
+    [setDataSource]
+  );
+
+  useEffect(() => {
+    if (updatedIndex !== null && selectedItemData) {
+      const { index, itemName, itemId } = selectedItemData;
+      handleInputChange(index, "itemName", itemName);
+      updateItemId(index, itemId);
+      setUpdatedIndex(null);
+      setSelectedItemData(null);
+    }
+  }, [
+    dataSource,
+    handleInputChange,
+    selectedItemData,
+    updateItemId,
+    updatedIndex,
+  ]);
 
   const checkDuplicate = useCallback(
     (key: string, value: string, index: number) => {
@@ -385,7 +414,7 @@ const TableComponent = ({
       totalProfit,
       totalProfitPercent,
     });
-  }, [dataSource, currency]);
+  }, [calculateTotalAmount, dataSource]);
 
   const handleAddItem = () => {
     const newItem: ItemDataType = {
@@ -475,8 +504,6 @@ const TableComponent = ({
               onSelect={(value: string, option: any) => {
                 const itemId = option.itemId; // AutoComplete의 옵션에서 itemId를 가져옴
                 updateItemId(index, itemId); // itemId로 아이템 업데이트
-                handleInputChange(index, "itemCode", value); // itemCode 업데이트
-                handleInputChange(index, "itemName", option.name); // itemName 업데이트
               }}
               style={{ borderRadius: "4px", width: "100%" }}
               dropdownStyle={{ width: 250 }}
