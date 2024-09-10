@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Modal, Upload, Button, Table } from "antd";
+import { Modal, Upload, Button, Table, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import * as XLSX from "xlsx";
 import { InquiryItem } from "../../types/types";
@@ -17,8 +17,14 @@ const ExcelUploadModal = ({
   onApply,
 }: ExcelUploadModalProps) => {
   const [excelData, setExcelData] = useState<InquiryItem[]>([]);
+  const [fileList, setFileList] = useState<any[]>([]);
+
+  const expectedHeader = ["itemCode", "itemName", "qty", "unit", "itemRemark"];
 
   const handleExcelUpload = (file: any) => {
+    setExcelData([]);
+    setFileList([file]);
+
     const reader = new FileReader();
     reader.onload = (e) => {
       const data = new Uint8Array(e.target?.result as ArrayBuffer);
@@ -28,15 +34,28 @@ const ExcelUploadModal = ({
         header: 1,
       }) as any[][];
 
+      // 첫 번째 행의 헤더와 expectedHeader 비교
+      const fileHeader = jsonData[0] || [];
+      if (
+        fileHeader.length !== expectedHeader.length ||
+        !fileHeader.every((header, idx) => header === expectedHeader[idx])
+      ) {
+        message.error(
+          "The uploaded file's header does not match the expected format."
+        );
+        setFileList([]); // 파일 제거
+        return;
+      }
+
       // 엑셀 데이터에서 속성명이 고정된 형식을 사용하여 데이터 추출
       const dataArray = jsonData.slice(1).map((row: any[], index: number) => ({
-        position: index + 1, // position 속성
-        itemCode: row[0] || "", // itemCode 속성
-        itemType: "ITEM" as "ITEM", // itemType은 고정값 'ITEM'
-        itemName: row[1] || "", // itemName 속성
-        qty: parseInt(row[2], 10) || 0, // qty 속성
-        unit: row[3] || "", // unit 속성
-        itemRemark: row[4] || "", // itemRemark 속성
+        position: index + 1,
+        itemCode: row[0] || "",
+        itemType: "ITEM" as "ITEM",
+        itemName: row[1] || "",
+        qty: parseInt(row[2], 10) || 0,
+        unit: row[3] || "",
+        itemRemark: row[4] || "",
       }));
 
       setExcelData(dataArray);
@@ -72,6 +91,12 @@ const ExcelUploadModal = ({
     onApply(updatedData);
   };
 
+  const handleRemoveFile = () => {
+    setExcelData([]);
+    setFileList([]);
+    message.success("File removed successfully");
+  };
+
   return (
     <Modal
       title="Load Excel File"
@@ -82,22 +107,36 @@ const ExcelUploadModal = ({
       cancelText="Cancel"
       width={1000}
     >
-      <Upload beforeUpload={handleExcelUpload} accept=".xlsx, .xls">
-        <Button icon={<UploadOutlined />}>Select Excel File</Button>
-      </Upload>
+      <Upload.Dragger
+        beforeUpload={handleExcelUpload}
+        fileList={fileList}
+        onRemove={handleRemoveFile}
+        accept=".xlsx, .xls"
+      >
+        <p className="ant-upload-drag-icon">
+          <UploadOutlined />
+        </p>
+        <p className="ant-upload-text">
+          Click or drag file to this area to upload
+        </p>
+        <p className="ant-upload-hint">
+          Only one file can be uploaded. Uploading a new file will overwrite the
+          current file.
+        </p>
+      </Upload.Dragger>
       {excelData.length > 0 && (
         <Table
           dataSource={excelData}
           columns={[
             { title: "No.", dataIndex: "position", key: "position" },
-            { title: "Item Code", dataIndex: "itemCode", key: "itemCode" },
-            { title: "Item Name", dataIndex: "itemName", key: "itemName" },
-            { title: "Quantity", dataIndex: "qty", key: "qty" },
-            { title: "Unit", dataIndex: "unit", key: "unit" },
+            { title: "Item Code", dataIndex: "itemCode", key: "position" },
+            { title: "Item Name", dataIndex: "itemName", key: "position" },
+            { title: "Quantity", dataIndex: "qty", key: "position" },
+            { title: "Unit", dataIndex: "unit", key: "position" },
             {
               title: "Item Remark",
               dataIndex: "itemRemark",
-              key: "itemRemark",
+              key: "position",
             },
           ]}
           pagination={false}

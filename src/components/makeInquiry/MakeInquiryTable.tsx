@@ -141,7 +141,7 @@ const MakeInquiryTable = ({
     items: any[]
   ) => {
     // 빈 값인 경우 false 반환
-    if (!value?.trim()) {
+    if (!(value + "")?.trim()) {
       return false;
     }
 

@@ -61,6 +61,8 @@ const MakeOffer = () => {
     name: string;
   }>({ id: 99, name: "test" });
 
+  console.log(formValues);
+
   const debounce = <T extends (...args: any[]) => void>(
     func: T,
     delay: number
@@ -278,9 +280,19 @@ const MakeOffer = () => {
 
   // 저장 로직을 함수로 분리
   const saveData = async (formattedData: any) => {
+    const formData = {
+      registerDate: formValues.registerDate,
+      shippingDate: formValues.shippingDate,
+      currencyType: formValues.currencyType,
+      currency: formValues.currency,
+      vesselId: info.vesselId,
+      veeselHullNo: formValues.veeselHullNo,
+      docRemark: formValues.docRemark,
+    };
     await editOffer(
       info.supplierInquiryId,
       info.supplierInfo.supplierId,
+      formData,
       formattedData
     );
 

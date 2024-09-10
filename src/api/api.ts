@@ -12,6 +12,7 @@ import {
   SupplierInquiryListIF,
 } from "../types/types";
 import { setAccessToken, setRefreshToken } from "./auth";
+import dayjs from "dayjs";
 
 export const postUserLogin = async (email: string, password: string) => {
   try {
@@ -273,6 +274,15 @@ export const sendInquiryMail = async (
 export const editOffer = async (
   supplierInquiryId: number,
   supplierId: number,
+  documentEdit: {
+    registerDate: string | dayjs.Dayjs;
+    shippingDate: string | dayjs.Dayjs;
+    currencyType: string;
+    currency: number;
+    vesselId: number;
+    veeselHullNo: string | null;
+    docRemark: string;
+  },
   itemCostEditList: ItemDataType[]
 ) => {
   // 서버로 보내는 데이터의 포맷을 맞추기 위해 수정

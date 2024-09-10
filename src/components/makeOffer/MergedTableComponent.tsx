@@ -103,9 +103,6 @@ const MergedTableComponent = ({
 
   const [sortedData, setSortedData] = useState<ItemDataType[]>(dataSource);
 
-  console.log(dataSource);
-  console.log(sortedData);
-
   // 마진을 계산하는 함수
   const calculateMargin = (salesAmount: number, purchaseAmount: number) =>
     purchaseAmount === 0
