@@ -73,17 +73,25 @@ const ExcelUploadModal = ({
 
         try {
           const { items } = await fetchItemData(item.itemCode);
-          const fetchedItem = Array.isArray(items) ? items[0] : items;
+
+          const fetchedItem = Array.isArray(items)
+            ? items.find(
+                (fetched) =>
+                  fetched.itemCode === item.itemCode &&
+                  fetched.itemName === item.itemName
+              )
+            : null;
+
           const itemId = fetchedItem ? fetchedItem.itemId : null;
 
-          return { ...item, itemId }; // itemId를 추가
+          return { ...item, itemId };
         } catch (error) {
           console.error(
             "Error fetching item ID for code:",
             item.itemCode,
             error
           );
-          return { ...item, itemId: null }; // 오류 발생 시 itemId는 null로 설정
+          return { ...item, itemId: null };
         }
       })
     );

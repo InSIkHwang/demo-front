@@ -191,7 +191,7 @@ const columns: ColumnsType<SupplierInquiryListIF> = [
 const SupplierInquiryList = () => {
   const navigate = useNavigate();
   const [data, setData] = useState<SupplierInquiryListIF[]>([]);
-  const [totalCount, setTotalCount] = useState<number>(0);
+  const [totalCount, setTotalCount] = useState<number>();
   const [loading, setLoading] = useState<boolean>(true);
   const [searchText, setSearchText] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -202,7 +202,6 @@ const SupplierInquiryList = () => {
   const [selectedSupplierIds, setSelectedSupplierIds] = useState<
     Map<number, string>
   >(new Map());
-
   useEffect(() => {
     fetchData();
   }, [currentPage, itemsPerPage]);
@@ -540,7 +539,7 @@ const SupplierInquiryList = () => {
               onChange={handlePageChange}
               onShowSizeChange={handlePageSizeChange}
               showSizeChanger
-              pageSizeOptions={[10, 15, 30, 50, 100]}
+              pageSizeOptions={[10, 15, 20]}
               showQuickJumper
               itemRender={(page, type, originalElement) => {
                 if (type === "prev") {
