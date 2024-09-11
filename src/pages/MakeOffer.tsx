@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Button, message, Modal, Select } from "antd";
 import styled from "styled-components";
@@ -6,11 +6,17 @@ import dayjs from "dayjs";
 import FormComponent from "../components/makeOffer/FormComponent";
 import TableComponent from "../components/makeOffer/TableComponent";
 import { editMurgedOffer, editOffer, fetchOfferDetail } from "../api/api";
-import { FormValuesType, ItemDataType } from "../types/types";
+import {
+  FormValuesType,
+  ItemDataType,
+  offerEmailSendData,
+} from "../types/types";
 import MergedTableComponent from "../components/makeOffer/MergedTableComponent";
 import OfferHeaderEditModal from "../components/makeOffer/OfferHeaderEditModal";
 import OfferPDFDocument from "../components/makeOffer/OfferPDFDocument";
 import LoadingSpinner from "../components/LoadingSpinner";
+import OfferPDFGenerator from "../components/makeOffer/OfferPDFGenerator";
+import OfferMailSender from "../components/makeOffer/OfferSendMail";
 
 const FormContainer = styled.div`
   position: relative;
@@ -32,10 +38,10 @@ const Title = styled.h1`
 
 const MakeOffer = () => {
   const { state } = useLocation();
-  const [idList, setIdList] = useState({
+  const idList = {
     offerId: state?.info.supplierInquiryId || [],
     supplierId: state?.info.supplierInfo?.supplierId,
-  });
+  };
   const [info, setInfo] = useState<any>(null);
   const [dataSource, setDataSource] = useState<ItemDataType[]>([]);
   const [formValues, setFormValues] = useState<FormValuesType>({
@@ -64,8 +70,13 @@ const MakeOffer = () => {
   const [pdfCustomerTag, setPdfCustomerTag] = useState<{
     id: number;
     name: string;
-  }>({ id: 99, name: "test" });
+  }>({ id: 0, name: "" });
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isMailSenderVisible, setIsMailSenderVisible] = useState(false);
+  const [mailData, setMailData] = useState<offerEmailSendData | null>(null);
+  const [pdfFileData, setPdfFileData] = useState<File | null>(null);
+  const [fileData, setFileData] = useState<(File | null)[]>([]);
+  const [isPdfAutoUploadChecked, setIsPdfAutoUploadChecked] = useState(true);
 
   const debounce = <T extends (...args: any[]) => void>(
     func: T,
@@ -77,6 +88,10 @@ const MakeOffer = () => {
       timer = setTimeout(() => func(...args), delay);
     };
   };
+
+  useEffect(() => {
+    loadOfferDetail();
+  }, []);
 
   // 데이터 로드 및 상태 업데이트 함수
   const loadOfferDetail = async () => {
@@ -105,16 +120,16 @@ const MakeOffer = () => {
           documentStatus: response.documentStatus,
           veeselHullNo: response.veeselHullNo,
         });
+        setPdfCustomerTag({
+          id: response.customerId,
+          name: response.customerName,
+        });
       } catch (error) {
         message.error("데이터를 가져오는 중 오류가 발생했습니다.");
       }
     }
     setIsLoading(false);
   };
-
-  useEffect(() => {
-    loadOfferDetail();
-  }, []);
 
   const handleInputChange = (
     index: number,
@@ -318,6 +333,10 @@ const MakeOffer = () => {
       );
       setInfo(response);
       setDataSource(response.inquiryItemDetails || []);
+      setPdfCustomerTag({
+        id: response.customerId,
+        name: response.customerName,
+      });
     } catch (error) {
       console.error("Error saving data:", error);
       message.error("데이터 저장 중 오류가 발생했습니다.");
@@ -333,10 +352,6 @@ const MakeOffer = () => {
   };
 
   const handleOpenHeaderModal = () => {
-    setPdfCustomerTag({
-      id: info.supplierInfo?.customerId, //api 응답값 추가 필요
-      name: info.supplierInfo?.customerName,
-    });
     setHeaderEditModalVisible(true);
   };
 
@@ -347,6 +362,18 @@ const MakeOffer = () => {
   const handleHeaderSave = (header: string, footer: string) => {
     setPdfHeader(header);
     setPdfFooter(footer);
+  };
+
+  const showMailSenderModal = () => {
+    setIsMailSenderVisible(true);
+  };
+
+  const handleMailSenderOk = () => {
+    setIsMailSenderVisible(false);
+  };
+
+  const handleMailSenderCancel = () => {
+    setIsMailSenderVisible(false);
   };
 
   if (isLoading) {
@@ -412,7 +439,6 @@ const MakeOffer = () => {
             open={headerEditModalVisible}
             onClose={handleCloseHeaderModal}
             onSave={handleHeaderSave}
-            pdfCompanyTag={pdfCustomerTag!}
           />
           <Button
             style={{ marginLeft: 10 }}
@@ -421,12 +447,48 @@ const MakeOffer = () => {
           >
             {showPDFPreview ? "미리보기 닫기" : "PDF 미리보기"}
           </Button>
+          <Button
+            type="primary"
+            onClick={showMailSenderModal}
+            style={{ margin: "20px 0 0 15px", float: "right" }}
+          >
+            Send Email
+          </Button>
         </div>
+      )}
+      <Modal
+        title="Send Mail"
+        open={isMailSenderVisible}
+        onOk={handleMailSenderOk}
+        onCancel={handleMailSenderCancel}
+        footer={null}
+        width={800}
+      >
+        <OfferMailSender
+          inquiryFormValues={info}
+          handleSubmit={handleSave}
+          setFileData={setFileData}
+          isPdfAutoUploadChecked={isPdfAutoUploadChecked}
+          setIsPdfAutoUploadChecked={setIsPdfAutoUploadChecked}
+          pdfFileData={pdfFileData}
+          mailData={mailData}
+        />
+      </Modal>
+      {isReadOnly && pdfCustomerTag && (
+        <OfferPDFGenerator
+          info={info}
+          items={info.inquiryItemDetails}
+          pdfHeader={pdfHeader}
+          pdfFooter={pdfFooter}
+          language={language}
+          setMailData={setMailData}
+          setPdfFileData={setPdfFileData}
+          customerTag={pdfCustomerTag}
+        />
       )}
       {showPDFPreview && (
         <OfferPDFDocument
           info={info}
-          supplierName={pdfCustomerTag ? pdfCustomerTag.name : ""}
           pdfHeader={pdfHeader}
           pdfFooter={pdfFooter}
           viewMode={true}

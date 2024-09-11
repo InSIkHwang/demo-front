@@ -16,8 +16,6 @@ interface FormValues {
 }
 
 interface PDFGeneratorProps {
-  isVisible: boolean;
-  onClose: () => void;
   selectedSupplierTag: {
     id: number;
     name: string;
@@ -26,18 +24,14 @@ interface PDFGeneratorProps {
   }[];
   formValues: FormValues;
   setMailDataList: Dispatch<SetStateAction<emailSendData[]>>;
-  pdfFileData: File[];
   items: InquiryItem[];
   vesselInfo: VesselList | null;
   pdfHeader: string;
   language: string;
   setPdfFileData: Dispatch<SetStateAction<File[]>>;
-  isSendMail: boolean;
-  isPdfAutoUploadChecked: boolean;
-  setIsPdfAutoUploadChecked: Dispatch<SetStateAction<boolean>>;
 }
 
-export const generateMailData = (
+const generateMailData = (
   selectedSupplierTag: PDFGeneratorProps["selectedSupplierTag"],
   formValues: FormValues,
   vesselInfo: VesselList | null,
@@ -124,14 +118,9 @@ export const generatePDFs = async (
 const PDFGenerator = ({
   selectedSupplierTag,
   formValues,
-  items,
   vesselInfo,
-  pdfHeader,
   setMailDataList,
   language,
-  setPdfFileData,
-  isSendMail,
-  isPdfAutoUploadChecked,
 }: PDFGeneratorProps) => {
   // 메일 데이터 생성 로직을 useEffect에서 실행
   useEffect(() => {

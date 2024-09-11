@@ -127,6 +127,14 @@ export interface emailSendData {
   supplierName: string;
 }
 
+export interface offerEmailSendData {
+  toRecipient: string;
+  subject: string;
+  content: string;
+  ccRecipient: string;
+  bccRecipient: string;
+}
+
 export interface SupplierInquiryListIF {
   supplierInquiryId: number;
   documentNumber: string;

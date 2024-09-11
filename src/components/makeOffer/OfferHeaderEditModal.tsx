@@ -30,15 +30,9 @@ interface HeaderEditModalProps {
   open: boolean;
   onClose: () => void;
   onSave: (header: string, footer: string) => void;
-  pdfCompanyTag: { id: number; name: string };
 }
 
-const HeaderEditModal = ({
-  open,
-  onClose,
-  onSave,
-  pdfCompanyTag,
-}: HeaderEditModalProps) => {
+const HeaderEditModal = ({ open, onClose, onSave }: HeaderEditModalProps) => {
   const [headerChk, setHeaderChk] = useState<boolean>(false);
   const [footerChk, setFooterChk] = useState<boolean>(false);
   const [headerText, setHeaderText] = useState<string>("");

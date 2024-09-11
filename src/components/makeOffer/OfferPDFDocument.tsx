@@ -33,7 +33,6 @@ Font.register({
 interface PDFDocumentProps {
   info: SupplierInquiryDetailIF;
   pdfHeader: string;
-  supplierName: string; // 개별 공급자 이름
   viewMode: boolean;
   language: string;
   pdfFooter: string;
@@ -315,8 +314,6 @@ const OfferPDFDocument = ({
   const totalSalesAmountGlobal = calculateTotalSalesAmount(
     info.inquiryItemDetails
   );
-
-  console.log(info);
 
   if (viewMode) {
     return (

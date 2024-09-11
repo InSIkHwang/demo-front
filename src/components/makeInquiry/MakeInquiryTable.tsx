@@ -52,7 +52,7 @@ interface MakeInquiryTableProps {
   customerInquiryId: number;
 }
 
-const Row = (props: any) => {
+const Row = React.memo((props: any) => {
   const {
     attributes,
     listeners,
@@ -87,7 +87,7 @@ const Row = (props: any) => {
       {...listeners}
     />
   );
-};
+});
 
 const MakeInquiryTable = ({
   items,
@@ -231,7 +231,7 @@ const MakeInquiryTable = ({
     );
   };
 
-  const handleButtonClick = async () => {
+  const handleExportButtonClick = async () => {
     try {
       // 선택한 파일들의 이름을 서버로 전송
       const response = await handleExport(customerInquiryId);
@@ -445,7 +445,7 @@ const MakeInquiryTable = ({
           type="dashed"
           style={{ margin: "20px 5px" }}
           icon={<ExportOutlined />}
-          onClick={handleButtonClick}
+          onClick={handleExportButtonClick}
         >
           Export Excel
         </Button>

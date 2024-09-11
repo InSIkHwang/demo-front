@@ -280,7 +280,7 @@ const DetailInquiryModal = ({
             <Table
               columns={columns}
               dataSource={inquiryDetail.inquiryItemDetails}
-              pagination={{ pageSize: 10 }}
+              pagination={false}
               rowKey="itemId"
               scroll={{ y: 300 }}
               bordered

@@ -20,12 +20,10 @@ import {
   VesselList,
   Item,
 } from "../types/types";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import HeaderEditModal from "../components/makeInquiry/HeaderEditModal";
 import MailSenderModal from "../components/makeInquiry/MailSenderModal";
-import PDFGenerator, {
-  generatePDFs,
-} from "../components/makeInquiry/PDFGenerator";
+import PDFGenerator from "../components/makeInquiry/PDFGenerator";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 // Styles
@@ -679,13 +677,9 @@ const MakeInquiry = () => {
           mailDataList={mailDataList}
           inquiryFormValues={formValues}
           handleSubmit={handleSubmit}
-          setIsMailSenderVisible={setIsMailSenderVisible}
           selectedSupplierTag={selectedSupplierTag}
-          fileData={fileData}
           setFileData={setFileData}
-          pdfFileData={pdfFileData}
           setIsSendMail={setIsSendMail}
-          isSendMail={isSendMail}
           isPdfAutoUploadChecked={isPdfAutoUploadChecked}
           setIsPdfAutoUploadChecked={setIsPdfAutoUploadChecked}
           items={items}
@@ -748,20 +742,14 @@ const MakeInquiry = () => {
         />
       </div>
       <PDFGenerator
-        isSendMail={isSendMail}
-        isVisible={loadMailData}
-        onClose={() => setLoadMailData(false)}
         selectedSupplierTag={selectedSupplierTag}
         formValues={formValues}
         setMailDataList={setMailDataList}
-        pdfFileData={pdfFileData}
         items={items}
         vesselInfo={selectedVessel}
         pdfHeader={pdfHeader}
         language={language}
         setPdfFileData={setPdfFileData}
-        isPdfAutoUploadChecked={isPdfAutoUploadChecked}
-        setIsPdfAutoUploadChecked={setIsPdfAutoUploadChecked}
       />
       {showPDFPreview && (
         <PDFDocument

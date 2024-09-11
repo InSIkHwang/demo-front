@@ -9,7 +9,6 @@ import {
   Card,
   Checkbox,
   Upload,
-  List,
   Tag,
 } from "antd";
 import { SendOutlined, MailOutlined } from "@ant-design/icons";
@@ -69,13 +68,9 @@ const MailSenderModal = ({
   mailDataList,
   inquiryFormValues,
   handleSubmit,
-  setIsMailSenderVisible,
   selectedSupplierTag,
-  fileData,
   setFileData,
-  pdfFileData,
   setIsSendMail,
-  isSendMail,
   isPdfAutoUploadChecked,
   setIsPdfAutoUploadChecked,
   items,
@@ -87,18 +82,14 @@ const MailSenderModal = ({
   mailDataList: emailSendData[];
   inquiryFormValues: FormValue;
   handleSubmit: () => Promise<unknown>;
-  setIsMailSenderVisible: Dispatch<SetStateAction<boolean>>;
   selectedSupplierTag: {
     id: number;
     name: string;
     code: string;
     email: string;
   }[];
-  fileData: File[];
   setFileData: Dispatch<SetStateAction<File[]>>;
-  pdfFileData: File[];
   setIsSendMail: Dispatch<SetStateAction<boolean>>;
-  isSendMail: boolean;
   isPdfAutoUploadChecked: boolean;
   setIsPdfAutoUploadChecked: Dispatch<SetStateAction<boolean>>;
   items: InquiryItem[];
@@ -322,7 +313,7 @@ const MailSenderModal = ({
         <Typography.Paragraph
           style={{ textAlign: "center", padding: 20, color: "red" }}
         >
-          No customer selected!
+          No Supplier selected!
         </Typography.Paragraph>
       ) : (
         <Tabs

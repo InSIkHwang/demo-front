@@ -1,110 +1,108 @@
-import React, { Dispatch, SetStateAction, useEffect } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { pdf } from "@react-pdf/renderer";
 import OfferPDFDocument from "./OfferPDFDocument";
 import {
-  emailSendData,
   InquiryItem,
+  offerEmailSendData,
   SupplierInquiryDetailIF,
 } from "../../types/types";
+import { fetchCustomerDetail } from "../../api/api";
 
 interface PDFGeneratorProps {
-  isVisible: boolean;
-  onClose: () => void;
-  selectedSupplierTag: {
-    id: number;
-    name: string;
-    code: string;
-    email: string;
-  }[];
   info: SupplierInquiryDetailIF;
   items: InquiryItem[];
   pdfHeader: string;
   pdfFooter: string;
-  setMailDataList: Dispatch<SetStateAction<emailSendData[]>>;
+  setMailData: Dispatch<SetStateAction<offerEmailSendData | null>>;
   language: string;
-  pdfFileData: File[];
-  setPdfFileData: Dispatch<SetStateAction<File[]>>;
+  setPdfFileData: Dispatch<SetStateAction<File | null>>;
+  customerTag: {
+    id: number;
+    name: string;
+  };
 }
 
 const OfferPDFGenerator = ({
-  selectedSupplierTag,
   info,
   items,
   pdfHeader,
   pdfFooter,
-  setMailDataList,
+  setMailData,
   language,
-  pdfFileData,
   setPdfFileData,
+  customerTag,
 }: PDFGeneratorProps) => {
+  const [customerInfo, setCustomerInfo] = useState<{
+    name: string | null;
+    email: string | null;
+    id: number | null;
+  }>({ name: null, id: null, email: null });
+
+  const fetchCustomerInfo = async () => {
+    const response = await fetchCustomerDetail(customerTag.id);
+    const mappedResponse = {
+      name: response.companyName,
+      email: response.email,
+      id: response.id,
+    };
+    setCustomerInfo(mappedResponse);
+  };
   const generateAndSendPDFs = async () => {
-    const mailDataList: emailSendData[] = [];
-    const updatedFiles: File[] = [];
-
-    for (const supplierTag of selectedSupplierTag) {
-      const doc = (
-        <OfferPDFDocument
-          language={language}
-          info={info}
-          supplierName={supplierTag.name}
-          pdfHeader={pdfHeader}
-          pdfFooter={pdfFooter}
-          viewMode={false}
-        />
-      );
-
-      const pdfBlob = await pdf(doc).toBlob();
-      const fileName =
-        language === "ENG"
-          ? `${supplierTag.name} REQUEST FOR QUOTATION ${info.refNumber}.pdf`
-          : `${supplierTag.name} 견적의뢰서 ${info.refNumber}.pdf`;
-      const newFile = new File([pdfBlob], fileName, {
-        type: "application/pdf",
-      });
-
-      // 최종 파일 리스트에 저장
-      updatedFiles.push(newFile);
-
-      // 메일 데이터 생성
-      const mailData: emailSendData = {
-        supplierId: supplierTag.id,
-        toRecipient: supplierTag.email,
-        subject:
-          language === "ENG"
-            ? `BASKOREA REQUEST FOR QUOTATION  ${info.documentNumber}  ${info.vesselName}`
-            : `BASKOREA 견적의뢰  ${info.documentNumber}  ${info.vesselName}`,
-        content: "",
-        // language === "ENG"
-        //   ? `<URGENT>\nGood day,\nThanks for your cooperation\nPlease give us your best price and delivery time.\nYour kind reply will be much appreciated \n\n<VESSEL INFO>\nVESSEL: ${
-        //       info?.vesselName
-        //     }\nIMO No: ${info?.veeselImoNo || ""}\nHull No: ${
-        //       info?.veeselHullNo || ""
-        //     }\nShip Yard: ${info?.veeselShipYard || ""}
-        //     `
-        //   : `수신: ${
-        //       supplierTag.name
-        //     } 영업부 담당자님\n발신: 바스코리아 드림\n\n업무에 노고가 많으십니다.\n상기 건 견적의뢰 부탁드립니다.\n제품 확인을 위한 추가 자료가 있다면 함께 전달 부탁 드립니다.\n항상 도움 주셔서 감사합니다.\n\n<VESSEL INFO>\nVESSEL: ${
-        //       info?.vesselName
-        //     }\nIMO No: ${info?.veeselImoNo || ""}\nHull No: ${
-        //       info?.veeselHullNo || ""
-        //     }\nShip Yard: ${info?.veeselShipYard || ""}`,
-        ccRecipient: "",
-        supplierName: supplierTag.name,
-      };
-
-      mailDataList.push(mailData);
+    // Ensure customerInfo is correctly populated
+    if (
+      customerInfo.name === null ||
+      customerInfo.email === null ||
+      customerInfo.id === null
+    ) {
+      console.error("Customer info is incomplete.");
+      return;
     }
 
-    // 모든 루프가 끝난 후 최종 파일 리스트를 상태에 저장
-    setPdfFileData(updatedFiles);
+    const doc = (
+      <OfferPDFDocument
+        language={language}
+        info={info}
+        pdfHeader={pdfHeader}
+        pdfFooter={pdfFooter}
+        viewMode={false}
+      />
+    );
 
-    // 최종 메일 데이터 리스트 상태에 저장
-    setMailDataList(mailDataList);
+    const pdfBlob = await pdf(doc).toBlob();
+    const fileName =
+      language === "ENG"
+        ? `${customerInfo.name} QUOTATION ${info.refNumber}.pdf`
+        : `${customerInfo.name} QUOTATION ${info.refNumber}.pdf`;
+    const newFile = new File([pdfBlob], fileName, {
+      type: "application/pdf",
+    });
+
+    // 메일 데이터 생성
+    const mailData: offerEmailSendData = {
+      toRecipient: customerInfo.email || "", // Use empty string if email is null
+      subject:
+        language === "ENG"
+          ? `BASKOREA QUOTATION  ${info.documentNumber}  ${info.vesselName}`
+          : `BASKOREA QUOTATION  ${info.documentNumber}  ${info.vesselName}`,
+      content: "Content Sample",
+      ccRecipient: "",
+      bccRecipient: "",
+    };
+
+    // 최종 파일 및 메일 데이터 상태 업데이트
+    setPdfFileData(newFile);
+    setMailData(mailData);
   };
 
   useEffect(() => {
-    generateAndSendPDFs();
-  }, [selectedSupplierTag, info, items, pdfHeader, language]);
+    fetchCustomerInfo();
+  }, [customerTag.id]);
+
+  useEffect(() => {
+    if (customerInfo.id !== null) {
+      generateAndSendPDFs();
+    }
+  }, [customerInfo]);
 
   return null;
 };

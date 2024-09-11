@@ -4,10 +4,10 @@ import { AxiosError } from "axios";
 
 import {
   Customer,
-  emailSendData,
   Inquiry,
   Item,
   ItemDataType,
+  offerEmailSendData,
   Supplier,
   SupplierInquiryListIF,
 } from "../types/types";
@@ -40,6 +40,12 @@ export const postUserLogin = async (email: string, password: string) => {
     }
     throw error;
   }
+};
+
+export const fetchCustomerDetail = async (customerId: number) => {
+  const response = await axios.get(`/api/customers/${customerId}`);
+
+  return response.data;
 };
 
 //MakeInquiry시 문서번호, 날짜 등 생성
@@ -308,6 +314,35 @@ export const editMurgedOffer = async (supplierInquiryIds: number[]) => {
   const response = await axios.post(`/api/supplier-inquiries/merged`, {
     supplierInquiryIds,
   });
+
+  return response.data;
+};
+
+export const sendQuotationMail = async (
+  files: File[], // `file`의 타입에 맞게 구체화할 수 있습니다 (예: File, Blob)
+  emailSendData: offerEmailSendData
+) => {
+  // FormData 객체 생성
+  const formData = new FormData();
+
+  // `file` 추가
+  files.forEach((file) => {
+    formData.append("file", file); // 동일한 이름으로 여러 파일 추가
+  });
+
+  // `emailSendData`를 JSON 문자열로 변환하여 추가
+  formData.append("emailSendData", JSON.stringify(emailSendData));
+
+  // POST 요청
+  const response = await axios.post(
+    `/api/supplier-inquiries/send-email/merged-inquiry`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
 
   return response.data;
 };
