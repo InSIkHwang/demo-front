@@ -381,6 +381,8 @@ const TableComponent = ({
   }, [checkDuplicate, dataSource, setIsDuplicate]);
 
   useEffect(() => {
+    console.log(dataSource);
+    
     const totalSalesAmountKRW = dataSource.reduce(
       (acc, record) =>
         acc + calculateTotalAmount(record.salesPriceKRW, record.qty),

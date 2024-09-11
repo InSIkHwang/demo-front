@@ -264,6 +264,7 @@ const MakeInquiry = () => {
         );
 
         const suppliers = getSupplierMap(inquiryItemDetails);
+
         setSelectedSupplierTag(suppliers);
         setSelectedSuppliers(suppliers);
       }

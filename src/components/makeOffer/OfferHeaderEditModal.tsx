@@ -32,7 +32,11 @@ interface HeaderEditModalProps {
   onSave: (header: string, footer: string) => void;
 }
 
-const HeaderEditModal = ({ open, onClose, onSave }: HeaderEditModalProps) => {
+const OfferHeaderEditModal = ({
+  open,
+  onClose,
+  onSave,
+}: HeaderEditModalProps) => {
   const [headerChk, setHeaderChk] = useState<boolean>(false);
   const [footerChk, setFooterChk] = useState<boolean>(false);
   const [headerText, setHeaderText] = useState<string>("");
@@ -112,4 +116,4 @@ PART CONDITION   : `;
   );
 };
 
-export default HeaderEditModal;
+export default OfferHeaderEditModal;

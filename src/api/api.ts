@@ -7,7 +7,6 @@ import {
   Inquiry,
   Item,
   ItemDataType,
-  offerEmailSendData,
   Supplier,
   SupplierInquiryListIF,
 } from "../types/types";
@@ -319,8 +318,18 @@ export const editMurgedOffer = async (supplierInquiryIds: number[]) => {
 };
 
 export const sendQuotationMail = async (
-  files: File[], // `file`의 타입에 맞게 구체화할 수 있습니다 (예: File, Blob)
-  emailSendData: offerEmailSendData
+  files: File[], // `file`의 타입에 맞게 구체화된 파일 배열
+  emailSendData: {
+    emailSend: {
+      toRecipient: string;
+      subject: string;
+      content: string;
+      ccRecipient: string;
+      bccRecipient: string;
+    };
+    quotationHeader: string;
+    supplierInquiryIds: number[];
+  }
 ) => {
   // FormData 객체 생성
   const formData = new FormData();
@@ -330,8 +339,18 @@ export const sendQuotationMail = async (
     formData.append("file", file); // 동일한 이름으로 여러 파일 추가
   });
 
-  // `emailSendData`를 JSON 문자열로 변환하여 추가
+  // `emailSend` 데이터 추가
   formData.append("emailSendData", JSON.stringify(emailSendData));
+
+  const entries = Array.from(formData.entries());
+
+  entries.forEach(([key, value]) => {
+    if (value instanceof File) {
+      console.log(`${key}:`, value.name);
+    } else {
+      console.log(`${key}:`, value);
+    }
+  });
 
   // POST 요청
   const response = await axios.post(

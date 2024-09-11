@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import { Button, message, Modal, Select } from "antd";
 import styled from "styled-components";
@@ -131,59 +131,63 @@ const MakeOffer = () => {
     setIsLoading(false);
   };
 
-  const handleInputChange = (
-    index: number,
-    key: keyof ItemDataType,
-    value: any
-  ) => {
-    const updatedDataSource = [...dataSource] as ItemDataType[]; // 타입 명시
+  const calculateTotalAmount = useCallback(
+    (price: number, qty: number) => roundToTwoDecimalPlaces(price * qty),
+    []
+  );
 
-    const currentItem = updatedDataSource[index];
-    const updatedItem = {
-      ...currentItem,
-      [key]: value,
-    };
+  const handleInputChange = useCallback(
+    (index: number, key: keyof ItemDataType, value: any) => {
+      const updatedDataSource = [...dataSource] as ItemDataType[]; // 타입 명시
 
-    // 값이 변경된 항목이 "salesPriceKRW", "salesPriceGlobal", "purchasePriceKRW", "purchasePriceGlobal"일 경우 계산하여 업데이트
-    if (
-      key === "salesPriceKRW" ||
-      key === "salesPriceGlobal" ||
-      key === "purchasePriceKRW" ||
-      key === "purchasePriceGlobal"
-    ) {
-      const updatedSalesAmountKRW = calculateTotalAmount(
-        updatedItem.salesPriceKRW,
-        updatedItem.qty
-      );
-      const updatedSalesAmountGlobal = calculateTotalAmount(
-        updatedItem.salesPriceGlobal,
-        updatedItem.qty
-      );
-      const updatedPurchaseAmountKRW = calculateTotalAmount(
-        updatedItem.purchasePriceKRW,
-        updatedItem.qty
-      );
-      const updatedPurchaseAmountGlobal = calculateTotalAmount(
-        updatedItem.purchasePriceGlobal,
-        updatedItem.qty
-      );
-
-      updatedDataSource[index] = {
-        ...updatedItem,
-        salesAmountKRW: updatedSalesAmountKRW,
-        salesAmountGlobal: updatedSalesAmountGlobal,
-        purchaseAmountKRW: updatedPurchaseAmountKRW,
-        purchaseAmountGlobal: updatedPurchaseAmountGlobal,
+      const currentItem = updatedDataSource[index];
+      const updatedItem = {
+        ...currentItem,
+        [key]: value,
       };
-    } else {
-      updatedDataSource[index] = updatedItem;
-    }
 
-    // 데이터가 실제로 변경된 경우에만 상태를 업데이트
-    if (JSON.stringify(dataSource) !== JSON.stringify(updatedDataSource)) {
-      setDataSource(updatedDataSource);
-    }
-  };
+      // 값이 변경된 항목이 "salesPriceKRW", "salesPriceGlobal", "purchasePriceKRW", "purchasePriceGlobal"일 경우 계산하여 업데이트
+      if (
+        key === "salesPriceKRW" ||
+        key === "salesPriceGlobal" ||
+        key === "purchasePriceKRW" ||
+        key === "purchasePriceGlobal"
+      ) {
+        const updatedSalesAmountKRW = calculateTotalAmount(
+          updatedItem.salesPriceKRW,
+          updatedItem.qty
+        );
+        const updatedSalesAmountGlobal = calculateTotalAmount(
+          updatedItem.salesPriceGlobal,
+          updatedItem.qty
+        );
+        const updatedPurchaseAmountKRW = calculateTotalAmount(
+          updatedItem.purchasePriceKRW,
+          updatedItem.qty
+        );
+        const updatedPurchaseAmountGlobal = calculateTotalAmount(
+          updatedItem.purchasePriceGlobal,
+          updatedItem.qty
+        );
+
+        updatedDataSource[index] = {
+          ...updatedItem,
+          salesAmountKRW: updatedSalesAmountKRW,
+          salesAmountGlobal: updatedSalesAmountGlobal,
+          purchaseAmountKRW: updatedPurchaseAmountKRW,
+          purchaseAmountGlobal: updatedPurchaseAmountGlobal,
+        };
+      } else {
+        updatedDataSource[index] = updatedItem;
+      }
+
+      // 데이터가 실제로 변경된 경우에만 상태를 업데이트
+      if (JSON.stringify(dataSource) !== JSON.stringify(updatedDataSource)) {
+        setDataSource(updatedDataSource);
+      }
+    },
+    [calculateTotalAmount, dataSource]
+  );
 
   const handleFormChange = debounce(
     <K extends keyof typeof formValues>(
@@ -203,18 +207,21 @@ const MakeOffer = () => {
   };
 
   // 환율을 적용하여 KRW와 USD를 상호 변환하는 함수
-  const convertCurrency = (
-    value: number,
-    currency: number,
-    toCurrency: "KRW" | "USD" | "EUR" | "INR"
-  ) => {
-    if (toCurrency === "KRW") {
-      return roundToTwoDecimalPlaces(value * currency);
-    }
-    return roundToTwoDecimalPlaces(value / currency);
-  };
+  const convertCurrency = useCallback(
+    (
+      value: number,
+      currency: number,
+      toCurrency: "KRW" | "USD" | "EUR" | "INR"
+    ) => {
+      if (toCurrency === "KRW") {
+        return roundToTwoDecimalPlaces(value * currency);
+      }
+      return roundToTwoDecimalPlaces(value / currency);
+    },
+    []
+  );
 
-  const updateGlobalPrices = () => {
+  const updateGlobalPrices = useCallback(() => {
     dataSource.forEach((record: any, index: number) => {
       if (record.itemType === "ITEM") {
         const updatedSalesPriceGlobal = convertCurrency(
@@ -236,10 +243,7 @@ const MakeOffer = () => {
         );
       }
     });
-  };
-
-  const calculateTotalAmount = (price: number, qty: number) =>
-    roundToTwoDecimalPlaces(price * qty);
+  }, [convertCurrency, dataSource, formValues.currency, handleInputChange]);
 
   // 마진을 계산하는 함수
   const calculateMargin = (salesAmount: number, purchaseAmount: number) =>
@@ -254,7 +258,7 @@ const MakeOffer = () => {
     if (formValues?.currency) {
       updateGlobalPrices();
     }
-  }, [formValues.currency]);
+  }, [formValues?.currency, updateGlobalPrices]);
 
   const handleSave = async () => {
     if (dataSource.length === 0) {
@@ -472,6 +476,8 @@ const MakeOffer = () => {
           setIsPdfAutoUploadChecked={setIsPdfAutoUploadChecked}
           pdfFileData={pdfFileData}
           mailData={mailData}
+          pdfHeader={pdfHeader}
+          idList={idList}
         />
       </Modal>
       {isReadOnly && pdfCustomerTag && (

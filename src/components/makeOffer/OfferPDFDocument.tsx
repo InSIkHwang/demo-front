@@ -221,12 +221,12 @@ const renderTableRows = (items: ItemDataType[]) => {
             </View>
             <View style={styles.tableMedCol}>
               <Text style={styles.tableCell}>
-                {item.salesPriceGlobal.toFixed(2).toLocaleString()}
+                {item.salesPriceGlobal?.toFixed(2).toLocaleString()}
               </Text>
             </View>
             <View style={styles.tableMedCol}>
               <Text style={styles.tableCell}>
-                {item.salesAmountGlobal.toFixed(2).toLocaleString()}
+                {item.salesAmountGlobal?.toFixed(2).toLocaleString()}
               </Text>
             </View>
           </>

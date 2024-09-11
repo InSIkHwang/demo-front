@@ -57,6 +57,8 @@ const OfferMailSender = ({
   setIsPdfAutoUploadChecked,
   pdfFileData,
   mailData,
+  pdfHeader,
+  idList,
 }: {
   inquiryFormValues: FormValue;
   handleSubmit: () => Promise<unknown>;
@@ -65,6 +67,8 @@ const OfferMailSender = ({
   setIsPdfAutoUploadChecked: Dispatch<SetStateAction<boolean>>;
   pdfFileData: File | null;
   mailData: offerEmailSendData | null;
+  pdfHeader: string;
+  idList: { offerId: any; supplierId: any };
 }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -89,9 +93,23 @@ const OfferMailSender = ({
       const updatedFileData = [...uploadFile];
       setFileData(updatedFileData);
 
+      const { documentNumber, ...restValues } = values;
+
+      const updateMailData = {
+        ...mailData, // existing mailData as base
+        ...restValues, // values from the form excluding documentNumber
+      };
+
       const mailDataToSend = {
-        ...mailData, // 기존 mailData에서 기본값을 가져옵니다.
-        ...values, // StyledForm의 값으로 덮어씁니다.
+        emailSend: {
+          toRecipient: updateMailData.toRecipient,
+          subject: updateMailData.subject,
+          content: updateMailData.content,
+          ccRecipient: updateMailData.ccRecipient,
+          bccRecipient: updateMailData.bccRecipient,
+        },
+        quotationHeader: pdfHeader,
+        supplierInquiryIds: idList.offerId,
       };
 
       // 메일 전송 로직
