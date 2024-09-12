@@ -181,7 +181,9 @@ const renderTableRows = (items: InquiryItem[]) => {
     return (
       <View style={styles.tableRow} key={item.position}>
         {isItemType && (
-          <View style={styles.tableSmallCol}>
+          <View
+            style={[styles.tableSmallCol, { borderLeft: "0.5px solid #000" }]}
+          >
             <Text style={styles.tableCell}>
               {getDisplayNo(item.itemType, itemIndex - 1)}
             </Text>
@@ -206,7 +208,12 @@ const renderTableRows = (items: InquiryItem[]) => {
             </View>
           </>
         ) : (
-          <View style={[styles.tableBigCol, { flex: 1 }]}>
+          <View
+            style={[
+              styles.tableBigCol,
+              { flex: 1, borderLeft: "0.5px solid #000" },
+            ]}
+          >
             <Text style={styles.nonItemtypeCell}>{item.itemName}</Text>
           </View>
         )}
@@ -283,6 +290,7 @@ const PDFDocument = ({
   viewMode,
   language,
 }: PDFDocumentProps) => {
+  const sortedItems = [...items].sort((a, b) => a.position! - b.position!);
   const headerMessage = pdfHeader;
 
   if (viewMode) {
@@ -301,8 +309,22 @@ const PDFDocument = ({
               language
             )}
             <View style={styles.table}>
-              <View style={styles.tableRow}>
-                <View style={styles.tableSmallCol}>
+              <View
+                style={[
+                  styles.tableRow,
+                  {
+                    borderBottom: "1px solid #000",
+                    borderTop: "1px solid #000",
+                  },
+                ]}
+                fixed
+              >
+                <View
+                  style={[
+                    styles.tableSmallCol,
+                    { borderLeft: "0.5px solid #000" },
+                  ]}
+                >
                   <Text style={styles.tableCell}>NO.</Text>
                 </View>
                 <View style={styles.tableMedCol}>
@@ -321,7 +343,7 @@ const PDFDocument = ({
                   <Text style={styles.tableCell}>REMARK</Text>
                 </View>
               </View>
-              {renderTableRows(items)}
+              {renderTableRows(sortedItems)}
             </View>
           </Page>
         </Document>
@@ -343,8 +365,19 @@ const PDFDocument = ({
           language
         )}
         <View style={styles.table}>
-          <View style={styles.tableRow}>
-            <View style={styles.tableSmallCol}>
+          <View
+            style={[
+              styles.tableRow,
+              {
+                borderBottom: "1px solid #000",
+                borderTop: "1px solid #000",
+              },
+            ]}
+            fixed
+          >
+            <View
+              style={[styles.tableSmallCol, { borderLeft: "0.5px solid #000" }]}
+            >
               <Text style={styles.tableCell}>NO.</Text>
             </View>
             <View style={styles.tableMedCol}>
@@ -363,7 +396,7 @@ const PDFDocument = ({
               <Text style={styles.tableCell}>REMARK</Text>
             </View>
           </View>
-          {renderTableRows(items)}
+          {renderTableRows(sortedItems)}
         </View>
       </Page>
     </Document>

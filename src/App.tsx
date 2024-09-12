@@ -7,7 +7,6 @@ import Footer from "./components/Footer";
 import SupplierList from "./pages/SupplierList";
 import ShipList from "./pages/ShipList";
 import MakeInquiry from "./pages/MakeInquiry";
-import SupplierInquiryList from "./pages/SupplierInquiryList";
 import CustomerInquiryList from "./pages/CustomerInquiryList";
 import MakeOffer from "./pages/MakeOffer";
 import UserLogin from "./pages/UserLogin";
@@ -15,6 +14,7 @@ import { ThemeProvider } from "styled-components";
 import theme from "./style/Theme";
 import { refreshToken, removeTokens } from "./api/auth";
 import LoadingSpinner from "./components/LoadingSpinner";
+import OfferList from "./pages/OfferList";
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -117,11 +117,7 @@ const App = () => {
           <Route
             path="/supplierInquirylist"
             element={
-              isAuthenticated ? (
-                <SupplierInquiryList />
-              ) : (
-                <Navigate to="/userlogin" />
-              )
+              isAuthenticated ? <OfferList /> : <Navigate to="/userlogin" />
             }
           />
           <Route

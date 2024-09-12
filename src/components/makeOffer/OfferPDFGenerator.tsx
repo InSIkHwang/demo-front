@@ -84,7 +84,13 @@ const OfferPDFGenerator = ({
         language === "ENG"
           ? `BASKOREA QUOTATION  ${info.documentNumber}  ${info.vesselName}`
           : `BASKOREA QUOTATION  ${info.documentNumber}  ${info.vesselName}`,
-      content: "Content Sample",
+      content: `Dear Sir.
+Good day.
+Thank you very much for new inquiry.
+Please find the attached Quotation also update the link.
+We look forward to hearing good news from you.
+"Please note that we at BAS KOREA  never change our bank account details at short notice."
+Thanks & Best Regards`,
       ccRecipient: "",
       bccRecipient: "",
     };

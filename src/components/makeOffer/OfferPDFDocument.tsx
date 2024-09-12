@@ -307,6 +307,9 @@ const OfferPDFDocument = ({
   language,
   pdfFooter,
 }: PDFDocumentProps) => {
+  const items = [...info.inquiryItemDetails].sort(
+    (a, b) => a.position! - b.position!
+  );
   const headerMessage = pdfHeader;
   const calculateTotalSalesAmount = (items: ItemDataType[]) => {
     return items.reduce((total, item) => total + item.salesAmountGlobal, 0);
@@ -414,7 +417,7 @@ const OfferPDFDocument = ({
                   <Text style={styles.tableCell}>AMOUNT</Text>
                 </View>
               </View>
-              {renderTableRows(info.inquiryItemDetails)}
+              {renderTableRows(items)}
               <View style={styles.tableTotalAmount}>
                 <Text wrap>T O T A L ({info.currencyType}):</Text>
                 <Text wrap>
@@ -548,7 +551,7 @@ const OfferPDFDocument = ({
               <Text style={styles.tableCell}>AMOUNT</Text>
             </View>
           </View>
-          {renderTableRows(info.inquiryItemDetails)}
+          {renderTableRows(items)}
           <View style={styles.tableTotalAmount}>
             <Text wrap>T O T A L ({info.currencyType}):</Text>
             <Text wrap>

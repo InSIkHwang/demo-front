@@ -11,7 +11,12 @@ import {
 } from "antd";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import styled, { keyframes } from "styled-components";
-import { editMurgedOffer, fetchOfferDetail, fetchOfferList } from "../api/api";
+import {
+  editMurgedOffer,
+  fetchOfferDetail,
+  fetchOfferList,
+  searchOfferList,
+} from "../api/api";
 import { useNavigate } from "react-router-dom";
 import type { ColumnsType } from "antd/es/table";
 import type { SupplierInquiryListIF } from "../types/types";
@@ -34,7 +39,7 @@ const Container = styled.div`
   border: 2px solid #ccc;
   border-radius: 8px;
   margin: 0 auto;
-  width: 1200px;
+  max-width: 80vw;
   margin-bottom: 300px;
 `;
 
@@ -188,12 +193,16 @@ const columns: ColumnsType<SupplierInquiryListIF> = [
   },
 ];
 
-const SupplierInquiryList = () => {
+const OfferList = () => {
   const navigate = useNavigate();
   const [data, setData] = useState<SupplierInquiryListIF[]>([]);
   const [totalCount, setTotalCount] = useState<number>();
   const [loading, setLoading] = useState<boolean>(true);
   const [searchText, setSearchText] = useState<string>("");
+  const [searchCategory, setSearchCategory] =
+    useState<string>("documentNumber");
+  const [registerStartDate, setRegisterStartDate] = useState<string>("");
+  const [registerEndDate, setRegisterEndDate] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage, setItemsPerPage] = useState<number>(10);
   const [supplierInfoList, setSupplierInfoList] = useState<any[]>([]);
@@ -202,9 +211,15 @@ const SupplierInquiryList = () => {
   const [selectedSupplierIds, setSelectedSupplierIds] = useState<
     Map<number, string>
   >(new Map());
+
   useEffect(() => {
-    fetchData();
+    if (searchText) {
+      handleSearch();
+    } else {
+      fetchData();
+    }
   }, [currentPage, itemsPerPage]);
+
   const fetchData = async () => {
     try {
       const response = await fetchOfferList(currentPage, itemsPerPage);
@@ -212,6 +227,28 @@ const SupplierInquiryList = () => {
       setTotalCount(response.totalCount);
     } catch (error) {
       console.error("데이터를 가져오는 중 오류가 발생했습니다:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = async () => {
+    setLoading(true);
+    try {
+      const response = await searchOfferList(
+        registerStartDate,
+        registerEndDate,
+        searchCategory === "documentNumber" ? searchText : "",
+        searchCategory === "refNumber" ? searchText : "",
+        searchCategory === "customerName" ? searchText : "",
+        currentPage,
+        itemsPerPage
+      );
+
+      setData(response.supplierInquiryList);
+      setTotalCount(response.totalCount);
+    } catch (error) {
+      console.error("검색 중 오류가 발생했습니다:", error);
     } finally {
       setLoading(false);
     }
@@ -362,6 +399,7 @@ const SupplierInquiryList = () => {
             <Select
               defaultValue="documentNumber"
               style={{ width: 120, marginRight: 10 }}
+              onChange={(value) => setSearchCategory(value)}
             >
               <Select.Option value="documentNumber">문서번호</Select.Option>
               <Select.Option value="refNumber">REF NO.</Select.Option>
@@ -376,13 +414,22 @@ const SupplierInquiryList = () => {
             <DatePicker
               placeholder="시작 날짜"
               format="YYYY-MM-DD"
+              onChange={(date) =>
+                setRegisterStartDate(date ? date.format("YYYY-MM-DD") : "")
+              }
               style={{ marginRight: 10 }}
             />
             <DatePicker
               placeholder="종료 날짜"
               format="YYYY-MM-DD"
+              onChange={(date) =>
+                setRegisterEndDate(date ? date.format("YYYY-MM-DD") : "")
+              }
               style={{ marginRight: 10 }}
             />
+            <Button type="primary" onClick={handleSearch}>
+              검색
+            </Button>
           </SearchBar>
         </TableHeader>{" "}
         {data.length > 0 && ( // 데이터가 있을 때만 페이지네이션을 표시
@@ -558,4 +605,4 @@ const SupplierInquiryList = () => {
   );
 };
 
-export default SupplierInquiryList;
+export default OfferList;
