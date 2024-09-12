@@ -149,9 +149,9 @@ const InquiryForm = ({
   const validateCustomer = () => {
     if (customerUnreg) {
       return {
-        status: formValues.customer.trim() === "" ? "error" : "error",
+        status: (formValues.customer + "").trim() === "" ? "error" : "error",
         message:
-          formValues.customer.trim() === ""
+          (formValues.customer + "").trim() === ""
             ? "Please enter a customer"
             : "This is an unregistered customer",
       };
@@ -162,9 +162,9 @@ const InquiryForm = ({
   const validateVessel = () => {
     if (vesselUnreg) {
       return {
-        status: formValues.vesselName.trim() === "" ? "error" : "error",
+        status: (formValues.vesselName + "").trim() === "" ? "error" : "error",
         message:
-          formValues.vesselName.trim() === ""
+          (formValues.vesselName + "").trim() === ""
             ? "Please enter a vessel"
             : "This is an unregistered vessel",
       };

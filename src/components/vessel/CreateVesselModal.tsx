@@ -80,7 +80,7 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
 
   // 중복 코드 체크 로직
   const checkCodeUnique = debounce(async () => {
-    if (formData.code.trim() === "") {
+    if ((formData.code + "").trim() === "") {
       setIsCodeUnique(true);
       return;
     }
@@ -101,7 +101,7 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
 
   // Fetch customer suggestions
   const fetchCustomerSuggestions = async (customerName: string) => {
-    if (!customerName.trim()) {
+    if (!(customerName + "").trim()) {
       setCustomerSuggestions([]);
       return;
     }

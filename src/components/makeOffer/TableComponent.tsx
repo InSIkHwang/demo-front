@@ -250,7 +250,7 @@ const TableComponent = ({
   );
 
   const handleItemCodeChange = async (index: number, value: string) => {
-    if (value.trim() === "") {
+    if ((value + "").trim() === "") {
       updateItemId(index, null);
       return;
     }
@@ -358,7 +358,7 @@ const TableComponent = ({
 
   const checkDuplicate = useCallback(
     (key: string, value: string, index: number) => {
-      if (!value?.trim()) {
+      if (!(value + "")?.trim()) {
         return false;
       }
 
@@ -382,7 +382,7 @@ const TableComponent = ({
 
   useEffect(() => {
     console.log(dataSource);
-    
+
     const totalSalesAmountKRW = dataSource.reduce(
       (acc, record) =>
         acc + calculateTotalAmount(record.salesPriceKRW, record.qty),

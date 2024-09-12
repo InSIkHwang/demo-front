@@ -314,7 +314,7 @@ const MakeInquiry = () => {
       }
     };
 
-    if (formValues.customer.trim() !== "") {
+    if ((formValues.customer + "").trim() !== "") {
       searchCompanyName(formValues.customer);
     } else {
       setCompanyNameList([]);
@@ -488,7 +488,7 @@ const MakeInquiry = () => {
   const handleItemCodeChange = async (index: number, value: string) => {
     handleInputChange(index, "itemCode", value);
 
-    if (value.trim() === "") {
+    if ((value + "").trim() === "") {
       updateItemId(index, null);
       return;
     }

@@ -88,7 +88,7 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
   };
 
   const checkCodeUnique = debounce(async () => {
-    if (formData.code.trim() === "") {
+    if ((formData.code + "").trim() === "") {
       setIsCodeUnique(true);
       return;
     }
