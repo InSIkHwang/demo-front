@@ -497,23 +497,25 @@ const InquiryForm = ({
         </FormRow>
         <FormRow>
           <SearchBox>
-            <AutoComplete
-              value={categoryWord}
-              options={categoryOptions}
-              style={{ width: 250, marginRight: 5 }}
-              onChange={handleCategorySearch}
-              placeholder="search for category"
-            >
-              <Input />
-            </AutoComplete>
             <Select
               value={selectedType}
               onChange={(value) => setSelectedType(value)}
-              style={{ width: 100, marginRight: 10 }}
+              style={{ width: 120, marginRight: 10 }}
             >
               <Option value="MAKER">MAKER</Option>
-              <Option value="의뢰처">Supplier</Option>
+              <Option value="의뢰처">SUPPLIER</Option>
             </Select>
+            {selectedType === "MAKER" && (
+              <AutoComplete
+                value={categoryWord}
+                options={categoryOptions}
+                style={{ width: 250, marginRight: 5 }}
+                onChange={handleCategorySearch}
+                placeholder="search for category. ex) ENGINE"
+              >
+                <Input />
+              </AutoComplete>
+            )}
             <InquiryItemForm name="searchSupplier">
               <AutoComplete
                 value={supplierSearch}
@@ -524,9 +526,9 @@ const InquiryForm = ({
                     : autoSearchSupCompleteOptions
                 }
                 style={{ width: "100%" }}
-                placeholder="search Maker or Supplier"
+                placeholder="ex) TECHLOG(SUPPLIER) or HYUNDAI(MAKER)"
               >
-                <Input style={{ marginTop: 3 }} />
+                <Input style={{ marginTop: 3, width: 300 }} />
               </AutoComplete>
             </InquiryItemForm>
             <Button onClick={handleAddSupplier} style={{ marginRight: 20 }}>
