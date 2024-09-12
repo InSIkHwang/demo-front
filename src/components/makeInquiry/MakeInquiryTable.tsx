@@ -4,8 +4,17 @@ import React, {
   useState,
   useEffect,
   useCallback,
+  useRef,
 } from "react";
-import { Table, AutoComplete, Input, Select, Button, notification } from "antd";
+import {
+  Table,
+  AutoComplete,
+  Input,
+  Select,
+  Button,
+  notification,
+  InputRef,
+} from "antd";
 import {
   DeleteOutlined,
   FileExcelOutlined,
@@ -106,6 +115,7 @@ const MakeInquiryTable = ({
   const [duplicateStates, setDuplicateStates] = useState<{
     [key: string]: DuplicateState;
   }>({});
+  const inputRefs = useRef<(InputRef | null)[][]>([]);
 
   const handleApplyExcelData = (mappedItems: InquiryItem[]) => {
     setItems((prevItems) => [
@@ -254,6 +264,27 @@ const MakeInquiryTable = ({
     }
   };
 
+  const handleNextRowKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    rowIndex: number,
+    columnIndex: number
+  ) => {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault(); // 방향키 기본 동작을 막음
+      if (
+        e.key === "ArrowDown" &&
+        inputRefs.current[rowIndex + 1]?.[columnIndex]
+      ) {
+        inputRefs.current[rowIndex + 1][columnIndex]?.focus(); // 다음 행의 Input으로 포커스 이동
+      } else if (
+        e.key === "ArrowUp" &&
+        inputRefs.current[rowIndex - 1]?.[columnIndex]
+      ) {
+        inputRefs.current[rowIndex - 1][columnIndex]?.focus(); // 이전 행의 Input으로 포커스 이동
+      }
+    }
+  };
+
   const columns: ColumnsType<any> = [
     {
       title: "No.",
@@ -346,6 +377,13 @@ const MakeInquiryTable = ({
       render: (text: string, record: InquiryItem, index: number) =>
         record.itemType === "ITEM" ? (
           <Input
+            ref={(el) => {
+              if (!inputRefs.current[index]) {
+                inputRefs.current[index] = [];
+              }
+              inputRefs.current[index][2] = el; // columnIndex를 맞추어 설정
+            }}
+            onKeyDown={(e) => handleNextRowKeyDown(e, index, 2)}
             value={text}
             onBlur={(e) => handleUnitBlur(index, e.target.value)}
             onChange={(e) => handleInputChange(index, "unit", e.target.value)}
@@ -360,7 +398,14 @@ const MakeInquiryTable = ({
       render: (text: string, record: InquiryItem, index: number) => (
         <div>
           <Input
+            ref={(el) => {
+              if (!inputRefs.current[index]) {
+                inputRefs.current[index] = [];
+              }
+              inputRefs.current[index][3] = el; // columnIndex를 맞추어 설정
+            }}
             value={text}
+            onKeyDown={(e) => handleNextRowKeyDown(e, index, 3)}
             onChange={(e) => {
               handleInputChange(index, "itemName", e.target.value);
               updateItemId(index, null);
@@ -389,6 +434,13 @@ const MakeInquiryTable = ({
           <Input
             type="number"
             value={text}
+            ref={(el) => {
+              if (!inputRefs.current[index]) {
+                inputRefs.current[index] = [];
+              }
+              inputRefs.current[index][4] = el; // columnIndex를 맞추어 설정
+            }}
+            onKeyDown={(e) => handleNextRowKeyDown(e, index, 4)}
             onChange={(e) => {
               const value = parseInt(e.target.value, 10);
               handleInputChange(index, "qty", isNaN(value) ? 0 : value);

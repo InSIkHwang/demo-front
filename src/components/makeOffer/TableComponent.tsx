@@ -4,9 +4,18 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
-import { Table, Input, Select, InputNumber, Button, AutoComplete } from "antd";
+import {
+  Table,
+  Input,
+  Select,
+  InputNumber,
+  Button,
+  AutoComplete,
+  InputRef,
+} from "antd";
 import { ColumnsType } from "antd/es/table";
 import styled, { CSSProperties } from "styled-components";
 import { ItemDataType } from "../../types/types";
@@ -181,7 +190,7 @@ const TableComponent = ({
     totalProfit: 0,
     totalProfitPercent: 0,
   });
-
+  const inputRefs = useRef<(InputRef | null)[][]>([]);
   const [itemCodeOptions, setItemCodeOptions] = useState<{ value: string }[]>(
     []
   );
@@ -381,8 +390,6 @@ const TableComponent = ({
   }, [checkDuplicate, dataSource, setIsDuplicate]);
 
   useEffect(() => {
-    console.log(dataSource);
-
     const totalSalesAmountKRW = dataSource.reduce(
       (acc, record) =>
         acc + calculateTotalAmount(record.salesPriceKRW, record.qty),
@@ -465,6 +472,27 @@ const TableComponent = ({
         unit: selectedUnit,
       }))
     );
+  };
+
+  const handleNextRowKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    rowIndex: number,
+    columnIndex: number
+  ) => {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault(); // 방향키 기본 동작을 막음
+      if (
+        e.key === "ArrowDown" &&
+        inputRefs.current[rowIndex + 1]?.[columnIndex]
+      ) {
+        inputRefs.current[rowIndex + 1][columnIndex]?.focus(); // 다음 행의 Input으로 포커스 이동
+      } else if (
+        e.key === "ArrowUp" &&
+        inputRefs.current[rowIndex - 1]?.[columnIndex]
+      ) {
+        inputRefs.current[rowIndex - 1][columnIndex]?.focus(); // 이전 행의 Input으로 포커스 이동
+      }
+    }
   };
 
   const columns: ColumnsType<any> = [
@@ -554,7 +582,14 @@ const TableComponent = ({
       render: (text: string, record: any, index: number) => (
         <>
           <Input
+            ref={(el) => {
+              if (!inputRefs.current[index]) {
+                inputRefs.current[index] = [];
+              }
+              inputRefs.current[index][2] = el; // columnIndex를 맞추어 설정
+            }}
             value={text}
+            onKeyDown={(e) => handleNextRowKeyDown(e, index, 2)}
             onChange={(e) => {
               handleInputChange(index, "itemName", e.target.value);
               updateItemId(index, null);
@@ -582,13 +617,19 @@ const TableComponent = ({
       width: 75,
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
-          <InputNumber
+          <Input
             value={text}
+            ref={(el) => {
+              if (!inputRefs.current[index]) {
+                inputRefs.current[index] = [];
+              }
+              inputRefs.current[index][3] = el; // columnIndex를 맞추어 설정
+            }}
+            onKeyDown={(e) => handleNextRowKeyDown(e, index, 3)}
             onChange={(value) => handleInputChange(index, "qty", value ?? 0)}
             style={{ width: "100%" }}
             min={0}
             step={1}
-            controls={false}
           />
         ) : null,
     },
@@ -615,6 +656,13 @@ const TableComponent = ({
         record.itemType === "ITEM" ? (
           <Input
             value={text}
+            ref={(el) => {
+              if (!inputRefs.current[index]) {
+                inputRefs.current[index] = [];
+              }
+              inputRefs.current[index][4] = el; // columnIndex를 맞추어 설정
+            }}
+            onKeyDown={(e) => handleNextRowKeyDown(e, index, 4)}
             onBlur={(e) => handleUnitBlur(index, e.target.value)}
             onChange={(e) => handleInputChange(index, "unit", e.target.value)}
           />
@@ -642,8 +690,15 @@ const TableComponent = ({
       width: 130,
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
-          <InputNumber
+          <Input
             value={text?.toLocaleString()}
+            ref={(el) => {
+              if (!inputRefs.current[index]) {
+                inputRefs.current[index] = [];
+              }
+              inputRefs.current[index][6] = el; // columnIndex를 맞추어 설정
+            }}
+            onKeyDown={(e) => handleNextRowKeyDown(e, index, 6)}
             onChange={(value) => {
               const updatedValue = Number(value) ?? 0;
               handleInputChange(
@@ -658,7 +713,6 @@ const TableComponent = ({
               );
             }}
             style={{ width: "100%" }}
-            controls={false}
             addonBefore="₩"
           />
         ) : null,
@@ -670,8 +724,15 @@ const TableComponent = ({
       width: 130,
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
-          <InputNumber
+          <Input
             value={text?.toLocaleString()}
+            ref={(el) => {
+              if (!inputRefs.current[index]) {
+                inputRefs.current[index] = [];
+              }
+              inputRefs.current[index][7] = el; // columnIndex를 맞추어 설정
+            }}
+            onKeyDown={(e) => handleNextRowKeyDown(e, index, 7)}
             onChange={(value) => {
               const updatedValue = Number(value) ?? 0;
               handleInputChange(
@@ -686,7 +747,6 @@ const TableComponent = ({
               );
             }}
             style={{ width: "100%" }}
-            controls={false}
             addonBefore="F"
           />
         ) : null,
@@ -736,8 +796,15 @@ const TableComponent = ({
       width: 130,
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
-          <InputNumber
+          <Input
             value={text?.toLocaleString()}
+            ref={(el) => {
+              if (!inputRefs.current[index]) {
+                inputRefs.current[index] = [];
+              }
+              inputRefs.current[index][9] = el; // columnIndex를 맞추어 설정
+            }}
+            onKeyDown={(e) => handleNextRowKeyDown(e, index, 9)}
             onChange={(value) => {
               const updatedValue = Number(value) ?? 0;
               handleInputChange(
@@ -752,7 +819,6 @@ const TableComponent = ({
               );
             }}
             style={{ width: "100%" }}
-            controls={false}
             addonBefore="₩"
           />
         ) : null,
@@ -764,8 +830,15 @@ const TableComponent = ({
       width: 130,
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
-          <InputNumber
+          <Input
             value={text?.toLocaleString()}
+            ref={(el) => {
+              if (!inputRefs.current[index]) {
+                inputRefs.current[index] = [];
+              }
+              inputRefs.current[index][10] = el; // columnIndex를 맞추어 설정
+            }}
+            onKeyDown={(e) => handleNextRowKeyDown(e, index, 10)}
             onChange={(value) => {
               const updatedValue = Number(value) ?? 0;
               handleInputChange(
@@ -780,7 +853,6 @@ const TableComponent = ({
               );
             }}
             style={{ width: "100%" }}
-            controls={false}
             addonBefore="F"
           />
         ) : null,
