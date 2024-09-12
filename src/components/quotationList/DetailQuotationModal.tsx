@@ -8,15 +8,15 @@ import {
   Divider,
   message,
 } from "antd";
-import { Inquiry, InquiryListSupplier } from "../../types/types";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import { deleteInquiry, fetchInquiryDetail } from "../../api/api";
+import { deleteQutation, fetchQuotationDetail } from "../../api/api";
+import { QuotationDetail } from "../../types/types";
 
-interface DetailInquiryModalProps {
+interface DetailQuotationModalProps {
   open: boolean;
   onClose: () => void;
-  inquiryId: number;
+  quotationId: number;
   fetchData: () => Promise<void>;
 }
 
@@ -65,13 +65,14 @@ const SPECIAL_ITEM_TYPES = ["MAKER", "TYPE", "DESC"];
 
 const isSpecialItemType = (type: string) => SPECIAL_ITEM_TYPES.includes(type);
 
-const DetailInquiryModal = ({
+const DetailQuotationModal = ({
   open,
   onClose,
-  inquiryId,
+  quotationId,
   fetchData,
-}: DetailInquiryModalProps) => {
-  const [inquiryDetail, setInquiryDetail] = useState<Inquiry | null>(null);
+}: DetailQuotationModalProps) => {
+  const [quotationDetail, SetquotationDetail] =
+    useState<QuotationDetail | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const navigate = useNavigate();
 
@@ -79,9 +80,9 @@ const DetailInquiryModal = ({
     const fetchDetails = async () => {
       if (open) {
         try {
-          setInquiryDetail(null);
-          const data = await fetchInquiryDetail(inquiryId);
-          setInquiryDetail(data);
+          SetquotationDetail(null);
+          const data = await fetchQuotationDetail(quotationId);
+          SetquotationDetail(data);
         } catch (error) {
           console.error("상세 정보를 가져오는 중 오류가 발생했습니다:", error);
         } finally {
@@ -91,30 +92,27 @@ const DetailInquiryModal = ({
     };
 
     fetchDetails();
-  }, [open, inquiryId]);
+  }, [open, quotationId]);
 
   const handleEditClick = () => {
-    if (inquiryDetail) {
-      const path = inquiryId ? `/makeinquiry/${inquiryId}` : "/makeinquiry";
-      navigate(path);
-    }
+    console.log("Edit");
   };
 
   const handleDeleteClick = () => {
     Modal.confirm({
       title: "삭제 확인",
-      content: "정말로 이 견적서를 삭제하시겠습니까?",
+      content: "정말로 삭제하시겠습니까?",
       okText: "삭제",
       cancelText: "취소",
       onOk: async () => {
         try {
-          await deleteInquiry(inquiryId);
-          message.success("견적서가 성공적으로 삭제되었습니다.");
+          await deleteQutation(quotationId);
+          message.success("성공적으로 삭제되었습니다.");
           onClose();
           fetchData();
         } catch (error) {
-          console.error("견적서 삭제 중 오류가 발생했습니다:", error);
-          message.error("견적서 삭제에 실패했습니다. 다시 시도해 주세요.");
+          console.error("삭제 중 오류가 발생했습니다:", error);
+          message.error("삭제에 실패했습니다. 다시 시도해 주세요.");
         }
       },
     });
@@ -145,23 +143,11 @@ const DetailInquiryModal = ({
       },
     },
     {
-      title: "비고",
-      dataIndex: "itemRemark",
-      key: "itemRemark",
-      width: 150,
-      render: (text: string, record: any) => {
-        if (isSpecialItemType(record.itemType)) {
-          return null;
-        }
-        return text;
-      },
-    },
-    {
       title: "수량",
       dataIndex: "qty",
       key: "qty",
       width: 50,
-      render: (text: string, record: any) => {
+      render: (text: number, record: any) => {
         if (isSpecialItemType(record.itemType)) {
           return null;
         }
@@ -181,26 +167,51 @@ const DetailInquiryModal = ({
       },
     },
     {
-      title: "의뢰처",
-      dataIndex: "suppliers",
-      key: "suppliers",
-      width: 200,
-      render: (suppliers: InquiryListSupplier[], record: any) => {
+      title: "판매 금액",
+      dataIndex: "salesAmountKRW",
+      key: "salesAmountKRW",
+      width: 100,
+      render: (text: number, record: any) => {
         if (isSpecialItemType(record.itemType)) {
           return null;
         }
-
-        if (!suppliers) {
-          return <div>No suppliers available</div>;
+        return `₩ ${text.toLocaleString()}`; // 천 단위 구분 기호 추가
+      },
+    },
+    {
+      title: "구매 금액",
+      dataIndex: "purchaseAmountKRW",
+      key: "purchaseAmountKRW",
+      width: 100,
+      render: (text: number, record: any) => {
+        if (isSpecialItemType(record.itemType)) {
+          return null;
         }
-
-        return (
-          <>
-            {suppliers.map((supplier) => (
-              <div key={supplier.supplierId}>{supplier.code},</div>
-            ))}
-          </>
-        );
+        return `₩ ${text.toLocaleString()}`;
+      },
+    },
+    {
+      title: "마진",
+      dataIndex: "margin",
+      key: "margin",
+      width: 100,
+      render: (text: number, record: any) => {
+        if (isSpecialItemType(record.itemType)) {
+          return null;
+        }
+        return typeof text === "number" ? `${text.toFixed(2)}%` : "0";
+      },
+    },
+    {
+      title: "의뢰처",
+      dataIndex: "supplierName",
+      key: "supplierName",
+      width: 200,
+      render: (text: string, record: any) => {
+        if (isSpecialItemType(record.itemType)) {
+          return null;
+        }
+        return text;
       },
     },
   ];
@@ -226,59 +237,67 @@ const DetailInquiryModal = ({
       {loading ? (
         <p>로딩 중...</p>
       ) : (
-        inquiryDetail && (
+        quotationDetail && (
           <>
             <Descriptions bordered column={2} size="small">
               <Descriptions.Item label="문서번호">
-                {inquiryDetail.documentNumber}
+                {quotationDetail.quotationDocumentDetail.docNumber}
               </Descriptions.Item>
               <Descriptions.Item label="등록 날짜">
-                {inquiryDetail.registerDate}
+                {quotationDetail.quotationDocumentDetail.registerDate}
               </Descriptions.Item>
               <Descriptions.Item label="선적 날짜">
-                {inquiryDetail.shippingDate}
+                {quotationDetail.quotationDocumentDetail.shippingDate}
               </Descriptions.Item>
               <Descriptions.Item label="매출처명">
-                {inquiryDetail.companyName}
+                {quotationDetail.quotationDocumentDetail.companyName}
               </Descriptions.Item>
               <Descriptions.Item label="REF NO.">
-                {inquiryDetail.refNumber}
+                {quotationDetail.quotationDocumentDetail.refNumber}
               </Descriptions.Item>
               <Descriptions.Item label="통화">
-                {inquiryDetail.currencyType}
+                {quotationDetail.quotationDocumentDetail.currencyType}
               </Descriptions.Item>
               <Descriptions.Item label="환율">
-                {`$${inquiryDetail.currency?.toFixed(0)}`}
+                {`$${quotationDetail.quotationDocumentDetail.currency?.toFixed(
+                  0
+                )}`}
               </Descriptions.Item>
               <Descriptions.Item label="선명">
-                {inquiryDetail.vesselName}
+                {quotationDetail.quotationDocumentDetail.vesselName}
               </Descriptions.Item>
               <Descriptions.Item label="선박 번호">
-                {inquiryDetail.veeselHullNo}
+                {quotationDetail.quotationDocumentDetail.vesselHullNo}
               </Descriptions.Item>
               <Descriptions.Item label="비고">
-                {inquiryDetail.docRemark}
+                {quotationDetail.quotationDocumentDetail.docRemark}
               </Descriptions.Item>
               <Descriptions.Item label="문서 담당자">
-                {inquiryDetail.docManager}
+                {quotationDetail.quotationDocumentDetail.docManager}
               </Descriptions.Item>
               <Descriptions.Item label="매출처 담당자">
-                {inquiryDetail.representative}
+                {quotationDetail.quotationDocumentDetail.representative}
               </Descriptions.Item>
               <Descriptions.Item label="문서 상태">
                 <TagStyled color="blue">
-                  {inquiryDetail.documentStatus}
+                  {quotationDetail.quotationDocumentDetail.documentStatus}
                 </TagStyled>
               </Descriptions.Item>
-              <Descriptions.Item label="견적 유형">
-                <TagStyled color="green">{inquiryDetail.inquiryType}</TagStyled>
+              <Descriptions.Item label="의뢰처">
+                {quotationDetail.quotationDocumentDetail.supplierName.map(
+                  (name, index) => (
+                    <TagStyled key={index} color="green">
+                      {name}
+                    </TagStyled>
+                  )
+                )}
               </Descriptions.Item>
             </Descriptions>
             <Divider />
             <h3>품목 목록</h3>
             <Table
               columns={columns}
-              dataSource={inquiryDetail.inquiryItemDetails}
+              dataSource={quotationDetail.quotationItemDetailResponseList}
               pagination={false}
               rowKey="itemId"
               scroll={{ y: 300 }}
@@ -292,4 +311,4 @@ const DetailInquiryModal = ({
   );
 };
 
-export default DetailInquiryModal;
+export default DetailQuotationModal;

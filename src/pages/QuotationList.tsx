@@ -9,11 +9,11 @@ import {
 } from "antd";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import styled from "styled-components";
-import { fetchInquiryList, searchInquiryList } from "../api/api";
-import DetailInquiryModal from "../components/inquiryList/DetailInquiryModal";
+import { fetchQuotationList, searchQutationList } from "../api/api";
 import type { ColumnsType } from "antd/es/table";
-import { Inquiry } from "../types/types";
+import { Quotation } from "../types/types";
 import { useNavigate } from "react-router-dom";
+import DetailQuotationModal from "../components/quotationList/DetailQuotationModal";
 
 const Container = styled.div`
   position: relative;
@@ -58,7 +58,7 @@ const PaginationWrapper = styled(Pagination)`
   justify-content: center;
 `;
 
-const columns: ColumnsType<Inquiry> = [
+const columns: ColumnsType<Quotation> = [
   {
     title: "문서번호",
     dataIndex: "documentNumber",
@@ -132,9 +132,9 @@ const columns: ColumnsType<Inquiry> = [
   },
 ];
 
-const CustomerInquiryList = () => {
+const QuotationList = () => {
   const navigate = useNavigate();
-  const [data, setData] = useState<Inquiry[]>([]);
+  const [data, setData] = useState<Quotation[]>([]);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [searchText, setSearchText] = useState<string>("");
@@ -142,7 +142,7 @@ const CustomerInquiryList = () => {
     useState<string>("documentNumber");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage, setItemsPerPage] = useState<number>(10);
-  const [selectedInquiryId, setSelectedInquiryId] = useState<number | null>(
+  const [selectedQuotationId, setSelectedInquiryId] = useState<number | null>(
     null
   );
   const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
@@ -159,8 +159,8 @@ const CustomerInquiryList = () => {
 
   const fetchData = async () => {
     try {
-      const response = await fetchInquiryList(currentPage, itemsPerPage);
-      setData(response.customerInquiryList);
+      const response = await fetchQuotationList(currentPage, itemsPerPage);
+      setData(response.quotationList);
       setTotalCount(response.totalCount);
     } catch (error) {
       console.error("데이터를 가져오는 중 오류가 발생했습니다:", error);
@@ -184,7 +184,7 @@ const CustomerInquiryList = () => {
   const handleSearch = async () => {
     setLoading(true);
     try {
-      const response = await searchInquiryList(
+      const response = await searchQutationList(
         registerStartDate,
         registerEndDate,
         searchCategory === "documentNumber" ? searchText : "",
@@ -194,7 +194,7 @@ const CustomerInquiryList = () => {
         itemsPerPage
       );
 
-      setData(response.customerInquiryList);
+      setData(response.quotationList);
       setTotalCount(response.totalCount);
     } catch (error) {
       console.error("검색 중 오류가 발생했습니다:", error);
@@ -203,8 +203,8 @@ const CustomerInquiryList = () => {
     }
   };
 
-  const handleRowClick = (record: Inquiry) => {
-    setSelectedInquiryId(record.customerInquiryId);
+  const handleRowClick = (record: Quotation) => {
+    setSelectedInquiryId(record.quotationId);
     setIsDetailModalOpen(true);
   };
 
@@ -220,7 +220,7 @@ const CustomerInquiryList = () => {
   return (
     <>
       <Container>
-        <Title>견적 요청 - Requests</Title>
+        <Title>최종 견적 - Quotations</Title>
         <TableHeader>
           <SearchBar>
             <Select
@@ -258,9 +258,6 @@ const CustomerInquiryList = () => {
               검색
             </Button>
           </SearchBar>
-          <Button type="primary" onClick={() => navigate("/makeinquiry")}>
-            신규 등록
-          </Button>
         </TableHeader>
         {data.length > 0 && ( // 데이터가 있을 때만 페이지네이션을 표시
           <>
@@ -269,7 +266,7 @@ const CustomerInquiryList = () => {
               dataSource={data}
               pagination={false}
               loading={loading}
-              rowKey="customerInquiryId"
+              rowKey="quotationId"
               style={{ cursor: "pointer" }}
               onRow={(record) => ({
                 onClick: () => handleRowClick(record),
@@ -297,11 +294,11 @@ const CustomerInquiryList = () => {
           </>
         )}
       </Container>
-      {selectedInquiryId !== null && (
-        <DetailInquiryModal
+      {selectedQuotationId !== null && (
+        <DetailQuotationModal
           open={isDetailModalOpen}
           onClose={() => setIsDetailModalOpen(false)}
-          inquiryId={selectedInquiryId}
+          quotationId={selectedQuotationId}
           fetchData={fetchData}
         />
       )}
@@ -309,4 +306,4 @@ const CustomerInquiryList = () => {
   );
 };
 
-export default CustomerInquiryList;
+export default QuotationList;

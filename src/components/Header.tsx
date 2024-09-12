@@ -231,6 +231,13 @@ const Header = ({ isAuthenticated, onLogout }: HeaderProps) => {
           >
             견적 제안 - Offers
           </MenuItem>
+          <MenuItem
+            onClick={() =>
+              handleMenuItemClick(() => navigate("/quotationlist"))
+            }
+          >
+            최종 견적 - Quotations
+          </MenuItem>
         </SubMenu>
         <MenuItem onClick={() => setCodeOpen(!isCodeOpen)}>
           <FontAwesomeIcon icon={faCode} style={{ marginRight: "10px" }} />

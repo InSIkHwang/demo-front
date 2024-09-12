@@ -67,7 +67,7 @@ const ExcelUploadModal = ({
   const handleApplyExcelData = async () => {
     const updatedData = await Promise.all(
       excelData.map(async (item) => {
-        if (item.itemCode.trim() === "") {
+        if ((item.itemCode + "").trim() === "") {
           return { ...item, itemId: null };
         }
 

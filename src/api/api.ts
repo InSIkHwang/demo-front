@@ -7,12 +7,15 @@ import {
   Inquiry,
   Item,
   ItemDataType,
+  Quotation,
   Supplier,
   SupplierInquiryListIF,
 } from "../types/types";
 import { setAccessToken, setRefreshToken } from "./auth";
 import dayjs from "dayjs";
 
+//----------------------------------------------------------------------------------
+// UserLogin API
 export const postUserLogin = async (email: string, password: string) => {
   try {
     const response = await axios.post("/api/member/login", {
@@ -47,60 +50,8 @@ export const fetchCustomerDetail = async (customerId: number) => {
   return response.data;
 };
 
-//MakeInquiry시 문서번호, 날짜 등 생성
-export const fetchDocData = async () => {
-  const response = await axios.post<{
-    docNumber: string;
-    registerDate: string;
-    shippingDate: string;
-    currencyType: string;
-    currencyValue: number;
-  }>("/api/customer-inquiries/create/doc-number");
-
-  return response.data;
-};
-
-//Inquiry 조회
-export const fetchInquiryList = async (page: number, pageSize: number) => {
-  const response = await axios.get<{
-    totalCount: number;
-    customerInquiryList: Inquiry[];
-  }>("/api/customer-inquiries", {
-    params: {
-      page: page - 1, // 페이지는 0부터 시작
-      pageSize: pageSize, // 페이지당 아이템 수
-    },
-  });
-
-  return response.data;
-};
-
-//Offer(Supplier Inquiry) 조회
-export const fetchOfferList = async (page: number, pageSize: number) => {
-  const response = await axios.get<{
-    totalCount: number;
-    supplierInquiryList: SupplierInquiryListIF[];
-  }>("/api/supplier-inquiries", {
-    params: {
-      page: page - 1, // 페이지는 0부터 시작
-      pageSize: pageSize, // 페이지당 아이템 수
-    },
-  });
-
-  return response.data;
-};
-
-//Offer(Supplier Inquiry) 상세조회
-export const fetchOfferDetail = async (
-  supplierInquiryId: number,
-  supplierId: number
-) => {
-  const response = await axios.get(
-    `/api/supplier-inquiries/${supplierInquiryId}?supplierId=${supplierId}`
-  );
-
-  return response.data;
-};
+//----------------------------------------------------------------------------------
+// 매출처, 의뢰처, 선박, 아이템 관련
 
 //Customers 검색
 export const fetchCompanyNames = async (customerName: string) => {
@@ -111,6 +62,7 @@ export const fetchCompanyNames = async (customerName: string) => {
 
   return response.data;
 };
+
 //Supplier 검색
 export const searchSupplier = async (companyName: string) => {
   const response = await axios.get<{
@@ -120,6 +72,7 @@ export const searchSupplier = async (companyName: string) => {
 
   return response.data;
 };
+
 //Maker이름으로 Supplier 검색
 export const searchSupplierUseMaker = async (
   maker: string,
@@ -138,6 +91,15 @@ export const searchSupplierUseMaker = async (
   return response.data;
 };
 
+//Item 검색
+export const fetchItemData = async (itemCode: string) => {
+  const response = await axios.get<{ items: Item | Item[] }>(
+    `/api/items/search/itemCode?itemCode=${itemCode}`
+  );
+
+  return response.data;
+};
+
 //Supplier 상세 정보 조회
 export const fetchSupplierDetail = async (suppliersId: number) => {
   const response = await axios.get(`/api/suppliers/${suppliersId}`);
@@ -145,18 +107,18 @@ export const fetchSupplierDetail = async (suppliersId: number) => {
   return response.data;
 };
 
-//Inquiry 상세 정보 조회
-export const fetchInquiryDetail = async (inquiryId: number) => {
-  const response = await axios.get(`/api/customer-inquiries/${inquiryId}`);
+//----------------------------------------------------------------------------------
+// INQUIRY 작성 관련
 
-  return response.data;
-};
-
-//Item 검색
-export const fetchItemData = async (itemCode: string) => {
-  const response = await axios.get<{ items: Item | Item[] }>(
-    `/api/items/search/itemCode?itemCode=${itemCode}`
-  );
+//MakeInquiry시 문서번호, 날짜 등 생성
+export const fetchDocData = async () => {
+  const response = await axios.post<{
+    docNumber: string;
+    registerDate: string;
+    shippingDate: string;
+    currencyType: string;
+    currencyValue: number;
+  }>("/api/customer-inquiries/create/doc-number");
 
   return response.data;
 };
@@ -193,9 +155,83 @@ export const submitInquiry = async (
     throw error;
   }
 };
+
 //Inquiry 삭제
 export const deleteInquiry = async (inquiryId: number) => {
   await axios.put(`/api/customer-inquiries/${inquiryId}/trash`);
+};
+
+//Inquiry 메일 전송
+export const sendInquiryMail = async (
+  docNumber: string,
+  files: File[], // `file`의 타입에 맞게 구체화할 수 있습니다 (예: File, Blob)
+  emailSendData: {
+    supplierId: number;
+    toRecipient: string;
+    subject: string;
+    content: string;
+    ccRecipient: string;
+    bccRecipient: string;
+    supplierName: string;
+  }[]
+) => {
+  // FormData 객체 생성
+  const formData = new FormData();
+
+  // `file` 추가
+  files.forEach((file) => {
+    formData.append("file", file); // 동일한 이름으로 여러 파일 추가
+  });
+
+  // `emailSendData`를 JSON 문자열로 변환하여 추가
+  formData.append("emailSendData", JSON.stringify(emailSendData));
+
+  // POST 요청
+  const response = await axios.post(
+    `/api/customer-inquiries/send-email?docNumber=${docNumber}`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+
+  return response.data;
+};
+
+//엑셀 내보내기
+export const handleExport = async (inquiryId: number) => {
+  const response = await axios.post(
+    `/api/customer-inquiries/make-excel/${inquiryId}`
+  );
+
+  return response.data;
+};
+
+//----------------------------------------------------------------------------------
+// INQUIRY 조회 관련
+
+//Inquiry 조회
+export const fetchInquiryList = async (page: number, pageSize: number) => {
+  const response = await axios.get<{
+    totalCount: number;
+    customerInquiryList: Inquiry[];
+  }>("/api/customer-inquiries", {
+    params: {
+      page: page - 1, // 페이지는 0부터 시작
+      pageSize: pageSize, // 페이지당 아이템 수
+    },
+  });
+
+  return response.data;
+};
+
+//Inquiry 상세 정보 조회
+export const fetchInquiryDetail = async (inquiryId: number) => {
+  const response = await axios.get(`/api/customer-inquiries/${inquiryId}`);
+
+  return response.data;
 };
 
 //Inquiry 검색
@@ -237,7 +273,37 @@ export const searchInquiryList = async (
   return response.data;
 };
 
-//Inquiry 검색
+//----------------------------------------------------------------------------------
+// OFFER 조회 관련
+
+//OFFER(Supplier Inquiry) 조회
+export const fetchOfferList = async (page: number, pageSize: number) => {
+  const response = await axios.get<{
+    totalCount: number;
+    supplierInquiryList: SupplierInquiryListIF[];
+  }>("/api/supplier-inquiries", {
+    params: {
+      page: page - 1, // 페이지는 0부터 시작
+      pageSize: pageSize, // 페이지당 아이템 수
+    },
+  });
+
+  return response.data;
+};
+
+//OFFER(Supplier Inquiry) 상세조회
+export const fetchOfferDetail = async (
+  supplierInquiryId: number,
+  supplierId: number
+) => {
+  const response = await axios.get(
+    `/api/supplier-inquiries/${supplierInquiryId}?supplierId=${supplierId}`
+  );
+
+  return response.data;
+};
+
+//Offer 검색
 export const searchOfferList = async (
   registerStartDate: string = "",
   registerEndDate: string = "",
@@ -276,45 +342,10 @@ export const searchOfferList = async (
   return response.data;
 };
 
-export const sendInquiryMail = async (
-  docNumber: string,
-  files: File[], // `file`의 타입에 맞게 구체화할 수 있습니다 (예: File, Blob)
-  emailSendData: {
-    supplierId: number;
-    toRecipient: string;
-    subject: string;
-    content: string;
-    ccRecipient: string;
-    bccRecipient: string;
-    supplierName: string;
-  }[]
-) => {
-  // FormData 객체 생성
-  const formData = new FormData();
+//----------------------------------------------------------------------------------
+// Offer 작성 관련
 
-  // `file` 추가
-  files.forEach((file) => {
-    formData.append("file", file); // 동일한 이름으로 여러 파일 추가
-  });
-
-  // `emailSendData`를 JSON 문자열로 변환하여 추가
-  formData.append("emailSendData", JSON.stringify(emailSendData));
-
-  // POST 요청
-  const response = await axios.post(
-    `/api/customer-inquiries/send-email?docNumber=${docNumber}`,
-    formData,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    }
-  );
-
-  return response.data;
-};
-
-//Offer 수정
+// Offer 수정
 export const editOffer = async (
   supplierInquiryId: number,
   supplierId: number,
@@ -348,6 +379,7 @@ export const editOffer = async (
   await axios.put(`/api/supplier-inquiries/${supplierInquiryId}`, requestData);
 };
 
+// 복합 의뢰처 생성
 export const editMurgedOffer = async (supplierInquiryIds: number[]) => {
   const response = await axios.post(`/api/supplier-inquiries/merged`, {
     supplierInquiryIds,
@@ -356,6 +388,7 @@ export const editMurgedOffer = async (supplierInquiryIds: number[]) => {
   return response.data;
 };
 
+// Offer 메일 전송
 export const sendQuotationMail = async (
   files: File[], // `file`의 타입에 맞게 구체화된 파일 배열
   emailSendData: {
@@ -405,10 +438,74 @@ export const sendQuotationMail = async (
   return response.data;
 };
 
-export const handleExport = async (inquiryId: number) => {
-  const response = await axios.post(
-    `/api/customer-inquiries/make-excel/${inquiryId}`
-  );
+//----------------------------------------------------------------------------------
+// QUOTATION 조회 관련
+
+//QUOTATION 조회
+export const fetchQuotationList = async (page: number, pageSize: number) => {
+  const response = await axios.get<{
+    totalCount: number;
+    quotationList: Quotation[];
+  }>("/api/quotations", {
+    params: {
+      page: page - 1, // 페이지는 0부터 시작
+      pageSize: pageSize, // 페이지당 아이템 수
+    },
+  });
 
   return response.data;
 };
+
+//QUOTATION 상세 정보 조회
+export const fetchQuotationDetail = async (quotationId: number) => {
+  const response = await axios.get(`/api/quotations/${quotationId}`);
+
+  return response.data;
+};
+
+//QUOTATION 검색
+export const searchQutationList = async (
+  registerStartDate: string = "",
+  registerEndDate: string = "",
+  documentNumber: string = "",
+  refNumber: string = "",
+  customerName: string = "",
+  page: number,
+  pageSize: number
+): Promise<{
+  totalCount: number;
+  quotationList: Quotation[];
+}> => {
+  // Query parameters를 객체로 정의
+  const queryParams: { [key: string]: string } = {
+    registerStartDate,
+    registerEndDate,
+    documentNumber,
+    refNumber,
+    customerName,
+    page: (page - 1).toString(), // 페이지는 0부터 시작
+    pageSize: pageSize.toString(), // 페이지당 아이템 수
+  };
+
+  // 쿼리 문자열을 생성
+  const queryString = Object.keys(queryParams)
+    .filter((key) => queryParams[key] !== "") // 빈 문자열 필터링
+    .map((key) => `${key}=${encodeURIComponent(queryParams[key])}`)
+    .join("&");
+
+  // GET 요청을 보냄 (POST가 아닌 GET으로 보내야 할 경우)
+  const response = await axios.post<{
+    totalCount: number;
+    quotationList: Quotation[];
+  }>(`/api/quotations/search?${queryString}`);
+
+  return response.data;
+};
+
+//QUOTATION 삭제
+export const deleteQutation = async (quotationId: number) => {
+  await axios.put(`/api/quotations/${quotationId}/trash`);
+};
+
+//----------------------------------------------------------------------------------
+//

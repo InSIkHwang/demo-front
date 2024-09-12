@@ -15,6 +15,7 @@ import theme from "./style/Theme";
 import { refreshToken, removeTokens } from "./api/auth";
 import LoadingSpinner from "./components/LoadingSpinner";
 import OfferList from "./pages/OfferList";
+import QuotationList from "./pages/QuotationList";
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -124,6 +125,12 @@ const App = () => {
             path="/makeoffer/:supplierInquiryId"
             element={
               isAuthenticated ? <MakeOffer /> : <Navigate to="/userlogin" />
+            }
+          />
+          <Route
+            path="/quotationlist"
+            element={
+              isAuthenticated ? <QuotationList /> : <Navigate to="/userlogin" />
             }
           />
         </Routes>

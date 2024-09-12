@@ -238,3 +238,63 @@ export interface ItemNameCellProps {
   ) => void;
   updateItemId: (index: number, itemId: number | null) => void;
 }
+
+export interface Quotation {
+  quotationId: number;
+  documentNumber: string;
+  registerDate: string;
+  shippingDate: string;
+  companyName: string;
+  refNumber: string;
+  currencyType: string;
+  currency: number;
+  vesselName: string;
+  docRemark: string;
+  docManager: string;
+  representative: string | null;
+  documentStatus: string;
+}
+
+export interface QuotationDetail {
+  quotationDocumentDetail: {
+    quotationId: number;
+    docNumber: string;
+    registerDate: string;
+    shippingDate: string;
+    vesselName: string;
+    vesselHullNo: string;
+    imoNo: string | null;
+    companyName: string;
+    representative: string | null;
+    currency: number;
+    currencyType: "USD" | "EUR" | "INR" | "JPY" | string; // Expand as needed
+    documentStatus: string;
+    pdfUrl: string | null;
+    refNumber: string;
+    docRemark: string;
+    docManager: string;
+    supplierName: string[];
+  };
+  quotationItemDetailResponseList: Array<{
+    itemDetailId: number;
+    itemId: number;
+    itemType: "ITEM" | "MAKER" | "DESC" | string; // Expand as needed
+    itemCode: string;
+    itemName: string;
+    itemRemark: string;
+    qty: number;
+    position: number;
+    unit: string;
+    salesPriceKRW: number;
+    salesPriceGlobal: number;
+    salesAmountKRW: number;
+    salesAmountGlobal: number;
+    margin: number;
+    purchasePriceKRW: number;
+    purchasePriceGlobal: number;
+    purchaseAmountKRW: number;
+    purchaseAmountGlobal: number;
+    supplierId: number;
+    supplierName: string;
+  }>;
+}
