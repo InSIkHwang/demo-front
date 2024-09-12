@@ -498,7 +498,7 @@ const MakeInquiry = () => {
 
       updateItemCodeOptions(itemArray);
       updateItemMaps(itemArray);
-      await updateSupplierOptions(itemArray);
+      updateSupplierOptions(itemArray);
 
       const selectedItem = itemArray.find((item) => item.itemCode === value);
       if (selectedItem) {
@@ -742,16 +742,19 @@ const MakeInquiry = () => {
           pdfCompanyTag={pdfSupplierTag}
         />
       </div>
-      <PDFGenerator
-        selectedSupplierTag={selectedSupplierTag}
-        formValues={formValues}
-        setMailDataList={setMailDataList}
-        items={items}
-        vesselInfo={selectedVessel}
-        pdfHeader={pdfHeader}
-        language={language}
-        setPdfFileData={setPdfFileData}
-      />
+      {isMailSenderVisible && (
+        <PDFGenerator
+          selectedSupplierTag={selectedSupplierTag}
+          formValues={formValues}
+          setMailDataList={setMailDataList}
+          items={items}
+          vesselInfo={selectedVessel}
+          pdfHeader={pdfHeader}
+          language={language}
+          setPdfFileData={setPdfFileData}
+        />
+      )}
+
       {showPDFPreview && (
         <PDFDocument
           formValues={formValues}

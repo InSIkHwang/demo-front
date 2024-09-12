@@ -196,6 +196,7 @@ const MakeInquiryTable = ({
     const newDuplicateStates: {
       [key: string]: { code: boolean; name: boolean; all: boolean };
     } = getDuplicateStates(items);
+    console.log(newDuplicateStates);
 
     // 중첩된 객체 내에 하나라도 true가 있으면 true 반환
     const hasDuplicate = Object.values(newDuplicateStates).some((state) =>

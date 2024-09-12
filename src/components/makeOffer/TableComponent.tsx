@@ -120,6 +120,12 @@ interface TableComponentProps {
   updateGlobalPrices: () => void;
   calculateTotalAmount: (price: number, qty: number) => number;
   calculateMargin: (salesAmount: number, purchaseAmount: number) => number;
+  handlePriceInputChange: (
+    index: number,
+    key: keyof ItemDataType,
+    value: any,
+    currency: number
+  ) => void;
 }
 
 interface RowProps extends React.HTMLAttributes<HTMLTableRowElement> {
@@ -181,6 +187,7 @@ const TableComponent = ({
   updateGlobalPrices,
   calculateTotalAmount,
   calculateMargin,
+  handlePriceInputChange,
 }: TableComponentProps) => {
   const [totals, setTotals] = useState({
     totalSalesAmountKRW: 0,
@@ -618,7 +625,8 @@ const TableComponent = ({
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <Input
-            value={text}
+            type="text" // Change to "text" to handle formatted input
+            value={text.toLocaleString()} // Display formatted value
             ref={(el) => {
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
@@ -626,7 +634,14 @@ const TableComponent = ({
               inputRefs.current[index][3] = el; // columnIndex를 맞추어 설정
             }}
             onKeyDown={(e) => handleNextRowKeyDown(e, index, 3)}
-            onChange={(value) => handleInputChange(index, "qty", value ?? 0)}
+            onChange={(e) => {
+              // Remove formatting before processing
+              const unformattedValue = e.target.value.replace(/,/g, "");
+              const updatedValue = isNaN(Number(unformattedValue))
+                ? 0
+                : Number(unformattedValue);
+              handleInputChange(index, "qty", updatedValue);
+            }}
             style={{ width: "100%" }}
             min={0}
             step={1}
@@ -691,7 +706,8 @@ const TableComponent = ({
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <Input
-            value={text?.toLocaleString()}
+            type="text" // 형식을 "text"로 변경
+            value={text?.toLocaleString()} // 형식화된 값 표시
             ref={(el) => {
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
@@ -699,17 +715,19 @@ const TableComponent = ({
               inputRefs.current[index][6] = el; // columnIndex를 맞추어 설정
             }}
             onKeyDown={(e) => handleNextRowKeyDown(e, index, 6)}
-            onChange={(value) => {
-              const updatedValue = Number(value) ?? 0;
-              handleInputChange(
+            onChange={async (e) => {
+              // 형식 제거
+              const unformattedValue = e.target.value.replace(/,/g, "");
+              const updatedValue = isNaN(Number(unformattedValue))
+                ? 0
+                : Number(unformattedValue);
+
+              // salesPriceKRW 업데이트를 기다린 후 salesPriceGlobal 업데이트
+              handlePriceInputChange(
                 index,
                 "salesPriceKRW",
-                roundToTwoDecimalPlaces(updatedValue)
-              );
-              handleInputChange(
-                index,
-                "salesPriceGlobal",
-                convertCurrency(updatedValue, currency, "USD")
+                roundToTwoDecimalPlaces(updatedValue),
+                currency
               );
             }}
             style={{ width: "100%" }}
@@ -725,7 +743,8 @@ const TableComponent = ({
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <Input
-            value={text?.toLocaleString()}
+            type="text" // Change to "text" to handle formatted input
+            value={text?.toLocaleString()} // Display formatted value
             ref={(el) => {
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
@@ -733,17 +752,18 @@ const TableComponent = ({
               inputRefs.current[index][7] = el; // columnIndex를 맞추어 설정
             }}
             onKeyDown={(e) => handleNextRowKeyDown(e, index, 7)}
-            onChange={(value) => {
-              const updatedValue = Number(value) ?? 0;
-              handleInputChange(
+            onChange={(e) => {
+              const value = e.target.value;
+              // Remove formatting before processing
+              const unformattedValue = value.replace(/,/g, "");
+              const updatedValue = isNaN(Number(unformattedValue))
+                ? 0
+                : Number(unformattedValue);
+              handlePriceInputChange(
                 index,
                 "salesPriceGlobal",
-                roundToTwoDecimalPlaces(updatedValue)
-              );
-              handleInputChange(
-                index,
-                "salesPriceKRW",
-                convertCurrency(updatedValue, currency, "KRW")
+                roundToTwoDecimalPlaces(updatedValue),
+                currency
               );
             }}
             style={{ width: "100%" }}
@@ -758,11 +778,12 @@ const TableComponent = ({
       width: 130,
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
-          <InputNumber
+          <Input
+            type="text" // Change to "text" to handle formatted input
             value={calculateTotalAmount(
               record.salesPriceKRW,
               record.qty
-            ).toLocaleString()}
+            ).toLocaleString()} // Display formatted value
             style={{ width: "100%" }}
             readOnly
             className="highlight-cell"
@@ -777,11 +798,12 @@ const TableComponent = ({
       width: 130,
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
-          <InputNumber
+          <Input
+            type="text" // Change to "text" to handle formatted input
             value={calculateTotalAmount(
               record.salesPriceGlobal,
               record.qty
-            ).toLocaleString()}
+            ).toLocaleString()} // Display formatted value
             style={{ width: "100%" }}
             readOnly
             className="highlight-cell"
@@ -797,7 +819,8 @@ const TableComponent = ({
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <Input
-            value={text?.toLocaleString()}
+            type="text" // Change to "text" to handle formatted input
+            value={text?.toLocaleString()} // Display formatted value
             ref={(el) => {
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
@@ -805,17 +828,17 @@ const TableComponent = ({
               inputRefs.current[index][9] = el; // columnIndex를 맞추어 설정
             }}
             onKeyDown={(e) => handleNextRowKeyDown(e, index, 9)}
-            onChange={(value) => {
-              const updatedValue = Number(value) ?? 0;
-              handleInputChange(
+            onChange={(e) => {
+              const value = e.target.value;
+              const unformattedValue = value.replace(/,/g, "");
+              const updatedValue = isNaN(Number(unformattedValue))
+                ? 0
+                : Number(unformattedValue);
+              handlePriceInputChange(
                 index,
                 "purchasePriceKRW",
-                roundToTwoDecimalPlaces(updatedValue)
-              );
-              handleInputChange(
-                index,
-                "purchasePriceGlobal",
-                convertCurrency(updatedValue, currency, "USD")
+                roundToTwoDecimalPlaces(updatedValue),
+                currency
               );
             }}
             style={{ width: "100%" }}
@@ -831,7 +854,8 @@ const TableComponent = ({
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <Input
-            value={text?.toLocaleString()}
+            type="text" // Change to "text" to handle formatted input
+            value={text?.toLocaleString()} // Display formatted value
             ref={(el) => {
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
@@ -839,17 +863,17 @@ const TableComponent = ({
               inputRefs.current[index][10] = el; // columnIndex를 맞추어 설정
             }}
             onKeyDown={(e) => handleNextRowKeyDown(e, index, 10)}
-            onChange={(value) => {
-              const updatedValue = Number(value) ?? 0;
-              handleInputChange(
+            onChange={(e) => {
+              const value = e.target.value;
+              const unformattedValue = value.replace(/,/g, "");
+              const updatedValue = isNaN(Number(unformattedValue))
+                ? 0
+                : Number(unformattedValue);
+              handlePriceInputChange(
                 index,
                 "purchasePriceGlobal",
-                roundToTwoDecimalPlaces(updatedValue)
-              );
-              handleInputChange(
-                index,
-                "purchasePriceKRW",
-                convertCurrency(updatedValue, currency, "KRW")
+                roundToTwoDecimalPlaces(updatedValue),
+                currency
               );
             }}
             style={{ width: "100%" }}
@@ -864,11 +888,12 @@ const TableComponent = ({
       width: 130,
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
-          <InputNumber
+          <Input
+            type="text" // Change to "text" to handle formatted input
             value={calculateTotalAmount(
               record.purchasePriceKRW,
               record.qty
-            ).toLocaleString()}
+            ).toLocaleString()} // Display formatted value
             style={{ width: "100%" }}
             readOnly
             className="highlight-cell"
@@ -883,11 +908,12 @@ const TableComponent = ({
       width: 130,
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
-          <InputNumber
+          <Input
+            type="text" // Change to "text" to handle formatted input
             value={calculateTotalAmount(
               record.purchasePriceGlobal,
               record.qty
-            ).toLocaleString()}
+            ).toLocaleString()} // Display formatted value
             style={{ width: "100%" }}
             readOnly
             className="highlight-cell"
