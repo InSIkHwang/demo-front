@@ -68,12 +68,14 @@ interface MergedTableComponentProps {
   dataSource: ItemDataType[];
   setDataSource: Dispatch<SetStateAction<ItemDataType[]>>;
   currency: number;
+  currencyType: string;
 }
 
 const MergedTableComponent = ({
   dataSource,
   currency,
   setDataSource,
+  currencyType,
 }: MergedTableComponentProps) => {
   const [totals, setTotals] = useState({
     totalSalesAmountKRW: 0,
@@ -83,6 +85,7 @@ const MergedTableComponent = ({
     totalProfit: 0,
     totalProfitPercent: 0,
   });
+  console.log(dataSource);
 
   const [sortedData, setSortedData] = useState<ItemDataType[]>(dataSource);
 
@@ -161,6 +164,12 @@ const MergedTableComponent = ({
       render: (text: string) => <span>{text}</span>,
     },
     {
+      title: "의뢰처",
+      dataIndex: "supplierCode",
+      key: "supplierCode",
+      render: (text: string) => <span>{text}</span>,
+    },
+    {
       title: "수량",
       dataIndex: "qty",
       key: "qty",
@@ -173,7 +182,7 @@ const MergedTableComponent = ({
       key: "salesPriceKRW",
       render: (text: number, record: ItemDataType) =>
         record.itemType === "ITEM" ? (
-          <span>{text?.toLocaleString()}</span>
+          <span>{`₩ ${text?.toLocaleString()}`}</span>
         ) : null,
     },
     {
@@ -182,8 +191,24 @@ const MergedTableComponent = ({
       key: "salesPriceGlobal",
       render: (text: number, record: ItemDataType) =>
         record.itemType === "ITEM" ? (
-          <span>{text?.toLocaleString()}</span>
+          <span>
+            {(() => {
+              switch (currencyType) {
+                case "USD":
+                  return `$ ${text?.toLocaleString()}`;
+                case "EUR":
+                  return `€ ${text?.toLocaleString()}`;
+                case "INR":
+                  return `₹ ${text?.toLocaleString()}`;
+                case "JPY":
+                  return `¥ ${text?.toLocaleString()}`;
+                default:
+                  return `${text?.toLocaleString()}`;
+              }
+            })()}
+          </span>
         ) : null,
+      width: 110,
     },
     {
       title: "총액 (KRW)",
@@ -191,7 +216,7 @@ const MergedTableComponent = ({
       key: "salesAmountKRW",
       render: (text: number, record: ItemDataType) =>
         record.itemType === "ITEM" ? (
-          <span>{text?.toLocaleString()}</span>
+          <span>{`₩ ${text?.toLocaleString()}`}</span>
         ) : null,
     },
     {
@@ -200,8 +225,24 @@ const MergedTableComponent = ({
       key: "salesAmountGlobal",
       render: (text: number, record: ItemDataType) =>
         record.itemType === "ITEM" ? (
-          <span>{text?.toLocaleString()}</span>
+          <span>
+            {(() => {
+              switch (currencyType) {
+                case "USD":
+                  return `$ ${text?.toLocaleString()}`;
+                case "EUR":
+                  return `€ ${text?.toLocaleString()}`;
+                case "INR":
+                  return `₹ ${text?.toLocaleString()}`;
+                case "JPY":
+                  return `¥ ${text?.toLocaleString()}`;
+                default:
+                  return `${text?.toLocaleString()}`;
+              }
+            })()}
+          </span>
         ) : null,
+      width: 110,
     },
     {
       title: "구매단가 (KRW)",
@@ -209,7 +250,7 @@ const MergedTableComponent = ({
       key: "purchasePriceKRW",
       render: (text: number, record: ItemDataType) =>
         record.itemType === "ITEM" ? (
-          <span>{text?.toLocaleString()}</span>
+          <span>{`₩ ${text?.toLocaleString()}`}</span>
         ) : null,
     },
     {
@@ -218,8 +259,24 @@ const MergedTableComponent = ({
       key: "purchasePriceGlobal",
       render: (text: number, record: ItemDataType) =>
         record.itemType === "ITEM" ? (
-          <span>{text?.toLocaleString()}</span>
+          <span>
+            {(() => {
+              switch (currencyType) {
+                case "USD":
+                  return `$ ${text?.toLocaleString()}`;
+                case "EUR":
+                  return `€ ${text?.toLocaleString()}`;
+                case "INR":
+                  return `₹ ${text?.toLocaleString()}`;
+                case "JPY":
+                  return `¥ ${text?.toLocaleString()}`;
+                default:
+                  return `${text?.toLocaleString()}`;
+              }
+            })()}
+          </span>
         ) : null,
+      width: 110,
     },
     {
       title: "구매총액 (KRW)",
@@ -227,7 +284,7 @@ const MergedTableComponent = ({
       key: "purchaseAmountKRW",
       render: (text: number, record: ItemDataType) =>
         record.itemType === "ITEM" ? (
-          <span>{text?.toLocaleString()}</span>
+          <span>{`₩ ${text?.toLocaleString()}`}</span>
         ) : null,
     },
     {
@@ -236,8 +293,24 @@ const MergedTableComponent = ({
       key: "purchaseAmountGlobal",
       render: (text: number, record: ItemDataType) =>
         record.itemType === "ITEM" ? (
-          <span>{text?.toLocaleString()}</span>
+          <span>
+            {(() => {
+              switch (currencyType) {
+                case "USD":
+                  return `$ ${text?.toLocaleString()}`;
+                case "EUR":
+                  return `€ ${text?.toLocaleString()}`;
+                case "INR":
+                  return `₹ ${text?.toLocaleString()}`;
+                case "JPY":
+                  return `¥ ${text?.toLocaleString()}`;
+                default:
+                  return `${text?.toLocaleString()}`;
+              }
+            })()}
+          </span>
         ) : null,
+      width: 110,
     },
     {
       title: "마진 (%)",
@@ -254,6 +327,7 @@ const MergedTableComponent = ({
           <span>{marginPercent}%</span>
         ) : null;
       },
+      width: 80,
     },
   ];
 

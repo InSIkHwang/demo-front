@@ -454,6 +454,7 @@ const MakeOffer = () => {
           dataSource={dataSource}
           setDataSource={setDataSource}
           currency={formValues.currency}
+          currencyType={formValues.currencyType}
         />
       )}
       {!isReadOnly && (

@@ -25,6 +25,7 @@ import HeaderEditModal from "../components/makeInquiry/HeaderEditModal";
 import MailSenderModal from "../components/makeInquiry/MailSenderModal";
 import PDFGenerator from "../components/makeInquiry/PDFGenerator";
 import LoadingSpinner from "../components/LoadingSpinner";
+import { produce } from "immer";
 
 // Styles
 const FormContainer = styled.div`
@@ -365,23 +366,15 @@ const MakeInquiry = () => {
     field: string,
     value: string | number
   ) => {
-    setItems((prevItems) => {
-      // 이전 상태를 그대로 유지하되, 변경된 필드만 업데이트
-      const itemToUpdate = prevItems[index];
+    setItems(
+      produce((draft) => {
+        const itemToUpdate = draft[index];
 
-      // 값이 변경되지 않았으면 상태 업데이트를 건너뜁니다.
-      if (itemToUpdate[field] === value) return prevItems;
+        if (itemToUpdate[field] === value) return;
 
-      // 변경된 값만 복사해서 새로운 객체 생성
-      const updatedItem = { ...itemToUpdate, [field]: value };
-
-      // 상태는 기존 배열을 유지하고, 변경된 인덱스에만 새로운 값을 설정
-      const newItems = prevItems.map((item, idx) =>
-        idx === index ? updatedItem : item
-      );
-
-      return newItems;
-    });
+        itemToUpdate[field] = value;
+      })
+    );
   };
 
   const handleFormChange = <K extends keyof typeof formValues>(
