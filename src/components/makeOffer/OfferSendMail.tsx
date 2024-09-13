@@ -73,13 +73,14 @@ const OfferMailSender = ({
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [uploadFile, setUploadFile] = useState<File[]>([]);
+  console.log(mailData);
 
   const navigate = useNavigate();
   const INITIAL_DATA = {
-    documentNumber: inquiryFormValues.documentNumber,
-    toRecipient: mailData!.toRecipient,
-    subject: mailData!.subject,
-    content: mailData!.content,
+    documentNumber: inquiryFormValues.documentNumber ?? "",
+    toRecipient: mailData?.toRecipient ?? "",
+    subject: mailData?.subject ?? "",
+    content: mailData?.content ?? "",
   };
 
   const handlePdfAutoUploadChange = (e: CheckboxChangeEvent) => {

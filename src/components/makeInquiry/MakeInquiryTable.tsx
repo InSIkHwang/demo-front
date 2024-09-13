@@ -5,6 +5,7 @@ import React, {
   useEffect,
   useCallback,
   useRef,
+  useMemo,
 } from "react";
 import {
   Table,
@@ -61,7 +62,7 @@ interface MakeInquiryTableProps {
   customerInquiryId: number;
 }
 
-const Row = React.memo((props: any) => {
+const Row = React.memo(({ rowKey, style, ...props }: any) => {
   const {
     attributes,
     listeners,
@@ -70,28 +71,30 @@ const Row = React.memo((props: any) => {
     transition,
     isDragging,
   } = useSortable({
-    id: props["data-row-key"],
+    id: rowKey,
   });
 
-  const transformStyle: CSSProperties = transform
-    ? {
-        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-      }
-    : {};
+  const combinedStyle = useMemo(() => {
+    const transformStyle: CSSProperties = transform
+      ? {
+          transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+        }
+      : {};
 
-  const style: CSSProperties = {
-    ...props.style,
-    ...transformStyle,
-    transition,
-    cursor: "move",
-    ...(isDragging ? { position: "relative", zIndex: 999 } : {}),
-  };
+    return {
+      ...style,
+      ...transformStyle,
+      transition,
+      cursor: "move",
+      ...(isDragging ? { position: "relative", zIndex: 999 } : {}),
+    };
+  }, [style, transform, transition, isDragging]);
 
   return (
     <tr
       {...props}
       ref={setNodeRef}
-      style={style}
+      style={combinedStyle}
       {...attributes}
       {...listeners}
     />
@@ -196,7 +199,6 @@ const MakeInquiryTable = ({
     const newDuplicateStates: {
       [key: string]: { code: boolean; name: boolean; all: boolean };
     } = getDuplicateStates(items);
-    console.log(newDuplicateStates);
 
     // 중첩된 객체 내에 하나라도 true가 있으면 true 반환
     const hasDuplicate = Object.values(newDuplicateStates).some((state) =>

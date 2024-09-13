@@ -37,23 +37,20 @@ const OfferPDFGenerator = ({
     email: string | null;
     id: number | null;
   }>({ name: null, id: null, email: null });
+  console.log(customerTag);
 
   const fetchCustomerInfo = async () => {
     const response = await fetchCustomerDetail(customerTag.id);
     const mappedResponse = {
-      name: response.companyName,
-      email: response.email,
+      name: response.companyName ?? "",
+      email: response.email ?? "",
       id: response.id,
     };
     setCustomerInfo(mappedResponse);
   };
   const generateAndSendPDFs = async () => {
     // Ensure customerInfo is correctly populated
-    if (
-      customerInfo.name === null ||
-      customerInfo.email === null ||
-      customerInfo.id === null
-    ) {
+    if (customerInfo === null) {
       console.error("Customer info is incomplete.");
       return;
     }

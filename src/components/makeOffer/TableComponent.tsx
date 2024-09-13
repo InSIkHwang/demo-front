@@ -51,14 +51,15 @@ const CustomTable = styled(Table)`
   }
 
   .highlight-cell {
-    font-weight: bold;
+    font-weight: bold !important;
+    background-color: #ccc;
 
-    .ant-input-number-group-addon {
+    .ant-input-group-addon {
       background-color: #dff4ff;
     }
   }
-  .ant-input-number-group-addon {
-    padding: 0 2px;
+  .ant-input-group-addon {
+    padding: 0 2px !important;
   }
 `;
 
@@ -776,6 +777,7 @@ const TableComponent = ({
       dataIndex: "salesAmountKRW",
       key: "salesAmountKRW",
       width: 130,
+      className: "highlight-cell",
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <Input
@@ -786,7 +788,6 @@ const TableComponent = ({
             ).toLocaleString()} // Display formatted value
             style={{ width: "100%" }}
             readOnly
-            className="highlight-cell"
             addonBefore="₩"
           />
         ) : null,
@@ -796,6 +797,7 @@ const TableComponent = ({
       dataIndex: "salesAmountGlobal",
       key: "salesAmountGlobal",
       width: 130,
+      className: "highlight-cell",
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <Input
@@ -806,7 +808,6 @@ const TableComponent = ({
             ).toLocaleString()} // Display formatted value
             style={{ width: "100%" }}
             readOnly
-            className="highlight-cell"
             addonBefore="F"
           />
         ) : null,
@@ -886,6 +887,7 @@ const TableComponent = ({
       dataIndex: "purchaseAmountKRW",
       key: "purchaseAmountKRW",
       width: 130,
+      className: "highlight-cell",
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <Input
@@ -896,7 +898,6 @@ const TableComponent = ({
             ).toLocaleString()} // Display formatted value
             style={{ width: "100%" }}
             readOnly
-            className="highlight-cell"
             addonBefore="₩"
           />
         ) : null,
@@ -906,6 +907,7 @@ const TableComponent = ({
       dataIndex: "purchaseAmountGlobal",
       key: "purchaseAmountGlobal",
       width: 130,
+      className: "highlight-cell",
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <Input
@@ -916,7 +918,6 @@ const TableComponent = ({
             ).toLocaleString()} // Display formatted value
             style={{ width: "100%" }}
             readOnly
-            className="highlight-cell"
             addonBefore="F"
           />
         ) : null,
@@ -926,6 +927,7 @@ const TableComponent = ({
       dataIndex: "margin",
       key: "margin",
       width: 80,
+      className: "highlight-cell",
       render: (text: number, record: any, index: number) => {
         const salesAmountKRW = calculateTotalAmount(
           record.salesPriceKRW,
@@ -950,7 +952,6 @@ const TableComponent = ({
               value ? parseFloat(value.replace(/ %/, "")) : 0
             }
             readOnly
-            className="highlight-cell"
           />
         );
       },
