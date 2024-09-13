@@ -298,3 +298,10 @@ export interface QuotationDetail {
     supplierName: string;
   }>;
 }
+
+export interface InvCharge {
+  invChargeId: number | null; // invChargeId는 number 또는 null일 수 있습니다.
+  customCharge: string;
+  chargePriceKRW: number;
+  chargePriceGlobal: number;
+}

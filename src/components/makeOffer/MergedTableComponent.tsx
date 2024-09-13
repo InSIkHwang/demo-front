@@ -85,7 +85,6 @@ const MergedTableComponent = ({
     totalProfit: 0,
     totalProfitPercent: 0,
   });
-  console.log(dataSource);
 
   const [sortedData, setSortedData] = useState<ItemDataType[]>(dataSource);
 
@@ -122,7 +121,7 @@ const MergedTableComponent = ({
     );
     const totalProfit = totalSalesAmountKRW - totalPurchaseAmountKRW;
     const totalProfitPercent = Number(
-      ((totalProfit / totalSalesAmountKRW) * 100).toFixed(2)
+      ((totalProfit / totalPurchaseAmountKRW) * 100).toFixed(2)
     );
 
     setDataSource(sorted);

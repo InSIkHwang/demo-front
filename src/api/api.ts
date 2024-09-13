@@ -358,20 +358,22 @@ export const editOffer = async (
     veeselHullNo: string | null;
     docRemark: string;
   },
-  itemCostEditList: ItemDataType[]
+  itemCostEditList: ItemDataType[],
+  discount: number,
+  invCharge:
+    | {
+        invChargeId: number | null;
+        customCharge: string;
+        chargePriceGlobal: number;
+        chargePriceKRW: number;
+      }[]
+    | null
 ) => {
   // 서버로 보내는 데이터의 포맷을 맞추기 위해 수정
   const requestData = {
     supplierId,
-    discount: 0,
-    invCharge: [
-      // {
-      //   invChargeId: null,
-      //   customCharge: "",
-      //   chargePriceGlobal: 0,
-      //   chargePriceKRW: 0,
-      // },
-    ],
+    discount: discount,
+    invCharge: invCharge,
     documentEditInfo,
     itemCostEditList,
   };

@@ -18,7 +18,7 @@ import {
 } from "antd";
 import { ColumnsType } from "antd/es/table";
 import styled, { CSSProperties } from "styled-components";
-import { ItemDataType } from "../../types/types";
+import { InvCharge, ItemDataType } from "../../types/types";
 import { DeleteOutlined } from "@ant-design/icons";
 import { fetchItemData } from "../../api/api";
 import {
@@ -126,6 +126,48 @@ interface TableComponentProps {
     value: any,
     currency: number
   ) => void;
+  finalTotals: {
+    totalSalesAmountKRW: number;
+    totalSalesAmountGlobal: number;
+    totalPurchaseAmountKRW: number;
+    totalPurchaseAmountGlobal: number;
+    totalProfit: number;
+    totalProfitPercent: number;
+  };
+  setFinalTotals: Dispatch<
+    SetStateAction<{
+      totalSalesAmountKRW: number;
+      totalSalesAmountGlobal: number;
+      totalPurchaseAmountKRW: number;
+      totalPurchaseAmountGlobal: number;
+      totalProfit: number;
+      totalProfitPercent: number;
+    }>
+  >;
+  totals: {
+    totalSalesAmountKRW: number;
+    totalSalesAmountGlobal: number;
+    totalPurchaseAmountKRW: number;
+    totalPurchaseAmountGlobal: number;
+    totalProfit: number;
+    totalProfitPercent: number;
+  };
+  setTotals: Dispatch<
+    SetStateAction<{
+      totalSalesAmountKRW: number;
+      totalSalesAmountGlobal: number;
+      totalPurchaseAmountKRW: number;
+      totalPurchaseAmountGlobal: number;
+      totalProfit: number;
+      totalProfitPercent: number;
+    }>
+  >;
+  dcInfo: { dcPercent: number; dcKrw: number; dcGlobal: number };
+  setDcInfo: Dispatch<
+    SetStateAction<{ dcPercent: number; dcKrw: number; dcGlobal: number }>
+  >;
+  invChargeList: InvCharge[] | null;
+  setInvChargeList: Dispatch<SetStateAction<InvCharge[] | null>>;
 }
 
 interface RowProps extends React.HTMLAttributes<HTMLTableRowElement> {
@@ -188,15 +230,15 @@ const TableComponent = ({
   calculateTotalAmount,
   calculateMargin,
   handlePriceInputChange,
+  finalTotals,
+  setFinalTotals,
+  dcInfo,
+  setDcInfo,
+  invChargeList,
+  setInvChargeList,
+  totals,
+  setTotals,
 }: TableComponentProps) => {
-  const [totals, setTotals] = useState({
-    totalSalesAmountKRW: 0,
-    totalSalesAmountGlobal: 0,
-    totalPurchaseAmountKRW: 0,
-    totalPurchaseAmountGlobal: 0,
-    totalProfit: 0,
-    totalProfitPercent: 0,
-  });
   const inputRefs = useRef<(InputRef | null)[][]>([]);
   const [itemCodeOptions, setItemCodeOptions] = useState<{ value: string }[]>(
     []
@@ -419,7 +461,7 @@ const TableComponent = ({
     );
     const totalProfit = totalSalesAmountKRW - totalPurchaseAmountKRW;
     const totalProfitPercent = Number(
-      ((totalProfit / totalSalesAmountKRW) * 100).toFixed(2)
+      ((totalProfit / totalPurchaseAmountKRW) * 100).toFixed(2)
     );
 
     setTotals({
@@ -963,39 +1005,56 @@ const TableComponent = ({
         <TotalCard>
           <span>매출총액(KRW)</span>
           <span className="value">
-            ₩ {totals.totalSalesAmountKRW.toLocaleString()}
+            ₩ {finalTotals.totalSalesAmountKRW.toLocaleString()}
           </span>
         </TotalCard>
         <TotalCard>
           <span>매출총액(F)</span>
           <span className="value">
-            F {totals.totalSalesAmountGlobal.toLocaleString()}
+            F {finalTotals.totalSalesAmountGlobal.toLocaleString()}
           </span>
         </TotalCard>
         <TotalCard>
           <span>매입총액(KRW)</span>
           <span className="value">
-            ₩ {totals.totalPurchaseAmountKRW.toLocaleString()}
+            ₩ {finalTotals.totalPurchaseAmountKRW.toLocaleString()}
           </span>
         </TotalCard>
         <TotalCard>
           <span>매입총액(F)</span>
           <span className="value">
-            F {totals.totalPurchaseAmountGlobal.toLocaleString()}
+            F {finalTotals.totalPurchaseAmountGlobal.toLocaleString()}
           </span>
         </TotalCard>
-        <TotalCard $isHighlight $isPositive={totals.totalProfit >= 0}>
+        <TotalCard $isHighlight $isPositive={finalTotals.totalProfit >= 0}>
           <span>이익합계</span>
-          <span className="value">₩ {totals.totalProfit.toLocaleString()}</span>
+          <span className="value">
+            ₩ {finalTotals.totalProfit.toLocaleString()}
+          </span>
         </TotalCard>
-        <TotalCard $isHighlight $isPositive={totals.totalProfitPercent >= 0}>
+        <TotalCard
+          $isHighlight
+          $isPositive={finalTotals.totalProfitPercent >= 0}
+        >
           <span>이익율</span>
           <span className="value">
-            {isNaN(totals.totalProfitPercent) ? 0 : totals.totalProfitPercent}%
+            {isNaN(finalTotals.totalProfitPercent)
+              ? 0
+              : finalTotals.totalProfitPercent}
+            %
           </span>
         </TotalCard>
       </TotalCards>
-      <ChargeInputPopover />
+      <ChargeInputPopover
+        totals={totals}
+        finalTotals={finalTotals}
+        setFinalTotals={setFinalTotals}
+        currency={currency}
+        dcInfo={dcInfo}
+        setDcInfo={setDcInfo}
+        invChargeList={invChargeList}
+        setInvChargeList={setInvChargeList}
+      />
       <DndContext
         sensors={sensors}
         modifiers={[restrictToVerticalAxis]}

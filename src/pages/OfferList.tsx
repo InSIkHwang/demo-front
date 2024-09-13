@@ -235,12 +235,18 @@ const OfferList = () => {
   const handleSearch = async () => {
     setLoading(true);
     try {
+      // searchCategory에 해당하는 필드만 searchText를 할당
+      const documentNumber =
+        searchCategory === "documentNumber" ? searchText : "";
+      const refNumber = searchCategory === "refNumber" ? searchText : "";
+      const customerName = searchCategory === "customerName" ? searchText : "";
+
       const response = await searchOfferList(
         registerStartDate,
         registerEndDate,
-        searchCategory === "documentNumber" ? searchText : "",
-        searchCategory === "refNumber" ? searchText : "",
-        searchCategory === "customerName" ? searchText : "",
+        documentNumber,
+        refNumber,
+        customerName,
         currentPage,
         itemsPerPage
       );
@@ -403,7 +409,7 @@ const OfferList = () => {
             >
               <Select.Option value="documentNumber">문서번호</Select.Option>
               <Select.Option value="refNumber">REF NO.</Select.Option>
-              <Select.Option value="docRemark">매출처</Select.Option>
+              <Select.Option value="customerName">매출처</Select.Option>
             </Select>
             <Input
               placeholder="검색..."

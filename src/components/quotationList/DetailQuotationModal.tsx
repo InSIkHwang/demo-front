@@ -175,7 +175,8 @@ const DetailQuotationModal = ({
         if (isSpecialItemType(record.itemType)) {
           return null;
         }
-        return `₩ ${text.toLocaleString()}`; // 천 단위 구분 기호 추가
+        const amount = text ?? 0; // 값이 null일 경우 0으로 처리
+        return `₩ ${amount.toLocaleString()}`;
       },
     },
     {
@@ -187,7 +188,8 @@ const DetailQuotationModal = ({
         if (isSpecialItemType(record.itemType)) {
           return null;
         }
-        return `₩ ${text.toLocaleString()}`;
+        const amount = text ?? 0; // 값이 null일 경우 0으로 처리
+        return `₩ ${amount.toLocaleString()}`;
       },
     },
     {

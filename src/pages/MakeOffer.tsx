@@ -8,6 +8,7 @@ import TableComponent from "../components/makeOffer/TableComponent";
 import { editMurgedOffer, editOffer, fetchOfferDetail } from "../api/api";
 import {
   FormValuesType,
+  InvCharge,
   ItemDataType,
   offerEmailSendData,
 } from "../types/types";
@@ -78,6 +79,28 @@ const MakeOffer = () => {
   const [pdfFileData, setPdfFileData] = useState<File | null>(null);
   const [fileData, setFileData] = useState<(File | null)[]>([]);
   const [isPdfAutoUploadChecked, setIsPdfAutoUploadChecked] = useState(true);
+  const [totals, setTotals] = useState({
+    totalSalesAmountKRW: 0,
+    totalSalesAmountGlobal: 0,
+    totalPurchaseAmountKRW: 0,
+    totalPurchaseAmountGlobal: 0,
+    totalProfit: 0,
+    totalProfitPercent: 0,
+  });
+  const [finalTotals, setFinalTotals] = useState({
+    totalSalesAmountKRW: 0,
+    totalSalesAmountGlobal: 0,
+    totalPurchaseAmountKRW: 0,
+    totalPurchaseAmountGlobal: 0,
+    totalProfit: 0,
+    totalProfitPercent: 0,
+  });
+  const [dcInfo, setDcInfo] = useState({
+    dcPercent: 0,
+    dcKrw: 0,
+    dcGlobal: 0,
+  });
+  const [invChargeList, setInvChargeList] = useState<InvCharge[] | null>([]);
 
   useEffect(() => {
     loadOfferDetail();
@@ -121,6 +144,56 @@ const MakeOffer = () => {
           id: response.customerId,
           name: response.customerName,
         });
+
+        if (response.inquiryItemDetails) {
+          const totalSalesAmountKRW = response.inquiryItemDetails.reduce(
+            (acc: number, record: { salesPriceKRW: number; qty: number }) =>
+              acc + calculateTotalAmount(record.salesPriceKRW, record.qty),
+            0
+          );
+          const totalSalesAmountGlobal = response.inquiryItemDetails.reduce(
+            (acc: number, record: { salesPriceGlobal: number; qty: number }) =>
+              acc + calculateTotalAmount(record.salesPriceGlobal, record.qty),
+            0
+          );
+          const totalPurchaseAmountKRW = response.inquiryItemDetails.reduce(
+            (acc: number, record: { purchasePriceKRW: number; qty: number }) =>
+              acc + calculateTotalAmount(record.purchasePriceKRW, record.qty),
+            0
+          );
+          const totalPurchaseAmountGlobal = response.inquiryItemDetails.reduce(
+            (
+              acc: number,
+              record: { purchasePriceGlobal: number; qty: number }
+            ) =>
+              acc +
+              calculateTotalAmount(record.purchasePriceGlobal, record.qty),
+            0
+          );
+          const totalProfit = totalSalesAmountKRW - totalPurchaseAmountKRW;
+          const totalProfitPercent = Number(
+            ((totalProfit / totalPurchaseAmountKRW) * 100).toFixed(2)
+          );
+
+          setTotals({
+            totalSalesAmountKRW,
+            totalSalesAmountGlobal,
+            totalPurchaseAmountKRW,
+            totalPurchaseAmountGlobal,
+            totalProfit,
+            totalProfitPercent,
+          });
+
+          setDcInfo({
+            dcPercent: response.discount,
+            dcKrw: Number(
+              (totalSalesAmountKRW * (response.discount / 100)).toFixed(2)
+            ),
+            dcGlobal: Number(
+              (totalSalesAmountGlobal * (response.discount / 100)).toFixed(2)
+            ),
+          });
+        }
       } catch (error) {
         message.error("데이터를 가져오는 중 오류가 발생했습니다.");
       }
@@ -365,7 +438,9 @@ const MakeOffer = () => {
         info.supplierInquiryId,
         info.supplierInfo.supplierId,
         formData,
-        formattedData
+        formattedData,
+        dcInfo.dcPercent,
+        invChargeList
       );
 
       message.success("성공적으로 저장 되었습니다!");
@@ -447,6 +522,14 @@ const MakeOffer = () => {
           calculateTotalAmount={calculateTotalAmount}
           calculateMargin={calculateMargin}
           handlePriceInputChange={handlePriceInputChange}
+          finalTotals={finalTotals}
+          setFinalTotals={setFinalTotals}
+          dcInfo={dcInfo}
+          setDcInfo={setDcInfo}
+          invChargeList={invChargeList}
+          setInvChargeList={setInvChargeList}
+          totals={totals}
+          setTotals={setTotals}
         />
       )}
       {isReadOnly && (
