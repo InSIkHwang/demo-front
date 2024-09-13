@@ -103,8 +103,8 @@ export const generatePDFs = async (
 
     const fileName =
       language === "ENG"
-        ? `${supplierTag.name} REQUEST FOR QUOTATION ${formValues.refNumber}.pdf`
-        : `${supplierTag.name} 견적의뢰서 ${formValues.refNumber}.pdf`;
+        ? `${supplierTag.name} REQUEST FOR QUOTATION ${formValues.docNumber}.pdf`
+        : `${supplierTag.name} 견적의뢰서 ${formValues.docNumber}.pdf`;
     const newFile = new File([pdfBlob], fileName, {
       type: "application/pdf",
     });

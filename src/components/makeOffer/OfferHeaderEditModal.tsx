@@ -43,9 +43,9 @@ const OfferHeaderEditModal = ({
   const [footerText, setFooterText] = useState<string>("");
 
   const placeholderHeaderText = `PORT OF SHIPMENT : BUSAN, KOREA
-DELIVERY TIME    : 
+DELIVERY TIME    :   DAYS AFTER ORDER
 TERMS OF PAYMENT : 
-OFFER VALIDITY   : 
+OFFER VALIDITY   :   DAYS
 PART CONDITION   : `;
   const placeholderRemarkText = `**REMARK
          

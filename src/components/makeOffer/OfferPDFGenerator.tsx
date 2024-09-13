@@ -37,7 +37,6 @@ const OfferPDFGenerator = ({
     email: string | null;
     id: number | null;
   }>({ name: null, id: null, email: null });
-  console.log(customerTag);
 
   const fetchCustomerInfo = async () => {
     const response = await fetchCustomerDetail(customerTag.id);
@@ -74,13 +73,28 @@ const OfferPDFGenerator = ({
       type: "application/pdf",
     });
 
+    // // 다운로드를 트리거하는 함수입니다.
+    // const downloadFile = (file: any) => {
+    //   const url = URL.createObjectURL(file);
+    //   const a = document.createElement("a");
+    //   a.href = url;
+    //   a.download = file.name;
+    //   document.body.appendChild(a);
+    //   a.click();
+    //   document.body.removeChild(a);
+    //   URL.revokeObjectURL(url);
+    // };
+
+    // // 파일을 다운로드합니다.
+    // downloadFile(newFile);
+
     // 메일 데이터 생성
     const mailData: offerEmailSendData = {
       toRecipient: customerInfo.email || "", // Use empty string if email is null
       subject:
         language === "ENG"
-          ? `BASKOREA QUOTATION  ${info.documentNumber}  ${info.vesselName}`
-          : `BASKOREA QUOTATION  ${info.documentNumber}  ${info.vesselName}`,
+          ? `BASKOREA QUOTATION ${info.refNumber} // ${info.documentNumber} `
+          : `BASKOREA QUOTATION ${info.refNumber} // ${info.documentNumber}  `,
       content: `Dear Sir.
 Good day.
 Thank you very much for new inquiry.
@@ -105,7 +119,7 @@ Thanks & Best Regards`,
     if (customerInfo.id !== null) {
       generateAndSendPDFs();
     }
-  }, [customerInfo]);
+  }, [customerInfo, pdfHeader]);
 
   return null;
 };

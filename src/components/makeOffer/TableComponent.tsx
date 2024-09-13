@@ -52,7 +52,6 @@ const CustomTable = styled(Table)`
 
   .highlight-cell {
     font-weight: bold !important;
-    background-color: #ccc;
 
     .ant-input-group-addon {
       background-color: #dff4ff;

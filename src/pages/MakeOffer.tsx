@@ -521,7 +521,7 @@ const MakeOffer = () => {
           idList={idList}
         />
       </Modal>
-      {isReadOnly && pdfCustomerTag && (
+      {isReadOnly && pdfCustomerTag && isMailSenderVisible && (
         <OfferPDFGenerator
           info={info}
           items={info.inquiryItemDetails}

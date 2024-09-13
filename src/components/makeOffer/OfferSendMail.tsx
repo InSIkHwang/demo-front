@@ -17,6 +17,7 @@ import { offerEmailSendData } from "../../types/types";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 import { CheckboxChangeEvent } from "antd/es/checkbox";
+import LoadingSpinner from "../LoadingSpinner";
 
 const { TextArea } = Input;
 const { Title } = Typography;
@@ -73,7 +74,6 @@ const OfferMailSender = ({
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [uploadFile, setUploadFile] = useState<File[]>([]);
-  console.log(mailData);
 
   const navigate = useNavigate();
   const INITIAL_DATA = {
@@ -143,6 +143,9 @@ const OfferMailSender = ({
     );
   };
 
+  if (mailData === null) {
+    return <LoadingSpinner></LoadingSpinner>;
+  }
   return (
     <StyledForm form={form} onFinish={onFinish} initialValues={INITIAL_DATA}>
       <StyledFormItem name="documentNumber" label="Document Number">
