@@ -69,6 +69,14 @@ interface MergedTableComponentProps {
   setDataSource: Dispatch<SetStateAction<ItemDataType[]>>;
   currency: number;
   currencyType: string;
+  finalTotals: {
+    totalSalesAmountKRW: number;
+    totalSalesAmountGlobal: number;
+    totalPurchaseAmountKRW: number;
+    totalPurchaseAmountGlobal: number;
+    totalProfit: number;
+    totalProfitPercent: number;
+  };
 }
 
 const MergedTableComponent = ({
@@ -76,6 +84,7 @@ const MergedTableComponent = ({
   currency,
   setDataSource,
   currencyType,
+  finalTotals,
 }: MergedTableComponentProps) => {
   const [totals, setTotals] = useState({
     totalSalesAmountKRW: 0,
@@ -336,35 +345,41 @@ const MergedTableComponent = ({
         <TotalCard>
           <span>매출총액(KRW)</span>
           <span className="value">
-            ₩ {totals.totalSalesAmountKRW.toLocaleString()}
+            ₩ {finalTotals.totalSalesAmountKRW.toLocaleString()}
           </span>
         </TotalCard>
         <TotalCard>
           <span>매출총액(F)</span>
           <span className="value">
-            F {totals.totalSalesAmountGlobal.toLocaleString()}
+            F {finalTotals.totalSalesAmountGlobal.toLocaleString()}
           </span>
         </TotalCard>
         <TotalCard>
           <span>매입총액(KRW)</span>
           <span className="value">
-            ₩ {totals.totalPurchaseAmountKRW.toLocaleString()}
+            ₩ {finalTotals.totalPurchaseAmountKRW.toLocaleString()}
           </span>
         </TotalCard>
         <TotalCard>
           <span>매입총액(F)</span>
           <span className="value">
-            F {totals.totalPurchaseAmountGlobal.toLocaleString()}
+            F {finalTotals.totalPurchaseAmountGlobal.toLocaleString()}
           </span>
         </TotalCard>
-        <TotalCard $isHighlight $isPositive={totals.totalProfit >= 0}>
+        <TotalCard $isHighlight $isPositive={finalTotals.totalProfit >= 0}>
           <span>이익합계</span>
-          <span className="value">₩ {totals.totalProfit}</span>
+          <span className="value">₩ {finalTotals.totalProfit}</span>
         </TotalCard>
-        <TotalCard $isHighlight $isPositive={totals.totalProfitPercent >= 0}>
+        <TotalCard
+          $isHighlight
+          $isPositive={finalTotals.totalProfitPercent >= 0}
+        >
           <span>이익율</span>
           <span className="value">
-            {isNaN(totals.totalProfitPercent) ? 0 : totals.totalProfitPercent}%
+            {isNaN(finalTotals.totalProfitPercent)
+              ? 0
+              : finalTotals.totalProfitPercent}
+            %
           </span>
         </TotalCard>
       </TotalCards>

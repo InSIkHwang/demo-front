@@ -994,6 +994,7 @@ const TableComponent = ({
           salesAmountKRW,
           purchaseAmountKRW
         );
+        handleInputChange(index, "margin", marginPercent);
         return (
           <InputNumber
             value={marginPercent}
@@ -1057,16 +1058,7 @@ const TableComponent = ({
           </span>
         </TotalCard>
       </TotalCards>
-      <ChargeInputPopover
-        totals={totals}
-        finalTotals={finalTotals}
-        setFinalTotals={setFinalTotals}
-        currency={currency}
-        dcInfo={dcInfo}
-        setDcInfo={setDcInfo}
-        invChargeList={invChargeList}
-        setInvChargeList={setInvChargeList}
-      />
+
       <DndContext
         sensors={sensors}
         modifiers={[restrictToVerticalAxis]}

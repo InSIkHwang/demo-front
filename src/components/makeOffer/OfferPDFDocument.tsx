@@ -13,8 +13,13 @@ import dayjs from "dayjs";
 import malgunGothic from "../../assets/font/malgun.ttf";
 import NotoSerifKRExtraBold from "../../assets/font/NotoSerifKR-ExtraBold.ttf";
 import NotoSerifKR from "../../assets/font/NotoSerifKR-Medium.ttf";
+import NotoSansRegular from "../../assets/font/NotoSansRegular.ttf";
 import logoUrl from "../../assets/logo/baskorea_logo-removebg.png";
-import { ItemDataType, SupplierInquiryDetailIF } from "../../types/types";
+import {
+  InvCharge,
+  ItemDataType,
+  SupplierInquiryDetailIF,
+} from "../../types/types";
 
 // 한글 글꼴 등록
 Font.register({
@@ -29,6 +34,11 @@ Font.register({
   family: "NotoSerifKR",
   src: NotoSerifKR,
 });
+Font.register({
+  family: "NotoSansRegular",
+  src: NotoSansRegular,
+});
+Font.registerHyphenationCallback((word) => ["", word, ""]);
 
 interface PDFDocumentProps {
   info: SupplierInquiryDetailIF;
@@ -36,6 +46,16 @@ interface PDFDocumentProps {
   viewMode: boolean;
   language: string;
   pdfFooter: string;
+  finalTotals: {
+    totalSalesAmountKRW: number;
+    totalSalesAmountGlobal: number;
+    totalPurchaseAmountKRW: number;
+    totalPurchaseAmountGlobal: number;
+    totalProfit: number;
+    totalProfitPercent: number;
+  };
+  dcInfo: { dcPercent: number; dcKrw: number; dcGlobal: number };
+  invChargeList: InvCharge[] | null;
 }
 
 // 스타일 정의
@@ -138,18 +158,27 @@ const styles = StyleSheet.create({
   tableCell: {
     fontSize: 9,
     textAlign: "center",
+    wordBreak: "break-all",
   },
   tableTotalAmount: {
     marginLeft: "auto",
     width: 250,
-    marginTop: 20,
-    borderTop: "1px dotted #000",
-    padding: 5,
     fontSize: 10,
     textAlign: "right",
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-between",
+    fontFamily: "NotoSansRegular",
+  },
+  tableDCAmount: {
+    marginLeft: "auto",
+    width: 250,
+    fontSize: 10,
+    textAlign: "right",
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    fontFamily: "NotoSansRegular",
   },
   nonItemtypeCell: {
     marginLeft: 40,
@@ -208,10 +237,10 @@ const renderTableRows = (items: ItemDataType[]) => {
         {isItemType ? (
           <>
             <View style={styles.tableMedCol}>
-              <Text style={styles.tableCell}>{item.itemCode}</Text>
+              <Text style={styles.tableCell}>{item.itemCode.split("")}</Text>
             </View>
             <View style={styles.tableBigCol}>
-              <Text style={styles.tableCell}>{item.itemName}</Text>
+              <Text style={styles.tableCell}>{item.itemName.split("")}</Text>
             </View>
             <View style={styles.tableSmallCol}>
               <Text style={styles.tableCell}>{item.qty}</Text>
@@ -237,7 +266,9 @@ const renderTableRows = (items: ItemDataType[]) => {
               { flex: 1, borderLeft: "0.5px solid #000" },
             ]}
           >
-            <Text style={styles.nonItemtypeCell}>{item.itemName}</Text>
+            <Text style={styles.nonItemtypeCell}>
+              {item.itemName.split("")}
+            </Text>
           </View>
         )}
       </View>
@@ -277,14 +308,20 @@ const renderHeader = (
     </View>
     <View style={styles.inquiryInfoWrap}>
       <View style={styles.inquiryInfoColumn}>
-        <Text style={styles.inquiryInfoText}>MESSRS: {customerName}</Text>
-        <Text style={[styles.inquiryInfoText]}>VESSEL NAME: {vesselName}</Text>
+        <Text style={styles.inquiryInfoText}>
+          MESSRS: {customerName.split("")}
+        </Text>
+        <Text style={[styles.inquiryInfoText]}>
+          VESSEL NAME: {vesselName.split("")}
+        </Text>
         <Text style={[styles.inquiryInfoText, { marginBottom: 10 }]}>
-          YOUR REF NO: {refNumber}
+          YOUR REF NO: {refNumber.split("")}
         </Text>
       </View>
       <View style={[styles.inquiryInfoColumn, { alignItems: "flex-end" }]}>
-        <Text style={styles.inquiryInfoText}>REF No: {docNumber}</Text>
+        <Text style={styles.inquiryInfoText}>
+          REF No: {docNumber.split("")}
+        </Text>
         <Text style={styles.inquiryInfoText}>
           {language === "KOR"
             ? "DATE: " +
@@ -295,7 +332,7 @@ const renderHeader = (
       </View>
     </View>
     <View style={styles.section}>
-      <Text style={styles.headerMessage}>{pdfHeader}</Text>
+      <Text style={styles.headerMessage}>{pdfHeader.split("")}</Text>
     </View>
   </>
 );
@@ -306,6 +343,9 @@ const OfferPDFDocument = ({
   viewMode,
   language,
   pdfFooter,
+  finalTotals,
+  dcInfo,
+  invChargeList,
 }: PDFDocumentProps) => {
   const items = [...info.inquiryItemDetails].sort(
     (a, b) => a.position! - b.position!
@@ -317,148 +357,11 @@ const OfferPDFDocument = ({
   const totalSalesAmountGlobal = calculateTotalSalesAmount(
     info.inquiryItemDetails
   );
-  console.log(info);
+  const dcAmountGlobal = totalSalesAmountGlobal * (dcInfo.dcPercent / 100);
 
-  if (viewMode) {
-    return (
-      <PDFViewer width="100%" height="600" style={{ margin: "20px 0" }}>
-        <Document>
-          <Page size="A4" style={styles.page}>
-            {renderHeader(
-              logoUrl,
-              info.customerName,
-              info.vesselName,
-              info.documentNumber || "",
-              dayjs().format("YYYY-MM-DD"),
-              headerMessage,
-              language,
-              info.refNumber
-            )}
-            <View
-              style={{
-                fontSize: 10,
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: "space-between",
-                marginBottom: 10,
-              }}
-              fixed
-              render={() => (
-                <>
-                  <View>
-                    <Text
-                      render={() => `OUR RED NO. : ${info.documentNumber}`}
-                      style={{ textAlign: "right" }}
-                    />
-                  </View>
-                  <View style={{ display: "flex", flexDirection: "row" }}>
-                    <Text
-                      render={() => {
-                        switch (info.currencyType) {
-                          case "USD":
-                            return `UNIT USD $`;
-                          case "EUR":
-                            return `UNIT EUR €`;
-                          case "INR":
-                            return `UNIT INR ₹`;
-                          case "JPY":
-                            return `UNIT JPY ¥`;
-                          default:
-                            return ``;
-                        }
-                      }}
-                      fixed
-                      style={{ marginRight: 60 }}
-                    />
-                    <Text
-                      render={({ pageNumber, totalPages }) =>
-                        `PAGE: ${pageNumber} / ${totalPages}`
-                      }
-                      style={{ textAlign: "right" }}
-                    />
-                  </View>
-                </>
-              )}
-            ></View>
-            <View style={styles.table}>
-              <View
-                style={[
-                  styles.tableRow,
-                  {
-                    borderBottom: "1px solid #000",
-                    borderTop: "1px solid #000",
-                  },
-                ]}
-                fixed
-              >
-                <View
-                  style={[
-                    styles.tableSmallCol,
-                    { borderLeft: "0.5px solid #000" },
-                  ]}
-                >
-                  <Text style={styles.tableCell}>NO.</Text>
-                </View>
-                <View style={styles.tableMedCol}>
-                  <Text style={styles.tableCell}>CODE</Text>
-                </View>
-                <View style={styles.tableBigCol}>
-                  <Text style={styles.tableCell}>DESCRIPTION</Text>
-                </View>
-                <View style={styles.tableSmallCol}>
-                  <Text style={styles.tableCell}>Q'TY</Text>
-                </View>
-                <View style={styles.tableSmallCol}>
-                  <Text style={styles.tableCell}>UNIT</Text>
-                </View>
-                <View style={styles.tableMedCol}>
-                  <Text style={styles.tableCell}>U/PRICE</Text>
-                </View>
-                <View style={styles.tableMedCol}>
-                  <Text style={styles.tableCell}>AMOUNT</Text>
-                </View>
-              </View>
-              {renderTableRows(items)}
-              <View style={styles.tableTotalAmount}>
-                <Text wrap>T O T A L ({info.currencyType}):</Text>
-                <Text wrap>
-                  {(() => {
-                    switch (info.currencyType) {
-                      case "USD":
-                        return `$${totalSalesAmountGlobal
-                          .toFixed(2)
-                          .toLocaleString()}`;
-                      case "EUR":
-                        return `€${totalSalesAmountGlobal
-                          .toFixed(2)
-                          .toLocaleString()}`;
-                      case "INR":
-                        return `₹${totalSalesAmountGlobal
-                          .toFixed(2)
-                          .toLocaleString()}`;
-                      case "JPY":
-                        return `¥${totalSalesAmountGlobal
-                          .toFixed(2)
-                          .toLocaleString()}`;
-                      default:
-                        return `${totalSalesAmountGlobal
-                          .toFixed(2)
-                          .toLocaleString()}`;
-                    }
-                  })()}
-                </Text>
-              </View>
-            </View>
-            <View style={styles.section}>
-              <Text style={styles.footerMessage}>{pdfFooter}</Text>
-            </View>
-          </Page>
-        </Document>
-      </PDFViewer>
-    );
-  }
+  console.log(finalTotals);
 
-  return (
+  const pdfBody = (
     <Document>
       <Page size="A4" style={styles.page}>
         {renderHeader(
@@ -505,7 +408,7 @@ const OfferPDFDocument = ({
                     }
                   }}
                   fixed
-                  style={{ marginRight: 60 }}
+                  style={{ marginRight: 60, fontFamily: "NotoSansRegular" }}
                 />
                 <Text
                   render={({ pageNumber, totalPages }) =>
@@ -553,9 +456,18 @@ const OfferPDFDocument = ({
             </View>
           </View>
           {renderTableRows(items)}
-          <View style={styles.tableTotalAmount}>
-            <Text wrap>T O T A L ({info.currencyType}):</Text>
-            <Text wrap>
+          <View
+            style={[
+              styles.tableTotalAmount,
+              {
+                marginTop: 20,
+                borderTop: "1px solid #000",
+                padding: "5px 0",
+              },
+            ]}
+          >
+            <Text wrap>T O T A L ({info.currencyType})</Text>
+            <Text style={{ fontFamily: "NotoSansRegular" }} wrap>
               {(() => {
                 switch (info.currencyType) {
                   case "USD":
@@ -582,13 +494,123 @@ const OfferPDFDocument = ({
               })()}
             </Text>
           </View>
+          {dcInfo.dcPercent && dcInfo.dcPercent !== 0 && (
+            <View style={styles.tableDCAmount}>
+              <Text wrap>DC AMT({dcInfo.dcPercent}%)</Text>
+              <Text style={styles.tableTotalAmount} wrap>
+                {(() => {
+                  switch (info.currencyType) {
+                    case "USD":
+                      return `-$${dcAmountGlobal.toFixed(2).toLocaleString()}`;
+                    case "EUR":
+                      return `-€${dcAmountGlobal.toFixed(2).toLocaleString()}`;
+                    case "INR":
+                      return `-₹${dcAmountGlobal.toFixed(2).toLocaleString()}`;
+                    case "JPY":
+                      return `-¥${dcAmountGlobal.toFixed(2).toLocaleString()}`;
+                    default:
+                      return `-${dcAmountGlobal.toFixed(2).toLocaleString()}`;
+                  }
+                })()}
+              </Text>
+            </View>
+          )}
+          {invChargeList && invChargeList.length > 0 && (
+            <View style={styles.tableDCAmount}>
+              {invChargeList.map((charge) => (
+                <View key={charge.invChargeId} style={styles.tableDCAmount}>
+                  <Text wrap>{charge.customCharge.split("")}</Text>
+                  <Text style={styles.tableTotalAmount} wrap>
+                    {(() => {
+                      switch (info.currencyType) {
+                        case "USD":
+                          return `$${charge.chargePriceGlobal
+                            .toFixed(2)
+                            .toLocaleString()}`;
+                        case "EUR":
+                          return `€${charge.chargePriceGlobal
+                            .toFixed(2)
+                            .toLocaleString()}`;
+                        case "INR":
+                          return `₹${charge.chargePriceGlobal
+                            .toFixed(2)
+                            .toLocaleString()}`;
+                        case "JPY":
+                          return `¥${charge.chargePriceGlobal
+                            .toFixed(2)
+                            .toLocaleString()}`;
+                        default:
+                          return `${charge.chargePriceGlobal
+                            .toFixed(2)
+                            .toLocaleString()}`;
+                      }
+                    })()}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
+          <View
+            style={[
+              styles.tableTotalAmount,
+              {
+                marginTop: 20,
+                borderTop: "1px dotted #000",
+                borderBottom: "1px solid #000",
+                padding: "5px 0",
+              },
+            ]}
+          >
+            <Text wrap>G.TOTAL AMT</Text>
+            <Text
+              style={{
+                fontFamily: "NotoSansRegular",
+              }}
+              wrap
+            >
+              {(() => {
+                switch (info.currencyType) {
+                  case "USD":
+                    return `$${finalTotals.totalSalesAmountGlobal
+                      .toFixed(2)
+                      .toLocaleString()}`;
+                  case "EUR":
+                    return `€${finalTotals.totalSalesAmountGlobal
+                      .toFixed(2)
+                      .toLocaleString()}`;
+                  case "INR":
+                    return `₹${finalTotals.totalSalesAmountGlobal
+                      .toFixed(2)
+                      .toLocaleString()}`;
+                  case "JPY":
+                    return `¥${finalTotals.totalSalesAmountGlobal
+                      .toFixed(2)
+                      .toLocaleString()}`;
+                  default:
+                    return `${finalTotals.totalSalesAmountGlobal
+                      .toFixed(2)
+                      .toLocaleString()}`;
+                }
+              })()}
+            </Text>
+          </View>
         </View>
         <View style={styles.section}>
-          <Text style={styles.footerMessage}>{pdfFooter}</Text>
+          <Text style={styles.footerMessage}>{pdfFooter.split("")}</Text>
         </View>
       </Page>
     </Document>
   );
+
+  if (viewMode) {
+    return (
+      <PDFViewer width="100%" height="600" style={{ margin: "20px 0" }}>
+        {pdfBody}
+      </PDFViewer>
+    );
+  }
+
+  return pdfBody;
 };
 
 export default OfferPDFDocument;

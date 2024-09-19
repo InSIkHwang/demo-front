@@ -181,6 +181,15 @@ export interface SupplierInquiryDetailIF {
     representative: string;
     email: string;
   };
+  discount: number;
+  invChargeList: invCharge[] | [];
+}
+
+export interface invCharge {
+  invChargeId: number;
+  customCharge: string;
+  chargePriceKRW: number;
+  chargePriceGlobal: number;
 }
 
 export interface FormValuesType {

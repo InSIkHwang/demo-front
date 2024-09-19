@@ -75,6 +75,7 @@ const DetailQuotationModal = ({
     useState<QuotationDetail | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const navigate = useNavigate();
+  console.log(quotationDetail);
 
   useEffect(() => {
     const fetchDetails = async () => {

@@ -19,6 +19,7 @@ import OfferPDFGenerator from "../components/makeOffer/OfferPDFGenerator";
 import OfferMailSender from "../components/makeOffer/OfferSendMail";
 import debounce from "lodash/debounce";
 import { InvCharge } from "./../types/types";
+import ChargeInputPopover from "../components/makeOffer/ChargeInputPopover";
 
 const FormContainer = styled.div`
   position: relative;
@@ -121,7 +122,6 @@ const MakeOffer = () => {
         const response = isReadOnly
           ? await editMurgedOffer(idList.offerId) // 배열로 전달
           : await fetchOfferDetail(idList.offerId, idList.supplierId);
-        console.log(response);
 
         // 공통 작업 처리
         setInfo(response);
@@ -186,15 +186,17 @@ const MakeOffer = () => {
           });
 
           setDcInfo({
-            dcPercent: response.discount,
-            dcKrw: Number(
-              (totalSalesAmountKRW * (response.discount / 100)).toFixed(2)
-            ),
-            dcGlobal: Number(
-              (totalSalesAmountGlobal * (response.discount / 100)).toFixed(2)
-            ),
+            dcPercent: response.discount || 0,
+            dcKrw:
+              Number(
+                (totalSalesAmountKRW * (response.discount / 100)).toFixed(2)
+              ) || 0,
+            dcGlobal:
+              Number(
+                (totalSalesAmountGlobal * (response.discount / 100)).toFixed(2)
+              ) || 0,
           });
-          setInvChargeList(response.invChargeList);
+          setInvChargeList(response.invChargeList || []);
         }
       } catch (error) {
         message.error("데이터를 가져오는 중 오류가 발생했습니다.");
@@ -260,6 +262,7 @@ const MakeOffer = () => {
       const currentItem = updatedDataSource[index];
       let updatedItem = { ...currentItem, [key]: value };
       // Update the data source immediately
+
       updatedDataSource[index] = updatedItem;
       if (JSON.stringify(dataSource) !== JSON.stringify(updatedDataSource)) {
         setDataSource(updatedDataSource);
@@ -511,6 +514,16 @@ const MakeOffer = () => {
           handleFormChange={handleFormChange}
         />
       )}
+      <ChargeInputPopover
+        totals={totals}
+        finalTotals={finalTotals}
+        setFinalTotals={setFinalTotals}
+        currency={formValues.currency}
+        dcInfo={dcInfo}
+        setDcInfo={setDcInfo}
+        invChargeList={invChargeList}
+        setInvChargeList={setInvChargeList}
+      />
       {!isReadOnly && (
         <TableComponent
           dataSource={dataSource}
@@ -540,8 +553,10 @@ const MakeOffer = () => {
           setDataSource={setDataSource}
           currency={formValues.currency}
           currencyType={formValues.currencyType}
+          finalTotals={finalTotals}
         />
       )}
+
       {!isReadOnly && (
         <Button
           type="primary"
@@ -617,6 +632,9 @@ const MakeOffer = () => {
           setMailData={setMailData}
           setPdfFileData={setPdfFileData}
           customerTag={pdfCustomerTag}
+          finalTotals={finalTotals}
+          dcInfo={dcInfo}
+          invChargeList={invChargeList}
         />
       )}
       {showPDFPreview && (
@@ -626,6 +644,9 @@ const MakeOffer = () => {
           pdfFooter={pdfFooter}
           viewMode={true}
           language={language}
+          finalTotals={finalTotals}
+          dcInfo={dcInfo}
+          invChargeList={invChargeList}
         />
       )}
     </FormContainer>

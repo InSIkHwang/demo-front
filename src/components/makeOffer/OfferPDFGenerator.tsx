@@ -3,6 +3,7 @@ import { pdf } from "@react-pdf/renderer";
 import OfferPDFDocument from "./OfferPDFDocument";
 import {
   InquiryItem,
+  InvCharge,
   offerEmailSendData,
   SupplierInquiryDetailIF,
 } from "../../types/types";
@@ -20,6 +21,16 @@ interface PDFGeneratorProps {
     id: number;
     name: string;
   };
+  finalTotals: {
+    totalSalesAmountKRW: number;
+    totalSalesAmountGlobal: number;
+    totalPurchaseAmountKRW: number;
+    totalPurchaseAmountGlobal: number;
+    totalProfit: number;
+    totalProfitPercent: number;
+  };
+  dcInfo: { dcPercent: number; dcKrw: number; dcGlobal: number };
+  invChargeList: InvCharge[] | null;
 }
 
 const OfferPDFGenerator = ({
@@ -31,6 +42,9 @@ const OfferPDFGenerator = ({
   language,
   setPdfFileData,
   customerTag,
+  finalTotals,
+  dcInfo,
+  invChargeList,
 }: PDFGeneratorProps) => {
   const [customerInfo, setCustomerInfo] = useState<{
     name: string | null;
@@ -61,6 +75,9 @@ const OfferPDFGenerator = ({
         pdfHeader={pdfHeader}
         pdfFooter={pdfFooter}
         viewMode={false}
+        finalTotals={finalTotals}
+        dcInfo={dcInfo}
+        invChargeList={invChargeList}
       />
     );
 

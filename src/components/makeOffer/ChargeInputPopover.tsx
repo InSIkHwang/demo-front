@@ -137,21 +137,27 @@ const ChargeInputPopover = ({
 
   const applyDcAndCharge = () => {
     // Calculate new totals
-    const newTotalSalesAmountKRW = totals.totalSalesAmountKRW - dcInfo.dcKrw;
+    const newTotalSalesAmountKRW =
+      totals.totalSalesAmountKRW - (dcInfo.dcPercent ? dcInfo.dcKrw : 0);
     const newTotalSalesAmountGlobal =
-      totals.totalSalesAmountGlobal - dcInfo.dcGlobal;
+      totals.totalSalesAmountGlobal - (dcInfo.dcPercent ? dcInfo.dcGlobal : 0);
 
-    const chargePriceKRWTotal = invChargeList!.reduce(
-      (acc, charge) => acc + charge.chargePriceKRW,
-      0
-    );
-    const chargePriceGlobalTotal = invChargeList!.reduce(
-      (acc, charge) => acc + charge.chargePriceGlobal,
-      0
-    );
+    const chargePriceKRWTotal =
+      invChargeList && Array.isArray(invChargeList) && invChargeList.length > 0
+        ? invChargeList.reduce((acc, charge) => acc + charge.chargePriceKRW, 0)
+        : 0;
+
+    const chargePriceGlobalTotal =
+      invChargeList && Array.isArray(invChargeList) && invChargeList.length > 0
+        ? invChargeList.reduce(
+            (acc, charge) => acc + charge.chargePriceGlobal,
+            0
+          )
+        : 0;
 
     const updatedTotalSalesAmountKRW =
       newTotalSalesAmountKRW + chargePriceKRWTotal;
+
     const updatedTotalSalesAmountGlobal =
       newTotalSalesAmountGlobal + chargePriceGlobalTotal;
 
@@ -214,7 +220,7 @@ const ChargeInputPopover = ({
         >
           Add Charge
         </Button>
-        {invChargeList !== null && (
+        {invChargeList !== null && invChargeList?.length > 0 && (
           <Form.Item label="Charge Info">
             {invChargeList.map((charge, index) => (
               <InputGroup style={{ marginBottom: 5 }} key={index}>
@@ -273,16 +279,18 @@ const ChargeInputPopover = ({
   );
 
   return (
-    <Popover
-      content={content}
-      title="Enter D/C and Charges"
-      trigger="click"
-      placement="bottom"
-    >
-      <Button type="dashed" style={{ float: "right", marginBottom: 10 }}>
-        Open Charge Input
-      </Button>
-    </Popover>
+    <div style={{ display: "flex", justifyContent: "flex-end" }}>
+      <Popover
+        content={content}
+        title="Enter D/C and Charges"
+        trigger="click"
+        placement="bottom"
+      >
+        <Button type="dashed" style={{ marginBottom: 10 }}>
+          Open Charge Input
+        </Button>
+      </Popover>
+    </div>
   );
 };
 

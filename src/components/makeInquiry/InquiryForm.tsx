@@ -191,6 +191,7 @@ const InquiryForm = ({
       try {
         if (selectedType === "의뢰처") {
           const data = await searchSupplier(value);
+
           const options = data.suppliers.map((supplier) => ({
             name: supplier.companyName,
             id: supplier.id,
@@ -199,11 +200,7 @@ const InquiryForm = ({
           }));
           setSupplierList(options);
           setAutoSearchSupCompleteOptions(
-            options
-              .filter((supplier) =>
-                supplier.name.toLowerCase().includes(value.toLowerCase())
-              )
-              .map((supplier) => ({ value: supplier.name }))
+            options.map((supplier) => ({ value: supplier.code }))
           );
         } else if (selectedType === "MAKER") {
           const data = await searchSupplierUseMaker(value, categoryType);
@@ -264,7 +261,7 @@ const InquiryForm = ({
     if (selectedType === "의뢰처") {
       const matchedSupplier = supplierList.find(
         (supplier) =>
-          supplier.name.toLowerCase() === supplierSearch.toLowerCase()
+          supplier.code.toLowerCase() === supplierSearch.toLowerCase()
       );
       if (matchedSupplier) {
         matchedSuppliers = [matchedSupplier];

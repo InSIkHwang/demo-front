@@ -322,7 +322,8 @@ const MakeInquiryTable = ({
                   handleInputChange(index, "itemCode", value); // itemCode 업데이트
                   handleInputChange(index, "itemName", option.name); // itemName 업데이트
                 }}
-                dropdownStyle={{ width: 250 }}
+                dropdownStyle={{ width: 400 }}
+                style={{ width: "100%" }}
               >
                 <Input
                   style={{
@@ -339,7 +340,7 @@ const MakeInquiryTable = ({
               )}
             </div>
           ) : null,
-        width: 150,
+        width: 300,
       },
       {
         title: "OPT",
@@ -430,7 +431,7 @@ const MakeInquiryTable = ({
             )}
           </div>
         ),
-        width: 250,
+        width: 500,
       },
       {
         title: "QTY",
