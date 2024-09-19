@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
+import React, { Dispatch, SetStateAction, useEffect } from "react";
 import { Button, Popover, Input, Form } from "antd";
 import styled from "styled-components";
 import { InvCharge } from "../../types/types";
@@ -6,6 +6,11 @@ import { InvCharge } from "../../types/types";
 const InputGroup = styled.div`
   display: flex;
   gap: 8px;
+`;
+
+const ChargeBox = styled.div`
+  display: flex;
+  flex-direction: column;
 `;
 
 interface ChargeComponentProps {
@@ -174,7 +179,10 @@ const ChargeInputPopover = ({
 
   const content = (
     <Form style={{ maxWidth: 600, paddingBottom: 40 }} layout="horizontal">
-      <Form.Item label="D/C">
+      <Form.Item
+        label="D/C"
+        style={{ borderBottom: "1px solid #ccc", paddingBottom: 20 }}
+      >
         <InputGroup>
           <Input
             value={dcInfo.dcPercent}
@@ -197,64 +205,66 @@ const ChargeInputPopover = ({
             addonAfter="F"
           />
         </InputGroup>
+      </Form.Item>
+      <ChargeBox style={{ borderBottom: "1px solid #ccc" }}>
         <Button
           type="default"
-          style={{ float: "right", marginTop: 20 }}
+          style={{ margin: "10px 0" }}
           onClick={addNewCharge}
         >
           Add Charge
         </Button>
-      </Form.Item>
+        {invChargeList !== null && (
+          <Form.Item label="Charge Info">
+            {invChargeList.map((charge, index) => (
+              <InputGroup style={{ marginBottom: 5 }} key={index}>
+                <Input
+                  value={charge.customCharge}
+                  onChange={(e) =>
+                    handleChargeChange(index, "customCharge", e.target.value)
+                  }
+                  placeholder="Enter charge name"
+                />
+                <Input
+                  value={charge.chargePriceKRW}
+                  onChange={(e) =>
+                    handleChargeChange(
+                      index,
+                      "chargePriceKRW",
+                      Number(e.target.value)
+                    )
+                  }
+                  placeholder="Enter charge value (₩)"
+                  addonAfter="₩"
+                />
+                <Input
+                  value={charge.chargePriceGlobal}
+                  onChange={(e) =>
+                    handleChargeChange(
+                      index,
+                      "chargePriceGlobal",
+                      Number(e.target.value)
+                    )
+                  }
+                  placeholder="Enter charge value (Global)"
+                  addonAfter="F"
+                />
+                <Button
+                  type="default"
+                  onClick={() => removeCharge(index)}
+                  style={{ marginLeft: 8 }}
+                >
+                  Delete
+                </Button>
+              </InputGroup>
+            ))}
+          </Form.Item>
+        )}
+      </ChargeBox>
 
-      {invChargeList !== null && (
-        <Form.Item label="Charge Info">
-          {invChargeList.map((charge, index) => (
-            <InputGroup style={{ marginBottom: 5 }} key={index}>
-              <Input
-                value={charge.customCharge}
-                onChange={(e) =>
-                  handleChargeChange(index, "customCharge", e.target.value)
-                }
-                placeholder="Enter charge name"
-              />
-              <Input
-                value={charge.chargePriceKRW}
-                onChange={(e) =>
-                  handleChargeChange(
-                    index,
-                    "chargePriceKRW",
-                    Number(e.target.value)
-                  )
-                }
-                placeholder="Enter charge value (₩)"
-                addonAfter="₩"
-              />
-              <Input
-                value={charge.chargePriceGlobal}
-                onChange={(e) =>
-                  handleChargeChange(
-                    index,
-                    "chargePriceGlobal",
-                    Number(e.target.value)
-                  )
-                }
-                placeholder="Enter charge value (Global)"
-                addonAfter="F"
-              />
-              <Button
-                type="default"
-                onClick={() => removeCharge(index)}
-                style={{ marginLeft: 8 }}
-              >
-                Delete
-              </Button>
-            </InputGroup>
-          ))}
-        </Form.Item>
-      )}
       <Button
         type="primary"
-        style={{ float: "right", marginTop: 10 }}
+        style={{ marginTop: 10, width: "100%" }}
         onClick={applyDcAndCharge}
       >
         Apply D/C & Charge

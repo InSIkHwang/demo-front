@@ -757,7 +757,10 @@ const TableComponent = ({
               inputRefs.current[index][6] = el; // columnIndex를 맞추어 설정
             }}
             onKeyDown={(e) => handleNextRowKeyDown(e, index, 6)}
-            onChange={async (e) => {
+            onChange={(e) =>
+              handleInputChange(index, "salesPriceKRW", e.target.value)
+            }
+            onBlur={async (e) => {
               // 형식 제거
               const unformattedValue = e.target.value.replace(/,/g, "");
               const updatedValue = isNaN(Number(unformattedValue))
@@ -794,13 +797,16 @@ const TableComponent = ({
               inputRefs.current[index][7] = el; // columnIndex를 맞추어 설정
             }}
             onKeyDown={(e) => handleNextRowKeyDown(e, index, 7)}
-            onChange={(e) => {
+            onChange={(e) =>
+              handleInputChange(index, "salesPriceGlobal", e.target.value)
+            }
+            onBlur={(e) => {
               const value = e.target.value;
               // Remove formatting before processing
               const unformattedValue = value.replace(/,/g, "");
-              const updatedValue = isNaN(Number(unformattedValue))
+              const updatedValue = isNaN(parseFloat(unformattedValue))
                 ? 0
-                : Number(unformattedValue);
+                : parseFloat(unformattedValue);
               handlePriceInputChange(
                 index,
                 "salesPriceGlobal",
@@ -870,7 +876,10 @@ const TableComponent = ({
               inputRefs.current[index][9] = el; // columnIndex를 맞추어 설정
             }}
             onKeyDown={(e) => handleNextRowKeyDown(e, index, 9)}
-            onChange={(e) => {
+            onChange={(e) =>
+              handleInputChange(index, "purchasePriceKRW", e.target.value)
+            }
+            onBlur={(e) => {
               const value = e.target.value;
               const unformattedValue = value.replace(/,/g, "");
               const updatedValue = isNaN(Number(unformattedValue))
@@ -905,7 +914,10 @@ const TableComponent = ({
               inputRefs.current[index][10] = el; // columnIndex를 맞추어 설정
             }}
             onKeyDown={(e) => handleNextRowKeyDown(e, index, 10)}
-            onChange={(e) => {
+            onChange={(e) =>
+              handleInputChange(index, "purchasePriceGlobal", e.target.value)
+            }
+            onBlur={(e) => {
               const value = e.target.value;
               const unformattedValue = value.replace(/,/g, "");
               const updatedValue = isNaN(Number(unformattedValue))

@@ -377,6 +377,7 @@ export const editOffer = async (
     documentEditInfo,
     itemCostEditList,
   };
+  console.log(requestData);
 
   await axios.put(`/api/supplier-inquiries/${supplierInquiryId}`, requestData);
 };

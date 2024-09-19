@@ -8,7 +8,6 @@ import TableComponent from "../components/makeOffer/TableComponent";
 import { editMurgedOffer, editOffer, fetchOfferDetail } from "../api/api";
 import {
   FormValuesType,
-  InvCharge,
   ItemDataType,
   offerEmailSendData,
 } from "../types/types";
@@ -19,6 +18,7 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import OfferPDFGenerator from "../components/makeOffer/OfferPDFGenerator";
 import OfferMailSender from "../components/makeOffer/OfferSendMail";
 import debounce from "lodash/debounce";
+import { InvCharge } from "./../types/types";
 
 const FormContainer = styled.div`
   position: relative;
@@ -121,6 +121,7 @@ const MakeOffer = () => {
         const response = isReadOnly
           ? await editMurgedOffer(idList.offerId) // 배열로 전달
           : await fetchOfferDetail(idList.offerId, idList.supplierId);
+        console.log(response);
 
         // 공통 작업 처리
         setInfo(response);
@@ -193,6 +194,7 @@ const MakeOffer = () => {
               (totalSalesAmountGlobal * (response.discount / 100)).toFixed(2)
             ),
           });
+          setInvChargeList(response.invChargeList);
         }
       } catch (error) {
         message.error("데이터를 가져오는 중 오류가 발생했습니다.");

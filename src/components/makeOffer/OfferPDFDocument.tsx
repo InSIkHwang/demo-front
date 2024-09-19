@@ -317,6 +317,7 @@ const OfferPDFDocument = ({
   const totalSalesAmountGlobal = calculateTotalSalesAmount(
     info.inquiryItemDetails
   );
+  console.log(info);
 
   if (viewMode) {
     return (
