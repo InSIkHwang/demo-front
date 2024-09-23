@@ -14,7 +14,7 @@ const ChargeBox = styled.div`
 `;
 
 interface ChargeComponentProps {
-  totals: {
+  finalTotals: {
     totalSalesAmountKRW: number;
     totalSalesAmountGlobal: number;
     totalPurchaseAmountKRW: number;
@@ -31,42 +31,58 @@ interface ChargeComponentProps {
   invChargeList: InvCharge[] | null;
   setInvChargeList: Dispatch<SetStateAction<InvCharge[] | null>>;
   applyDcAndCharge: () => void;
+  isReadOnly: boolean;
 }
 
 const ChargeInputPopover = ({
-  totals,
   currency,
   dcInfo,
   setDcInfo,
   invChargeList,
   setInvChargeList,
   applyDcAndCharge,
+  isReadOnly,
+  finalTotals,
 }: ChargeComponentProps) => {
+  const calculateDcKrw = (totalSalesAmountKRW: number, value: number) => {
+    return Number((totalSalesAmountKRW * (value / 100)).toFixed(2));
+  };
+
+  const calculateDcPercentFromKrw = (
+    value: number,
+    totalSalesAmountKRW: number
+  ) => {
+    return Number(((value / totalSalesAmountKRW) * 100).toFixed(2));
+  };
+
+  const calculateDcGlobal = (totalSalesAmount: number, dcPercent: number) => {
+    return Number((totalSalesAmount * (dcPercent / 100)).toFixed(2));
+  };
+
   const handleDcChange = (key: string, value: number) => {
     setDcInfo((prevInfo) => {
       let newDcInfo = { ...prevInfo, [key]: value };
-      const { totalSalesAmountKRW, totalSalesAmountGlobal } = totals;
+      const { totalSalesAmountKRW, totalSalesAmountGlobal } = finalTotals;
 
       if (key === "dcPercent") {
-        newDcInfo.dcKrw = Number(
-          (totalSalesAmountKRW * (value / 100)).toFixed(2)
-        );
-        newDcInfo.dcGlobal = Number(
-          (totalSalesAmountGlobal * (value / 100)).toFixed(2)
-        );
+        newDcInfo.dcKrw = calculateDcKrw(totalSalesAmountKRW, value);
+        newDcInfo.dcGlobal = calculateDcGlobal(totalSalesAmountGlobal, value);
       } else if (key === "dcKrw") {
-        newDcInfo.dcPercent = Number(
-          ((value / totalSalesAmountKRW) * 100).toFixed(2)
+        newDcInfo.dcPercent = calculateDcPercentFromKrw(
+          value,
+          totalSalesAmountKRW
         );
-        newDcInfo.dcGlobal = Number(
-          (totalSalesAmountGlobal * (newDcInfo.dcPercent / 100)).toFixed(2)
+        newDcInfo.dcGlobal = calculateDcGlobal(
+          totalSalesAmountGlobal,
+          newDcInfo.dcPercent
         );
       } else if (key === "dcGlobal") {
         newDcInfo.dcPercent = Number(
           ((value / totalSalesAmountGlobal) * 100).toFixed(2)
         );
-        newDcInfo.dcKrw = Number(
-          (totalSalesAmountKRW * (newDcInfo.dcPercent / 100)).toFixed(2)
+        newDcInfo.dcKrw = calculateDcKrw(
+          totalSalesAmountKRW,
+          newDcInfo.dcPercent
         );
       }
 
@@ -135,18 +151,21 @@ const ChargeInputPopover = ({
             }
             placeholder="Enter D/C %"
             addonAfter="%"
+            readOnly={isReadOnly}
           />
           <Input
             value={dcInfo.dcKrw}
             onChange={(e) => handleDcChange("dcKrw", Number(e.target.value))}
             placeholder="Enter D/C ₩"
             addonAfter="₩"
+            readOnly={isReadOnly}
           />
           <Input
             value={dcInfo.dcGlobal}
             onChange={(e) => handleDcChange("dcGlobal", Number(e.target.value))}
             placeholder="Enter D/C Global"
             addonAfter="F"
+            readOnly={isReadOnly}
           />
         </InputGroup>
       </Form.Item>
@@ -155,6 +174,7 @@ const ChargeInputPopover = ({
           type="default"
           style={{ margin: "10px 0" }}
           onClick={addNewCharge}
+          disabled={isReadOnly}
         >
           Add Charge
         </Button>
@@ -168,6 +188,7 @@ const ChargeInputPopover = ({
                     handleChargeChange(index, "customCharge", e.target.value)
                   }
                   placeholder="Enter charge name"
+                  readOnly={isReadOnly}
                 />
                 <Input
                   value={charge.chargePriceKRW}
@@ -180,6 +201,7 @@ const ChargeInputPopover = ({
                   }
                   placeholder="Enter charge value (₩)"
                   addonAfter="₩"
+                  readOnly={isReadOnly}
                 />
                 <Input
                   value={charge.chargePriceGlobal}
@@ -192,11 +214,13 @@ const ChargeInputPopover = ({
                   }
                   placeholder="Enter charge value (Global)"
                   addonAfter="F"
+                  readOnly={isReadOnly}
                 />
                 <Button
                   type="default"
                   onClick={() => removeCharge(index)}
                   style={{ marginLeft: 8 }}
+                  disabled={isReadOnly}
                 >
                   Delete
                 </Button>
@@ -210,6 +234,7 @@ const ChargeInputPopover = ({
         type="primary"
         style={{ marginTop: 10, width: "100%" }}
         onClick={applyDcAndCharge}
+        disabled={isReadOnly}
       >
         Apply D/C & Charge
       </Button>

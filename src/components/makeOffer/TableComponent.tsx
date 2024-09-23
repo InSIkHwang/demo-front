@@ -734,7 +734,7 @@ const TableComponent = ({
           <Input
             type="text"
             value={calculateTotalAmount(
-              record.salesPriceKRW,
+              record.salesPriceGlobal,
               record.qty
             ).toLocaleString()}
             style={{ width: "100%" }}

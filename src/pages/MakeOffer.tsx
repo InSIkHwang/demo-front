@@ -566,13 +566,14 @@ const MakeOffer = () => {
         />
       )}
       <ChargeInputPopover
-        totals={totals}
         currency={formValues.currency}
         dcInfo={dcInfo}
         setDcInfo={setDcInfo}
         invChargeList={invChargeList}
         setInvChargeList={setInvChargeList}
         applyDcAndCharge={applyDcAndCharge}
+        isReadOnly={isReadOnly}
+        finalTotals={finalTotals}
       />
       {!isReadOnly && (
         <TableComponent
