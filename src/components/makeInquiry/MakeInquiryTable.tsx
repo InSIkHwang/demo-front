@@ -22,21 +22,6 @@ import {
   ExportOutlined,
 } from "@ant-design/icons";
 import { InquiryItem } from "../../types/types";
-import {
-  DndContext,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
-import {
-  SortableContext,
-  useSortable,
-  verticalListSortingStrategy,
-  arrayMove,
-} from "@dnd-kit/sortable";
-
-import styled, { CSSProperties } from "styled-components";
 import ExcelUploadModal from "./ExcelUploadModal";
 import { ColumnsType } from "antd/es/table";
 import { handleExport } from "../../api/api";
@@ -61,45 +46,6 @@ interface MakeInquiryTableProps {
   updateItemId: (index: number, itemId: number | null) => void;
   customerInquiryId: number;
 }
-
-const Row = React.memo(({ rowKey, style, ...props }: any) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
-    id: rowKey,
-  });
-
-  const combinedStyle = useMemo(() => {
-    const transformStyle: CSSProperties = transform
-      ? {
-          transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-        }
-      : {};
-
-    return {
-      ...style,
-      ...transformStyle,
-      transition,
-      cursor: "move",
-      ...(isDragging ? { position: "relative", zIndex: 999 } : {}),
-    };
-  }, [style, transform, transition, isDragging]);
-
-  return (
-    <tr
-      {...props}
-      ref={setNodeRef}
-      style={combinedStyle}
-      {...attributes}
-      {...listeners}
-    />
-  );
-});
 
 const MakeInquiryTable = ({
   items,
@@ -131,14 +77,6 @@ const MakeInquiryTable = ({
     ]);
     setIsModalVisible(false);
   };
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 5,
-      },
-    })
-  );
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
@@ -209,25 +147,6 @@ const MakeInquiryTable = ({
     setDuplicateStates(newDuplicateStates);
     setIsDuplicate(hasDuplicate);
   }, [getDuplicateStates, items, setIsDuplicate]);
-
-  const onDragEnd = ({ active, over }: any) => {
-    if (active.id !== over?.id) {
-      setItems((prevItems) => {
-        const activeIndex = prevItems.findIndex(
-          (item) => item.position === active.id
-        );
-        const overIndex = prevItems.findIndex(
-          (item) => item.position === over?.id
-        );
-        return arrayMove(prevItems, activeIndex, overIndex).map(
-          (item, index) => ({
-            ...item,
-            position: index + 1,
-          })
-        );
-      });
-    }
-  };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleUnitBlur = (index: number, value: string) => {
@@ -526,28 +445,12 @@ const MakeInquiryTable = ({
           Export Excel
         </Button>
       </div>
-      <DndContext
-        sensors={sensors}
-        modifiers={[restrictToVerticalAxis]}
-        onDragEnd={onDragEnd}
-      >
-        <SortableContext
-          items={items.map((item) => item.position)}
-          strategy={verticalListSortingStrategy}
-        >
-          <Table
-            components={{
-              body: {
-                row: Row,
-              },
-            }}
-            columns={columns}
-            dataSource={dataSource}
-            pagination={false}
-            rowKey="position"
-          />
-        </SortableContext>
-      </DndContext>
+      <Table
+        columns={columns}
+        dataSource={dataSource}
+        pagination={false}
+        rowKey="position"
+      />
       <Button type="primary" onClick={addItem} style={{ margin: "20px 5px" }}>
         Add item
       </Button>

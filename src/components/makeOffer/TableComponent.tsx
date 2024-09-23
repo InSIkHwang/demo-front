@@ -21,23 +21,6 @@ import styled, { CSSProperties } from "styled-components";
 import { InvCharge, ItemDataType } from "../../types/types";
 import { DeleteOutlined } from "@ant-design/icons";
 import { fetchItemData } from "../../api/api";
-import {
-  DndContext,
-  DragEndEvent,
-  useSensor,
-  useSensors,
-  PointerSensor,
-  UniqueIdentifier,
-  DragStartEvent,
-} from "@dnd-kit/core";
-import {
-  arrayMove,
-  SortableContext,
-  useSortable,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-
-import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 
 const CustomTable = styled(Table)`
   .ant-table * {
@@ -111,12 +94,6 @@ interface TableComponentProps {
   currency: number;
   setIsDuplicate: Dispatch<SetStateAction<boolean>>;
   roundToTwoDecimalPlaces: (value: number) => number;
-  convertCurrency: (
-    value: number,
-    currency: number,
-    toCurrency: "KRW" | "USD" | "EUR" | "INR"
-  ) => number;
-  updateGlobalPrices: () => void;
   calculateTotalAmount: (price: number, qty: number) => number;
   handleMarginChange: (index: number, marginValue: number) => void;
   handlePriceInputChange: (
@@ -161,16 +138,6 @@ interface TableComponentProps {
       totalProfitPercent: number;
     }>
   >;
-  dcInfo: { dcPercent: number; dcKrw: number; dcGlobal: number };
-  setDcInfo: Dispatch<
-    SetStateAction<{ dcPercent: number; dcKrw: number; dcGlobal: number }>
-  >;
-  invChargeList: InvCharge[] | null;
-  setInvChargeList: Dispatch<SetStateAction<InvCharge[] | null>>;
-}
-
-interface RowProps extends React.HTMLAttributes<HTMLTableRowElement> {
-  "data-row-key": number;
 }
 
 interface SelectedItemData {
@@ -179,44 +146,6 @@ interface SelectedItemData {
   itemId: number;
 }
 
-const Row = (props: RowProps) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
-    id: props["data-row-key"],
-  });
-
-  // Manually format transform values if transform is available
-  const transformStyle: CSSProperties = transform
-    ? {
-        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-      }
-    : {};
-
-  const style: CSSProperties = {
-    ...props.style,
-    ...transformStyle,
-    transition,
-    cursor: "move",
-    ...(isDragging ? { position: "relative", zIndex: 9999 } : {}),
-  };
-
-  return (
-    <tr
-      {...props}
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-    />
-  );
-};
-
 const TableComponent = ({
   dataSource,
   handleInputChange,
@@ -224,18 +153,10 @@ const TableComponent = ({
   setDataSource,
   setIsDuplicate,
   roundToTwoDecimalPlaces,
-  convertCurrency,
-  updateGlobalPrices,
   calculateTotalAmount,
   handleMarginChange,
   handlePriceInputChange,
   finalTotals,
-  setFinalTotals,
-  dcInfo,
-  setDcInfo,
-  invChargeList,
-  setInvChargeList,
-  totals,
   setTotals,
 }: TableComponentProps) => {
   const inputRefs = useRef<(InputRef | null)[][]>([]);
@@ -247,64 +168,11 @@ const TableComponent = ({
   const [supplierOptions, setSupplierOptions] = useState<
     { value: string; id: number; itemId: number; code: string; email: string }[]
   >([]);
-  const [activeDragItem, setActiveDragItem] = useState<UniqueIdentifier | null>(
-    null
-  );
+
   const [unitOptions, setUnitOptions] = useState<string[]>(["PCS", "SET"]);
   const [updatedIndex, setUpdatedIndex] = useState<number | null>(null);
   const [selectedItemData, setSelectedItemData] =
     useState<SelectedItemData | null>(null);
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 1,
-      },
-    })
-  );
-
-  const itemIds: UniqueIdentifier[] = useMemo(
-    () => dataSource.map((item) => item.position as UniqueIdentifier),
-    [dataSource]
-  );
-
-  const onDragStart = useCallback((event: DragStartEvent) => {
-    setActiveDragItem(event.active.id); // 드래그 시작 시 현재 아이템 ID 저장
-  }, []);
-
-  const onDragEnd = useCallback(
-    (event: DragEndEvent) => {
-      setActiveDragItem(null); // 드래그가 끝나면 초기화
-
-      const { active, over } = event; // event에서 active와 over 추출
-
-      if (active.id !== over?.id) {
-        setDataSource((prev) => {
-          const activeIndex = prev.findIndex(
-            (item) => item.position === active.id
-          );
-          const overIndex = prev.findIndex(
-            (item) => item.position === over?.id
-          );
-
-          if (activeIndex === -1 || overIndex === -1) {
-            return prev; // 인덱스가 잘못된 경우 원래 상태 반환
-          }
-
-          // 아이템의 순서를 변경
-          const reorderedItems = arrayMove(prev, activeIndex, overIndex);
-
-          // position 속성을 업데이트
-          const updatedItems = reorderedItems.map((item, index) => ({
-            ...item,
-            position: index + 1, // position 속성 업데이트 (1부터 시작)
-          }));
-
-          return updatedItems;
-        });
-      }
-    },
-    [setDataSource]
-  );
 
   const handleItemCodeChange = async (index: number, value: string) => {
     if ((value + "").trim() === "") {
@@ -1047,26 +915,13 @@ const TableComponent = ({
         </TotalCard>
       </TotalCards>
 
-      <DndContext
-        sensors={sensors}
-        modifiers={[restrictToVerticalAxis]}
-        onDragStart={onDragStart}
-        onDragEnd={onDragEnd}
-      >
-        <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
-          <CustomTable
-            components={{
-              body: {
-                row: Row,
-              },
-            }}
-            rowKey="position"
-            columns={columns}
-            dataSource={dataSource}
-            pagination={false}
-          />
-        </SortableContext>
-      </DndContext>
+      <CustomTable
+        rowKey="position"
+        columns={columns}
+        dataSource={dataSource}
+        pagination={false}
+      />
+
       <Button
         type="primary"
         style={{ margin: "5px 0 10px 0" }}

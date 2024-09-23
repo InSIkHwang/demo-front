@@ -530,17 +530,11 @@ const MakeOffer = () => {
           currency={formValues.currency}
           setIsDuplicate={setIsDuplicate}
           roundToTwoDecimalPlaces={roundToTwoDecimalPlaces}
-          convertCurrency={convertCurrency}
-          updateGlobalPrices={updateGlobalPrices}
           calculateTotalAmount={calculateTotalAmount}
           handleMarginChange={handleMarginChange}
           handlePriceInputChange={handlePriceInputChange}
           finalTotals={finalTotals}
           setFinalTotals={setFinalTotals}
-          dcInfo={dcInfo}
-          setDcInfo={setDcInfo}
-          invChargeList={invChargeList}
-          setInvChargeList={setInvChargeList}
           totals={totals}
           setTotals={setTotals}
         />
