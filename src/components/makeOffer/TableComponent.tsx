@@ -38,7 +38,6 @@ import {
 } from "@dnd-kit/sortable";
 
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
-import ChargeInputPopover from "./ChargeInputPopover";
 
 const CustomTable = styled(Table)`
   .ant-table * {
@@ -119,7 +118,7 @@ interface TableComponentProps {
   ) => number;
   updateGlobalPrices: () => void;
   calculateTotalAmount: (price: number, qty: number) => number;
-  calculateMargin: (salesAmount: number, purchaseAmount: number) => number;
+  handleMarginChange: (index: number, marginValue: number) => void;
   handlePriceInputChange: (
     index: number,
     key: keyof ItemDataType,
@@ -228,7 +227,7 @@ const TableComponent = ({
   convertCurrency,
   updateGlobalPrices,
   calculateTotalAmount,
-  calculateMargin,
+  handleMarginChange,
   handlePriceInputChange,
   finalTotals,
   setFinalTotals,
@@ -523,6 +522,36 @@ const TableComponent = ({
     );
   };
 
+  const applyMarginToAllRows = (marginValue: number) => {
+    const updatedData = dataSource.map((row) => {
+      const updatedRow = {
+        ...row,
+        margin: marginValue,
+      };
+
+      // 새로운 매출가격 계산
+      const salesPrice = calculateSalesPrice(
+        updatedRow.purchasePriceKRW,
+        marginValue
+      );
+      updatedRow.salesPriceKRW = salesPrice;
+
+      // 매출가격 계산 로직
+      updatedRow.salesAmountKRW = calculateTotalAmount(
+        updatedRow.salesPriceKRW,
+        updatedRow.qty
+      );
+
+      return updatedRow;
+    });
+    setDataSource(updatedData); // 상태 업데이트
+  };
+
+  // 마진에 따라 매출가격을 계산하는 함수 예시
+  const calculateSalesPrice = (purchasePrice: number, margin: number) => {
+    return purchasePrice * (1 + margin / 100); // 마진을 백분율로 적용
+  };
+
   const handleNextRowKeyDown = (
     e: React.KeyboardEvent<HTMLInputElement>,
     rowIndex: number,
@@ -748,33 +777,9 @@ const TableComponent = ({
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <Input
-            type="text" // 형식을 "text"로 변경
-            value={text?.toLocaleString()} // 형식화된 값 표시
-            ref={(el) => {
-              if (!inputRefs.current[index]) {
-                inputRefs.current[index] = [];
-              }
-              inputRefs.current[index][6] = el; // columnIndex를 맞추어 설정
-            }}
-            onKeyDown={(e) => handleNextRowKeyDown(e, index, 6)}
-            onChange={(e) =>
-              handleInputChange(index, "salesPriceKRW", e.target.value)
-            }
-            onBlur={async (e) => {
-              // 형식 제거
-              const unformattedValue = e.target.value.replace(/,/g, "");
-              const updatedValue = isNaN(Number(unformattedValue))
-                ? 0
-                : Number(unformattedValue);
-
-              // salesPriceKRW 업데이트를 기다린 후 salesPriceGlobal 업데이트
-              handlePriceInputChange(
-                index,
-                "salesPriceKRW",
-                roundToTwoDecimalPlaces(updatedValue),
-                currency
-              );
-            }}
+            type="text"
+            value={text?.toLocaleString()}
+            readOnly
             style={{ width: "100%" }}
             addonBefore="₩"
           />
@@ -788,32 +793,9 @@ const TableComponent = ({
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <Input
-            type="text" // Change to "text" to handle formatted input
-            value={text?.toLocaleString()} // Display formatted value
-            ref={(el) => {
-              if (!inputRefs.current[index]) {
-                inputRefs.current[index] = [];
-              }
-              inputRefs.current[index][7] = el; // columnIndex를 맞추어 설정
-            }}
-            onKeyDown={(e) => handleNextRowKeyDown(e, index, 7)}
-            onChange={(e) =>
-              handleInputChange(index, "salesPriceGlobal", e.target.value)
-            }
-            onBlur={(e) => {
-              const value = e.target.value;
-              // Remove formatting before processing
-              const unformattedValue = value.replace(/,/g, "");
-              const updatedValue = isNaN(parseFloat(unformattedValue))
-                ? 0
-                : parseFloat(unformattedValue);
-              handlePriceInputChange(
-                index,
-                "salesPriceGlobal",
-                roundToTwoDecimalPlaces(updatedValue),
-                currency
-              );
-            }}
+            type="text"
+            value={text?.toLocaleString()}
+            readOnly
             style={{ width: "100%" }}
             addonBefore="F"
           />
@@ -828,11 +810,11 @@ const TableComponent = ({
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <Input
-            type="text" // Change to "text" to handle formatted input
+            type="text"
             value={calculateTotalAmount(
               record.salesPriceKRW,
               record.qty
-            ).toLocaleString()} // Display formatted value
+            ).toLocaleString()}
             style={{ width: "100%" }}
             readOnly
             addonBefore="₩"
@@ -848,11 +830,11 @@ const TableComponent = ({
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <Input
-            type="text" // Change to "text" to handle formatted input
+            type="text"
             value={calculateTotalAmount(
-              record.salesPriceGlobal,
+              record.salesPriceKRW,
               record.qty
-            ).toLocaleString()} // Display formatted value
+            ).toLocaleString()}
             style={{ width: "100%" }}
             readOnly
             addonBefore="F"
@@ -976,36 +958,42 @@ const TableComponent = ({
         ) : null,
     },
     {
-      title: "마진(%)",
-      dataIndex: "margin",
-      key: "margin",
-      width: 80,
-      className: "highlight-cell",
-      render: (text: number, record: any, index: number) => {
-        const salesAmountKRW = calculateTotalAmount(
-          record.salesPriceKRW,
-          record.qty
-        );
-        const purchaseAmountKRW = calculateTotalAmount(
-          record.purchasePriceKRW,
-          record.qty
-        );
-        const marginPercent = calculateMargin(
-          salesAmountKRW,
-          purchaseAmountKRW
-        );
-        handleInputChange(index, "margin", marginPercent);
-        return (
+      title: (
+        <div>
           <InputNumber
-            value={marginPercent}
-            style={{ width: "100%" }}
-            min={0}
+            placeholder="마진(%)"
             step={0.01}
             formatter={(value) => `${value} %`}
             parser={(value) =>
               value ? parseFloat(value.replace(/ %/, "")) : 0
             }
-            readOnly
+            onChange={(value) => {
+              const parsedValue = typeof value === "number" ? value : 0; // 숫자 타입이 아닐 경우 기본값으로 0 설정
+              applyMarginToAllRows(parsedValue); // 모든 행에 마진 적용
+            }}
+            style={{ width: "100%" }}
+            controls={false} // 스핀 버튼 제거
+          />
+        </div>
+      ),
+      dataIndex: "margin",
+      key: "margin",
+      width: 80,
+      className: "highlight-cell",
+
+      render: (text: number, record: any, index: number) => {
+        return (
+          <InputNumber
+            value={text}
+            style={{ width: "100%" }}
+            step={0.01}
+            formatter={(value) => `${value} %`}
+            parser={(value) =>
+              value ? parseFloat(value.replace(/ %/, "")) : 0
+            }
+            onChange={(value) => handleInputChange(index, "margin", value)}
+            onBlur={() => handleMarginChange(index, text ?? 0)}
+            controls={false}
           />
         );
       },

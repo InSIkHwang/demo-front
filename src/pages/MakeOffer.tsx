@@ -282,20 +282,6 @@ const MakeOffer = () => {
     let updatedItem = { ...currentItem, [key]: value };
 
     // Check if the key is 'salesPriceGlobal'
-    if (key === "salesPriceGlobal") {
-      // Update salesPriceKRW based on the new value and currency
-      const updatedKRWPrice = convertCurrency(value, currency, "KRW");
-      updatedItem = { ...updatedItem, salesPriceKRW: updatedKRWPrice };
-    }
-
-    // Check if the key is 'salesPriceKRW'
-    if (key === "salesPriceKRW") {
-      // Update salesPriceGlobal based on the new value and currency
-      const updatedGlobalPrice = convertCurrency(value, currency, "USD");
-      updatedItem = { ...updatedItem, salesPriceGlobal: updatedGlobalPrice };
-    }
-
-    // Check if the key is 'salesPriceGlobal'
     if (key === "purchasePriceGlobal") {
       // Update salesPriceKRW based on the new value and currency
       const updatedKRWPrice = convertCurrency(value, currency, "KRW");
@@ -319,12 +305,7 @@ const MakeOffer = () => {
     }
 
     // Call the debounced calculations if needed
-    if (
-      key === "salesPriceKRW" ||
-      key === "salesPriceGlobal" ||
-      key === "purchasePriceKRW" ||
-      key === "purchasePriceGlobal"
-    ) {
+    if (key === "purchasePriceKRW" || key === "purchasePriceGlobal") {
       handleCalculations(index, updatedItem);
     }
   };
@@ -370,13 +351,30 @@ const MakeOffer = () => {
     });
   };
 
-  // 마진을 계산하는 함수
-  const calculateMargin = (salesAmount: number, purchaseAmount: number) =>
-    purchaseAmount === 0
-      ? 0
-      : roundToTwoDecimalPlaces(
-          ((salesAmount - purchaseAmount) / purchaseAmount) * 100
-        );
+  const handleMarginChange = (index: number, marginValue: number) => {
+    const updatedDataSource = [...dataSource];
+    const currentItem = updatedDataSource[index];
+
+    // 매입단가
+    const purchasePriceKRW = currentItem.purchasePriceKRW || 0;
+    const qty = currentItem.qty || 0;
+
+    // 매출단가 계산 (매입단가 * (1 + 마진/100))
+    const salesPriceKRW = roundToTwoDecimalPlaces(
+      purchasePriceKRW * (1 + marginValue / 100)
+    );
+    const salesAmountKRW = calculateTotalAmount(salesPriceKRW, qty);
+
+    // 매출단가와 매출총액 업데이트
+    updatedDataSource[index] = {
+      ...currentItem,
+      salesPriceKRW,
+      salesAmountKRW,
+      margin: marginValue,
+    };
+
+    setDataSource(updatedDataSource);
+  };
 
   const handleSave = async () => {
     if (dataSource.length === 0) {
@@ -535,7 +533,7 @@ const MakeOffer = () => {
           convertCurrency={convertCurrency}
           updateGlobalPrices={updateGlobalPrices}
           calculateTotalAmount={calculateTotalAmount}
-          calculateMargin={calculateMargin}
+          handleMarginChange={handleMarginChange}
           handlePriceInputChange={handlePriceInputChange}
           finalTotals={finalTotals}
           setFinalTotals={setFinalTotals}

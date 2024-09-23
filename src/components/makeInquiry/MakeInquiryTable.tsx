@@ -140,20 +140,20 @@ const MakeInquiryTable = ({
     })
   );
 
-  const handleKeyDown = (
-    e: React.KeyboardEvent<HTMLInputElement>,
-    index: number
-  ) => {
-    const itemTypeMap: Record<string, string> = {
-      "1": "MAKER",
-      "2": "TYPE",
-      "3": "DESC",
-      "4": "ITEM",
-    };
-    if (itemTypeMap[e.key]) {
-      handleInputChange(index, "itemType", itemTypeMap[e.key]);
-    }
-  };
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+      const itemTypeMap: Record<string, string> = {
+        "1": "MAKER",
+        "2": "TYPE",
+        "3": "DESC",
+        "4": "ITEM",
+      };
+      if (itemTypeMap[e.key]) {
+        handleInputChange(index, "itemType", itemTypeMap[e.key]);
+      }
+    },
+    [handleInputChange] // handleInputChange가 변경되면 handleKeyDown도 변경됨
+  );
 
   const checkDuplicates = (
     key: string,
