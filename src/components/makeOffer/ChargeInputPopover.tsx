@@ -23,24 +23,6 @@ interface ChargeComponentProps {
     totalProfitPercent: number;
   };
 
-  finalTotals: {
-    totalSalesAmountKRW: number;
-    totalSalesAmountGlobal: number;
-    totalPurchaseAmountKRW: number;
-    totalPurchaseAmountGlobal: number;
-    totalProfit: number;
-    totalProfitPercent: number;
-  };
-  setFinalTotals: Dispatch<
-    SetStateAction<{
-      totalSalesAmountKRW: number;
-      totalSalesAmountGlobal: number;
-      totalPurchaseAmountKRW: number;
-      totalPurchaseAmountGlobal: number;
-      totalProfit: number;
-      totalProfitPercent: number;
-    }>
-  >;
   currency: number;
   dcInfo: { dcPercent: number; dcKrw: number; dcGlobal: number };
   setDcInfo: Dispatch<
@@ -48,17 +30,17 @@ interface ChargeComponentProps {
   >;
   invChargeList: InvCharge[] | null;
   setInvChargeList: Dispatch<SetStateAction<InvCharge[] | null>>;
+  applyDcAndCharge: () => void;
 }
 
 const ChargeInputPopover = ({
   totals,
-  finalTotals,
-  setFinalTotals,
   currency,
   dcInfo,
   setDcInfo,
   invChargeList,
   setInvChargeList,
+  applyDcAndCharge,
 }: ChargeComponentProps) => {
   const handleDcChange = (key: string, value: number) => {
     setDcInfo((prevInfo) => {
@@ -133,50 +115,6 @@ const ChargeInputPopover = ({
 
   const removeCharge = (index: number) => {
     setInvChargeList((prevList) => prevList!.filter((_, idx) => idx !== index));
-  };
-
-  const applyDcAndCharge = () => {
-    // Calculate new totals
-    const newTotalSalesAmountKRW =
-      totals.totalSalesAmountKRW - (dcInfo.dcPercent ? dcInfo.dcKrw : 0);
-    const newTotalSalesAmountGlobal =
-      totals.totalSalesAmountGlobal - (dcInfo.dcPercent ? dcInfo.dcGlobal : 0);
-
-    const chargePriceKRWTotal =
-      invChargeList && Array.isArray(invChargeList) && invChargeList.length > 0
-        ? invChargeList.reduce((acc, charge) => acc + charge.chargePriceKRW, 0)
-        : 0;
-
-    const chargePriceGlobalTotal =
-      invChargeList && Array.isArray(invChargeList) && invChargeList.length > 0
-        ? invChargeList.reduce(
-            (acc, charge) => acc + charge.chargePriceGlobal,
-            0
-          )
-        : 0;
-
-    const updatedTotalSalesAmountKRW =
-      newTotalSalesAmountKRW + chargePriceKRWTotal;
-
-    const updatedTotalSalesAmountGlobal =
-      newTotalSalesAmountGlobal + chargePriceGlobalTotal;
-
-    const updatedtotalProfit =
-      updatedTotalSalesAmountKRW - totals.totalPurchaseAmountKRW;
-    const updatedtotalProfitPercent = Number(
-      ((updatedtotalProfit / totals.totalPurchaseAmountKRW) * 100).toFixed(2)
-    );
-
-    // Set final totals
-    setFinalTotals({
-      ...finalTotals,
-      totalSalesAmountKRW: updatedTotalSalesAmountKRW,
-      totalSalesAmountGlobal: updatedTotalSalesAmountGlobal,
-      totalPurchaseAmountKRW: totals.totalPurchaseAmountKRW,
-      totalPurchaseAmountGlobal: totals.totalPurchaseAmountGlobal,
-      totalProfit: updatedtotalProfit, // Adjust if needed
-      totalProfitPercent: updatedtotalProfitPercent, // Adjust if needed
-    });
   };
 
   useEffect(() => {

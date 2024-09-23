@@ -365,11 +365,20 @@ const MakeOffer = () => {
     );
     const salesAmountKRW = calculateTotalAmount(salesPriceKRW, qty);
 
+    // Global 가격 계산 (환율 적용)
+    const exchangeRate = formValues.currency; // currency에 해당하는 환율 값을 사용
+    const salesPriceGlobal = roundToTwoDecimalPlaces(
+      salesPriceKRW / exchangeRate
+    );
+    const salesAmountGlobal = calculateTotalAmount(salesPriceGlobal, qty);
+
     // 매출단가와 매출총액 업데이트
     updatedDataSource[index] = {
       ...currentItem,
       salesPriceKRW,
       salesAmountKRW,
+      salesPriceGlobal,
+      salesAmountGlobal,
       margin: marginValue,
     };
 
@@ -498,6 +507,50 @@ const MakeOffer = () => {
     setIsMailSenderVisible(false);
   };
 
+  const applyDcAndCharge = () => {
+    // Calculate new totals
+    const newTotalSalesAmountKRW =
+      totals.totalSalesAmountKRW - (dcInfo.dcPercent ? dcInfo.dcKrw : 0);
+    const newTotalSalesAmountGlobal =
+      totals.totalSalesAmountGlobal - (dcInfo.dcPercent ? dcInfo.dcGlobal : 0);
+
+    const chargePriceKRWTotal =
+      invChargeList && Array.isArray(invChargeList) && invChargeList.length > 0
+        ? invChargeList.reduce((acc, charge) => acc + charge.chargePriceKRW, 0)
+        : 0;
+
+    const chargePriceGlobalTotal =
+      invChargeList && Array.isArray(invChargeList) && invChargeList.length > 0
+        ? invChargeList.reduce(
+            (acc, charge) => acc + charge.chargePriceGlobal,
+            0
+          )
+        : 0;
+
+    const updatedTotalSalesAmountKRW =
+      newTotalSalesAmountKRW + chargePriceKRWTotal;
+
+    const updatedTotalSalesAmountGlobal =
+      newTotalSalesAmountGlobal + chargePriceGlobalTotal;
+
+    const updatedtotalProfit =
+      updatedTotalSalesAmountKRW - totals.totalPurchaseAmountKRW;
+    const updatedtotalProfitPercent = Number(
+      ((updatedtotalProfit / totals.totalPurchaseAmountKRW) * 100).toFixed(2)
+    );
+
+    // Set final totals
+    setFinalTotals({
+      ...finalTotals,
+      totalSalesAmountKRW: updatedTotalSalesAmountKRW,
+      totalSalesAmountGlobal: updatedTotalSalesAmountGlobal,
+      totalPurchaseAmountKRW: totals.totalPurchaseAmountKRW,
+      totalPurchaseAmountGlobal: totals.totalPurchaseAmountGlobal,
+      totalProfit: updatedtotalProfit, // Adjust if needed
+      totalProfitPercent: updatedtotalProfitPercent, // Adjust if needed
+    });
+  };
+
   if (isLoading) {
     return <LoadingSpinner />; // 로딩 중 화면
   }
@@ -514,13 +567,12 @@ const MakeOffer = () => {
       )}
       <ChargeInputPopover
         totals={totals}
-        finalTotals={finalTotals}
-        setFinalTotals={setFinalTotals}
         currency={formValues.currency}
         dcInfo={dcInfo}
         setDcInfo={setDcInfo}
         invChargeList={invChargeList}
         setInvChargeList={setInvChargeList}
+        applyDcAndCharge={applyDcAndCharge}
       />
       {!isReadOnly && (
         <TableComponent
@@ -534,9 +586,9 @@ const MakeOffer = () => {
           handleMarginChange={handleMarginChange}
           handlePriceInputChange={handlePriceInputChange}
           finalTotals={finalTotals}
-          setFinalTotals={setFinalTotals}
           totals={totals}
           setTotals={setTotals}
+          applyDcAndCharge={applyDcAndCharge}
         />
       )}
       {isReadOnly && (

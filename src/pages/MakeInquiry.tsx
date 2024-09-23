@@ -60,16 +60,6 @@ const INITIAL_FORM_VALUES = {
   supplierName: "",
 };
 
-const createNewItem = (position: number): InquiryItem => ({
-  position,
-  itemType: "ITEM",
-  itemCode: "",
-  itemName: "",
-  qty: 0,
-  unit: "",
-  itemRemark: "",
-});
-
 const getSupplierMap = (
   itemDetails: InquiryItem[]
 ): { id: number; name: string; code: string; email: string }[] => {
@@ -346,14 +336,6 @@ const MakeInquiry = () => {
     setAutoCompleteOptions(filteredOptions);
   }, [companyNameList, formValues.customer]);
 
-  const addItem = () => {
-    const nextNo =
-      items.length > 0
-        ? Math.max(...items.map((item) => item.position)) + 1
-        : 1;
-    setItems([...items, createNewItem(nextNo)]);
-  };
-
   const handleDelete = (index: number) => {
     const updatedItems = items
       .filter((_, i) => i !== index)
@@ -361,21 +343,22 @@ const MakeInquiry = () => {
     setItems(updatedItems);
   };
 
-  const handleInputChange = (
-    index: number,
-    field: string,
-    value: string | number
-  ) => {
-    setItems(
-      produce((draft) => {
-        const itemToUpdate = draft[index];
+  const handleInputChange = useCallback(
+    (index: number, field: string, value: string | number) => {
+      console.log(value);
 
-        if (itemToUpdate[field] === value) return;
+      setItems((prevItems) => {
+        const updatedItems = [...prevItems];
+        const itemToUpdate = updatedItems[index];
+
+        if (itemToUpdate[field] === value) return updatedItems;
 
         itemToUpdate[field] = value;
-      })
-    );
-  };
+        return updatedItems;
+      });
+    },
+    []
+  );
 
   const handleFormChange = <K extends keyof typeof formValues>(
     key: K,
@@ -490,30 +473,49 @@ const MakeInquiry = () => {
     });
   };
 
-  const handleItemCodeChange = async (index: number, value: string) => {
-    handleInputChange(index, "itemCode", value);
-
-    if ((value + "").trim() === "") {
-      updateItemId(index, null);
-      return;
-    }
-
-    try {
-      const itemArray = await fetchAndProcessItemData(value);
-
-      updateItemCodeOptions(itemArray);
-      updateItemMaps(itemArray);
-      updateSupplierOptions(itemArray);
-
-      const selectedItem = itemArray.find((item) => item.itemCode === value);
-      if (selectedItem) {
-        handleInputChange(index, "itemName", itemNameMap[selectedItem.itemId]);
-        updateItemId(index, selectedItem.itemId);
-      }
-    } catch (error) {
-      console.error("Error fetching item codes and suppliers:", error);
-    }
+  // itemId 업데이트를 별도의 함수로 분리
+  const updateItemId = (index: number, itemId: number | null) => {
+    setItems((prevItems) => {
+      const updatedItems = [...prevItems];
+      updatedItems[index] = {
+        ...updatedItems[index],
+        itemId,
+      };
+      return updatedItems;
+    });
   };
+
+  const handleItemCodeChange = useCallback(
+    async (index: number, value: string) => {
+      handleInputChange(index, "itemCode", value);
+
+      if ((value + "").trim() === "") {
+        updateItemId(index, null);
+        return;
+      }
+
+      try {
+        const itemArray = await fetchAndProcessItemData(value);
+
+        updateItemCodeOptions(itemArray);
+        updateItemMaps(itemArray);
+        updateSupplierOptions(itemArray);
+
+        const selectedItem = itemArray.find((item) => item.itemCode === value);
+        if (selectedItem) {
+          handleInputChange(
+            index,
+            "itemName",
+            itemNameMap[selectedItem.itemId]
+          );
+          updateItemId(index, selectedItem.itemId);
+        }
+      } catch (error) {
+        console.error("Error fetching item codes and suppliers:", error);
+      }
+    },
+    [handleInputChange, itemNameMap]
+  );
 
   const fetchAndProcessItemData = async (value: string) => {
     const { items } = await fetchItemData(value);
@@ -572,18 +574,6 @@ const MakeInquiry = () => {
       ),
       ...newSupplierOptions,
     ]);
-  };
-
-  // itemId 업데이트를 별도의 함수로 분리
-  const updateItemId = (index: number, itemId: number | null) => {
-    setItems((prevItems) => {
-      const updatedItems = [...prevItems];
-      updatedItems[index] = {
-        ...updatedItems[index],
-        itemId,
-      };
-      return updatedItems;
-    });
   };
 
   const handleOpenHeaderModal = () => {
@@ -646,7 +636,6 @@ const MakeInquiry = () => {
         handleDelete={handleDelete}
         setIsDuplicate={setIsDuplicate}
         setItems={setItems}
-        addItem={addItem}
         updateItemId={updateItemId}
         customerInquiryId={Number(customerInquiryId)}
       />

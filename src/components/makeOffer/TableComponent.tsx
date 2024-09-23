@@ -19,8 +19,14 @@ import {
 import { ColumnsType } from "antd/es/table";
 import styled, { CSSProperties } from "styled-components";
 import { InvCharge, ItemDataType } from "../../types/types";
-import { DeleteOutlined } from "@ant-design/icons";
+import {
+  DeleteOutlined,
+  PlusCircleOutlined,
+  ReloadOutlined,
+} from "@ant-design/icons";
 import { fetchItemData } from "../../api/api";
+
+const RefreshBtn = styled(Button)``;
 
 const CustomTable = styled(Table)`
   .ant-table * {
@@ -28,7 +34,7 @@ const CustomTable = styled(Table)`
   }
 
   .ant-table-cell {
-    padding: 12px !important;
+    padding: 12px 4px !important;
     text-align: center !important;
   }
 
@@ -40,6 +46,9 @@ const CustomTable = styled(Table)`
     }
   }
   .ant-input-group-addon {
+    padding: 0 2px !important;
+  }
+  .ant-input-number-group-addon {
     padding: 0 2px !important;
   }
 `;
@@ -110,16 +119,6 @@ interface TableComponentProps {
     totalProfit: number;
     totalProfitPercent: number;
   };
-  setFinalTotals: Dispatch<
-    SetStateAction<{
-      totalSalesAmountKRW: number;
-      totalSalesAmountGlobal: number;
-      totalPurchaseAmountKRW: number;
-      totalPurchaseAmountGlobal: number;
-      totalProfit: number;
-      totalProfitPercent: number;
-    }>
-  >;
   totals: {
     totalSalesAmountKRW: number;
     totalSalesAmountGlobal: number;
@@ -138,6 +137,7 @@ interface TableComponentProps {
       totalProfitPercent: number;
     }>
   >;
+  applyDcAndCharge: () => void;
 }
 
 interface SelectedItemData {
@@ -158,6 +158,7 @@ const TableComponent = ({
   handlePriceInputChange,
   finalTotals,
   setTotals,
+  applyDcAndCharge,
 }: TableComponentProps) => {
   const inputRefs = useRef<(InputRef | null)[][]>([]);
   const [itemCodeOptions, setItemCodeOptions] = useState<{ value: string }[]>(
@@ -341,9 +342,9 @@ const TableComponent = ({
     });
   }, [calculateTotalAmount, dataSource]);
 
-  const handleAddItem = () => {
+  const handleAddItem = (index: number) => {
     const newItem: ItemDataType = {
-      position: dataSource.length + 1,
+      position: index + 2,
       itemDetailId: null,
       itemId: null,
       itemType: "ITEM",
@@ -363,7 +364,16 @@ const TableComponent = ({
       purchaseAmountGlobal: 0,
     };
 
-    setDataSource([...dataSource, newItem]);
+    const newItems = [
+      ...dataSource.slice(0, index + 1), // 기존 행까지
+      newItem, // 새 행 추가
+      ...dataSource.slice(index + 1).map((item, idx) => ({
+        ...item,
+        position: index + 3 + idx, // 기존 행의 position 업데이트
+      })), // 기존 행 나머지의 position 업데이트
+    ];
+
+    setDataSource(newItems);
   };
 
   const handleDeleteItem = (itemDetailId: number, position: number) => {
@@ -397,21 +407,35 @@ const TableComponent = ({
         margin: marginValue,
       };
 
-      // 새로운 매출가격 계산
-      const salesPrice = calculateSalesPrice(
+      // 새로운 매출단가(KRW) 계산
+      const salesPriceKRW = calculateSalesPrice(
         updatedRow.purchasePriceKRW,
         marginValue
       );
-      updatedRow.salesPriceKRW = salesPrice;
+      updatedRow.salesPriceKRW = salesPriceKRW;
 
-      // 매출가격 계산 로직
+      // 매출총액(KRW) 계산
       updatedRow.salesAmountKRW = calculateTotalAmount(
         updatedRow.salesPriceKRW,
         updatedRow.qty
       );
 
+      // Global 가격 계산 (환율 적용)
+      const exchangeRate = currency; // currency에 해당하는 환율 값
+      const salesPriceGlobal = roundToTwoDecimalPlaces(
+        salesPriceKRW / exchangeRate
+      );
+      updatedRow.salesPriceGlobal = salesPriceGlobal;
+
+      // 매출총액(Global) 계산
+      updatedRow.salesAmountGlobal = calculateTotalAmount(
+        updatedRow.salesPriceGlobal,
+        updatedRow.qty
+      );
+
       return updatedRow;
     });
+
     setDataSource(updatedData); // 상태 업데이트
   };
 
@@ -443,15 +467,25 @@ const TableComponent = ({
 
   const columns: ColumnsType<any> = [
     {
-      title: "삭제",
-      key: "delete",
-      width: 60,
+      title: "Action",
+      key: "action",
+      width: 90,
       render: (text: any, record: any, index: number) => (
-        <Button
-          type="default"
-          onClick={() => handleDeleteItem(record.itemDetailId, record.position)}
-          icon={<DeleteOutlined />}
-        ></Button>
+        <div>
+          <Button
+            icon={<PlusCircleOutlined />}
+            type="default"
+            style={{ marginRight: 10 }}
+            onClick={() => handleAddItem(index)}
+          />
+          <Button
+            type="default"
+            onClick={() =>
+              handleDeleteItem(record.itemDetailId, record.position)
+            }
+            icon={<DeleteOutlined />}
+          />
+        </div>
       ),
     },
     {
@@ -462,11 +496,11 @@ const TableComponent = ({
       render: (_: any, __: any, index: number) => <span>{index + 1}</span>,
     },
     {
-      title: "품목코드",
+      title: "PartNo",
       dataIndex: "itemCode",
       key: "itemCode",
       fixed: "left",
-      width: 130,
+      width: 115,
       render: (text: string, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <>
@@ -641,7 +675,7 @@ const TableComponent = ({
       title: "매출단가(KRW)",
       dataIndex: "salesPriceKRW",
       key: "salesPriceKRW",
-      width: 130,
+      width: 115,
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <Input
@@ -657,7 +691,7 @@ const TableComponent = ({
       title: "매출단가(F)",
       dataIndex: "salesPriceGlobal",
       key: "salesPriceGlobal",
-      width: 130,
+      width: 115,
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <Input
@@ -673,7 +707,7 @@ const TableComponent = ({
       title: "매출총액(KRW)",
       dataIndex: "salesAmountKRW",
       key: "salesAmountKRW",
-      width: 130,
+      width: 115,
       className: "highlight-cell",
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
@@ -693,7 +727,7 @@ const TableComponent = ({
       title: "매출총액(F)",
       dataIndex: "salesAmountGlobal",
       key: "salesAmountGlobal",
-      width: 130,
+      width: 115,
       className: "highlight-cell",
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
@@ -713,7 +747,7 @@ const TableComponent = ({
       title: "매입단가(KRW)",
       dataIndex: "purchasePriceKRW",
       key: "purchasePriceKRW",
-      width: 130,
+      width: 115,
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <Input
@@ -751,7 +785,7 @@ const TableComponent = ({
       title: "매입단가(F)",
       dataIndex: "purchasePriceGlobal",
       key: "purchasePriceGlobal",
-      width: 130,
+      width: 115,
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <Input
@@ -789,7 +823,7 @@ const TableComponent = ({
       title: "매입총액(KRW)",
       dataIndex: "purchaseAmountKRW",
       key: "purchaseAmountKRW",
-      width: 130,
+      width: 115,
       className: "highlight-cell",
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
@@ -809,7 +843,7 @@ const TableComponent = ({
       title: "매입총액(F)",
       dataIndex: "purchaseAmountGlobal",
       key: "purchaseAmountGlobal",
-      width: 130,
+      width: 115,
       className: "highlight-cell",
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
@@ -829,9 +863,8 @@ const TableComponent = ({
       title: (
         <div>
           <InputNumber
-            placeholder="마진(%)"
-            step={0.01}
-            formatter={(value) => `${value} %`}
+            placeholder="margin"
+            addonAfter={"%"}
             parser={(value) =>
               value ? parseFloat(value.replace(/ %/, "")) : 0
             }
@@ -854,8 +887,7 @@ const TableComponent = ({
           <InputNumber
             value={text}
             style={{ width: "100%" }}
-            step={0.01}
-            formatter={(value) => `${value} %`}
+            addonAfter={"%"}
             parser={(value) =>
               value ? parseFloat(value.replace(/ %/, "")) : 0
             }
@@ -913,22 +945,20 @@ const TableComponent = ({
             %
           </span>
         </TotalCard>
+        <RefreshBtn
+          icon={<ReloadOutlined />}
+          type="primary"
+          onClick={applyDcAndCharge}
+        />
       </TotalCards>
-
       <CustomTable
         rowKey="position"
         columns={columns}
         dataSource={dataSource}
         pagination={false}
+        scroll={{ y: 600 }}
+        virtual
       />
-
-      <Button
-        type="primary"
-        style={{ margin: "5px 0 10px 0" }}
-        onClick={handleAddItem}
-      >
-        Add item
-      </Button>
     </div>
   );
 };

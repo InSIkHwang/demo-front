@@ -20,13 +20,21 @@ import {
   DeleteOutlined,
   FileExcelOutlined,
   ExportOutlined,
+  PlusCircleOutlined,
 } from "@ant-design/icons";
 import { InquiryItem } from "../../types/types";
 import ExcelUploadModal from "./ExcelUploadModal";
 import { ColumnsType } from "antd/es/table";
 import { handleExport } from "../../api/api";
+import styled from "styled-components";
 
 const { Option } = Select;
+
+const CustomTable = styled(Table)`
+  .ant-table-cell {
+    text-align: center !important;
+  }
+`;
 
 interface DuplicateState {
   code: boolean;
@@ -42,7 +50,6 @@ interface MakeInquiryTableProps {
   handleDelete: (index: number) => void;
   setIsDuplicate: Dispatch<SetStateAction<boolean>>;
   setItems: React.Dispatch<React.SetStateAction<InquiryItem[]>>;
-  addItem: () => void;
   updateItemId: (index: number, itemId: number | null) => void;
   customerInquiryId: number;
 }
@@ -55,7 +62,6 @@ const MakeInquiryTable = ({
   handleDelete,
   setIsDuplicate,
   setItems,
-  addItem,
   updateItemId,
   customerInquiryId,
 }: MakeInquiryTableProps) => {
@@ -93,46 +99,47 @@ const MakeInquiryTable = ({
     [handleInputChange] // handleInputChange가 변경되면 handleKeyDown도 변경됨
   );
 
-  const checkDuplicates = (
-    key: string,
-    value: string,
-    index: number,
-    items: any[]
-  ) => {
-    // 빈 값인 경우 false 반환
-    if (!(value + "")?.trim()) {
-      return false;
-    }
-
-    // 값이 같은지 검사하고, 현재 인덱스를 제외한 다른 인덱스와 비교
-    return items.some((item, idx) => item[key] === value && idx !== index);
-  };
-
-  const getDuplicateStates = useCallback((items: any[]) => {
-    return items.reduce((acc, item, index) => {
-      const isDuplicateCode = checkDuplicates(
-        "itemCode",
-        item.itemCode,
-        index,
-        items
-      );
-      const isDuplicateName = checkDuplicates(
-        "itemName",
-        item.itemName,
-        index,
-        items
-      );
-
-      if (isDuplicateCode || isDuplicateName) {
-        acc[item.position] = {
-          code: isDuplicateCode,
-          name: isDuplicateName,
-          all: isDuplicateCode || isDuplicateName,
-        };
+  const checkDuplicates = useCallback(
+    (key: string, value: string, index: number, items: any[]) => {
+      // 빈 값인 경우 false 반환
+      if (!(value + "")?.trim()) {
+        return false;
       }
-      return acc;
-    }, {} as { [key: string]: DuplicateState });
-  }, []);
+
+      // 값이 같은지 검사하고, 현재 인덱스를 제외한 다른 인덱스와 비교
+      return items.some((item, idx) => item[key] === value && idx !== index);
+    },
+    [] // 의존성이 필요 없다면 빈 배열로 설정
+  );
+
+  const getDuplicateStates = useCallback(
+    (items: any[]) => {
+      return items.reduce((acc, item, index) => {
+        const isDuplicateCode = checkDuplicates(
+          "itemCode",
+          item.itemCode,
+          index,
+          items
+        );
+        const isDuplicateName = checkDuplicates(
+          "itemName",
+          item.itemName,
+          index,
+          items
+        );
+
+        if (isDuplicateCode || isDuplicateName) {
+          acc[item.position] = {
+            code: isDuplicateCode,
+            name: isDuplicateName,
+            all: isDuplicateCode || isDuplicateName,
+          };
+        }
+        return acc;
+      }, {} as { [key: string]: DuplicateState });
+    },
+    [checkDuplicates]
+  );
 
   useEffect(() => {
     const newDuplicateStates: {
@@ -210,6 +217,33 @@ const MakeInquiryTable = ({
     }
   };
 
+  const handleAddItem = useCallback(
+    (index: number) => {
+      const newItem: InquiryItem = {
+        itemCode: "",
+        itemType: "ITEM",
+        unit: "",
+        itemName: "",
+        qty: 0,
+        itemRemark: "",
+        position: index + 2,
+      };
+
+      setItems((prevItems) => {
+        const newItems = [
+          ...prevItems.slice(0, index + 1),
+          newItem,
+          ...prevItems.slice(index + 1).map((item, idx) => ({
+            ...item,
+            position: index + 3 + idx,
+          })),
+        ];
+        return newItems;
+      });
+    },
+    [setItems]
+  );
+
   const columns: ColumnsType<any> = useMemo(
     () => [
       {
@@ -217,10 +251,10 @@ const MakeInquiryTable = ({
         dataIndex: "position",
         key: "position",
         render: (text: string) => <span>{text}</span>,
-        width: 50,
+        width: 60,
       },
       {
-        title: "Code",
+        title: "PartNo",
         dataIndex: "itemCode",
         key: "itemCode",
         render: (text: string, record: InquiryItem, index: number) =>
@@ -393,19 +427,29 @@ const MakeInquiryTable = ({
         title: "Action",
         key: "action",
         render: (_: any, __: any, index: number) => (
-          <Button
-            icon={<DeleteOutlined />}
-            type="default"
-            onClick={() => {
-              handleDelete(index);
-              const newDuplicateStates = getDuplicateStates(items);
+          <div>
+            <Button
+              icon={<PlusCircleOutlined />}
+              type="default"
+              style={{ marginRight: 10 }}
+              onClick={() => handleAddItem(index)}
+            />
 
-              setDuplicateStates(newDuplicateStates);
-              setIsDuplicate(Object.values(newDuplicateStates).includes(true));
-            }}
-          />
+            <Button
+              icon={<DeleteOutlined />}
+              type="default"
+              onClick={() => {
+                handleDelete(index);
+                const newDuplicateStates = getDuplicateStates(items);
+                setDuplicateStates(newDuplicateStates);
+                setIsDuplicate(
+                  Object.values(newDuplicateStates).includes(true)
+                );
+              }}
+            />
+          </div>
         ),
-        width: 80,
+        width: 120, // 버튼 크기에 맞춰 조정
       },
     ],
     [
@@ -418,6 +462,7 @@ const MakeInquiryTable = ({
       handleInputChange,
       handleKeyDown,
       handleUnitBlur,
+      handleAddItem,
       handleDelete,
       getDuplicateStates,
       items,
@@ -445,15 +490,14 @@ const MakeInquiryTable = ({
           Export Excel
         </Button>
       </div>
-      <Table
+      <CustomTable
         columns={columns}
         dataSource={dataSource}
         pagination={false}
         rowKey="position"
+        scroll={{ y: 600 }}
+        virtual
       />
-      <Button type="primary" onClick={addItem} style={{ margin: "20px 5px" }}>
-        Add item
-      </Button>
       <ExcelUploadModal
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}

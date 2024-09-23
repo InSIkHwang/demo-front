@@ -513,7 +513,10 @@ const InquiryForm = ({
                 <Input />
               </AutoComplete>
             )}
-            <InquiryItemForm name="searchSupplier">
+            <InquiryItemForm
+              name="searchSupplier"
+              style={{ margin: "0 10px 0 0" }}
+            >
               <AutoComplete
                 value={supplierSearch}
                 onChange={(value) => handleSearch(value, categoryWord)}
@@ -523,15 +526,19 @@ const InquiryForm = ({
                     : autoSearchSupCompleteOptions
                 }
                 style={{ width: "100%" }}
-                placeholder="ex) TECHLOG(SUPPLIER) or HYUNDAI(MAKER)"
+                placeholder={
+                  selectedType === "MAKER"
+                    ? "search for Maker. ex) HYUNDAI"
+                    : "search for Supplier. ex) TECHLOG"
+                }
               >
-                <Input style={{ marginTop: 3, width: 300 }} />
+                <Input style={{ width: 300 }} />
               </AutoComplete>
             </InquiryItemForm>
             <Button onClick={handleAddSupplier} style={{ marginRight: 20 }}>
-              ADD
+              Search
             </Button>
-            <span style={{ marginRight: 10 }}>Added Suplliers : </span>
+            <span style={{ marginRight: 10 }}>Searched Suplliers : </span>
             {uniqueSuppliers.map((supplier) => (
               <Tag
                 key={supplier.id}

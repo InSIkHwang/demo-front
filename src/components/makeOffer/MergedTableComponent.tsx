@@ -155,7 +155,7 @@ const MergedTableComponent = ({
       width: 50,
     },
     {
-      title: "품목코드",
+      title: "PartNo",
       dataIndex: "itemCode",
       key: "itemCode",
       render: (text: string, record: ItemDataType) =>
