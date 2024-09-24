@@ -8,6 +8,7 @@ import {
   fetchItemData,
   submitInquiry,
   fetchInquiryDetail,
+  chkDuplicateDocNum,
 } from "../api/api";
 import InquiryForm from "../components/makeInquiry/InquiryForm";
 import MakeInquiryTable from "../components/makeInquiry/MakeInquiryTable";
@@ -25,7 +26,6 @@ import HeaderEditModal from "../components/makeInquiry/HeaderEditModal";
 import MailSenderModal from "../components/makeInquiry/MailSenderModal";
 import PDFGenerator from "../components/makeInquiry/PDFGenerator";
 import LoadingSpinner from "../components/LoadingSpinner";
-import { produce } from "immer";
 
 // Styles
 const FormContainer = styled.div`
@@ -138,6 +138,7 @@ const MakeInquiry = () => {
   const [pdfFileData, setPdfFileData] = useState<File[]>([]);
   const [isSendMail, setIsSendMail] = useState<boolean>(false);
   const [isPdfAutoUploadChecked, setIsPdfAutoUploadChecked] = useState(true);
+  const [isLoading, setIsLoading] = useState(true); // 로딩 상태 변수 추가
 
   useEffect(() => {
     if (customerInquiryId) {
@@ -167,6 +168,7 @@ const MakeInquiry = () => {
       console.error("Error loading document data:", error);
     } finally {
       setDocDataLoading(false);
+      setIsLoading(false);
     }
   }, []);
 
@@ -191,6 +193,7 @@ const MakeInquiry = () => {
       loadDocData(); // 초기 데이터 로딩 호출
     } else {
       setDocDataLoading(false); // 데이터 로딩이 완료되면 false로 설정
+      setIsLoading(false);
     }
   }, [customerInquiryId, loadDocData]);
 
@@ -211,6 +214,7 @@ const MakeInquiry = () => {
 
     if (customerInquiryId) {
       setIsEditMode(true);
+      setIsLoading(true);
 
       // Edit 모드에서의 로직
       if (inquiryDetail) {
@@ -226,7 +230,6 @@ const MakeInquiry = () => {
           docRemark,
           inquiryItemDetails,
         } = inquiryDetail;
-
         setFormValues({
           docNumber: documentNumber,
           registerDate: dayjs(registerDate),
@@ -258,6 +261,7 @@ const MakeInquiry = () => {
 
         setSelectedSupplierTag(suppliers);
         setSelectedSuppliers(suppliers);
+        setIsLoading(false);
       }
     }
   }, [docDataloading, customerInquiryId, inquiryDetail]);
@@ -345,8 +349,6 @@ const MakeInquiry = () => {
 
   const handleInputChange = useCallback(
     (index: number, field: string, value: string | number) => {
-      console.log(value);
-
       setItems((prevItems) => {
         const updatedItems = [...prevItems];
         const itemToUpdate = updatedItems[index];
@@ -364,15 +366,12 @@ const MakeInquiry = () => {
     key: K,
     value: (typeof formValues)[K]
   ) => {
-    if (key !== "docNumber" || !isEditMode) {
-      setFormValues((prev) => ({ ...prev, [key]: value }));
-    }
+    setFormValues((prev) => ({ ...prev, [key]: value }));
   };
 
   const handleSubmit = async () => {
     try {
-      // 중복 검사 여부에 따라 적절한 처리를 수행합니다.
-
+      // 아이템 중복 검사 여부에 따라 적절한 처리를 수행합니다.
       if (isDuplicate) {
         // Modal.confirm을 사용하여 사용자에게 확인을 요청합니다.
         const result = await new Promise((resolve, reject) => {
@@ -604,7 +603,7 @@ const MakeInquiry = () => {
     setShowPDFPreview((prevState) => !prevState);
   };
 
-  if (docDataloading) {
+  if (docDataloading || isLoading) {
     return <LoadingSpinner />;
   }
   const handleLanguageChange = (value: string) => {
@@ -614,20 +613,19 @@ const MakeInquiry = () => {
   return (
     <FormContainer>
       <Title>견적요청서 작성(MAKE INQUIRY)</Title>
-      {formValues.docNumber && (
-        <InquiryForm
-          formValues={formValues}
-          autoCompleteOptions={autoCompleteOptions}
-          vesselNameList={vesselNameList}
-          supplierOptions={supplierOptions}
-          selectedSuppliers={selectedSuppliers}
-          handleFormChange={handleFormChange}
-          customerUnreg={!selectedCustomerId}
-          vesselUnreg={!selectedVessel?.id}
-          setSelectedSupplierTag={setSelectedSupplierTag}
-          setSelectedSuppliers={setSelectedSuppliers}
-        />
-      )}
+      <InquiryForm
+        formValues={formValues}
+        autoCompleteOptions={autoCompleteOptions}
+        vesselNameList={vesselNameList}
+        supplierOptions={supplierOptions}
+        selectedSuppliers={selectedSuppliers}
+        handleFormChange={handleFormChange}
+        customerUnreg={!selectedCustomerId}
+        vesselUnreg={!selectedVessel?.id}
+        setSelectedSupplierTag={setSelectedSupplierTag}
+        setSelectedSuppliers={setSelectedSuppliers}
+        isEditMode={isEditMode}
+      />
       <MakeInquiryTable
         items={items}
         handleInputChange={handleInputChange}

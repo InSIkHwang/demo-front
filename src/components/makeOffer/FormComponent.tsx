@@ -36,10 +36,18 @@ const FormComponent = ({
         <FormItem
           label="문서번호"
           name="documentNumber"
-          rules={[{ required: true, message: "문서번호를 입력하세요!" }]}
+          rules={[{ required: true, message: "Please write Document No." }]}
+          normalize={(value) => value.trim()} // 입력값을 트리밍하여 저장
           style={{ maxWidth: 200 }}
         >
-          <Input readOnly />
+          <Input
+            value={formValues.docNumber}
+            style={{ cursor: "default" }}
+            onChange={(e) => {
+              const newValue = e.target.value.trim();
+              handleFormChange("documentNumber", newValue); // 그냥 newValue로 설정
+            }}
+          />
         </FormItem>
         <FormItem label="문서상태" name="documentStatus">
           <Input readOnly />

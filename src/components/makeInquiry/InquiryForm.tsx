@@ -94,6 +94,7 @@ interface InquiryFormProps {
   setSelectedSuppliers: Dispatch<
     SetStateAction<{ id: number; name: string; code: string; email: string }[]>
   >;
+  isEditMode: boolean;
 }
 
 const InquiryForm = ({
@@ -107,6 +108,7 @@ const InquiryForm = ({
   setSelectedSupplierTag,
   setSelectedSuppliers,
   supplierOptions,
+  isEditMode,
 }: InquiryFormProps) => {
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
   const [isVesselModalOpen, setIsVesselModalOpen] = useState(false);
@@ -332,12 +334,17 @@ const InquiryForm = ({
           <InquiryItemForm
             label="문서번호(Document No.)"
             name="docNumber"
-            style={{ maxWidth: 200 }}
+            style={{ maxWidth: 300 }}
+            rules={[{ required: true, message: "Please write Document No." }]}
+            normalize={(value) => value.trim()} // 입력값을 트리밍하여 저장
           >
             <Input
               value={formValues.docNumber}
-              readOnly
               style={{ cursor: "default" }}
+              onChange={(e) => {
+                const newValue = e.target.value.trim();
+                handleFormChange("docNumber", newValue); // 그냥 newValue로 설정
+              }}
             />
           </InquiryItemForm>
           <InquiryItemForm
@@ -390,10 +397,15 @@ const InquiryForm = ({
           >
             <Input
               type="number"
-              value={formValues.currency}
-              onChange={(e) =>
-                handleFormChange("currency", parseFloat(e.target.value))
-              }
+              value={formValues.currency || 0} // currency의 초기값이 없는 경우 빈 문자열
+              onChange={(e) => {
+                const value = e.target.value;
+                const parsedValue = parseFloat(value);
+                handleFormChange(
+                  "currency",
+                  isNaN(parsedValue) ? 0 : parsedValue
+                ); // NaN일 경우 0으로 설정
+              }}
             />
           </InquiryItemForm>
         </FormRow>
