@@ -959,6 +959,13 @@ const TableComponent = ({
         scroll={{ y: 600 }}
         virtual
       />
+      <Button
+        type="primary"
+        style={{ margin: "20px 5px" }}
+        onClick={() => handleAddItem(dataSource.length - 1)} // 마지막 인덱스에 새 품목 추가
+      >
+        Add item
+      </Button>
     </div>
   );
 };

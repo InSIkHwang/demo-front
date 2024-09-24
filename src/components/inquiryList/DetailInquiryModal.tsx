@@ -7,11 +7,12 @@ import {
   Tag,
   Divider,
   message,
+  Input,
 } from "antd";
 import { Inquiry, InquiryListSupplier } from "../../types/types";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import { deleteInquiry, fetchInquiryDetail } from "../../api/api";
+import { copyInquiry, deleteInquiry, fetchInquiryDetail } from "../../api/api";
 
 interface DetailInquiryModalProps {
   open: boolean;
@@ -60,7 +61,6 @@ const TagStyled = styled(Tag)`
   margin-right: 8px;
 `;
 
-// Constants and utility functions
 const SPECIAL_ITEM_TYPES = ["MAKER", "TYPE", "DESC"];
 
 const isSpecialItemType = (type: string) => SPECIAL_ITEM_TYPES.includes(type);
@@ -74,6 +74,8 @@ const DetailInquiryModal = ({
   const [inquiryDetail, setInquiryDetail] = useState<Inquiry | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const navigate = useNavigate();
+  const [newDocumentNumber, setNewDocumentNumber] = useState("");
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -83,7 +85,7 @@ const DetailInquiryModal = ({
           const data = await fetchInquiryDetail(inquiryId);
           setInquiryDetail(data);
         } catch (error) {
-          console.error("상세 정보를 가져오는 중 오류가 발생했습니다:", error);
+          console.error("Error fetching details:", error);
         } finally {
           setLoading(false);
         }
@@ -100,21 +102,40 @@ const DetailInquiryModal = ({
     }
   };
 
+  const handleCopyClick = () => {
+    setNewDocumentNumber(inquiryDetail!.documentNumber);
+    setIsModalVisible(true);
+  };
+
+  const handleCopyOk = async () => {
+    try {
+      await copyInquiry(inquiryDetail!.documentNumber, newDocumentNumber);
+      message.success("Copied successfully");
+      setIsModalVisible(false);
+    } catch (error) {
+      message.error("Error copying inquiry. Please check document number");
+    }
+  };
+
+  const handleCopyCancel = () => {
+    setIsModalVisible(false);
+  };
+
   const handleDeleteClick = () => {
     Modal.confirm({
-      title: "삭제 확인",
-      content: "정말로 이 견적서를 삭제하시겠습니까?",
-      okText: "삭제",
-      cancelText: "취소",
+      title: "Delete Confirmation",
+      content: "Are you sure you want to delete this inquiry?",
+      okText: "Delete",
+      cancelText: "Cancel",
       onOk: async () => {
         try {
           await deleteInquiry(inquiryId);
-          message.success("견적서가 성공적으로 삭제되었습니다.");
+          message.success("Inquiry deleted successfully.");
           onClose();
           fetchData();
         } catch (error) {
-          console.error("견적서 삭제 중 오류가 발생했습니다:", error);
-          message.error("견적서 삭제에 실패했습니다. 다시 시도해 주세요.");
+          console.error("Error deleting inquiry:", error);
+          message.error("Failed to delete inquiry. Please try again.");
         }
       },
     });
@@ -122,7 +143,7 @@ const DetailInquiryModal = ({
 
   const columns = [
     {
-      title: "품목 코드",
+      title: "Item Code",
       dataIndex: "itemCode",
       key: "itemCode",
       width: 150,
@@ -134,7 +155,7 @@ const DetailInquiryModal = ({
       },
     },
     {
-      title: "품명",
+      title: "Item Name",
       dataIndex: "itemName",
       key: "itemName",
       render: (text: string, record: any) => {
@@ -145,7 +166,7 @@ const DetailInquiryModal = ({
       },
     },
     {
-      title: "비고",
+      title: "Remarks",
       dataIndex: "itemRemark",
       key: "itemRemark",
       width: 150,
@@ -157,7 +178,7 @@ const DetailInquiryModal = ({
       },
     },
     {
-      title: "수량",
+      title: "Quantity",
       dataIndex: "qty",
       key: "qty",
       width: 50,
@@ -169,7 +190,7 @@ const DetailInquiryModal = ({
       },
     },
     {
-      title: "단위",
+      title: "Unit",
       dataIndex: "unit",
       key: "unit",
       width: 50,
@@ -181,7 +202,7 @@ const DetailInquiryModal = ({
       },
     },
     {
-      title: "의뢰처",
+      title: "Suppliers",
       dataIndex: "suppliers",
       key: "suppliers",
       width: 200,
@@ -206,89 +227,108 @@ const DetailInquiryModal = ({
   ];
 
   return (
-    <StyledModal
-      title="상세 정보"
-      open={open}
-      onCancel={onClose}
-      footer={[
-        <Button type="primary" key="edit" onClick={handleEditClick}>
-          수정
-        </Button>,
-        <Button key="delete" danger onClick={handleDeleteClick}>
-          삭제
-        </Button>,
-        <Button key="close" onClick={onClose}>
-          닫기
-        </Button>,
-      ]}
-      width={1200}
-    >
-      {loading ? (
-        <p>로딩 중...</p>
-      ) : (
-        inquiryDetail && (
-          <>
-            <Descriptions bordered column={2} size="small">
-              <Descriptions.Item label="문서번호">
-                {inquiryDetail.documentNumber}
-              </Descriptions.Item>
-              <Descriptions.Item label="등록 날짜">
-                {inquiryDetail.registerDate}
-              </Descriptions.Item>
-              <Descriptions.Item label="선적 날짜">
-                {inquiryDetail.shippingDate}
-              </Descriptions.Item>
-              <Descriptions.Item label="매출처명">
-                {inquiryDetail.companyName}
-              </Descriptions.Item>
-              <Descriptions.Item label="REF NO.">
-                {inquiryDetail.refNumber}
-              </Descriptions.Item>
-              <Descriptions.Item label="통화">
-                {inquiryDetail.currencyType}
-              </Descriptions.Item>
-              <Descriptions.Item label="환율">
-                {`$${inquiryDetail.currency?.toFixed(0)}`}
-              </Descriptions.Item>
-              <Descriptions.Item label="선명">
-                {inquiryDetail.vesselName}
-              </Descriptions.Item>
-              <Descriptions.Item label="선박 번호">
-                {inquiryDetail.veeselHullNo}
-              </Descriptions.Item>
-              <Descriptions.Item label="비고">
-                {inquiryDetail.docRemark}
-              </Descriptions.Item>
-              <Descriptions.Item label="문서 담당자">
-                {inquiryDetail.docManager}
-              </Descriptions.Item>
-              <Descriptions.Item label="매출처 담당자">
-                {inquiryDetail.representative}
-              </Descriptions.Item>
-              <Descriptions.Item label="문서 상태">
-                <TagStyled color="blue">
-                  {inquiryDetail.documentStatus}
-                </TagStyled>
-              </Descriptions.Item>
-              <Descriptions.Item label="견적 유형">
-                <TagStyled color="green">{inquiryDetail.inquiryType}</TagStyled>
-              </Descriptions.Item>
-            </Descriptions>
-            <Divider />
-            <h3>품목 목록</h3>
-            <Table
-              columns={columns}
-              dataSource={inquiryDetail.inquiryItemDetails}
-              pagination={false}
-              rowKey="itemId"
-              scroll={{ y: 300 }}
-              bordered
-              size="small"
-            />
-          </>
-        )
-      )}
-    </StyledModal>
+    <>
+      <StyledModal
+        title="Detail Information"
+        open={open}
+        onCancel={onClose}
+        footer={[
+          <Button type="dashed" key="edit" onClick={handleCopyClick}>
+            Copy to new document
+          </Button>,
+          <Button type="primary" key="edit" onClick={handleEditClick}>
+            Edit
+          </Button>,
+          <Button key="delete" danger onClick={handleDeleteClick}>
+            Delete
+          </Button>,
+          <Button key="close" onClick={onClose}>
+            Close
+          </Button>,
+        ]}
+        width={1200}
+      >
+        {loading ? (
+          <p>Loading...</p>
+        ) : (
+          inquiryDetail && (
+            <>
+              <Descriptions bordered column={2} size="small">
+                <Descriptions.Item label="Document Number">
+                  {inquiryDetail.documentNumber}
+                </Descriptions.Item>
+                <Descriptions.Item label="Registration Date">
+                  {inquiryDetail.registerDate}
+                </Descriptions.Item>
+                <Descriptions.Item label="Shipping Date">
+                  {inquiryDetail.shippingDate}
+                </Descriptions.Item>
+                <Descriptions.Item label="Company Name">
+                  {inquiryDetail.companyName}
+                </Descriptions.Item>
+                <Descriptions.Item label="REF NO.">
+                  {inquiryDetail.refNumber}
+                </Descriptions.Item>
+                <Descriptions.Item label="Currency">
+                  {inquiryDetail.currencyType}
+                </Descriptions.Item>
+                <Descriptions.Item label="Exchange Rate">
+                  {`$${inquiryDetail.currency?.toFixed(0)}`}
+                </Descriptions.Item>
+                <Descriptions.Item label="Vessel Name">
+                  {inquiryDetail.vesselName}
+                </Descriptions.Item>
+                <Descriptions.Item label="Vessel Hull Number">
+                  {inquiryDetail.veeselHullNo}
+                </Descriptions.Item>
+                <Descriptions.Item label="Remarks">
+                  {inquiryDetail.docRemark}
+                </Descriptions.Item>
+                <Descriptions.Item label="Document Manager">
+                  {inquiryDetail.docManager}
+                </Descriptions.Item>
+                <Descriptions.Item label="Company Representative">
+                  {inquiryDetail.representative}
+                </Descriptions.Item>
+                <Descriptions.Item label="Document Status">
+                  <TagStyled color="blue">
+                    {inquiryDetail.documentStatus}
+                  </TagStyled>
+                </Descriptions.Item>
+                <Descriptions.Item label="Inquiry Type">
+                  <TagStyled color="green">
+                    {inquiryDetail.inquiryType}
+                  </TagStyled>
+                </Descriptions.Item>
+              </Descriptions>
+              <Divider />
+              <h3>Item List</h3>
+              <Table
+                columns={columns}
+                dataSource={inquiryDetail.inquiryItemDetails}
+                pagination={false}
+                rowKey="itemId"
+                scroll={{ y: 300 }}
+                bordered
+                size="small"
+              />
+            </>
+          )
+        )}
+      </StyledModal>
+      <Modal
+        title="Copy Document"
+        open={isModalVisible}
+        onOk={handleCopyOk}
+        onCancel={handleCopyCancel}
+      >
+        <Input
+          placeholder="Please enter a new document number"
+          value={newDocumentNumber}
+          onChange={(e) => setNewDocumentNumber(e.target.value)}
+        />
+      </Modal>
+    </>
   );
 };
 

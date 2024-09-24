@@ -243,6 +243,18 @@ export const fetchInquiryDetail = async (inquiryId: number) => {
   return response.data;
 };
 
+// Inquiry Copy
+export const copyInquiry = async (
+  docNumber: string,
+  newDocumentNumber: string
+) => {
+  const response = await axios.post(
+    `/api/document/copy/${docNumber}?newDocumentNumber=${newDocumentNumber}`
+  );
+
+  return response.data;
+};
+
 //Inquiry 검색
 export const searchInquiryList = async (
   registerStartDate: string = "",

@@ -498,6 +498,13 @@ const MakeInquiryTable = ({
         scroll={{ y: 600 }}
         virtual
       />
+      <Button
+        type="primary"
+        style={{ margin: "20px 5px" }}
+        onClick={() => handleAddItem(items.length - 1)} // 마지막 인덱스에 새 품목 추가
+      >
+        Add item
+      </Button>
       <ExcelUploadModal
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
