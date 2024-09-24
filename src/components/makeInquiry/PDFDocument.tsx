@@ -150,6 +150,10 @@ const styles = StyleSheet.create({
     textDecoration: "underline",
     fontFamily: "NotoSerifKR",
   },
+  desctypeCell: {
+    marginLeft: 155,
+    fontSize: 9,
+  },
 });
 
 // 번호를 결정하는 함수
@@ -174,6 +178,7 @@ const renderTableRows = (items: InquiryItem[]) => {
   let itemIndex = 0;
   return items.map((item) => {
     const isItemType = item.itemType === "ITEM";
+    const isDescType = item.itemType === "DESC";
     if (isItemType) {
       itemIndex += 1; // "ITEM" 타입일 때만 인덱스 증가
     }
@@ -214,7 +219,11 @@ const renderTableRows = (items: InquiryItem[]) => {
               { flex: 1, borderLeft: "0.5px solid #000" },
             ]}
           >
-            <Text style={styles.nonItemtypeCell}>{item.itemName}</Text>
+            {isDescType ? (
+              <Text style={styles.desctypeCell}>{item.itemName}</Text>
+            ) : (
+              <Text style={styles.nonItemtypeCell}>{item.itemName}</Text>
+            )}
           </View>
         )}
       </View>

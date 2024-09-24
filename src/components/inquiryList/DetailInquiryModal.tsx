@@ -12,7 +12,12 @@ import {
 import { Inquiry, InquiryListSupplier } from "../../types/types";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import { copyInquiry, deleteInquiry, fetchInquiryDetail } from "../../api/api";
+import {
+  chkDuplicateDocNum,
+  copyInquiry,
+  deleteInquiry,
+  fetchInquiryDetail,
+} from "../../api/api";
 
 interface DetailInquiryModalProps {
   open: boolean;
@@ -109,8 +114,17 @@ const DetailInquiryModal = ({
 
   const handleCopyOk = async () => {
     try {
+      const isDuplicate = await chkDuplicateDocNum(newDocumentNumber);
+      if (isDuplicate) {
+        message.error(
+          "Duplicate document number. Please use a different number."
+        );
+        return; // 중복일 경우 처리 중단
+      }
+
       await copyInquiry(inquiryDetail!.documentNumber, newDocumentNumber);
       message.success("Copied successfully");
+      fetchData();
       setIsModalVisible(false);
     } catch (error) {
       message.error("Error copying inquiry. Please check document number");

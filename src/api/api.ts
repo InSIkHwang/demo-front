@@ -381,7 +381,7 @@ export const editOffer = async (
   },
   itemCostEditList: ItemDataType[],
   discount: number,
-  invCharge:
+  invChargeList:
     | {
         invChargeId: number | null;
         customCharge: string;
@@ -394,11 +394,10 @@ export const editOffer = async (
   const requestData = {
     supplierId,
     discount: discount,
-    invCharge: invCharge,
+    invChargeList: invChargeList,
     documentEditInfo,
     itemCostEditList,
   };
-  console.log(requestData);
 
   await axios.put(`/api/supplier-inquiries/${supplierInquiryId}`, requestData);
 };
@@ -437,16 +436,6 @@ export const sendQuotationMail = async (
 
   // `emailSend` 데이터 추가
   formData.append("emailSendData", JSON.stringify(emailSendData));
-
-  const entries = Array.from(formData.entries());
-
-  entries.forEach(([key, value]) => {
-    if (value instanceof File) {
-      console.log(`${key}:`, value.name);
-    } else {
-      console.log(`${key}:`, value);
-    }
-  });
 
   // POST 요청
   const response = await axios.post(

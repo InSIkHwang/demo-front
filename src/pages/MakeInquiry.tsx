@@ -189,7 +189,6 @@ const MakeInquiry = () => {
       setItemIdMap({});
       setSupplierOptions([]);
       setDocDataLoading(true); // 데이터 로딩 상태를 true로 설정
-
       loadDocData(); // 초기 데이터 로딩 호출
     } else {
       setDocDataLoading(false); // 데이터 로딩이 완료되면 false로 설정
@@ -214,7 +213,6 @@ const MakeInquiry = () => {
 
     if (customerInquiryId) {
       setIsEditMode(true);
-      setIsLoading(true);
 
       // Edit 모드에서의 로직
       if (inquiryDetail) {
@@ -261,8 +259,8 @@ const MakeInquiry = () => {
 
         setSelectedSupplierTag(suppliers);
         setSelectedSuppliers(suppliers);
-        setIsLoading(false);
       }
+      setIsLoading(false);
     }
   }, [docDataloading, customerInquiryId, inquiryDetail]);
 
@@ -606,6 +604,7 @@ const MakeInquiry = () => {
   if (docDataloading || isLoading) {
     return <LoadingSpinner />;
   }
+
   const handleLanguageChange = (value: string) => {
     setLanguage(value);
   };
@@ -613,19 +612,21 @@ const MakeInquiry = () => {
   return (
     <FormContainer>
       <Title>견적요청서 작성(MAKE INQUIRY)</Title>
-      <InquiryForm
-        formValues={formValues}
-        autoCompleteOptions={autoCompleteOptions}
-        vesselNameList={vesselNameList}
-        supplierOptions={supplierOptions}
-        selectedSuppliers={selectedSuppliers}
-        handleFormChange={handleFormChange}
-        customerUnreg={!selectedCustomerId}
-        vesselUnreg={!selectedVessel?.id}
-        setSelectedSupplierTag={setSelectedSupplierTag}
-        setSelectedSuppliers={setSelectedSuppliers}
-        isEditMode={isEditMode}
-      />
+      {formValues !== INITIAL_FORM_VALUES && (
+        <InquiryForm
+          formValues={formValues}
+          autoCompleteOptions={autoCompleteOptions}
+          vesselNameList={vesselNameList}
+          supplierOptions={supplierOptions}
+          selectedSuppliers={selectedSuppliers}
+          handleFormChange={handleFormChange}
+          customerUnreg={!selectedCustomerId}
+          vesselUnreg={!selectedVessel?.id}
+          setSelectedSupplierTag={setSelectedSupplierTag}
+          setSelectedSuppliers={setSelectedSuppliers}
+          isEditMode={isEditMode}
+        />
+      )}
       <MakeInquiryTable
         items={items}
         handleInputChange={handleInputChange}

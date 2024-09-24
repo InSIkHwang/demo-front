@@ -339,7 +339,6 @@ const InquiryForm = ({
             normalize={(value) => value.trim()} // 입력값을 트리밍하여 저장
           >
             <Input
-              value={formValues.docNumber}
               style={{ cursor: "default" }}
               onChange={(e) => {
                 const newValue = e.target.value.trim();

@@ -22,7 +22,14 @@ interface ChargeComponentProps {
     totalProfit: number;
     totalProfitPercent: number;
   };
-
+  totals: {
+    totalSalesAmountKRW: number;
+    totalSalesAmountGlobal: number;
+    totalPurchaseAmountKRW: number;
+    totalPurchaseAmountGlobal: number;
+    totalProfit: number;
+    totalProfitPercent: number;
+  };
   currency: number;
   dcInfo: { dcPercent: number; dcKrw: number; dcGlobal: number };
   setDcInfo: Dispatch<
@@ -43,6 +50,7 @@ const ChargeInputPopover = ({
   applyDcAndCharge,
   isReadOnly,
   finalTotals,
+  totals,
 }: ChargeComponentProps) => {
   const calculateDcKrw = (totalSalesAmountKRW: number, value: number) => {
     return Number((totalSalesAmountKRW * (value / 100)).toFixed(2));
@@ -62,7 +70,7 @@ const ChargeInputPopover = ({
   const handleDcChange = (key: string, value: number) => {
     setDcInfo((prevInfo) => {
       let newDcInfo = { ...prevInfo, [key]: value };
-      const { totalSalesAmountKRW, totalSalesAmountGlobal } = finalTotals;
+      const { totalSalesAmountKRW, totalSalesAmountGlobal } = totals;
 
       if (key === "dcPercent") {
         newDcInfo.dcKrw = calculateDcKrw(totalSalesAmountKRW, value);
@@ -134,6 +142,10 @@ const ChargeInputPopover = ({
   };
 
   useEffect(() => {
+    const { totalSalesAmountKRW, totalSalesAmountGlobal } = finalTotals;
+
+    calculateDcKrw(totalSalesAmountKRW, dcInfo.dcPercent);
+    calculateDcGlobal(totalSalesAmountGlobal, dcInfo.dcPercent);
     applyDcAndCharge();
   }, []);
 
@@ -145,6 +157,8 @@ const ChargeInputPopover = ({
       >
         <InputGroup>
           <Input
+            type="number" // type을 number로 설정
+            step="0.01" // 소수점 입력을 위해 step을 설정
             value={dcInfo.dcPercent}
             onChange={(e) =>
               handleDcChange("dcPercent", Number(e.target.value))
@@ -154,6 +168,8 @@ const ChargeInputPopover = ({
             readOnly={isReadOnly}
           />
           <Input
+            type="number" // type을 number로 설정
+            step="0.01" // 소수점 입력을 위해 step을 설정
             value={dcInfo.dcKrw}
             onChange={(e) => handleDcChange("dcKrw", Number(e.target.value))}
             placeholder="Enter D/C ₩"
@@ -161,6 +177,8 @@ const ChargeInputPopover = ({
             readOnly={isReadOnly}
           />
           <Input
+            type="number" // type을 number로 설정
+            step="0.01" // 소수점 입력을 위해 step을 설정
             value={dcInfo.dcGlobal}
             onChange={(e) => handleDcChange("dcGlobal", Number(e.target.value))}
             placeholder="Enter D/C Global"
@@ -191,6 +209,8 @@ const ChargeInputPopover = ({
                   readOnly={isReadOnly}
                 />
                 <Input
+                  type="number" // type을 number로 설정
+                  step="0.01" // 소수점 입력을 위해 step을 설정
                   value={charge.chargePriceKRW}
                   onChange={(e) =>
                     handleChargeChange(
@@ -204,6 +224,8 @@ const ChargeInputPopover = ({
                   readOnly={isReadOnly}
                 />
                 <Input
+                  type="number" // type을 number로 설정
+                  step="0.01" // 소수점 입력을 위해 step을 설정
                   value={charge.chargePriceGlobal}
                   onChange={(e) =>
                     handleChargeChange(

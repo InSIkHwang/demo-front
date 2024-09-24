@@ -324,17 +324,7 @@ const MergedTableComponent = ({
       title: "마진 (%)",
       dataIndex: "margin",
       key: "margin",
-      render: (text: number, record: any, index: number) => {
-        const salesAmountKRW = record.salesAmountKRW;
-        const purchaseAmountKRW = record.purchaseAmountKRW;
-        const marginPercent = calculateMargin(
-          salesAmountKRW,
-          purchaseAmountKRW
-        );
-        return !isNaN(marginPercent) && record.itemType === "ITEM" ? (
-          <span>{marginPercent}%</span>
-        ) : null;
-      },
+      render: (text: number) => <span>{text}</span>,
       width: 80,
     },
   ];

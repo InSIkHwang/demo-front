@@ -340,7 +340,7 @@ const TableComponent = ({
       totalProfit,
       totalProfitPercent,
     });
-  }, [calculateTotalAmount, dataSource]);
+  }, [calculateTotalAmount, dataSource, setTotals]);
 
   const handleAddItem = (index: number) => {
     const newItem: ItemDataType = {

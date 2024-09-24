@@ -298,6 +298,8 @@ const MakeOffer = () => {
       };
     }
 
+    handleMarginChange(index, currentItem.margin || 0);
+
     // Update the data source immediately
     updatedDataSource[index] = updatedItem;
     if (JSON.stringify(dataSource) !== JSON.stringify(updatedDataSource)) {
@@ -357,6 +359,7 @@ const MakeOffer = () => {
 
     // 매입단가
     const purchasePriceKRW = currentItem.purchasePriceKRW || 0;
+
     const qty = currentItem.qty || 0;
 
     // 매출단가 계산 (매입단가 * (1 + 마진/100))
@@ -510,9 +513,15 @@ const MakeOffer = () => {
   const applyDcAndCharge = () => {
     // Calculate new totals
     const newTotalSalesAmountKRW =
-      totals.totalSalesAmountKRW - (dcInfo.dcPercent ? dcInfo.dcKrw : 0);
+      totals.totalSalesAmountKRW -
+      (dcInfo.dcPercent
+        ? totals.totalSalesAmountKRW * (dcInfo.dcPercent / 100)
+        : 0);
     const newTotalSalesAmountGlobal =
-      totals.totalSalesAmountGlobal - (dcInfo.dcPercent ? dcInfo.dcGlobal : 0);
+      totals.totalSalesAmountGlobal -
+      (dcInfo.dcPercent
+        ? totals.totalSalesAmountGlobal * (dcInfo.dcPercent / 100)
+        : 0);
 
     const chargePriceKRWTotal =
       invChargeList && Array.isArray(invChargeList) && invChargeList.length > 0
@@ -574,6 +583,7 @@ const MakeOffer = () => {
         applyDcAndCharge={applyDcAndCharge}
         isReadOnly={isReadOnly}
         finalTotals={finalTotals}
+        totals={totals}
       />
       {!isReadOnly && (
         <TableComponent
