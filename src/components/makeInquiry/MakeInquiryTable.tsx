@@ -509,6 +509,8 @@ const MakeInquiryTable = ({
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         onApply={handleApplyExcelData}
+        currency={1}
+        type={"inquiry"}
       />
     </>
   );

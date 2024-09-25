@@ -18,13 +18,15 @@ import {
 } from "antd";
 import { ColumnsType } from "antd/es/table";
 import styled, { CSSProperties } from "styled-components";
-import { InvCharge, ItemDataType } from "../../types/types";
+import { InquiryItem, InvCharge, ItemDataType } from "../../types/types";
 import {
   DeleteOutlined,
   PlusCircleOutlined,
   ReloadOutlined,
+  FileExcelOutlined,
 } from "@ant-design/icons";
 import { fetchItemData } from "../../api/api";
+import ExcelUploadModal from "../makeInquiry/ExcelUploadModal";
 
 const RefreshBtn = styled(Button)``;
 
@@ -174,6 +176,18 @@ const TableComponent = ({
   const [updatedIndex, setUpdatedIndex] = useState<number | null>(null);
   const [selectedItemData, setSelectedItemData] =
     useState<SelectedItemData | null>(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const handleApplyExcelData = (mappedItems: ItemDataType[]) => {
+    setDataSource((prevItems) => [
+      ...prevItems,
+      ...mappedItems.map((item, idx) => ({
+        ...item,
+        position: prevItems.length + idx + 1,
+      })),
+    ]);
+    setIsModalVisible(false);
+  };
 
   const handleItemCodeChange = async (index: number, value: string) => {
     if ((value + "").trim() === "") {
@@ -884,16 +898,25 @@ const TableComponent = ({
 
       render: (text: number, record: any, index: number) => {
         return (
-          <InputNumber
+          <Input
             value={text}
+            ref={(el) => {
+              if (!inputRefs.current[index]) {
+                inputRefs.current[index] = [];
+              }
+              inputRefs.current[index][13] = el; // columnIndex를 맞추어 설정
+            }}
             style={{ width: "100%" }}
             addonAfter={"%"}
-            parser={(value) =>
-              value ? parseFloat(value.replace(/ %/, "")) : 0
+            onKeyDown={(e) => handleNextRowKeyDown(e, index, 13)}
+            onChange={(e) =>
+              handleInputChange(
+                index,
+                "margin",
+                parseFloat(e.target.value.replace(/ %/, "")) || 0
+              )
             }
-            onChange={(value) => handleInputChange(index, "margin", value)}
             onBlur={() => handleMarginChange(index, text ?? 0)}
-            controls={false}
           />
         );
       },
@@ -951,6 +974,14 @@ const TableComponent = ({
           onClick={applyDcAndCharge}
         />
       </TotalCards>
+      <Button
+        type="dashed"
+        style={{ margin: "20px 5px" }}
+        onClick={() => setIsModalVisible(true)}
+        icon={<FileExcelOutlined />}
+      >
+        Load Excel File
+      </Button>
       <CustomTable
         rowKey="position"
         columns={columns}
@@ -966,6 +997,13 @@ const TableComponent = ({
       >
         Add item
       </Button>
+      <ExcelUploadModal
+        open={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        onApply={handleApplyExcelData}
+        currency={currency}
+        type={"offer"}
+      />
     </div>
   );
 };

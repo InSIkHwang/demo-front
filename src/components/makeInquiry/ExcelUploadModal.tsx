@@ -1,20 +1,25 @@
 import React, { useState } from "react";
-import { Modal, Upload, Button, Table, message } from "antd";
+import { Modal, Upload, Table, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import * as XLSX from "xlsx";
 import { InquiryItem } from "../../types/types";
 import { fetchItemData } from "../../api/api";
+import { ItemDataType } from "./../../types/types";
 
 interface ExcelUploadModalProps {
   open: boolean;
   onCancel: () => void;
-  onApply: (mappedItems: InquiryItem[]) => void;
+  onApply: (mappedItems: any) => void;
+  currency: number;
+  type: string;
 }
 
 const ExcelUploadModal = ({
   open,
   onCancel,
   onApply,
+  currency,
+  type,
 }: ExcelUploadModalProps) => {
   const [excelData, setExcelData] = useState<InquiryItem[]>([]);
   const [fileList, setFileList] = useState<any[]>([]);
@@ -34,11 +39,17 @@ const ExcelUploadModal = ({
         header: 1,
       }) as any[][];
 
-      // 첫 번째 행의 헤더와 expectedHeader 비교
+      // 헤더 검증
       const fileHeader = jsonData[0] || [];
+      const headerMapping: Record<string, string> = {
+        "purchase price(KRW)": "purchasePriceKRW",
+        "purchase price(Global)": "purchasePriceGlobal",
+        margin: "margin",
+      };
+
       if (
-        fileHeader.length !== expectedHeader.length ||
-        !fileHeader.every((header, idx) => header === expectedHeader[idx])
+        fileHeader.length < expectedHeader.length ||
+        !expectedHeader.every((header) => fileHeader.includes(header))
       ) {
         message.error(
           "The uploaded file's header does not match the expected format."
@@ -47,16 +58,41 @@ const ExcelUploadModal = ({
         return;
       }
 
-      // 엑셀 데이터에서 속성명이 고정된 형식을 사용하여 데이터 추출
-      const dataArray = jsonData.slice(1).map((row: any[], index: number) => ({
-        position: index + 1,
-        itemCode: row[0] || "",
-        itemType: "ITEM" as "ITEM",
-        itemName: row[1] || "",
-        qty: parseInt(row[2], 10) || 0,
-        unit: row[3] || "",
-        itemRemark: row[4] || "",
-      }));
+      const mappedHeaders = fileHeader.map(
+        (header) => headerMapping[header] || header
+      );
+
+      // 데이터 추출 및 itemType 설정
+      const dataArray = jsonData.slice(1).map((row: any[], index: number) => {
+        const rowData: any = { position: index + 1, itemType: "ITEM" };
+
+        mappedHeaders.forEach((header, colIdx) => {
+          rowData[header] = row[colIdx] || "";
+        });
+
+        // type이 "offer"인 경우 가격 계산 처리
+        if (type === "offer") {
+          // 문자열을 숫자 형식으로 변환
+          const purchasePriceKRW = parseFloat(rowData.purchasePriceKRW) || 0;
+          const purchasePriceGlobal =
+            parseFloat(rowData.purchasePriceGlobal) || 0;
+
+          if (purchasePriceKRW && !purchasePriceGlobal) {
+            rowData.purchasePriceGlobal = parseFloat(
+              (purchasePriceKRW / currency).toFixed(2)
+            );
+          } else if (!purchasePriceKRW && purchasePriceGlobal) {
+            rowData.purchasePriceKRW = Math.round(
+              purchasePriceGlobal * currency
+            );
+          }
+
+          // margin 값이 없는 경우 기본값 설정 (예: 0)
+          rowData.margin = parseFloat(rowData.margin) || 0;
+        }
+
+        return rowData;
+      });
 
       setExcelData(dataArray);
     };
@@ -137,15 +173,30 @@ const ExcelUploadModal = ({
           dataSource={excelData}
           columns={[
             { title: "No.", dataIndex: "position", key: "position" },
-            { title: "Item Code", dataIndex: "itemCode", key: "position" },
-            { title: "Item Name", dataIndex: "itemName", key: "position" },
-            { title: "Quantity", dataIndex: "qty", key: "position" },
-            { title: "Unit", dataIndex: "unit", key: "position" },
+            { title: "Item Code", dataIndex: "itemCode", key: "itemCode" },
+            { title: "Item Name", dataIndex: "itemName", key: "itemName" },
+            { title: "Quantity", dataIndex: "qty", key: "qty" },
+            { title: "Unit", dataIndex: "unit", key: "unit" },
             {
               title: "Item Remark",
               dataIndex: "itemRemark",
-              key: "position",
+              key: "itemRemark",
             },
+            ...(type === "offer"
+              ? [
+                  {
+                    title: "Purchase Price (KRW)",
+                    dataIndex: "purchasePriceKRW",
+                    key: "purchasePriceKRW",
+                  },
+                  {
+                    title: "Purchase Price (Global)",
+                    dataIndex: "purchasePriceGlobal",
+                    key: "purchasePriceGlobal",
+                  },
+                  { title: "Margin", dataIndex: "margin", key: "margin" },
+                ]
+              : []),
           ]}
           pagination={false}
           bordered
