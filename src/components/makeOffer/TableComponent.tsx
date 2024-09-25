@@ -6,15 +6,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import {
-  Table,
-  Input,
-  Select,
-  InputNumber,
-  Button,
-  AutoComplete,
-  InputRef,
-} from "antd";
+import { Table, Input, Select, InputNumber, Button, AutoComplete } from "antd";
 import { ColumnsType } from "antd/es/table";
 import styled from "styled-components";
 import { ItemDataType } from "../../types/types";
@@ -26,6 +18,7 @@ import {
 } from "@ant-design/icons";
 import { fetchItemData } from "../../api/api";
 import ExcelUploadModal from "../ExcelUploadModal";
+import { TextAreaRef } from "antd/es/input/TextArea";
 
 const RefreshBtn = styled(Button)``;
 
@@ -55,11 +48,21 @@ const CustomTable = styled(Table)`
     padding: 0 2px !important;
   }
 
+  .ant-table-cell-row-hover {
+    background-color: #e7e7e7 !important;
+  }
+
   .even-row {
     background-color: #ffffff;
+    &:hover {
+      background-color: #e7e7e7;
+    }
   }
   .odd-row {
     background-color: #f0f0f0;
+    &:hover {
+      background-color: #e7e7e7;
+    }
   }
 `;
 
@@ -170,7 +173,7 @@ const TableComponent = ({
   setTotals,
   applyDcAndCharge,
 }: TableComponentProps) => {
-  const inputRefs = useRef<(InputRef | null)[][]>([]);
+  const inputRefs = useRef<(TextAreaRef | null)[][]>([]);
   const [itemCodeOptions, setItemCodeOptions] = useState<{ value: string }[]>(
     []
   );
@@ -467,7 +470,9 @@ const TableComponent = ({
   };
 
   const handleNextRowKeyDown = (
-    e: React.KeyboardEvent<HTMLInputElement>,
+    e: React.KeyboardEvent<
+      HTMLInputElement | HTMLDivElement | HTMLTextAreaElement
+    >,
     rowIndex: number,
     columnIndex: number
   ) => {
@@ -538,8 +543,16 @@ const TableComponent = ({
               }}
               style={{ borderRadius: "4px", width: "100%" }}
               dropdownStyle={{ width: 250 }}
+              ref={(el) => {
+                if (!inputRefs.current[index]) {
+                  inputRefs.current[index] = [];
+                }
+                inputRefs.current[index][1] = el; // columnIndex를 맞추어 설정
+              }}
+              onKeyDown={(e) => handleNextRowKeyDown(e, index, 1)}
             >
-              <Input
+              <Input.TextArea
+                autoSize={{ minRows: 1, maxRows: 3 }}
                 style={{
                   borderColor: checkDuplicate("itemCode", text, index)
                     ? "#faad14"
@@ -581,7 +594,8 @@ const TableComponent = ({
       width: 250,
       render: (text: string, record: any, index: number) => (
         <>
-          <Input
+          <Input.TextArea
+            autoSize={{ minRows: 1, maxRows: 4 }}
             ref={(el) => {
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
@@ -682,7 +696,8 @@ const TableComponent = ({
       key: "itemRemark",
       width: 100,
       render: (text: string, record: any, index: number) => (
-        <Input
+        <Input.TextArea
+          autoSize={{ minRows: 1, maxRows: 4 }}
           value={text}
           onChange={(e) =>
             handleInputChange(index, "itemRemark", e.target.value)

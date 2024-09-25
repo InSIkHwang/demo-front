@@ -27,6 +27,7 @@ import ExcelUploadModal from "../ExcelUploadModal";
 import { ColumnsType } from "antd/es/table";
 import { handleExport } from "../../api/api";
 import styled from "styled-components";
+import { TextAreaRef } from "antd/es/input/TextArea";
 
 const { Option } = Select;
 
@@ -35,11 +36,21 @@ const CustomTable = styled(Table)`
     text-align: center !important;
   }
 
+  .ant-table-cell-row-hover {
+    background-color: #e7e7e7 !important;
+  }
+
   .even-row {
     background-color: #ffffff;
+    &:hover {
+      background-color: #e7e7e7;
+    }
   }
   .odd-row {
     background-color: #f0f0f0;
+    &:hover {
+      background-color: #e7e7e7;
+    }
   }
 `;
 
@@ -78,7 +89,7 @@ const MakeInquiryTable = ({
     [key: string]: DuplicateState;
   }>({});
   const dataSource = useMemo(() => items, [items]);
-  const inputRefs = useRef<(InputRef | null)[][]>([]);
+  const inputRefs = useRef<(TextAreaRef | null)[][]>([]);
 
   const handleApplyExcelData = (mappedItems: InquiryItem[]) => {
     setItems((prevItems) => [
@@ -204,7 +215,9 @@ const MakeInquiryTable = ({
   };
 
   const handleNextRowKeyDown = (
-    e: React.KeyboardEvent<HTMLInputElement>,
+    e: React.KeyboardEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLDivElement
+    >,
     rowIndex: number,
     columnIndex: number
   ) => {
@@ -284,8 +297,16 @@ const MakeInquiryTable = ({
                 }}
                 dropdownStyle={{ width: 400 }}
                 style={{ width: "100%" }}
+                ref={(el) => {
+                  if (!inputRefs.current[index]) {
+                    inputRefs.current[index] = [];
+                  }
+                  inputRefs.current[index][1] = el; // columnIndex를 맞추어 설정
+                }}
+                onKeyDown={(e) => handleNextRowKeyDown(e, index, 1)}
               >
-                <Input
+                <Input.TextArea
+                  autoSize={{ minRows: 1, maxRows: 2 }}
                   style={{
                     borderColor: duplicateStates[record.position]?.code
                       ? "#faad14"
@@ -364,8 +385,14 @@ const MakeInquiryTable = ({
         dataIndex: "itemName",
         key: "itemName",
         render: (text: string, record: InquiryItem, index: number) => (
-          <div>
-            <Input
+          <div
+            style={{
+              whiteSpace: "normal",
+              wordWrap: "break-word",
+              wordBreak: "break-all",
+            }}
+          >
+            <Input.TextArea
               ref={(el) => {
                 if (!inputRefs.current[index]) {
                   inputRefs.current[index] = [];
@@ -383,6 +410,7 @@ const MakeInquiryTable = ({
                   ? "#faad14"
                   : "#d9d9d9",
               }}
+              autoSize={{ minRows: 1, maxRows: 2 }} // 최소 1행, 최대 4행으로 설정
             />
             {duplicateStates[record.position]?.name && (
               <div style={{ color: "#faad14", marginTop: "5px" }}>
@@ -422,7 +450,8 @@ const MakeInquiryTable = ({
         dataIndex: "itemRemark",
         key: "itemRemark",
         render: (text: string, record: InquiryItem, index: number) => (
-          <Input
+          <Input.TextArea
+            autoSize={{ minRows: 1, maxRows: 2 }}
             value={text}
             onChange={(e) =>
               handleInputChange(index, "itemRemark", e.target.value)
