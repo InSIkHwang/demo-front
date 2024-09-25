@@ -114,7 +114,10 @@ const DetailInquiryModal = ({
 
   const handleCopyOk = async () => {
     try {
-      const isDuplicate = await chkDuplicateDocNum(newDocumentNumber);
+      const isDuplicate = await chkDuplicateDocNum(
+        newDocumentNumber,
+        inquiryId
+      );
       if (isDuplicate) {
         message.error(
           "Duplicate document number. Please use a different number."

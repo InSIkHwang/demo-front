@@ -123,10 +123,22 @@ export const fetchDocData = async () => {
   return response.data;
 };
 
-//저장 전 문서번호 중복 검사
-export const chkDuplicateDocNum = async (docNumber: string) => {
+// 문서번호 중복 검사
+export const chkDuplicateDocNum = async (
+  docNumber: string,
+  inquiryId: number
+) => {
   const response = await axios.get(
     `/api/document/number/duplicate-check?documentNumber=${docNumber}`
+  );
+
+  return response.data;
+};
+
+// Ref number 중복 검사
+export const chkDuplicateRefNum = async (refNumber: string) => {
+  const response = await axios.get(
+    `/api/document/ref-number/duplicate-check?documentRefNumber=${refNumber}`
   );
 
   return response.data;

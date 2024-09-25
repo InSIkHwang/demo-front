@@ -139,6 +139,7 @@ const MakeInquiry = () => {
   const [isSendMail, setIsSendMail] = useState<boolean>(false);
   const [isPdfAutoUploadChecked, setIsPdfAutoUploadChecked] = useState(true);
   const [isLoading, setIsLoading] = useState(true); // 로딩 상태 변수 추가
+  const [isDocNumDuplicate, setIsDocNumDuplicate] = useState<boolean>(false);
 
   useEffect(() => {
     if (customerInquiryId) {
@@ -625,6 +626,9 @@ const MakeInquiry = () => {
           setSelectedSupplierTag={setSelectedSupplierTag}
           setSelectedSuppliers={setSelectedSuppliers}
           isEditMode={isEditMode}
+          isDocNumDuplicate={isDocNumDuplicate}
+          setIsDocNumDuplicate={setIsDocNumDuplicate}
+          customerInquiryId={Number(customerInquiryId)}
         />
       )}
       <MakeInquiryTable
@@ -642,6 +646,7 @@ const MakeInquiry = () => {
         type="primary"
         onClick={handleSubmit}
         style={{ margin: "20px 0 0 15px", float: "right" }}
+        disabled={isDocNumDuplicate}
       >
         Save
       </Button>
@@ -649,6 +654,7 @@ const MakeInquiry = () => {
         type="primary"
         onClick={showMailSenderModal}
         style={{ margin: "20px 0 0 15px", float: "right" }}
+        disabled={isDocNumDuplicate}
       >
         Send Email
       </Button>

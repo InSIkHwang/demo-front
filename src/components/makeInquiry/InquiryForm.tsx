@@ -12,7 +12,12 @@ import {
 import styled from "styled-components";
 import CreateCompanyModal from "../company/CreateCompanyModal";
 import CreateVesselModal from "../vessel/CreateVesselModal";
-import { searchSupplier, searchSupplierUseMaker } from "../../api/api";
+import {
+  chkDuplicateDocNum,
+  chkDuplicateRefNum,
+  searchSupplier,
+  searchSupplierUseMaker,
+} from "../../api/api";
 
 const { Option } = Select;
 
@@ -95,6 +100,9 @@ interface InquiryFormProps {
     SetStateAction<{ id: number; name: string; code: string; email: string }[]>
   >;
   isEditMode: boolean;
+  isDocNumDuplicate: boolean;
+  setIsDocNumDuplicate: Dispatch<SetStateAction<boolean>>;
+  customerInquiryId: number;
 }
 
 const InquiryForm = ({
@@ -109,6 +117,9 @@ const InquiryForm = ({
   setSelectedSuppliers,
   supplierOptions,
   isEditMode,
+  isDocNumDuplicate,
+  setIsDocNumDuplicate,
+  customerInquiryId,
 }: InquiryFormProps) => {
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
   const [isVesselModalOpen, setIsVesselModalOpen] = useState(false);
@@ -125,6 +136,7 @@ const InquiryForm = ({
     []
   );
   const [categoryWord, setCategoryWord] = useState<string>("");
+  const [isRefNumDuplicate, setIsRefNumDuplicate] = useState<boolean>(false);
   const [makerSupplierList, setMakerSupplierList] = useState<
     {
       maker: string;
@@ -336,13 +348,27 @@ const InquiryForm = ({
             name="docNumber"
             style={{ maxWidth: 300 }}
             rules={[{ required: true, message: "Please write Document No." }]}
-            normalize={(value) => value.trim()} // 입력값을 트리밍하여 저장
+            normalize={(value) => value.trim()}
+            validateStatus={isDocNumDuplicate ? "error" : undefined} // 중복 여부에 따라 상태 설정
+            help={
+              isDocNumDuplicate
+                ? "The document number is duplicated."
+                : undefined
+            } // 중복 메시지 설정
           >
             <Input
               style={{ cursor: "default" }}
               onChange={(e) => {
                 const newValue = e.target.value.trim();
-                handleFormChange("docNumber", newValue); // 그냥 newValue로 설정
+                handleFormChange("docNumber", newValue);
+              }}
+              onBlur={async (e) => {
+                const docNumber = e.target.value.trim();
+                const isDuplicate = await chkDuplicateDocNum(
+                  docNumber,
+                  customerInquiryId
+                );
+                setIsDocNumDuplicate(isDuplicate); // 중복 여부 설정
               }}
             />
           </InquiryItemForm>
@@ -484,10 +510,19 @@ const InquiryForm = ({
             label="Ref No."
             name="refNumber"
             rules={[{ required: true, message: "Please enter ref number" }]}
+            validateStatus={isRefNumDuplicate ? "error" : undefined} // 중복 여부에 따라 상태 설정
+            help={
+              isRefNumDuplicate ? "The Ref number is duplicated." : undefined
+            } // 중복 메시지 설정
           >
             <Input
               value={formValues.refNumber}
               onChange={(e) => handleFormChange("refNumber", e.target.value)}
+              onBlur={async (e) => {
+                const refNumber = e.target.value.trim();
+                const isDuplicate = await chkDuplicateRefNum(refNumber);
+                setIsRefNumDuplicate(isDuplicate); // 중복 여부 설정
+              }}
             />
           </InquiryItemForm>
         </FormRow>
