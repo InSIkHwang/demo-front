@@ -25,7 +25,7 @@ const { TextArea } = Input;
 const { Title } = Typography;
 
 const StyledForm = styled(Form)`
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 24px;
   background-color: #ffffff;
@@ -34,7 +34,7 @@ const StyledForm = styled(Form)`
 `;
 
 const StyledCard = styled(Card)`
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 `;
 
 const FormRow = styled.div`
@@ -243,30 +243,46 @@ const MailSenderModal = ({
     label: `${selectedSupplierTag[index]?.name || ` ${index + 1}`}`,
     children: (
       <StyledCard>
-        <StyledFormItem
-          name={["mails", index, "toRecipient"]}
-          rules={[{ required: true, message: "Please enter the recipient" }]}
-        >
-          <Input prefix={<MailOutlined />} placeholder="Recipient" />
-        </StyledFormItem>
-        <StyledFormItem
-          name={["mails", index, "subject"]}
-          rules={[{ required: true, message: "Please enter a title." }]}
-        >
-          <Input placeholder="Title" />
-        </StyledFormItem>
+        <div style={{ display: "flex", gap: 20 }}>
+          <StyledFormItem
+            style={{ width: "50%" }}
+            name={["mails", index, "toRecipient"]}
+            rules={[{ required: true, message: "Please enter the recipient" }]}
+            label="Recipient"
+          >
+            <Input prefix={<MailOutlined />} placeholder="Recipient" />
+          </StyledFormItem>
+          <StyledFormItem
+            style={{ width: "50%" }}
+            name={["mails", index, "subject"]}
+            rules={[{ required: true, message: "Please enter a title." }]}
+            label="Title"
+          >
+            <Input placeholder="Title" />
+          </StyledFormItem>
+        </div>
         <StyledFormItem
           name={["mails", index, "content"]}
           rules={[{ required: true, message: "Please enter the contents." }]}
         >
-          <TextArea placeholder="Content" rows={6} />
+          <TextArea style={{ height: 300 }} placeholder="Content" rows={6} />
         </StyledFormItem>
-        <StyledFormItem name={["mails", index, "ccRecipient"]}>
-          <Input placeholder="CC Recipient" />
-        </StyledFormItem>
-        <StyledFormItem name={["mails", index, "bccRecipient"]}>
-          <Input placeholder="BCC Recipient" />
-        </StyledFormItem>
+        <div style={{ display: "flex", gap: 20 }}>
+          <StyledFormItem
+            style={{ width: "50%" }}
+            name={["mails", index, "ccRecipient"]}
+            label="ccRecipient"
+          >
+            <Input placeholder="CC Recipient" />
+          </StyledFormItem>
+          <StyledFormItem
+            style={{ width: "50%" }}
+            name={["mails", index, "bccRecipient"]}
+            label="bccRecipient"
+          >
+            <Input placeholder="BCC Recipient" />
+          </StyledFormItem>
+        </div>
       </StyledCard>
     ),
   }));

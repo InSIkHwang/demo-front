@@ -1,11 +1,10 @@
-import React, { useState, useEffect, Dispatch, SetStateAction } from "react";
+import React, { useState, Dispatch, SetStateAction } from "react";
 import {
   Form,
   Input,
   Button,
   message,
   Typography,
-  Card,
   Checkbox,
   Upload,
   Tag,
@@ -14,7 +13,6 @@ import { SendOutlined, MailOutlined, UploadOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 import { sendQuotationMail } from "../../api/api";
 import { offerEmailSendData } from "../../types/types";
-import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 import { CheckboxChangeEvent } from "antd/es/checkbox";
 import LoadingSpinner from "../LoadingSpinner";
@@ -23,16 +21,12 @@ const { TextArea } = Input;
 const { Title } = Typography;
 
 const StyledForm = styled(Form)`
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 24px;
   background-color: #ffffff;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-`;
-
-const StyledCard = styled(Card)`
-  margin-bottom: 16px;
 `;
 
 const StyledFormItem = styled(Form.Item)`
@@ -170,7 +164,7 @@ const OfferMailSender = ({
         label="Content"
         rules={[{ required: true, message: "Please enter the contents." }]}
       >
-        <TextArea placeholder="Content" rows={6} />
+        <TextArea style={{ height: 300 }} placeholder="Content" rows={6} />
       </StyledFormItem>
 
       <StyledFormItem>

@@ -665,7 +665,7 @@ const MakeInquiry = () => {
         onOk={handleMailSenderOk}
         onCancel={handleMailSenderCancel}
         footer={null}
-        width={800}
+        width={1200}
       >
         <MailSenderModal
           mailDataList={mailDataList}

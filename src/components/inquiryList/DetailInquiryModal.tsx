@@ -247,7 +247,7 @@ const DetailInquiryModal = ({
         open={open}
         onCancel={onClose}
         footer={[
-          <Button type="dashed" key="edit" onClick={handleCopyClick}>
+          <Button type="dashed" key="copy" onClick={handleCopyClick}>
             Copy to new document
           </Button>,
           <Button type="primary" key="edit" onClick={handleEditClick}>

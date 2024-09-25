@@ -3,7 +3,6 @@ import React, {
   SetStateAction,
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from "react";
@@ -17,8 +16,8 @@ import {
   InputRef,
 } from "antd";
 import { ColumnsType } from "antd/es/table";
-import styled, { CSSProperties } from "styled-components";
-import { InquiryItem, InvCharge, ItemDataType } from "../../types/types";
+import styled from "styled-components";
+import { ItemDataType } from "../../types/types";
 import {
   DeleteOutlined,
   PlusCircleOutlined,
@@ -697,7 +696,7 @@ const TableComponent = ({
       dataIndex: "salesPriceKRW",
       key: "salesPriceKRW",
       width: 115,
-      render: (text: number, record: any, index: number) =>
+      render: (text: number, record: any) =>
         record.itemType === "ITEM" ? (
           <Input
             type="text"
@@ -713,7 +712,7 @@ const TableComponent = ({
       dataIndex: "salesPriceGlobal",
       key: "salesPriceGlobal",
       width: 115,
-      render: (text: number, record: any, index: number) =>
+      render: (text: number, record: any) =>
         record.itemType === "ITEM" ? (
           <Input
             type="text"
@@ -730,7 +729,7 @@ const TableComponent = ({
       key: "salesAmountKRW",
       width: 115,
       className: "highlight-cell",
-      render: (text: number, record: any, index: number) =>
+      render: (text: number, record: any) =>
         record.itemType === "ITEM" ? (
           <Input
             type="text"
@@ -750,7 +749,7 @@ const TableComponent = ({
       key: "salesAmountGlobal",
       width: 115,
       className: "highlight-cell",
-      render: (text: number, record: any, index: number) =>
+      render: (text: number, record: any) =>
         record.itemType === "ITEM" ? (
           <Input
             type="text"
