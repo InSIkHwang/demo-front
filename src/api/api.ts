@@ -226,17 +226,25 @@ export const handleExport = async (inquiryId: number) => {
 //----------------------------------------------------------------------------------
 // INQUIRY 조회 관련
 
-//Inquiry 조회
-export const fetchInquiryList = async (page: number, pageSize: number) => {
+export const fetchInquiryList = async (
+  page: number,
+  pageSize: number,
+  viewMyInquiryOnly: boolean,
+  viewOnlySentEmails: boolean
+) => {
+  const params: any = {
+    page: page - 1, // 페이지는 0부터 시작
+    pageSize: pageSize, // 페이지당 아이템 수
+    writer: viewMyInquiryOnly ? "MY" : "ALL",
+    selectDocumentStatusType: viewOnlySentEmails
+      ? "SENT_CUSTOMER_INQUIRY"
+      : "CUSTOMER_INQUIRY",
+  };
+
   const response = await axios.get<{
     totalCount: number;
     customerInquiryList: Inquiry[];
-  }>("/api/customer-inquiries", {
-    params: {
-      page: page - 1, // 페이지는 0부터 시작
-      pageSize: pageSize, // 페이지당 아이템 수
-    },
-  });
+  }>("/api/customer-inquiries", { params });
 
   return response.data;
 };
@@ -268,7 +276,9 @@ export const searchInquiryList = async (
   refNumber: string = "",
   customerName: string = "",
   page: number,
-  pageSize: number
+  pageSize: number,
+  viewMyInquiryOnly: boolean,
+  viewOnlySentEmails: boolean
 ): Promise<{
   totalCount: number;
   customerInquiryList: Inquiry[];
@@ -281,7 +291,11 @@ export const searchInquiryList = async (
     refNumber,
     customerName,
     page: (page - 1).toString(), // 페이지는 0부터 시작
-    pageSize: pageSize.toString(), // 페이지당 아이템 수
+    pageSize: pageSize.toString(), // 페이지당 아이템 수,
+    writer: viewMyInquiryOnly ? "MY" : "ALL",
+    selectDocumentStatusType: viewOnlySentEmails
+      ? "SENT_CUSTOMER_INQUIRY"
+      : "CUSTOMER_INQUIRY",
   };
 
   // 쿼리 문자열을 생성

@@ -250,12 +250,16 @@ const DetailInquiryModal = ({
           <Button type="dashed" key="copy" onClick={handleCopyClick}>
             Copy to new document
           </Button>,
-          <Button type="primary" key="edit" onClick={handleEditClick}>
-            Edit
-          </Button>,
-          <Button key="delete" danger onClick={handleDeleteClick}>
-            Delete
-          </Button>,
+          inquiryDetail && inquiryDetail.documentStatus !== "INQUIRY_SENT" && (
+            <>
+              <Button type="primary" key="edit" onClick={handleEditClick}>
+                Edit
+              </Button>
+              <Button key="delete" danger onClick={handleDeleteClick}>
+                Delete
+              </Button>
+            </>
+          ),
           <Button key="close" onClick={onClose}>
             Close
           </Button>,

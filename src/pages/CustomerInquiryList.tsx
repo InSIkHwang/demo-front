@@ -6,6 +6,7 @@ import {
   Select,
   Pagination,
   DatePicker,
+  Checkbox,
 } from "antd";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import styled from "styled-components";
@@ -14,6 +15,7 @@ import DetailInquiryModal from "../components/inquiryList/DetailInquiryModal";
 import type { ColumnsType } from "antd/es/table";
 import { Inquiry } from "../types/types";
 import { useNavigate } from "react-router-dom";
+import { CheckboxChangeEvent } from "antd/es/checkbox";
 
 const Container = styled.div`
   position: relative;
@@ -148,6 +150,8 @@ const CustomerInquiryList = () => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
   const [registerStartDate, setRegisterStartDate] = useState<string>("");
   const [registerEndDate, setRegisterEndDate] = useState<string>("");
+  const [viewMyInquiryOnly, setViewMyInquiryOnly] = useState<boolean>(false);
+  const [viewOnlySentEmails, setViewOnlySentEmails] = useState<boolean>(false);
 
   useEffect(() => {
     if (searchText) {
@@ -158,8 +162,14 @@ const CustomerInquiryList = () => {
   }, [currentPage, itemsPerPage]);
 
   const fetchData = async () => {
+    setLoading(true);
     try {
-      const response = await fetchInquiryList(currentPage, itemsPerPage);
+      const response = await fetchInquiryList(
+        currentPage,
+        itemsPerPage,
+        viewMyInquiryOnly,
+        viewOnlySentEmails
+      );
       setData(response.customerInquiryList);
       setTotalCount(response.totalCount);
     } catch (error) {
@@ -191,7 +201,9 @@ const CustomerInquiryList = () => {
         searchCategory === "refNumber" ? searchText : "",
         searchCategory === "customerName" ? searchText : "",
         currentPage,
-        itemsPerPage
+        itemsPerPage,
+        viewMyInquiryOnly,
+        viewOnlySentEmails
       );
 
       setData(response.customerInquiryList);
@@ -216,6 +228,25 @@ const CustomerInquiryList = () => {
     setItemsPerPage(size);
     setCurrentPage(1);
   };
+
+  const fetchFilteredData = () => {
+    setCurrentPage(1); // 페이지를 1로 초기화
+    fetchData(); // 데이터 재요청
+  };
+
+  // 체크박스의 상태 변경 처리 함수
+  const handleViewMyInquiryOnlyChange = (e: CheckboxChangeEvent) => {
+    setViewMyInquiryOnly(e.target.checked);
+  };
+
+  const handleViewOnlySentEmailsChange = (e: CheckboxChangeEvent) => {
+    setViewOnlySentEmails(e.target.checked);
+  };
+
+  // useEffect를 사용하여 상태 변화 감지
+  useEffect(() => {
+    fetchFilteredData(); // 상태가 변경되면 데이터 재요청
+  }, [viewMyInquiryOnly, viewOnlySentEmails]);
 
   return (
     <>
@@ -257,6 +288,17 @@ const CustomerInquiryList = () => {
             <Button type="primary" onClick={handleSearch}>
               검색
             </Button>
+            <div style={{ marginLeft: 15 }}>
+              <Checkbox onChange={handleViewMyInquiryOnlyChange}>
+                View My Inquiry Only
+              </Checkbox>
+              <Checkbox
+                style={{ marginLeft: 10 }}
+                onChange={handleViewOnlySentEmailsChange}
+              >
+                View Only Sent Emails
+              </Checkbox>
+            </div>
           </SearchBar>
           <Button type="primary" onClick={() => navigate("/makeinquiry")}>
             신규 등록
