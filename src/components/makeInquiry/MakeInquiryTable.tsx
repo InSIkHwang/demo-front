@@ -23,7 +23,7 @@ import {
   PlusCircleOutlined,
 } from "@ant-design/icons";
 import { InquiryItem } from "../../types/types";
-import ExcelUploadModal from "./ExcelUploadModal";
+import ExcelUploadModal from "../ExcelUploadModal";
 import { ColumnsType } from "antd/es/table";
 import { handleExport } from "../../api/api";
 import styled from "styled-components";
@@ -33,6 +33,13 @@ const { Option } = Select;
 const CustomTable = styled(Table)`
   .ant-table-cell {
     text-align: center !important;
+  }
+
+  .even-row {
+    background-color: #ffffff;
+  }
+  .odd-row {
+    background-color: #f0f0f0;
   }
 `;
 
@@ -491,6 +498,9 @@ const MakeInquiryTable = ({
         </Button>
       </div>
       <CustomTable
+        rowClassName={(record, index) =>
+          index % 2 === 0 ? "even-row" : "odd-row"
+        }
         columns={columns}
         dataSource={dataSource}
         pagination={false}

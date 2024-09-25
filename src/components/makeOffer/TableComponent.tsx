@@ -26,7 +26,7 @@ import {
   FileExcelOutlined,
 } from "@ant-design/icons";
 import { fetchItemData } from "../../api/api";
-import ExcelUploadModal from "../makeInquiry/ExcelUploadModal";
+import ExcelUploadModal from "../ExcelUploadModal";
 
 const RefreshBtn = styled(Button)``;
 
@@ -36,8 +36,10 @@ const CustomTable = styled(Table)`
   }
 
   .ant-table-cell {
-    padding: 12px 4px !important;
+    padding: 14px 4px !important;
     text-align: center !important;
+    align-self: center;
+    border: none !important;
   }
 
   .highlight-cell {
@@ -52,6 +54,13 @@ const CustomTable = styled(Table)`
   }
   .ant-input-number-group-addon {
     padding: 0 2px !important;
+  }
+
+  .even-row {
+    background-color: #ffffff;
+  }
+  .odd-row {
+    background-color: #f0f0f0;
   }
 `;
 
@@ -513,7 +522,6 @@ const TableComponent = ({
       title: "PartNo",
       dataIndex: "itemCode",
       key: "itemCode",
-      fixed: "left",
       width: 115,
       render: (text: string, record: any, index: number) =>
         record.itemType === "ITEM" ? (
@@ -571,7 +579,6 @@ const TableComponent = ({
       title: "품명",
       dataIndex: "itemName",
       key: "itemName",
-      fixed: "left",
       width: 250,
       render: (text: string, record: any, index: number) => (
         <>
@@ -847,6 +854,9 @@ const TableComponent = ({
               record.purchasePriceKRW,
               record.qty
             ).toLocaleString()} // Display formatted value
+            onChange={(e) =>
+              handleInputChange(index, "purchaseAmountKRW", e.target.value)
+            }
             style={{ width: "100%" }}
             readOnly
             addonBefore="₩"
@@ -867,6 +877,9 @@ const TableComponent = ({
               record.purchasePriceGlobal,
               record.qty
             ).toLocaleString()} // Display formatted value
+            onChange={(e) =>
+              handleInputChange(index, "purchaseAmountGlobal", e.target.value)
+            }
             style={{ width: "100%" }}
             readOnly
             addonBefore="F"
@@ -983,6 +996,9 @@ const TableComponent = ({
         Load Excel File
       </Button>
       <CustomTable
+        rowClassName={(record, index) =>
+          index % 2 === 0 ? "even-row" : "odd-row"
+        }
         rowKey="position"
         columns={columns}
         dataSource={dataSource}

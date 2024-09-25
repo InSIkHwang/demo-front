@@ -116,10 +116,6 @@ const styles = StyleSheet.create({
   page: {
     padding: 20,
     fontFamily: "malgunGothic",
-    paddingBottom: 100,
-  },
-  section: {
-    marginBottom: 10,
   },
   title: {
     fontSize: 18,
@@ -308,7 +304,7 @@ const renderHeader = (
       </Text>
       <Text style={styles.headerInfo}>Email: info@bas-korea.com</Text>
     </View>
-    <View style={styles.section}>
+    <View>
       <Text style={styles.title}>
         {language === "KOR" ? "Q U O T A T I O N" : "Q U O T A T I O N"}
       </Text>
@@ -338,7 +334,7 @@ const renderHeader = (
         </Text>
       </View>
     </View>
-    <View style={styles.section}>
+    <View>
       <Text style={styles.headerMessage}>{pdfHeader.split("")}</Text>
     </View>
   </>
@@ -385,7 +381,7 @@ const OfferPDFDocument = ({
             display: "flex",
             flexDirection: "row",
             justifyContent: "space-between",
-            marginBottom: 10,
+            margin: "10px 0",
           }}
           fixed
           render={() => (
@@ -555,54 +551,59 @@ const OfferPDFDocument = ({
               ))}
             </View>
           )}
-          <View
-            style={[
-              styles.tableTotalAmount,
-              {
-                marginTop: 20,
-                borderTop: "1px dotted #000",
-                borderBottom: "1px solid #000",
-                padding: "5px 0",
-              },
-            ]}
-          >
-            <Text wrap>G.TOTAL AMT</Text>
-            <Text
-              style={{
-                fontFamily: "NotoSansRegular",
-              }}
-              wrap
+          {(dcInfo.dcPercent ||
+            (invChargeList && invChargeList.length > 0)) && (
+            <View
+              style={[
+                styles.tableTotalAmount,
+                {
+                  marginTop: 20,
+                  borderTop: "1px dotted #000",
+                  borderBottom: "1px solid #000",
+                  padding: "5px 0",
+                },
+              ]}
             >
-              {(() => {
-                switch (info.currencyType) {
-                  case "USD":
-                    return `$${finalTotals.totalSalesAmountGlobal
-                      .toFixed(2)
-                      .toLocaleString()}`;
-                  case "EUR":
-                    return `€${finalTotals.totalSalesAmountGlobal
-                      .toFixed(2)
-                      .toLocaleString()}`;
-                  case "INR":
-                    return `₹${finalTotals.totalSalesAmountGlobal
-                      .toFixed(2)
-                      .toLocaleString()}`;
-                  case "JPY":
-                    return `¥${finalTotals.totalSalesAmountGlobal
-                      .toFixed(2)
-                      .toLocaleString()}`;
-                  default:
-                    return `${finalTotals.totalSalesAmountGlobal
-                      .toFixed(2)
-                      .toLocaleString()}`;
-                }
-              })()}
-            </Text>
+              <Text wrap>G.TOTAL AMT</Text>
+              <Text
+                style={{
+                  fontFamily: "NotoSansRegular",
+                }}
+                wrap
+              >
+                {(() => {
+                  switch (info.currencyType) {
+                    case "USD":
+                      return `$${finalTotals.totalSalesAmountGlobal
+                        .toFixed(2)
+                        .toLocaleString()}`;
+                    case "EUR":
+                      return `€${finalTotals.totalSalesAmountGlobal
+                        .toFixed(2)
+                        .toLocaleString()}`;
+                    case "INR":
+                      return `₹${finalTotals.totalSalesAmountGlobal
+                        .toFixed(2)
+                        .toLocaleString()}`;
+                    case "JPY":
+                      return `¥${finalTotals.totalSalesAmountGlobal
+                        .toFixed(2)
+                        .toLocaleString()}`;
+                    default:
+                      return `${finalTotals.totalSalesAmountGlobal
+                        .toFixed(2)
+                        .toLocaleString()}`;
+                  }
+                })()}
+              </Text>
+            </View>
+          )}
+        </View>
+        {pdfFooter && (
+          <View>
+            <Text style={styles.footerMessage}>{pdfFooter.split("")}</Text>
           </View>
-        </View>
-        <View style={styles.section}>
-          <Text style={styles.footerMessage}>{pdfFooter.split("")}</Text>
-        </View>
+        )}
       </Page>
     </Document>
   );

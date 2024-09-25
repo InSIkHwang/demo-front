@@ -192,6 +192,11 @@ export const sendInquiryMail = async (
     formData.append("file", file); // 동일한 이름으로 여러 파일 추가
   });
 
+  files.forEach((file) => {
+    console.log(file.name); // 파일 이름 출력
+    formData.append("file", file); // 동일한 이름으로 여러 파일 추가
+  });
+
   // `emailSendData`를 JSON 문자열로 변환하여 추가
   formData.append("emailSendData", JSON.stringify(emailSendData));
 

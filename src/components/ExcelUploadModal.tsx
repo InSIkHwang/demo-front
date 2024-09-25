@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { Modal, Upload, Table, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import * as XLSX from "xlsx";
-import { InquiryItem } from "../../types/types";
-import { fetchItemData } from "../../api/api";
-import { ItemDataType } from "./../../types/types";
+import { InquiryItem } from "../types/types";
+import { fetchItemData } from "../api/api";
+import { ItemDataType } from "../types/types";
 
 interface ExcelUploadModalProps {
   open: boolean;
@@ -76,19 +76,76 @@ const ExcelUploadModal = ({
           const purchasePriceKRW = parseFloat(rowData.purchasePriceKRW) || 0;
           const purchasePriceGlobal =
             parseFloat(rowData.purchasePriceGlobal) || 0;
+          const qty = parseFloat(rowData.qty) || 0; // 수량 변환
+          const marginPercent = parseFloat(rowData.margin) || 0; // margin을 퍼센트로 변환
 
           if (purchasePriceKRW && !purchasePriceGlobal) {
             rowData.purchasePriceGlobal = parseFloat(
               (purchasePriceKRW / currency).toFixed(2)
             );
+
+            // purchaseAmount 계산
+            rowData.purchaseAmountKRW = parseFloat(
+              (purchasePriceKRW * qty).toFixed(2)
+            );
+            rowData.purchaseAmountGlobal = parseFloat(
+              (rowData.purchasePriceGlobal * qty).toFixed(2)
+            );
+
+            // margin이 있는 경우 salesPrice 계산
+            if (marginPercent) {
+              const marginValueKRW = (purchasePriceKRW * marginPercent) / 100;
+              rowData.salesPriceKRW = parseFloat(
+                (purchasePriceKRW + marginValueKRW).toFixed(2)
+              );
+              rowData.salesPriceGlobal = parseFloat(
+                (rowData.salesPriceKRW / currency).toFixed(2)
+              );
+
+              // salesAmount 계산
+              rowData.salesAmountKRW = parseFloat(
+                (rowData.salesPriceKRW * qty).toFixed(2)
+              );
+              rowData.salesAmountGlobal = parseFloat(
+                (rowData.salesPriceGlobal * qty).toFixed(2)
+              );
+            }
           } else if (!purchasePriceKRW && purchasePriceGlobal) {
             rowData.purchasePriceKRW = Math.round(
               purchasePriceGlobal * currency
             );
+
+            // purchaseAmount 계산
+            rowData.purchaseAmountKRW = parseFloat(
+              (rowData.purchasePriceKRW * qty).toFixed(2)
+            );
+            rowData.purchaseAmountGlobal = parseFloat(
+              (purchasePriceGlobal * qty).toFixed(2)
+            );
+
+            // margin이 있는 경우 salesPrice 계산
+            if (marginPercent) {
+              const marginValueGlobal =
+                (purchasePriceGlobal * marginPercent) / 100;
+              rowData.salesPriceGlobal = parseFloat(
+                (purchasePriceGlobal + marginValueGlobal).toFixed(2)
+              );
+              rowData.salesPriceKRW = Math.round(
+                rowData.salesPriceGlobal * currency
+              );
+
+              // salesAmount 계산
+              rowData.salesAmountKRW = parseFloat(
+                (rowData.salesPriceKRW * qty).toFixed(2)
+              );
+              rowData.salesAmountGlobal = parseFloat(
+                (rowData.salesPriceGlobal * qty).toFixed(2)
+              );
+            }
           }
 
           // margin 값이 없는 경우 기본값 설정 (예: 0)
-          rowData.margin = parseFloat(rowData.margin) || 0;
+          rowData.margin = marginPercent || 0;
         }
 
         return rowData;

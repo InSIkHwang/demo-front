@@ -262,7 +262,6 @@ const MakeOffer = () => {
       const currentItem = updatedDataSource[index];
       let updatedItem = { ...currentItem, [key]: value };
       // Update the data source immediately
-
       updatedDataSource[index] = updatedItem;
       if (JSON.stringify(dataSource) !== JSON.stringify(updatedDataSource)) {
         setDataSource(updatedDataSource);
@@ -414,6 +413,7 @@ const MakeOffer = () => {
       purchaseAmountKRW: item.purchaseAmountKRW,
       purchaseAmountGlobal: item.purchaseAmountGlobal,
     }));
+
     try {
       if (isDuplicate) {
         // 중복된 품목이 있을 경우 사용자에게 확인 메시지 표시
