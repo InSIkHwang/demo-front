@@ -7,15 +7,7 @@ import React, {
   useRef,
   useMemo,
 } from "react";
-import {
-  Table,
-  AutoComplete,
-  Input,
-  Select,
-  Button,
-  notification,
-  InputRef,
-} from "antd";
+import { Table, AutoComplete, Input, Select, Button, notification } from "antd";
 import {
   DeleteOutlined,
   FileExcelOutlined,
@@ -99,6 +91,21 @@ const MakeInquiryTable = ({
         position: prevItems.length + idx + 1,
       })),
     ]);
+    setIsModalVisible(false);
+  };
+
+  const handleOverwriteExcelData = (mappedItems: InquiryItem[]) => {
+    if (!Array.isArray(mappedItems)) {
+      console.error("mappedItems is not an array");
+      return;
+    }
+
+    setItems(
+      mappedItems.map((item, idx) => ({
+        ...item,
+        position: idx + 1,
+      }))
+    );
     setIsModalVisible(false);
   };
 
@@ -548,6 +555,7 @@ const MakeInquiryTable = ({
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         onApply={handleApplyExcelData}
+        onOverWrite={handleOverwriteExcelData}
         currency={1}
         type={"inquiry"}
       />

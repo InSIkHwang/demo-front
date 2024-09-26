@@ -200,6 +200,21 @@ const TableComponent = ({
     setIsModalVisible(false);
   };
 
+  const handleOverwriteExcelData = (mappedItems: ItemDataType[]) => {
+    if (!Array.isArray(mappedItems)) {
+      console.error("mappedItems is not an array");
+      return;
+    }
+
+    setDataSource(
+      mappedItems.map((item, idx) => ({
+        ...item,
+        position: idx + 1,
+      }))
+    );
+    setIsModalVisible(false);
+  };
+
   const handleItemCodeChange = async (index: number, value: string) => {
     if ((value + "").trim() === "") {
       updateItemId(index, null);
@@ -1031,6 +1046,7 @@ const TableComponent = ({
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         onApply={handleApplyExcelData}
+        onOverWrite={handleOverwriteExcelData}
         currency={currency}
         type={"offer"}
       />

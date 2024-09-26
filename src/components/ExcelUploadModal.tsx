@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Modal, Upload, Table, message } from "antd";
+import { Modal, Upload, Table, message, Button } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import * as XLSX from "xlsx";
 import { InquiryItem } from "../types/types";
@@ -10,6 +10,7 @@ interface ExcelUploadModalProps {
   open: boolean;
   onCancel: () => void;
   onApply: (mappedItems: any) => void;
+  onOverWrite: (mappedItems: any) => void;
   currency: number;
   type: string;
 }
@@ -20,6 +21,7 @@ const ExcelUploadModal = ({
   onApply,
   currency,
   type,
+  onOverWrite,
 }: ExcelUploadModalProps) => {
   const [excelData, setExcelData] = useState<InquiryItem[]>([]);
   const [fileList, setFileList] = useState<any[]>([]);
@@ -157,39 +159,41 @@ const ExcelUploadModal = ({
     return false;
   };
 
+  const fetchItemId = async (item: { itemCode: string; itemName: string }) => {
+    if ((item.itemCode + "").trim() === "") {
+      return { ...item, itemId: null };
+    }
+
+    try {
+      const { items } = await fetchItemData(item.itemCode);
+
+      const fetchedItem = Array.isArray(items)
+        ? items.find(
+            (fetched) =>
+              fetched.itemCode === item.itemCode &&
+              fetched.itemName === item.itemName
+          )
+        : null;
+
+      const itemId = fetchedItem ? fetchedItem.itemId : null;
+
+      return { ...item, itemId };
+    } catch (error) {
+      console.error("Error fetching item ID for code:", item.itemCode, error);
+      return { ...item, itemId: null };
+    }
+  };
+
   const handleApplyExcelData = async () => {
-    const updatedData = await Promise.all(
-      excelData.map(async (item) => {
-        if ((item.itemCode + "").trim() === "") {
-          return { ...item, itemId: null };
-        }
-
-        try {
-          const { items } = await fetchItemData(item.itemCode);
-
-          const fetchedItem = Array.isArray(items)
-            ? items.find(
-                (fetched) =>
-                  fetched.itemCode === item.itemCode &&
-                  fetched.itemName === item.itemName
-              )
-            : null;
-
-          const itemId = fetchedItem ? fetchedItem.itemId : null;
-
-          return { ...item, itemId };
-        } catch (error) {
-          console.error(
-            "Error fetching item ID for code:",
-            item.itemCode,
-            error
-          );
-          return { ...item, itemId: null };
-        }
-      })
-    );
+    const updatedData = await Promise.all(excelData.map(fetchItemId));
 
     onApply(updatedData);
+  };
+
+  const handleOverwriteExcelData = async () => {
+    const updatedData = await Promise.all(excelData.map(fetchItemId));
+
+    onOverWrite(updatedData);
   };
 
   const handleRemoveFile = () => {
@@ -203,9 +207,21 @@ const ExcelUploadModal = ({
       title="Load Excel File"
       open={open}
       onCancel={onCancel}
-      onOk={handleApplyExcelData}
-      okText="Ok"
-      cancelText="Cancel"
+      footer={[
+        <Button key="cancel" onClick={onCancel}>
+          Cancel
+        </Button>,
+        <Button
+          key="overwrite"
+          type="primary"
+          onClick={handleOverwriteExcelData}
+        >
+          Overwrite
+        </Button>,
+        <Button key="ok" type="primary" onClick={handleApplyExcelData}>
+          Add
+        </Button>,
+      ]}
       width={1000}
     >
       <Upload.Dragger
