@@ -400,11 +400,12 @@ const InquiryForm = ({
             label="작성일자(Register Date)"
             name="registerDate"
             rules={[{ required: true, message: "Please select register date" }]}
-            style={{ maxWidth: 180 }}
+            style={{ width: 40 }}
           >
             <DatePicker
               value={formValues.registerDate}
               onChange={(date) => handleFormChange("registerDate", date!)}
+              style={{ width: "100%" }}
             />
           </InquiryItemForm>
           <InquiryItemForm
