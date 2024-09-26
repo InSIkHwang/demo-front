@@ -248,9 +248,6 @@ const DetailQuotationModal = ({
               <Descriptions.Item label="등록 날짜">
                 {quotationDetail.quotationDocumentDetail.registerDate}
               </Descriptions.Item>
-              <Descriptions.Item label="선적 날짜">
-                {quotationDetail.quotationDocumentDetail.shippingDate}
-              </Descriptions.Item>
               <Descriptions.Item label="매출처명">
                 {quotationDetail.quotationDocumentDetail.companyName}
               </Descriptions.Item>

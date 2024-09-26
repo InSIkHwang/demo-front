@@ -385,7 +385,7 @@ const MakeInquiryTable = ({
               onChange={(e) => handleInputChange(index, "unit", e.target.value)}
             />
           ) : null,
-        width: 100,
+        width: 110,
       },
       {
         title: "Name",
@@ -417,7 +417,7 @@ const MakeInquiryTable = ({
                   ? "#faad14"
                   : "#d9d9d9",
               }}
-              autoSize={{ minRows: 1, maxRows: 2 }} // 최소 1행, 최대 4행으로 설정
+              autoSize={{ minRows: 1, maxRows: 4 }} // 최소 1행, 최대 4행으로 설정
             />
             {duplicateStates[record.position]?.name && (
               <div style={{ color: "#faad14", marginTop: "5px" }}>

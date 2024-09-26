@@ -63,7 +63,6 @@ const columns: ColumnsType<Quotation> = [
     title: "문서번호",
     dataIndex: "documentNumber",
     key: "documentNumber",
-    width: 130,
   },
   {
     title: "등록 날짜",
@@ -72,11 +71,6 @@ const columns: ColumnsType<Quotation> = [
     sorter: (a, b) =>
       new Date(a.registerDate).getTime() - new Date(b.registerDate).getTime(),
     sortDirections: ["ascend", "descend"],
-  },
-  {
-    title: "선적 날짜",
-    dataIndex: "shippingDate",
-    key: "shippingDate",
   },
   {
     title: "매출처명",

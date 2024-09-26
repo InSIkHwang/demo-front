@@ -281,9 +281,6 @@ const DetailInquiryModal = ({
                 <Descriptions.Item label="Registration Date">
                   {inquiryDetail.registerDate}
                 </Descriptions.Item>
-                <Descriptions.Item label="Shipping Date">
-                  {inquiryDetail.shippingDate}
-                </Descriptions.Item>
                 <Descriptions.Item label="Company Name">
                   {inquiryDetail.companyName}
                 </Descriptions.Item>

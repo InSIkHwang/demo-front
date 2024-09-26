@@ -64,6 +64,13 @@ const CustomTable = styled(Table)`
       background-color: #e7e7e7;
     }
   }
+
+  .custom-input .ant-input {
+    background-color: #ffffe0 !important; /* 원하는 배경색 */
+  }
+  .custom-input .ant-input-group-addon {
+    background-color: #dff4ff !important;
+  }
 `;
 
 const TotalCards = styled.div`
@@ -567,7 +574,7 @@ const TableComponent = ({
               onKeyDown={(e) => handleNextRowKeyDown(e, index, 1)}
             >
               <Input.TextArea
-                autoSize={{ minRows: 1, maxRows: 3 }}
+                autoSize={{ minRows: 1, maxRows: 4 }}
                 style={{
                   borderColor: checkDuplicate("itemCode", text, index)
                     ? "#faad14"
@@ -688,7 +695,7 @@ const TableComponent = ({
       ),
       dataIndex: "unit",
       key: "unit",
-      width: 70,
+      width: 75,
       render: (text: string, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <Input
@@ -828,6 +835,7 @@ const TableComponent = ({
             }}
             style={{ width: "100%" }}
             addonBefore="₩"
+            className="custom-input"
           />
         ) : null,
     },
@@ -866,6 +874,7 @@ const TableComponent = ({
             }}
             style={{ width: "100%" }}
             addonBefore="F"
+            className="custom-input"
           />
         ) : null,
     },
@@ -949,6 +958,7 @@ const TableComponent = ({
               inputRefs.current[index][13] = el; // columnIndex를 맞추어 설정
             }}
             style={{ width: "100%" }}
+            className="custom-input"
             addonAfter={"%"}
             onKeyDown={(e) => handleNextRowKeyDown(e, index, 13)}
             onChange={(e) =>

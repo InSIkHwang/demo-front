@@ -374,6 +374,29 @@ const InquiryForm = ({
             />
           </InquiryItemForm>
           <InquiryItemForm
+            style={{ flex: "20%" }}
+            label="Ref No."
+            name="refNumber"
+            rules={[{ required: true, message: "Please enter ref number" }]}
+            validateStatus={isRefNumDuplicate ? "error" : undefined} // 중복 여부에 따라 상태 설정
+            help={
+              isRefNumDuplicate ? "The Ref number is duplicated." : undefined
+            } // 중복 메시지 설정
+          >
+            <Input
+              value={formValues.refNumber}
+              onChange={(e) => handleFormChange("refNumber", e.target.value)}
+              onBlur={async (e) => {
+                const refNumber = e.target.value.trim();
+                const isDuplicate = await chkDuplicateRefNum(
+                  refNumber,
+                  customerInquiryId
+                );
+                setIsRefNumDuplicate(isDuplicate); // 중복 여부 설정
+              }}
+            />
+          </InquiryItemForm>
+          <InquiryItemForm
             label="작성일자(Register Date)"
             name="registerDate"
             rules={[{ required: true, message: "Please select register date" }]}
@@ -382,17 +405,6 @@ const InquiryForm = ({
             <DatePicker
               value={formValues.registerDate}
               onChange={(date) => handleFormChange("registerDate", date!)}
-            />
-          </InquiryItemForm>
-          <InquiryItemForm
-            label="선적일자(Shipment date)"
-            name="shippingDate"
-            rules={[{ required: true, message: "Please select shipping date" }]}
-            style={{ maxWidth: 180 }}
-          >
-            <DatePicker
-              value={formValues.shippingDate}
-              onChange={(date) => handleFormChange("shippingDate", date!)}
             />
           </InquiryItemForm>
           <InquiryItemForm
@@ -507,34 +519,9 @@ const InquiryForm = ({
             </AutoComplete>
           </InquiryItemForm>
           <InquiryItemForm
-            style={{ flex: "20%" }}
-            label="Ref No."
-            name="refNumber"
-            rules={[{ required: true, message: "Please enter ref number" }]}
-            validateStatus={isRefNumDuplicate ? "error" : undefined} // 중복 여부에 따라 상태 설정
-            help={
-              isRefNumDuplicate ? "The Ref number is duplicated." : undefined
-            } // 중복 메시지 설정
-          >
-            <Input
-              value={formValues.refNumber}
-              onChange={(e) => handleFormChange("refNumber", e.target.value)}
-              onBlur={async (e) => {
-                const refNumber = e.target.value.trim();
-                const isDuplicate = await chkDuplicateRefNum(
-                  refNumber,
-                  customerInquiryId
-                );
-                setIsRefNumDuplicate(isDuplicate); // 중복 여부 설정
-              }}
-            />
-          </InquiryItemForm>
-        </FormRow>
-        <FormRow>
-          <InquiryItemForm
             label="비고(Remark)"
             name="remark"
-            style={{ flex: "50%" }}
+            style={{ flex: "30%" }}
           >
             <Input
               value={formValues.remark}

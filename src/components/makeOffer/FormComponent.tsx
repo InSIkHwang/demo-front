@@ -38,7 +38,7 @@ const FormComponent = ({
           name="documentNumber"
           rules={[{ required: true, message: "Please write Document No." }]}
           normalize={(value) => value.trim()} // 입력값을 트리밍하여 저장
-          style={{ maxWidth: 200 }}
+          style={{ maxWidth: 350 }}
         >
           <Input
             value={formValues.docNumber}
@@ -49,6 +49,14 @@ const FormComponent = ({
             }}
             readOnly
           />
+        </FormItem>
+        <FormItem
+          label="REF NO."
+          name="refNumber"
+          rules={[{ required: true, message: "REF NO.를 입력하세요!" }]}
+          style={{ maxWidth: 350 }}
+        >
+          <Input readOnly />
         </FormItem>
         <FormItem label="문서상태" name="documentStatus">
           <Input readOnly />
@@ -62,19 +70,6 @@ const FormComponent = ({
           <DatePicker
             value={formValues.registerDate}
             onChange={(date) => handleFormChange("registerDate", date!)}
-            format="YYYY-MM-DD"
-            disabled={readOnly}
-          />
-        </FormItem>
-        <FormItem
-          label="선적일자"
-          name="shippingDate"
-          rules={[{ required: true, message: "선적 날짜를 입력하세요!" }]}
-          style={{ maxWidth: 150 }}
-        >
-          <DatePicker
-            value={formValues.shippingDate}
-            onChange={(date) => handleFormChange("shippingDate", date!)}
             format="YYYY-MM-DD"
             disabled={readOnly}
           />
@@ -134,14 +129,6 @@ const FormComponent = ({
             onChange={(e) => handleFormChange("veeselHullNo", e.target.value)}
             readOnly={readOnly}
           />
-        </FormItem>
-        <FormItem
-          label="REF NO."
-          name="refNumber"
-          rules={[{ required: true, message: "REF NO.를 입력하세요!" }]}
-          style={{ flex: "20%" }}
-        >
-          <Input readOnly />
         </FormItem>
       </Row>
       <Row>
