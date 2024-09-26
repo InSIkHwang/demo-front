@@ -313,7 +313,7 @@ const MakeInquiryTable = ({
                 onKeyDown={(e) => handleNextRowKeyDown(e, index, 1)}
               >
                 <Input.TextArea
-                  autoSize={{ minRows: 1, maxRows: 2 }}
+                  autoSize={{ minRows: 1, maxRows: 10 }}
                   style={{
                     borderColor: duplicateStates[record.position]?.code
                       ? "#faad14"
@@ -417,7 +417,7 @@ const MakeInquiryTable = ({
                   ? "#faad14"
                   : "#d9d9d9",
               }}
-              autoSize={{ minRows: 1, maxRows: 4 }} // 최소 1행, 최대 4행으로 설정
+              autoSize={{ minRows: 1, maxRows: 10 }} // 최소 1행, 최대 4행으로 설정
             />
             {duplicateStates[record.position]?.name && (
               <div style={{ color: "#faad14", marginTop: "5px" }}>
@@ -458,7 +458,7 @@ const MakeInquiryTable = ({
         key: "itemRemark",
         render: (text: string, record: InquiryItem, index: number) => (
           <Input.TextArea
-            autoSize={{ minRows: 1, maxRows: 2 }}
+            autoSize={{ minRows: 1, maxRows: 10 }}
             value={text}
             onChange={(e) =>
               handleInputChange(index, "itemRemark", e.target.value)

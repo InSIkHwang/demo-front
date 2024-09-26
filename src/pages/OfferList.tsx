@@ -198,7 +198,7 @@ const OfferList = () => {
   const [registerStartDate, setRegisterStartDate] = useState<string>("");
   const [registerEndDate, setRegisterEndDate] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [itemsPerPage, setItemsPerPage] = useState<number>(10);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(30);
   const [supplierInfoList, setSupplierInfoList] = useState<any[]>([]);
   const [currentDetail, setCurrentDetail] = useState<any | null>(null);
   const [expandedRowKeys, setExpandedRowKeys] = useState<React.Key[]>([]);

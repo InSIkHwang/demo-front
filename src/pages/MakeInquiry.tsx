@@ -334,7 +334,10 @@ const MakeInquiry = () => {
           item.companyName.toLowerCase().includes(searchTerm) ||
           item.code.toLowerCase().includes(searchTerm)
       )
-      .map((item) => ({ value: item.companyName }));
+      .map((item) => item.companyName) // 배열의 값만 가져옴
+      .filter((value, index, self) => self.indexOf(value) === index) // 중복 제거
+
+      .map((item) => ({ value: item })); // 객체 형태로 변환
 
     setAutoCompleteOptions(filteredOptions);
   }, [companyNameList, formValues.customer]);

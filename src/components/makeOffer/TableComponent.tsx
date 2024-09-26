@@ -574,7 +574,7 @@ const TableComponent = ({
               onKeyDown={(e) => handleNextRowKeyDown(e, index, 1)}
             >
               <Input.TextArea
-                autoSize={{ minRows: 1, maxRows: 4 }}
+                autoSize={{ minRows: 1, maxRows: 10 }}
                 style={{
                   borderColor: checkDuplicate("itemCode", text, index)
                     ? "#faad14"
@@ -617,7 +617,7 @@ const TableComponent = ({
       render: (text: string, record: any, index: number) => (
         <>
           <Input.TextArea
-            autoSize={{ minRows: 1, maxRows: 4 }}
+            autoSize={{ minRows: 1, maxRows: 10 }}
             ref={(el) => {
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
@@ -719,7 +719,7 @@ const TableComponent = ({
       width: 100,
       render: (text: string, record: any, index: number) => (
         <Input.TextArea
-          autoSize={{ minRows: 1, maxRows: 4 }}
+          autoSize={{ minRows: 1, maxRows: 10 }}
           value={text}
           onChange={(e) =>
             handleInputChange(index, "itemRemark", e.target.value)

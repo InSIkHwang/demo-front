@@ -135,7 +135,7 @@ const QuotationList = () => {
   const [searchCategory, setSearchCategory] =
     useState<string>("documentNumber");
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [itemsPerPage, setItemsPerPage] = useState<number>(10);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(30);
   const [selectedQuotationId, setSelectedInquiryId] = useState<number | null>(
     null
   );
