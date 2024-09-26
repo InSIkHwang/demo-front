@@ -47,6 +47,7 @@ const FormComponent = ({
               const newValue = e.target.value.trim();
               handleFormChange("documentNumber", newValue); // 그냥 newValue로 설정
             }}
+            readOnly
           />
         </FormItem>
         <FormItem label="문서상태" name="documentStatus">
