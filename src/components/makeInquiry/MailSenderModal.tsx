@@ -10,6 +10,8 @@ import {
   Checkbox,
   Upload,
   Tag,
+  Modal,
+  Spin,
 } from "antd";
 import { SendOutlined, MailOutlined } from "@ant-design/icons";
 import { UploadOutlined } from "@ant-design/icons";
@@ -23,6 +25,18 @@ import { generatePDFs } from "./PDFGenerator";
 
 const { TextArea } = Input;
 const { Title } = Typography;
+
+// 페이지 전체를 덮는 블로킹 레이어 스타일 컴포넌트
+const BlockingLayer = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 10000;
+  pointer-events: all; /* 모든 이벤트 차단 */
+`;
 
 const StyledForm = styled(Form)`
   max-width: 1200px;
@@ -156,6 +170,7 @@ const MailSenderModal = ({
       return newSelection;
     });
   };
+
   const onFinish = async (values: any) => {
     if (selectedMailIndexes.size === 0) {
       return message.error("There is no selected mail destination");
@@ -163,16 +178,29 @@ const MailSenderModal = ({
     setLoading(true);
     setIsSendMail(true);
 
+    // 진행 상황 모달 표시 (OK 버튼 숨김)
+    const modal = Modal.confirm({
+      title: "Sending Emails...",
+      content: (
+        <div>
+          <Spin />
+          Please wait while emails are being sent.
+        </div>
+      ),
+      maskClosable: false, // 모달 외부 클릭 시 닫히지 않도록 설정
+      closable: false, // X 버튼 비활성화
+      okButtonProps: { style: { display: "none" } }, // OK 버튼 숨기기
+      cancelButtonProps: { style: { display: "none" } }, // Cancel 버튼도 숨길 수 있음
+    });
+
     try {
       const submitSuccess = await handleSubmit();
 
       if (submitSuccess) {
         for (const index of Array.from(selectedMailIndexes)) {
-          // 파일 데이터 초기화 및 uploadFile 추가
           const updatedFileData = [...uploadFile];
           setFileData(updatedFileData);
 
-          // PDF 자동 업로드가 체크되었을 경우에만 PDF 생성
           if (isPdfAutoUploadChecked) {
             const pdfFiles = await generatePDFs(
               filteredSupplierTags,
@@ -185,11 +213,9 @@ const MailSenderModal = ({
               index
             );
 
-            // 생성된 PDF 파일을 fileData에 추가
             const finalFileData = [...updatedFileData, ...pdfFiles];
             setFileData(finalFileData);
 
-            // 메일 전송
             await sendInquiryMail(values.docNumber, finalFileData, [
               {
                 ...currentMailDataList[index],
@@ -197,7 +223,6 @@ const MailSenderModal = ({
               },
             ]);
           } else {
-            // PDF 자동 업로드가 체크되지 않은 경우 바로 메일 전송
             await sendInquiryMail(values.docNumber, updatedFileData, [
               {
                 ...currentMailDataList[index],
@@ -216,6 +241,7 @@ const MailSenderModal = ({
       message.error("Email sending failed. Please try again.");
     } finally {
       setLoading(false);
+      modal.destroy(); // 이메일 전송 완료 시 모달 닫기
     }
   };
 
@@ -288,126 +314,129 @@ const MailSenderModal = ({
   }));
 
   return (
-    <StyledForm form={form} onFinish={onFinish}>
-      <FormRow style={{ marginBottom: 0 }}>
-        <StyledFormItem
-          name="docNumber"
-          label="DocNumber"
-          initialValue={inquiryFormValues.docNumber}
-          style={{ flex: 0.8 }}
-        >
-          <Input disabled placeholder="문서 번호" />
-        </StyledFormItem>
-        <StyledFormItem
-          name="refNumber"
-          label="REF NO."
-          initialValue={inquiryFormValues.refNumber}
-          style={{ flex: 1 }}
-        >
-          <Input disabled placeholder="REF NO." />
-        </StyledFormItem>
-      </FormRow>
-      <FormRow>
-        <StyledFormItem
-          name="customer"
-          label="Customer"
-          initialValue={inquiryFormValues.customer}
-          style={{ flex: 1 }}
-        >
-          <Input disabled placeholder="customer" />
-        </StyledFormItem>
-        <StyledFormItem
-          name="vesselName"
-          label="Vessel Name"
-          initialValue={inquiryFormValues.vesselName}
-          style={{ flex: 0.8 }}
-        >
-          <Input disabled placeholder="vesselName" />
-        </StyledFormItem>
-      </FormRow>
-      {selectedSupplierTag.length === 0 ? (
-        <Typography.Paragraph
-          style={{ textAlign: "center", padding: 20, color: "red" }}
-        >
-          No Supplier selected!
-        </Typography.Paragraph>
-      ) : (
-        <Tabs
-          defaultActiveKey="0"
-          type="card"
-          onChange={handleTabChange}
-          items={tabsItems}
-        />
-      )}
-
-      <div>
-        <span style={{ marginRight: 10, fontWeight: 700 }}>
-          Email destination:
-        </span>
-        <Checkbox
-          checked={currentMailDataList.length === selectedMailIndexes.size}
-          indeterminate={
-            selectedMailIndexes.size > 0 &&
-            selectedMailIndexes.size < currentMailDataList.length
-          }
-          onChange={handleSelectAllChange}
-          style={{ marginRight: 20 }}
-        >
-          All
-        </Checkbox>
-        {currentMailDataList.map((_, index) => (
-          <Checkbox
-            key={index}
-            checked={selectedMailIndexes.has(index)}
-            onChange={(e: CheckboxChangeEvent) =>
-              handleMailSelectionChange(index, e.target.checked)
-            }
+    <>
+      {loading && <BlockingLayer />}
+      <StyledForm form={form} onFinish={onFinish}>
+        <FormRow style={{ marginBottom: 0 }}>
+          <StyledFormItem
+            name="docNumber"
+            label="DocNumber"
+            initialValue={inquiryFormValues.docNumber}
+            style={{ flex: 0.8 }}
           >
-            {selectedSupplierTag[index]?.name || ` ${index + 1}`}
-          </Checkbox>
-        ))}
-      </div>
-      <StyledFormItem>
-        <Title level={5}>Attached File</Title>
-        <Upload
-          customRequest={({ file }) => handleFileUpload(file)}
-          showUploadList={false}
-        >
-          <Button icon={<UploadOutlined />}>Upload File</Button>
-        </Upload>
-        <Checkbox
-          checked={isPdfAutoUploadChecked}
-          onChange={handlePdfAutoUploadChange}
-          style={{ marginLeft: 15 }}
-        >
-          Automatic PDF File Upload
-        </Checkbox>
-        {uploadFile.length > 0 && (
-          <div style={{ marginTop: "16px" }}>
-            {uploadFile.map((file, fileIndex) => (
-              <Tag
-                key={fileIndex}
-                closable
-                onClose={() => handleFileRemove(fileIndex)}
-                style={{ marginBottom: "8px" }}
-              >
-                {file?.name}
-              </Tag>
-            ))}
-          </div>
+            <Input disabled placeholder="문서 번호" />
+          </StyledFormItem>
+          <StyledFormItem
+            name="refNumber"
+            label="REF NO."
+            initialValue={inquiryFormValues.refNumber}
+            style={{ flex: 1 }}
+          >
+            <Input disabled placeholder="REF NO." />
+          </StyledFormItem>
+        </FormRow>
+        <FormRow>
+          <StyledFormItem
+            name="customer"
+            label="Customer"
+            initialValue={inquiryFormValues.customer}
+            style={{ flex: 1 }}
+          >
+            <Input disabled placeholder="customer" />
+          </StyledFormItem>
+          <StyledFormItem
+            name="vesselName"
+            label="Vessel Name"
+            initialValue={inquiryFormValues.vesselName}
+            style={{ flex: 0.8 }}
+          >
+            <Input disabled placeholder="vesselName" />
+          </StyledFormItem>
+        </FormRow>
+        {selectedSupplierTag.length === 0 ? (
+          <Typography.Paragraph
+            style={{ textAlign: "center", padding: 20, color: "red" }}
+          >
+            No Supplier selected!
+          </Typography.Paragraph>
+        ) : (
+          <Tabs
+            defaultActiveKey="0"
+            type="card"
+            onChange={handleTabChange}
+            items={tabsItems}
+          />
         )}
-      </StyledFormItem>
-      <StyledButton
-        type="primary"
-        htmlType="submit"
-        loading={loading}
-        icon={<SendOutlined />}
-        size="large"
-        block
-      >
-        Send Email
-      </StyledButton>
-    </StyledForm>
+
+        <div>
+          <span style={{ marginRight: 10, fontWeight: 700 }}>
+            Email destination:
+          </span>
+          <Checkbox
+            checked={currentMailDataList.length === selectedMailIndexes.size}
+            indeterminate={
+              selectedMailIndexes.size > 0 &&
+              selectedMailIndexes.size < currentMailDataList.length
+            }
+            onChange={handleSelectAllChange}
+            style={{ marginRight: 20 }}
+          >
+            All
+          </Checkbox>
+          {currentMailDataList.map((_, index) => (
+            <Checkbox
+              key={index}
+              checked={selectedMailIndexes.has(index)}
+              onChange={(e: CheckboxChangeEvent) =>
+                handleMailSelectionChange(index, e.target.checked)
+              }
+            >
+              {selectedSupplierTag[index]?.name || ` ${index + 1}`}
+            </Checkbox>
+          ))}
+        </div>
+        <StyledFormItem>
+          <Title level={5}>Attached File</Title>
+          <Upload
+            customRequest={({ file }) => handleFileUpload(file)}
+            showUploadList={false}
+          >
+            <Button icon={<UploadOutlined />}>Upload File</Button>
+          </Upload>
+          <Checkbox
+            checked={isPdfAutoUploadChecked}
+            onChange={handlePdfAutoUploadChange}
+            style={{ marginLeft: 15 }}
+          >
+            Automatic PDF File Upload
+          </Checkbox>
+          {uploadFile.length > 0 && (
+            <div style={{ marginTop: "16px" }}>
+              {uploadFile.map((file, fileIndex) => (
+                <Tag
+                  key={fileIndex}
+                  closable
+                  onClose={() => handleFileRemove(fileIndex)}
+                  style={{ marginBottom: "8px" }}
+                >
+                  {file?.name}
+                </Tag>
+              ))}
+            </div>
+          )}
+        </StyledFormItem>
+        <StyledButton
+          type="primary"
+          htmlType="submit"
+          loading={loading}
+          icon={<SendOutlined />}
+          size="large"
+          block
+        >
+          Send Email
+        </StyledButton>
+      </StyledForm>
+    </>
   );
 };
 

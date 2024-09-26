@@ -364,6 +364,7 @@ const InquiryForm = ({
               }}
               onBlur={async (e) => {
                 const docNumber = e.target.value.trim();
+
                 const isDuplicate = await chkDuplicateDocNum(
                   docNumber,
                   customerInquiryId

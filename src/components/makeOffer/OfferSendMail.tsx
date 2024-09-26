@@ -8,6 +8,8 @@ import {
   Checkbox,
   Upload,
   Tag,
+  Modal,
+  Spin,
 } from "antd";
 import { SendOutlined, MailOutlined, UploadOutlined } from "@ant-design/icons";
 import styled from "styled-components";
@@ -19,6 +21,18 @@ import LoadingSpinner from "../LoadingSpinner";
 
 const { TextArea } = Input;
 const { Title } = Typography;
+
+// 페이지 전체를 덮는 블로킹 레이어 스타일 컴포넌트
+const BlockingLayer = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 10000;
+  pointer-events: all; /* 모든 이벤트 차단 */
+`;
 
 const StyledForm = styled(Form)`
   max-width: 1200px;
@@ -84,6 +98,21 @@ const OfferMailSender = ({
   const onFinish = async (values: any) => {
     setLoading(true);
 
+    // 진행 상황 모달 표시 (OK 버튼 숨김)
+    const modal = Modal.confirm({
+      title: "Sending Emails...",
+      content: (
+        <div>
+          <Spin />
+          Please wait while emails are being sent.
+        </div>
+      ),
+      maskClosable: false, // 모달 외부 클릭 시 닫히지 않도록 설정
+      closable: false, // X 버튼 비활성화
+      okButtonProps: { style: { display: "none" } }, // OK 버튼 숨기기
+      cancelButtonProps: { style: { display: "none" } }, // Cancel 버튼도 숨길 수 있음
+    });
+
     try {
       const updatedFileData = [...uploadFile];
       setFileData(updatedFileData);
@@ -123,6 +152,7 @@ const OfferMailSender = ({
       message.error("Email sending failed. Please try again.");
     } finally {
       setLoading(false);
+      modal.destroy(); // 이메일 전송 완료 시 모달 닫기
     }
   };
 
@@ -141,74 +171,77 @@ const OfferMailSender = ({
     return <LoadingSpinner></LoadingSpinner>;
   }
   return (
-    <StyledForm form={form} onFinish={onFinish} initialValues={INITIAL_DATA}>
-      <StyledFormItem name="documentNumber" label="Document Number">
-        <Input disabled placeholder="문서 번호" />
-      </StyledFormItem>
-      <StyledFormItem
-        name="toRecipient"
-        label="Recipient"
-        rules={[{ required: true, message: "Please enter the recipient" }]}
-      >
-        <Input prefix={<MailOutlined />} placeholder="Recipient" />
-      </StyledFormItem>
-      <StyledFormItem
-        name="subject"
-        label="Title"
-        rules={[{ required: true, message: "Please enter a title." }]}
-      >
-        <Input placeholder="Title" />
-      </StyledFormItem>
-      <StyledFormItem
-        name="content"
-        label="Content"
-        rules={[{ required: true, message: "Please enter the contents." }]}
-      >
-        <TextArea style={{ height: 300 }} placeholder="Content" rows={6} />
-      </StyledFormItem>
-
-      <StyledFormItem>
-        <Title level={5}>Attached File</Title>
-        <Upload
-          customRequest={({ file }) => handleFileUpload(file)}
-          showUploadList={false}
+    <>
+      {loading && <BlockingLayer />}
+      <StyledForm form={form} onFinish={onFinish} initialValues={INITIAL_DATA}>
+        <StyledFormItem name="documentNumber" label="Document Number">
+          <Input disabled placeholder="문서 번호" />
+        </StyledFormItem>
+        <StyledFormItem
+          name="toRecipient"
+          label="Recipient"
+          rules={[{ required: true, message: "Please enter the recipient" }]}
         >
-          <Button icon={<UploadOutlined />}>Upload File</Button>
-        </Upload>
-        <Checkbox
-          checked={isPdfAutoUploadChecked}
-          onChange={handlePdfAutoUploadChange}
-          style={{ marginLeft: 15 }}
+          <Input prefix={<MailOutlined />} placeholder="Recipient" />
+        </StyledFormItem>
+        <StyledFormItem
+          name="subject"
+          label="Title"
+          rules={[{ required: true, message: "Please enter a title." }]}
         >
-          Automatic PDF File Upload
-        </Checkbox>
-        {uploadFile.length > 0 && (
-          <div style={{ marginTop: "16px" }}>
-            {uploadFile.map((file, fileIndex) => (
-              <Tag
-                key={fileIndex}
-                closable
-                onClose={() => handleFileRemove(fileIndex)}
-                style={{ marginBottom: "8px" }}
-              >
-                {file?.name}
-              </Tag>
-            ))}
-          </div>
-        )}
-      </StyledFormItem>
+          <Input placeholder="Title" />
+        </StyledFormItem>
+        <StyledFormItem
+          name="content"
+          label="Content"
+          rules={[{ required: true, message: "Please enter the contents." }]}
+        >
+          <TextArea style={{ height: 300 }} placeholder="Content" rows={6} />
+        </StyledFormItem>
 
-      <StyledButton
-        type="primary"
-        htmlType="submit"
-        loading={loading}
-        icon={<SendOutlined />}
-        size="large"
-        block
-      >
-        Send Email
-      </StyledButton>
-    </StyledForm>
+        <StyledFormItem>
+          <Title level={5}>Attached File</Title>
+          <Upload
+            customRequest={({ file }) => handleFileUpload(file)}
+            showUploadList={false}
+          >
+            <Button icon={<UploadOutlined />}>Upload File</Button>
+          </Upload>
+          <Checkbox
+            checked={isPdfAutoUploadChecked}
+            onChange={handlePdfAutoUploadChange}
+            style={{ marginLeft: 15 }}
+          >
+            Automatic PDF File Upload
+          </Checkbox>
+          {uploadFile.length > 0 && (
+            <div style={{ marginTop: "16px" }}>
+              {uploadFile.map((file, fileIndex) => (
+                <Tag
+                  key={fileIndex}
+                  closable
+                  onClose={() => handleFileRemove(fileIndex)}
+                  style={{ marginBottom: "8px" }}
+                >
+                  {file?.name}
+                </Tag>
+              ))}
+            </div>
+          )}
+        </StyledFormItem>
+
+        <StyledButton
+          type="primary"
+          htmlType="submit"
+          loading={loading}
+          icon={<SendOutlined />}
+          size="large"
+          block
+        >
+          Send Email
+        </StyledButton>
+      </StyledForm>
+    </>
   );
 };
 

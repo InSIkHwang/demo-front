@@ -343,7 +343,7 @@ const MakeInquiryTable = ({
             ))}
           </Select>
         ),
-        width: 100,
+        width: 110,
       },
       {
         title: (
@@ -443,7 +443,7 @@ const MakeInquiryTable = ({
               }}
             />
           ) : null,
-        width: 100,
+        width: 80,
       },
       {
         title: "Remark",

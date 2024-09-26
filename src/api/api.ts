@@ -126,10 +126,12 @@ export const fetchDocData = async () => {
 // 문서번호 중복 검사
 export const chkDuplicateDocNum = async (
   docNumber: string,
-  inquiryId: number
+  inquiryId: number | null
 ) => {
+  const validInquiryId = isNaN(inquiryId as any) ? 0 : inquiryId;
+
   const response = await axios.get(
-    `/api/document/number/duplicate-check?documentNumber=${docNumber}`
+    `/api/document/number/duplicate-check?documentNumber=${docNumber}&inquiryId=${validInquiryId}`
   );
 
   return response.data;
