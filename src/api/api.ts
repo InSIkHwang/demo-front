@@ -15,6 +15,14 @@ import { setAccessToken, setRefreshToken } from "./auth";
 import dayjs from "dayjs";
 
 //----------------------------------------------------------------------------------
+// Home
+export const fetchHome = async () => {
+  const response = await axios.get(`/api/home`);
+
+  return response.data;
+};
+
+//----------------------------------------------------------------------------------
 // UserLogin API
 export const postUserLogin = async (email: string, password: string) => {
   try {
@@ -484,6 +492,15 @@ export const sendQuotationMail = async (
         "Content-Type": "multipart/form-data",
       },
     }
+  );
+
+  return response.data;
+};
+
+//엑셀 내보내기
+export const handleOfferExport = async (inquiryId: number) => {
+  const response = await axios.post(
+    `/api/supplier-inquiries/make-excel/${inquiryId}`
   );
 
   return response.data;

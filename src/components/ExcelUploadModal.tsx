@@ -26,7 +26,7 @@ const ExcelUploadModal = ({
   const [excelData, setExcelData] = useState<InquiryItem[]>([]);
   const [fileList, setFileList] = useState<any[]>([]);
 
-  const expectedHeader = ["itemCode", "itemName", "qty", "unit", "itemRemark"];
+  const expectedHeader = ["partNo", "itemName", "qty", "unit", "itemRemark"];
 
   const handleExcelUpload = (file: any) => {
     setExcelData([]);
@@ -44,6 +44,7 @@ const ExcelUploadModal = ({
       // 헤더 검증
       const fileHeader = jsonData[0] || [];
       const headerMapping: Record<string, string> = {
+        partNo: "itemCode",
         "purchase price(KRW)": "purchasePriceKRW",
         "purchase price(Global)": "purchasePriceGlobal",
         margin: "margin",
@@ -246,7 +247,7 @@ const ExcelUploadModal = ({
           dataSource={excelData}
           columns={[
             { title: "No.", dataIndex: "position", key: "position" },
-            { title: "Item Code", dataIndex: "itemCode", key: "itemCode" },
+            { title: "Part No.", dataIndex: "itemCode", key: "itemCode" },
             { title: "Item Name", dataIndex: "itemName", key: "itemName" },
             { title: "Quantity", dataIndex: "qty", key: "qty" },
             { title: "Unit", dataIndex: "unit", key: "unit" },

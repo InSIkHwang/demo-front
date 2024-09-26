@@ -205,7 +205,7 @@ const Header = ({ isAuthenticated, onLogout }: HeaderProps) => {
             icon={faDollarSign}
             style={{ marginRight: "10px" }}
           />
-          견적관리
+          Quotation
           <FontAwesomeIcon
             icon={isEstimateOpen ? faCaretUp : faCaretDown}
             style={{ marginLeft: "auto", cursor: "pointer" }}
@@ -215,33 +215,33 @@ const Header = ({ isAuthenticated, onLogout }: HeaderProps) => {
           <MenuItem
             onClick={() => handleMenuItemClick(() => navigate("/makeinquiry"))}
           >
-            견적생성
+            견적생성 - Create Request
           </MenuItem>
           <MenuItem
             onClick={() =>
               handleMenuItemClick(() => navigate("/customerInquirylist"))
             }
           >
-            견적 요청 - Requests
+            견적 요청 - Request
           </MenuItem>
           <MenuItem
             onClick={() =>
               handleMenuItemClick(() => navigate("/supplierInquirylist"))
             }
           >
-            견적 제안 - Offers
+            견적 제안 - Offer
           </MenuItem>
           <MenuItem
             onClick={() =>
               handleMenuItemClick(() => navigate("/quotationlist"))
             }
           >
-            최종 견적 - Quotations
+            최종 견적 - Quotation
           </MenuItem>
         </SubMenu>
         <MenuItem onClick={() => setCodeOpen(!isCodeOpen)}>
           <FontAwesomeIcon icon={faCode} style={{ marginRight: "10px" }} />
-          코드관리
+          Codes
           <FontAwesomeIcon
             icon={isCodeOpen ? faCaretUp : faCaretDown}
             style={{ marginLeft: "auto", cursor: "pointer" }}
@@ -251,17 +251,17 @@ const Header = ({ isAuthenticated, onLogout }: HeaderProps) => {
           <MenuItem
             onClick={() => handleMenuItemClick(() => navigate("/customerlist"))}
           >
-            매출처
+            Customer
           </MenuItem>
           <MenuItem
             onClick={() => handleMenuItemClick(() => navigate("/supplierlist"))}
           >
-            매입처
+            Supplier
           </MenuItem>
           <MenuItem
             onClick={() => handleMenuItemClick(() => navigate("/shiplist"))}
           >
-            선박
+            Vessel
           </MenuItem>
         </SubMenu>
       </SideMenu>

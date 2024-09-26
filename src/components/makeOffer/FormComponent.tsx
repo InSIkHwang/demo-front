@@ -34,7 +34,7 @@ const FormComponent = ({
     <Form layout="vertical" initialValues={formValues}>
       <Row>
         <FormItem
-          label="문서번호"
+          label="문서번호(Document No.)"
           name="documentNumber"
           rules={[{ required: true, message: "Please write Document No." }]}
           normalize={(value) => value.trim()} // 입력값을 트리밍하여 저장
@@ -51,9 +51,9 @@ const FormComponent = ({
           />
         </FormItem>
         <FormItem
-          label="REF NO."
+          label="Ref No."
           name="refNumber"
-          rules={[{ required: true, message: "REF NO.를 입력하세요!" }]}
+          rules={[{ required: true, message: "Please enter ref number" }]}
           style={{ maxWidth: 350 }}
         >
           <Input readOnly />
@@ -62,9 +62,9 @@ const FormComponent = ({
           <Input readOnly />
         </FormItem>
         <FormItem
-          label="작성일자"
+          label="작성일자(Register Date)"
           name="registerDate"
-          rules={[{ required: true, message: "등록 날짜를 입력하세요!" }]}
+          rules={[{ required: true, message: "Please select register date" }]}
           style={{ maxWidth: 150 }}
         >
           <DatePicker
@@ -75,9 +75,9 @@ const FormComponent = ({
           />
         </FormItem>
         <FormItem
-          label="화폐"
+          label="화폐(Currency)"
           name="currencyType"
-          rules={[{ required: true, message: "화폐를 선택하세요!" }]}
+          rules={[{ required: true, message: "Please select currency type" }]}
         >
           <Select
             value={formValues.currencyType}
@@ -92,9 +92,11 @@ const FormComponent = ({
           </Select>
         </FormItem>
         <FormItem
-          label="환율"
+          label="환율(Exchange Rate)"
           name="currency"
-          rules={[{ required: true, message: "환율을 입력하세요!" }]}
+          rules={[
+            { required: true, message: "Please enter currency exchange rate" },
+          ]}
         >
           <InputNumber
             value={formValues.currency}
@@ -110,14 +112,14 @@ const FormComponent = ({
 
       <Row>
         <FormItem
-          label="매출처"
+          label="매출처(Customer)"
           name="customerName"
           rules={[{ required: true, message: "매출처를 입력하세요!" }]}
         >
           <Input readOnly />
         </FormItem>
         <FormItem
-          label="선박명"
+          label="선명(Vessel Name)"
           name="vesselName"
           rules={[{ required: true, message: "선박명을 입력하세요!" }]}
         >
@@ -133,14 +135,14 @@ const FormComponent = ({
       </Row>
       <Row>
         <FormItem
-          label="의뢰처"
+          label="의뢰처(Supplier Name)"
           name="supplierName"
           rules={[{ required: true, message: "의뢰처를 입력하세요!" }]}
           style={{ flex: 3 }}
         >
           <Input readOnly />
         </FormItem>
-        <FormItem label="비고" name="docRemark" style={{ flex: 7 }}>
+        <FormItem label="비고(Remark)" name="docRemark" style={{ flex: 7 }}>
           <Input.TextArea
             value={formValues.docRemark}
             onChange={(e) => handleFormChange("docRemark", e.target.value)}

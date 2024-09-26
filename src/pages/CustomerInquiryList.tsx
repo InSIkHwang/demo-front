@@ -62,12 +62,12 @@ const PaginationWrapper = styled(Pagination)`
 
 const columns: ColumnsType<Inquiry> = [
   {
-    title: "문서번호",
+    title: "Document Number",
     dataIndex: "documentNumber",
     key: "documentNumber",
   },
   {
-    title: "등록 날짜",
+    title: "Registration Date",
     dataIndex: "registerDate",
     key: "registerDate",
     sorter: (a, b) =>
@@ -75,7 +75,7 @@ const columns: ColumnsType<Inquiry> = [
     sortDirections: ["ascend", "descend"],
   },
   {
-    title: "매출처명",
+    title: "Costomer Name",
     dataIndex: "companyName",
     key: "companyName",
     sorter: (a, b) => a.companyName.localeCompare(b.companyName),
@@ -87,12 +87,12 @@ const columns: ColumnsType<Inquiry> = [
     key: "refNumber",
   },
   {
-    title: "통화",
+    title: "Currency",
     dataIndex: "currencyType",
     key: "currencyType",
   },
   {
-    title: "환율",
+    title: "Exchange Rate",
     dataIndex: "currency",
     key: "currency",
     render: (_, record) => {
@@ -112,17 +112,17 @@ const columns: ColumnsType<Inquiry> = [
     },
   },
   {
-    title: "선명",
+    title: "Vessel Name",
     dataIndex: "vesselName",
     key: "vesselName",
   },
   {
-    title: "비고",
+    title: "Remarks",
     dataIndex: "remark",
     key: "remark",
   },
   {
-    title: "문서 상태",
+    title: "Document Status",
     dataIndex: "documentStatus",
     key: "documentStatus",
   },
@@ -253,18 +253,20 @@ const CustomerInquiryList = () => {
               style={{ width: 120, marginRight: 10 }}
               onChange={(value) => setSearchCategory(value)}
             >
-              <Select.Option value="documentNumber">문서번호</Select.Option>
+              <Select.Option value="documentNumber">
+                Document Number
+              </Select.Option>
               <Select.Option value="refNumber">REF NO.</Select.Option>
-              <Select.Option value="customerName">매출처</Select.Option>
+              <Select.Option value="customerName">Costomer Name</Select.Option>
             </Select>
             <Input
-              placeholder="검색..."
+              placeholder="Search..."
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               style={{ width: 300, marginRight: 10 }}
             />
             <DatePicker
-              placeholder="시작 날짜"
+              placeholder="Start Date"
               format="YYYY-MM-DD"
               onChange={(date) =>
                 setRegisterStartDate(date ? date.format("YYYY-MM-DD") : "")
@@ -272,7 +274,7 @@ const CustomerInquiryList = () => {
               style={{ marginRight: 10 }}
             />
             <DatePicker
-              placeholder="종료 날짜"
+              placeholder="End Date"
               format="YYYY-MM-DD"
               onChange={(date) =>
                 setRegisterEndDate(date ? date.format("YYYY-MM-DD") : "")
@@ -280,7 +282,7 @@ const CustomerInquiryList = () => {
               style={{ marginRight: 10 }}
             />
             <Button type="primary" onClick={handleSearch}>
-              검색
+              Search
             </Button>
             <div style={{ marginLeft: 15 }}>
               <Checkbox onChange={handleViewMyInquiryOnlyChange}>
@@ -295,7 +297,7 @@ const CustomerInquiryList = () => {
             </div>
           </SearchBar>
           <Button type="primary" onClick={() => navigate("/makeinquiry")}>
-            신규 등록
+            New Request
           </Button>
         </TableHeader>
         {data.length > 0 && ( // 데이터가 있을 때만 페이지네이션을 표시

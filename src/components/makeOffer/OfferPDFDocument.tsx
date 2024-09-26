@@ -438,7 +438,7 @@ const OfferPDFDocument = ({
               <Text style={styles.tableCell}>NO.</Text>
             </View>
             <View style={styles.tableMedCol}>
-              <Text style={styles.tableCell}>CODE</Text>
+              <Text style={styles.tableCell}>PART NO.</Text>
             </View>
             <View style={styles.tableBigCol}>
               <Text style={styles.tableCell}>DESCRIPTION</Text>

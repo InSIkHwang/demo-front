@@ -76,6 +76,10 @@ const App = () => {
             element={<UserLogin onLogin={handleLogin} />}
           />
           <Route
+            path="/home"
+            element={isAuthenticated ? <Home /> : <Navigate to="/home" />}
+          />
+          <Route
             path="/customerlist"
             element={
               isAuthenticated ? <CustomerList /> : <Navigate to="/userlogin" />

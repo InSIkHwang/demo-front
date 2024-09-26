@@ -146,12 +146,12 @@ const InfoText = styled.p`
 
 const columns: ColumnsType<SupplierInquiryListIF> = [
   {
-    title: "문서번호",
+    title: "Document Number",
     dataIndex: "documentNumber",
     key: "documentNumber",
   },
   {
-    title: "등록 날짜",
+    title: "Registration Date",
     dataIndex: "registerDate",
     key: "registerDate",
     sorter: (a, b) =>
@@ -159,12 +159,12 @@ const columns: ColumnsType<SupplierInquiryListIF> = [
     sortDirections: ["ascend", "descend"],
   },
   {
-    title: "매출처",
+    title: "Costomer Name",
     dataIndex: "companyName",
     key: "companyName",
   },
   {
-    title: "비고",
+    title: "Remarks",
     dataIndex: "docRemark",
     key: "docRemark",
     sorter: (a, b) => a.docRemark.localeCompare(b.docRemark),
@@ -176,12 +176,12 @@ const columns: ColumnsType<SupplierInquiryListIF> = [
     key: "refNumber",
   },
   {
-    title: "담당자",
+    title: "Manager",
     dataIndex: "docManager",
     key: "docManager",
   },
   {
-    title: "문서 상태",
+    title: "Document Status",
     dataIndex: "documentStatus",
     key: "documentStatus",
   },
@@ -220,7 +220,7 @@ const OfferList = () => {
       setData(response.supplierInquiryList);
       setTotalCount(response.totalCount);
     } catch (error) {
-      console.error("데이터를 가져오는 중 오류가 발생했습니다:", error);
+      console.error("An error occurred while retrieving data:", error);
     } finally {
       setLoading(false);
     }
@@ -366,10 +366,10 @@ const OfferList = () => {
         navigate("/makeoffer/mergedoffer", { state: { info } });
       } catch (error) {
         console.error("오류가 발생했습니다:", error);
-        message.error("메일 전송 중 오류가 발생했습니다."); // 오류 메시지 표시
+        message.error("An error occurred while sending the email."); // 오류 메시지 표시
       }
     } else {
-      message.error("선택된 의뢰처가 없습니다."); // 선택된 의뢰처가 없을 때 에러 메시지 표시
+      message.error("There are no suppliers selected."); // 선택된 의뢰처가 없을 때 에러 메시지 표시
     }
   };
 
@@ -401,18 +401,20 @@ const OfferList = () => {
               style={{ width: 120, marginRight: 10 }}
               onChange={(value) => setSearchCategory(value)}
             >
-              <Select.Option value="documentNumber">문서번호</Select.Option>
+              <Select.Option value="documentNumber">
+                Document Number
+              </Select.Option>
               <Select.Option value="refNumber">REF NO.</Select.Option>
-              <Select.Option value="customerName">매출처</Select.Option>
+              <Select.Option value="customerName">Costomer Name</Select.Option>
             </Select>
             <Input
-              placeholder="검색..."
+              placeholder="Search..."
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               style={{ width: 300, marginRight: 10 }}
             />
             <DatePicker
-              placeholder="시작 날짜"
+              placeholder="Start Date"
               format="YYYY-MM-DD"
               onChange={(date) =>
                 setRegisterStartDate(date ? date.format("YYYY-MM-DD") : "")
@@ -420,7 +422,7 @@ const OfferList = () => {
               style={{ marginRight: 10 }}
             />
             <DatePicker
-              placeholder="종료 날짜"
+              placeholder="End Date"
               format="YYYY-MM-DD"
               onChange={(date) =>
                 setRegisterEndDate(date ? date.format("YYYY-MM-DD") : "")
@@ -428,7 +430,7 @@ const OfferList = () => {
               style={{ marginRight: 10 }}
             />
             <Button type="primary" onClick={handleSearch}>
-              검색
+              Search
             </Button>
           </SearchBar>
         </TableHeader>{" "}
@@ -452,17 +454,17 @@ const OfferList = () => {
                         style={{ position: "absolute", right: 20 }}
                         onClick={() => handleSendMailClick()}
                       >
-                        메일전송
+                        Send mail
                       </Button>
                       <SelectedSupplierNameBox>
-                        선택된 의뢰처:{" "}
+                        Selected Suppliers:{" "}
                         {Array.from(selectedSupplierIds.values()).map(
                           (companyName, index) => (
                             <span key={index}>{companyName}</span>
                           )
                         )}
                         {selectedSupplierIds.size === 0 &&
-                          "선택된 의뢰처가 없습니다."}
+                          "There are no suppliers selected."}
                       </SelectedSupplierNameBox>
 
                       {supplierInfoList.map(({ info, detail }) => {
@@ -506,36 +508,36 @@ const OfferList = () => {
                             <CardContent>
                               <Section>
                                 <InfoText>
-                                  매입액 (KRW):{" "}
+                                  Purchase amount (KRW):{" "}
                                   {totals.totalPurchaseAmountKRW.toLocaleString()}
                                 </InfoText>
                                 <InfoText>
-                                  매출액 (KRW):{" "}
+                                  Sales amount(KRW):{" "}
                                   {totals.totalSalesAmountKRW.toLocaleString()}
                                 </InfoText>
                                 <InfoText style={{ color: "#000" }}>
-                                  총 이익 (KRW):{" "}
+                                  Profit (KRW):{" "}
                                   {totals.totalProfitKRW.toLocaleString()}
                                 </InfoText>
                               </Section>
                               <Divider />
                               <Section>
                                 <InfoText>
-                                  매입액 (F):{" "}
+                                  Purchase amount (F):{" "}
                                   {totals.totalPurchaseAmountGlobal.toLocaleString()}
                                 </InfoText>
                                 <InfoText>
-                                  매출액 (F):{" "}
+                                  Sales amount (F):{" "}
                                   {totals.totalSalesAmountGlobal.toLocaleString()}
                                 </InfoText>
                                 <InfoText style={{ color: "#000" }}>
-                                  총 이익 (F):{" "}
+                                  Profit (F):{" "}
                                   {totals.totalProfitGlobal.toLocaleString()}
                                 </InfoText>
                               </Section>
                             </CardContent>
                             <InfoText style={{ color: "#000" }}>
-                              이익율: {totals.profitMarginKRW}% (F:{" "}
+                              Profit: {totals.profitMarginKRW}% (F:{" "}
                               {totals.profitMarginGlobal}%)
                             </InfoText>
                             <div
@@ -546,14 +548,14 @@ const OfferList = () => {
                               }}
                             >
                               <InfoText>
-                                적용환율: {record.currency} (
+                                exchange rate: {record.currency} (
                                 {record.currencyType})
                               </InfoText>
                               <Button
                                 type="primary"
                                 onClick={() => handleEditClick(detail)}
                               >
-                                수정
+                                Edit
                               </Button>
                             </div>
                           </StyledCard>

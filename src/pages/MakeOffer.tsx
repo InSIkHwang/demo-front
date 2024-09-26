@@ -600,6 +600,7 @@ const MakeOffer = () => {
           totals={totals}
           setTotals={setTotals}
           applyDcAndCharge={applyDcAndCharge}
+          offerId={idList.offerId}
         />
       )}
       {isReadOnly && (

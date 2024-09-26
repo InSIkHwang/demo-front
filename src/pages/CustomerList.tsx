@@ -148,44 +148,44 @@ const CustomerList = () => {
 
   const columns: ColumnsType<Customer> = [
     {
-      title: "코드",
+      title: "Code",
       dataIndex: "code",
       key: "code",
     },
     {
-      title: "상호명",
+      title: "Customer Name",
       dataIndex: "companyName",
       key: "companyName",
       sorter: (a, b) => a.companyName.localeCompare(b.companyName),
       sortDirections: ["ascend", "descend"],
     },
     {
-      title: "연락처",
+      title: "Contact",
       dataIndex: "phoneNumber",
       key: "phoneNumber",
     },
     {
-      title: "담당자",
+      title: "Manager",
       dataIndex: "representative",
       key: "representative",
     },
     {
-      title: "이메일",
+      title: "Email",
       dataIndex: "email",
       key: "email",
     },
     {
-      title: "주소",
+      title: "Address",
       dataIndex: "address",
       key: "address",
     },
     {
-      title: "사용 언어",
+      title: "Language",
       dataIndex: "communicationLanguage",
       key: "communicationLanguage",
     },
     {
-      title: "수정된 날짜",
+      title: "Modified Date",
       dataIndex: "modifiedAt",
       key: "modifiedAt",
       sorter: (a, b) =>
@@ -219,7 +219,7 @@ const CustomerList = () => {
   return (
     <>
       <Container>
-        <Title>매출처 관리</Title>
+        <Title>Customer List</Title>
         <TableHeader>
           <SearchBar>
             <Select
@@ -227,12 +227,12 @@ const CustomerList = () => {
               style={{ width: 120, marginRight: 10 }}
               onChange={(value) => setSearchCategory(value)}
             >
-              <Option value="all">통합검색</Option>
-              <Option value="code">코드</Option>
-              <Option value="companyName">상호명</Option>
+              <Option value="all">All</Option>
+              <Option value="code">Code</Option>
+              <Option value="companyName">Customer Name</Option>
             </Select>
             <Input
-              placeholder="검색..."
+              placeholder="Search..."
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               onPressEnter={fetchFilteredData}
@@ -241,7 +241,7 @@ const CustomerList = () => {
             />
           </SearchBar>
           <Button type="primary" onClick={openModal}>
-            신규 등록
+            New Customer
           </Button>
         </TableHeader>
         {data.length > 0 && ( // 데이터가 있을 때만 페이지네이션을 표시

@@ -132,19 +132,19 @@ const ShipList = () => {
 
   const columns: ColumnsType<Vessel> = [
     {
-      title: "코드",
+      title: "Code",
       dataIndex: "code",
       key: "code",
     },
     {
-      title: "선명",
+      title: "Vessel Name",
       dataIndex: "vesselName",
       key: "vesselName",
       sorter: (a, b) => a.vesselName.localeCompare(b.vesselName),
       sortDirections: ["ascend", "descend"],
     },
     {
-      title: "선박회사",
+      title: "Company Name",
       dataIndex: "vesselCompanyName",
       key: "vesselCompanyName",
     },
@@ -160,15 +160,15 @@ const ShipList = () => {
       key: "hullNumber",
     },
     {
-      title: "SHIPYARD",
+      title: "Shipyard",
       dataIndex: "shipYard",
       key: "shipYard",
     },
     {
-      title: "매출처",
+      title: "Customer Name",
       key: "customerName",
       render: (text, record) =>
-        record.customer ? record.customer.companyName : "없음",
+        record.customer ? record.customer.companyName : "None",
     },
   ];
 
@@ -197,7 +197,7 @@ const ShipList = () => {
   return (
     <>
       <Container>
-        <Title>선박 관리</Title>
+        <Title>Vessel List</Title>
         <TableHeader>
           <SearchBar>
             <Select
@@ -205,12 +205,12 @@ const ShipList = () => {
               style={{ width: 120, marginRight: 10 }}
               onChange={(value) => setSearchCategory(value)}
             >
-              <Option value="all">통합검색</Option>
-              <Option value="code">코드</Option>
-              <Option value="vesselName">선명</Option>
+              <Option value="all">All</Option>
+              <Option value="code">Code</Option>
+              <Option value="vesselName">Vessel Name</Option>
             </Select>
             <Input
-              placeholder="검색..."
+              placeholder="Search..."
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               onPressEnter={fetchFilteredData}
@@ -219,7 +219,7 @@ const ShipList = () => {
             />
           </SearchBar>
           <Button type="primary" onClick={openModal}>
-            신규 등록
+            New Vessel
           </Button>
         </TableHeader>
         {data.length > 0 && ( // 데이터가 있을 때만 페이지네이션을 표시

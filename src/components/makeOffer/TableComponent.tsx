@@ -6,7 +6,15 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Table, Input, Select, InputNumber, Button, AutoComplete } from "antd";
+import {
+  Table,
+  Input,
+  Select,
+  InputNumber,
+  Button,
+  AutoComplete,
+  notification,
+} from "antd";
 import { ColumnsType } from "antd/es/table";
 import styled from "styled-components";
 import { ItemDataType } from "../../types/types";
@@ -15,8 +23,9 @@ import {
   PlusCircleOutlined,
   ReloadOutlined,
   FileExcelOutlined,
+  ExportOutlined,
 } from "@ant-design/icons";
-import { fetchItemData } from "../../api/api";
+import { fetchItemData, handleOfferExport } from "../../api/api";
 import ExcelUploadModal from "../ExcelUploadModal";
 import { TextAreaRef } from "antd/es/input/TextArea";
 
@@ -158,6 +167,7 @@ interface TableComponentProps {
     }>
   >;
   applyDcAndCharge: () => void;
+  offerId: number;
 }
 
 interface SelectedItemData {
@@ -179,6 +189,7 @@ const TableComponent = ({
   finalTotals,
   setTotals,
   applyDcAndCharge,
+  offerId,
 }: TableComponentProps) => {
   const inputRefs = useRef<(TextAreaRef | null)[][]>([]);
   const [itemCodeOptions, setItemCodeOptions] = useState<{ value: string }[]>(
@@ -220,6 +231,29 @@ const TableComponent = ({
       }))
     );
     setIsModalVisible(false);
+  };
+
+  const handleExportButtonClick = async () => {
+    try {
+      // 선택한 파일들의 이름을 서버로 전송
+      const response = await handleOfferExport(offerId);
+
+      // 사용자가 경로를 설정하여 파일을 다운로드할 수 있도록 설정
+      const link = document.createElement("a");
+      link.href = response; // 서버에서 받은 파일 경로
+      link.download = "exported_file.xlsx"; // 사용자에게 보여질 파일 이름
+      link.click(); // 다운로드 트리거
+
+      notification.success({
+        message: "Export Success",
+        description: "Excel file exported successfully.",
+      });
+    } catch (error) {
+      notification.error({
+        message: "Export Failed",
+        description: "Failed to export the Excel file.",
+      });
+    }
   };
 
   const handleItemCodeChange = async (index: number, value: string) => {
@@ -518,13 +552,13 @@ const TableComponent = ({
     {
       title: "Action",
       key: "action",
-      width: 90,
+      width: 80,
       render: (text: any, record: any, index: number) => (
         <div>
           <Button
             icon={<PlusCircleOutlined />}
             type="default"
-            style={{ marginRight: 10 }}
+            style={{ marginRight: 5 }}
             onClick={() => handleAddItem(index)}
           />
           <Button
@@ -541,7 +575,7 @@ const TableComponent = ({
       title: "No.",
       dataIndex: "no", // No. 값 표시
       key: "no",
-      width: 40,
+      width: 30,
       render: (_: any, __: any, index: number) => <span>{index + 1}</span>,
     },
     {
@@ -610,10 +644,10 @@ const TableComponent = ({
       ),
     },
     {
-      title: "품명",
+      title: "Name",
       dataIndex: "itemName",
       key: "itemName",
-      width: 250,
+      width: 200,
       render: (text: string, record: any, index: number) => (
         <>
           <Input.TextArea
@@ -647,10 +681,10 @@ const TableComponent = ({
       ),
     },
     {
-      title: "수량",
+      title: "Qty",
       dataIndex: "qty",
       key: "qty",
-      width: 75,
+      width: 60,
       render: (text: number, record: any, index: number) =>
         record.itemType === "ITEM" ? (
           <Input
@@ -713,10 +747,10 @@ const TableComponent = ({
         ) : null,
     },
     {
-      title: "비고",
+      title: "Remark",
       dataIndex: "itemRemark",
       key: "itemRemark",
-      width: 100,
+      width: 150,
       render: (text: string, record: any, index: number) => (
         <Input.TextArea
           autoSize={{ minRows: 1, maxRows: 10 }}
@@ -729,7 +763,7 @@ const TableComponent = ({
       ),
     },
     {
-      title: "매출단가(KRW)",
+      title: "Sales Price(KRW)",
       dataIndex: "salesPriceKRW",
       key: "salesPriceKRW",
       width: 115,
@@ -745,7 +779,7 @@ const TableComponent = ({
         ) : null,
     },
     {
-      title: "매출단가(F)",
+      title: "Sales Price(F)",
       dataIndex: "salesPriceGlobal",
       key: "salesPriceGlobal",
       width: 115,
@@ -761,7 +795,7 @@ const TableComponent = ({
         ) : null,
     },
     {
-      title: "매출총액(KRW)",
+      title: "Sales Amount(KRW)",
       dataIndex: "salesAmountKRW",
       key: "salesAmountKRW",
       width: 115,
@@ -781,7 +815,7 @@ const TableComponent = ({
         ) : null,
     },
     {
-      title: "매출총액(F)",
+      title: "Sales Amount(F)",
       dataIndex: "salesAmountGlobal",
       key: "salesAmountGlobal",
       width: 115,
@@ -801,7 +835,7 @@ const TableComponent = ({
         ) : null,
     },
     {
-      title: "매입단가(KRW)",
+      title: "Purchase Price(KRW)",
       dataIndex: "purchasePriceKRW",
       key: "purchasePriceKRW",
       width: 115,
@@ -840,7 +874,7 @@ const TableComponent = ({
         ) : null,
     },
     {
-      title: "매입단가(F)",
+      title: "Purchase Price(F)",
       dataIndex: "purchasePriceGlobal",
       key: "purchasePriceGlobal",
       width: 115,
@@ -879,7 +913,7 @@ const TableComponent = ({
         ) : null,
     },
     {
-      title: "매입총액(KRW)",
+      title: "Purchase Amount(KRW)",
       dataIndex: "purchaseAmountKRW",
       key: "purchaseAmountKRW",
       width: 115,
@@ -902,7 +936,7 @@ const TableComponent = ({
         ) : null,
     },
     {
-      title: "매입총액(F)",
+      title: "Purchase Amount(F)",
       dataIndex: "purchaseAmountGlobal",
       key: "purchaseAmountGlobal",
       width: 115,
@@ -928,8 +962,7 @@ const TableComponent = ({
       title: (
         <div>
           <InputNumber
-            placeholder="margin"
-            addonAfter={"%"}
+            placeholder="Margin"
             parser={(value) =>
               value ? parseFloat(value.replace(/ %/, "")) : 0
             }
@@ -979,31 +1012,31 @@ const TableComponent = ({
     <div style={{ marginTop: 20, overflowX: "auto" }}>
       <TotalCards>
         <TotalCard>
-          <span>매출총액(KRW)</span>
+          <span>Sales Amount(KRW)</span>
           <span className="value">
             ₩ {finalTotals.totalSalesAmountKRW.toLocaleString()}
           </span>
         </TotalCard>
         <TotalCard>
-          <span>매출총액(F)</span>
+          <span>Sales Amount(F)</span>
           <span className="value">
             F {finalTotals.totalSalesAmountGlobal.toLocaleString()}
           </span>
         </TotalCard>
         <TotalCard>
-          <span>매입총액(KRW)</span>
+          <span>Purchase Amount(KRW)</span>
           <span className="value">
             ₩ {finalTotals.totalPurchaseAmountKRW.toLocaleString()}
           </span>
         </TotalCard>
         <TotalCard>
-          <span>매입총액(F)</span>
+          <span>Purchase Amount(F)</span>
           <span className="value">
             F {finalTotals.totalPurchaseAmountGlobal.toLocaleString()}
           </span>
         </TotalCard>
         <TotalCard $isHighlight $isPositive={finalTotals.totalProfit >= 0}>
-          <span>이익합계</span>
+          <span>Profit Amount</span>
           <span className="value">
             ₩ {finalTotals.totalProfit.toLocaleString()}
           </span>
@@ -1012,7 +1045,7 @@ const TableComponent = ({
           $isHighlight
           $isPositive={finalTotals.totalProfitPercent >= 0}
         >
-          <span>이익율</span>
+          <span>Profit Percent</span>
           <span className="value">
             {isNaN(finalTotals.totalProfitPercent)
               ? 0
@@ -1033,6 +1066,14 @@ const TableComponent = ({
         icon={<FileExcelOutlined />}
       >
         Load Excel File
+      </Button>
+      <Button
+        type="dashed"
+        style={{ margin: "20px 5px" }}
+        icon={<ExportOutlined />}
+        onClick={handleExportButtonClick}
+      >
+        Export Excel
       </Button>
       <CustomTable
         rowClassName={(record, index) =>
