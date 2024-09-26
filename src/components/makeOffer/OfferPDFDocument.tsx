@@ -312,7 +312,7 @@ const renderHeader = (
     <View style={styles.inquiryInfoWrap}>
       <View style={styles.inquiryInfoColumn}>
         <Text style={styles.inquiryInfoText}>
-          MESSRS: {customerName.split("")}
+          MESSERS: {customerName.split("")}
         </Text>
         <Text style={[styles.inquiryInfoText]}>
           VESSEL NAME: {vesselName.split("")}

@@ -521,7 +521,10 @@ const InquiryForm = ({
               onChange={(e) => handleFormChange("refNumber", e.target.value)}
               onBlur={async (e) => {
                 const refNumber = e.target.value.trim();
-                const isDuplicate = await chkDuplicateRefNum(refNumber);
+                const isDuplicate = await chkDuplicateRefNum(
+                  refNumber,
+                  customerInquiryId
+                );
                 setIsRefNumDuplicate(isDuplicate); // 중복 여부 설정
               }}
             />

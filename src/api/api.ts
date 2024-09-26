@@ -138,9 +138,14 @@ export const chkDuplicateDocNum = async (
 };
 
 // Ref number 중복 검사
-export const chkDuplicateRefNum = async (refNumber: string) => {
+export const chkDuplicateRefNum = async (
+  refNumber: string,
+  inquiryId: number | null
+) => {
+  const validInquiryId = isNaN(inquiryId as any) ? 0 : inquiryId;
+
   const response = await axios.get(
-    `/api/document/ref-number/duplicate-check?documentRefNumber=${refNumber}`
+    `/api/document/ref-number/duplicate-check?documentRefNumber=${refNumber}&inquiryId=${validInquiryId}`
   );
 
   return response.data;
