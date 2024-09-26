@@ -199,7 +199,7 @@ const MakeOffer = () => {
           setInvChargeList(response.invChargeList || []);
         }
       } catch (error) {
-        message.error("데이터를 가져오는 중 오류가 발생했습니다.");
+        message.error("An error occurred while importing data.");
       }
     }
     setIsLoading(false);
@@ -389,7 +389,7 @@ const MakeOffer = () => {
 
   const handleSave = async () => {
     if (dataSource.length === 0) {
-      message.error("아이템을 추가해주세요");
+      message.error("Please add an item");
       return;
     }
 
@@ -418,10 +418,10 @@ const MakeOffer = () => {
       if (isDuplicate) {
         // 중복된 품목이 있을 경우 사용자에게 확인 메시지 표시
         Modal.confirm({
-          title: "중복된 품목이 있습니다.",
-          content: "저장하시겠습니까?",
-          okText: "확인",
-          cancelText: "취소",
+          title: "Duplicate items found.",
+          content: "Do you want to save it?",
+          okText: "OK",
+          cancelText: "Cancel",
           onOk: async () => {
             // 확인 버튼을 눌렀을 때 저장 로직 실행
             await saveData(formattedData);
@@ -432,7 +432,7 @@ const MakeOffer = () => {
         await saveData(formattedData);
       }
     } catch (error) {
-      message.error("데이터 저장 중 오류가 발생했습니다.");
+      message.error("An error occurred while saving data.");
     }
   };
 
@@ -458,7 +458,7 @@ const MakeOffer = () => {
         invChargeList
       );
 
-      message.success("성공적으로 저장 되었습니다!");
+      message.success("Saved successfully!");
 
       // 저장 후 최신 데이터로 업데이트
       const response = await fetchOfferDetail(
@@ -473,7 +473,7 @@ const MakeOffer = () => {
       });
     } catch (error) {
       console.error("Error saving data:", error);
-      message.error("데이터 저장 중 오류가 발생했습니다.");
+      message.error("An error occurred while saving data.");
     }
   };
 
@@ -647,7 +647,7 @@ const MakeOffer = () => {
             onClick={handlePDFPreview}
             type="default"
           >
-            {showPDFPreview ? "미리보기 닫기" : "PDF 미리보기"}
+            {showPDFPreview ? "Close Preview" : "PDF Preview"}
           </Button>
           <Button
             type="primary"

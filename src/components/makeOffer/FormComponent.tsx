@@ -65,13 +65,14 @@ const FormComponent = ({
           label="작성일자(Register Date)"
           name="registerDate"
           rules={[{ required: true, message: "Please select register date" }]}
-          style={{ maxWidth: 150 }}
+          style={{ width: 25 }}
         >
           <DatePicker
             value={formValues.registerDate}
             onChange={(date) => handleFormChange("registerDate", date!)}
             format="YYYY-MM-DD"
             disabled={readOnly}
+            style={{ width: "100%" }}
           />
         </FormItem>
         <FormItem
