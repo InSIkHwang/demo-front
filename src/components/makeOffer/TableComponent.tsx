@@ -685,11 +685,18 @@ const TableComponent = ({
       dataIndex: "qty",
       key: "qty",
       width: 60,
-      render: (text: number, record: any, index: number) =>
-        record.itemType === "ITEM" ? (
+      render: (text: number, record: any, index: number) => {
+        // itemType이 ITEM이 아닐 경우 qty 값을 0으로 설정
+        if (record.itemType !== "ITEM") {
+          // handleInputChange를 호출하여 값을 0으로 설정
+          handleInputChange(index, "qty", 0);
+          return null; // 화면에는 0을 표시
+        }
+
+        return (
           <Input
-            type="text" // Change to "text" to handle formatted input
-            value={text.toLocaleString()} // Display formatted value
+            type="text"
+            value={text.toLocaleString()}
             ref={(el) => {
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
@@ -698,7 +705,6 @@ const TableComponent = ({
             }}
             onKeyDown={(e) => handleNextRowKeyDown(e, index, 3)}
             onChange={(e) => {
-              // Remove formatting before processing
               const unformattedValue = e.target.value.replace(/,/g, "");
               const updatedValue = isNaN(Number(unformattedValue))
                 ? 0
@@ -709,7 +715,8 @@ const TableComponent = ({
             min={0}
             step={1}
           />
-        ) : null,
+        );
+      },
     },
     {
       title: (
@@ -839,8 +846,12 @@ const TableComponent = ({
       dataIndex: "purchasePriceKRW",
       key: "purchasePriceKRW",
       width: 115,
-      render: (text: number, record: any, index: number) =>
-        record.itemType === "ITEM" ? (
+      render: (text: number, record: any, index: number) => {
+        if (record.itemType !== "ITEM") {
+          handleInputChange(index, "purchasePriceKRW", 0); // 값을 0으로 설정
+          return null;
+        }
+        return (
           <Input
             type="text" // Change to "text" to handle formatted input
             value={text?.toLocaleString()} // Display formatted value
@@ -871,15 +882,20 @@ const TableComponent = ({
             addonBefore="₩"
             className="custom-input"
           />
-        ) : null,
+        );
+      },
     },
     {
       title: "Purchase Price(F)",
       dataIndex: "purchasePriceGlobal",
       key: "purchasePriceGlobal",
       width: 115,
-      render: (text: number, record: any, index: number) =>
-        record.itemType === "ITEM" ? (
+      render: (text: number, record: any, index: number) => {
+        if (record.itemType !== "ITEM") {
+          handleInputChange(index, "purchasePriceGlobal", 0); // 값을 0으로 설정
+          return null;
+        }
+        return (
           <Input
             type="text" // Change to "text" to handle formatted input
             value={text?.toLocaleString()} // Display formatted value
@@ -910,7 +926,8 @@ const TableComponent = ({
             addonBefore="F"
             className="custom-input"
           />
-        ) : null,
+        );
+      },
     },
     {
       title: "Purchase Amount(KRW)",
@@ -981,6 +998,10 @@ const TableComponent = ({
       className: "highlight-cell",
 
       render: (text: number, record: any, index: number) => {
+        if (record.itemType !== "ITEM") {
+          handleInputChange(index, "margin", 0); // 값을 0으로 설정
+          return null;
+        }
         return (
           <Input
             value={text}
