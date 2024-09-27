@@ -238,10 +238,10 @@ const renderTableRows = (items: ItemDataType[]) => {
         {isItemType ? (
           <>
             <View style={styles.tableMedCol}>
-              <Text style={styles.tableCell}>{item.itemCode.split("")}</Text>
+              <Text style={styles.tableCell}>{item.itemCode?.split("")}</Text>
             </View>
             <View style={styles.tableBigCol}>
-              <Text style={styles.tableCell}>{item.itemName.split("")}</Text>
+              <Text style={styles.tableCell}>{item.itemName?.split("")}</Text>
             </View>
             <View style={styles.tableSmallCol}>
               <Text style={styles.tableCell}>{item.qty}</Text>
@@ -268,9 +268,13 @@ const renderTableRows = (items: ItemDataType[]) => {
             ]}
           >
             {isDescType ? (
-              <Text style={styles.desctypeCell}>{item.itemName}</Text>
+              <Text style={styles.desctypeCell}>
+                {item.itemName?.split("")}
+              </Text>
             ) : (
-              <Text style={styles.nonItemtypeCell}>{item.itemName}</Text>
+              <Text style={styles.nonItemtypeCell}>
+                {item.itemName?.split("")}
+              </Text>
             )}
           </View>
         )}
@@ -312,18 +316,18 @@ const renderHeader = (
     <View style={styles.inquiryInfoWrap}>
       <View style={styles.inquiryInfoColumn}>
         <Text style={styles.inquiryInfoText}>
-          MESSERS: {customerName.split("")}
+          MESSERS: {customerName?.split("")}
         </Text>
         <Text style={[styles.inquiryInfoText]}>
-          VESSEL NAME: {vesselName.split("")}
+          VESSEL NAME: {vesselName?.split("")}
         </Text>
         <Text style={[styles.inquiryInfoText, { marginBottom: 10 }]}>
-          YOUR REF NO: {refNumber.split("")}
+          YOUR REF NO: {refNumber?.split("")}
         </Text>
       </View>
       <View style={[styles.inquiryInfoColumn, { alignItems: "flex-end" }]}>
         <Text style={styles.inquiryInfoText}>
-          REF No: {docNumber.split("")}
+          REF No: {docNumber?.split("")}
         </Text>
         <Text style={styles.inquiryInfoText}>
           {language === "KOR"
@@ -335,7 +339,7 @@ const renderHeader = (
       </View>
     </View>
     <View>
-      <Text style={styles.headerMessage}>{pdfHeader.split("")}</Text>
+      <Text style={styles.headerMessage}>{pdfHeader?.split("")}</Text>
     </View>
   </>
 );
@@ -520,7 +524,7 @@ const OfferPDFDocument = ({
             <View>
               {invChargeList.map((charge) => (
                 <View key={charge.invChargeId} style={styles.tableDCAmount}>
-                  <Text wrap>{charge.customCharge.split("")}</Text>
+                  <Text wrap>{charge.customCharge?.split("")}</Text>
                   <Text style={styles.tableTotalAmount} wrap>
                     {(() => {
                       switch (info.currencyType) {
@@ -601,7 +605,7 @@ const OfferPDFDocument = ({
         </View>
         {pdfFooter && (
           <View>
-            <Text style={styles.footerMessage}>{pdfFooter.split("")}</Text>
+            <Text style={styles.footerMessage}>{pdfFooter?.split("")}</Text>
           </View>
         )}
       </Page>

@@ -29,6 +29,7 @@ Font.register({
   family: "NotoSerifKR",
   src: NotoSerifKR,
 });
+Font.registerHyphenationCallback((word) => ["", word, ""]);
 
 interface FormValues {
   docNumber: string;
@@ -197,10 +198,10 @@ const renderTableRows = (items: InquiryItem[]) => {
         {isItemType ? (
           <>
             <View style={styles.tableMedCol}>
-              <Text style={styles.tableCell}>{item.itemCode}</Text>
+              <Text style={styles.tableCell}>{item.itemCode?.split("")}</Text>
             </View>
             <View style={styles.tableBigCol}>
-              <Text style={styles.tableCell}>{item.itemName}</Text>
+              <Text style={styles.tableCell}>{item.itemName?.split("")}</Text>
             </View>
             <View style={styles.tableSmallCol}>
               <Text style={styles.tableCell}>{item.qty}</Text>
@@ -209,7 +210,7 @@ const renderTableRows = (items: InquiryItem[]) => {
               <Text style={styles.tableCell}>{item.unit}</Text>
             </View>
             <View style={styles.tableMedCol}>
-              <Text style={styles.tableCell}>{item.itemRemark}</Text>
+              <Text style={styles.tableCell}>{item.itemRemark?.split("")}</Text>
             </View>
           </>
         ) : (
@@ -220,9 +221,13 @@ const renderTableRows = (items: InquiryItem[]) => {
             ]}
           >
             {isDescType ? (
-              <Text style={styles.desctypeCell}>{item.itemName}</Text>
+              <Text style={styles.desctypeCell}>
+                {item.itemName?.split("")}
+              </Text>
             ) : (
-              <Text style={styles.nonItemtypeCell}>{item.itemName}</Text>
+              <Text style={styles.nonItemtypeCell}>
+                {item.itemName?.split("")}
+              </Text>
             )}
           </View>
         )}
@@ -275,7 +280,9 @@ const renderHeader = (
         </Text>
       </View>
       <View style={[styles.inquiryInfoColumn, { alignItems: "flex-end" }]}>
-        <Text style={styles.inquiryInfoText}>OUR REF No: {docNumber}</Text>
+        <Text style={styles.inquiryInfoText}>
+          OUR REF No: {docNumber?.split("")}
+        </Text>
         <Text style={styles.inquiryInfoText}>
           {language === "KOR"
             ? "DATE: " + dayjs(registerDate).format("YYYY-MM-DD")
@@ -285,7 +292,7 @@ const renderHeader = (
       </View>
     </View>
     <View style={styles.section}>
-      <Text style={styles.headerMessage}>{pdfHeader}</Text>
+      <Text style={styles.headerMessage}>{pdfHeader?.split("")}</Text>
     </View>
   </>
 );
