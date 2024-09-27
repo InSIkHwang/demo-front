@@ -57,6 +57,13 @@ const StyledModal = styled(Modal)`
   }
 `;
 
+const StyledFormItem = styled(AntForm.Item)`
+  .ant-form-item-label {
+    white-space: normal; // 줄바꿈 허용
+    word-wrap: break-word; // 긴 단어의 줄바꿈 허용
+  }
+`;
+
 const DetailCompanyModal = ({
   category,
   company,
@@ -82,9 +89,9 @@ const DetailCompanyModal = ({
           ? `/api/customers/${formData.id}`
           : `/api/suppliers/${formData.id}`;
       await axios.put(endpoint, formData);
-      message.success("수정이 완료되었습니다.");
+      message.success("Successfully updated.");
     } catch (error) {
-      message.error("수정 중 오류가 발생했습니다.");
+      message.error("An error occurred while updating.");
     }
   };
 
@@ -95,9 +102,9 @@ const DetailCompanyModal = ({
           ? `/api/customers/${formData.id}`
           : `/api/suppliers/${formData.id}`;
       await axios.delete(endpoint);
-      message.success("삭제가 완료되었습니다.");
+      message.success("Successfully deleted.");
     } catch (error) {
-      message.error("삭제 중 오류가 발생했습니다.");
+      message.error("An error occurred while deleting.");
     }
   };
 
@@ -111,10 +118,10 @@ const DetailCompanyModal = ({
 
   const handleDelete = async () => {
     Modal.confirm({
-      title: "정말 삭제하시겠습니까?",
-      okText: "삭제",
+      title: "Are you sure you want to delete?",
+      okText: "Delete",
       okType: "danger",
-      cancelText: "취소",
+      cancelText: "Cancel",
       onOk: async () => {
         setLoading(true);
         await deleteData();
@@ -130,50 +137,64 @@ const DetailCompanyModal = ({
       open={true}
       onCancel={onClose}
       footer={null}
-      title={category === "customer" ? "매출처 상세 정보" : "매입처 상세 정보"}
+      title={category === "customer" ? "Customer Details" : "Supplier Details"}
+      width={800}
     >
       <AntForm
         form={form}
         layout="horizontal"
-        labelCol={{ span: 4 }}
+        labelCol={{ span: 6 }}
         initialValues={formData}
         onValuesChange={handleChange}
       >
-        <AntForm.Item label="코드" name="code">
+        <StyledFormItem
+          label="Code"
+          name="code"
+          rules={[{ required: true, message: "Please enter the code!" }]}
+        >
           <Input readOnly={!isEditing} />
-        </AntForm.Item>
+        </StyledFormItem>
 
-        <AntForm.Item label="상호명" name="companyName">
+        <StyledFormItem
+          label="Company Name"
+          name="companyName"
+          rules={[
+            { required: true, message: "Please enter the company name!" },
+          ]}
+        >
           <Input readOnly={!isEditing} />
-        </AntForm.Item>
+        </StyledFormItem>
 
-        <AntForm.Item label="연락처" name="phoneNumber">
+        <StyledFormItem label="Phone Number" name="phoneNumber">
           <Input readOnly={!isEditing} />
-        </AntForm.Item>
+        </StyledFormItem>
 
-        <AntForm.Item label="담당자" name="representative">
+        <StyledFormItem label="Representative" name="representative">
           <Input readOnly={!isEditing} />
-        </AntForm.Item>
+        </StyledFormItem>
 
-        <AntForm.Item label="이메일" name="email">
+        <StyledFormItem label="Email" name="email">
           <Input readOnly={!isEditing} />
-        </AntForm.Item>
+        </StyledFormItem>
 
-        <AntForm.Item label="주소" name="address">
+        <StyledFormItem label="Address" name="address">
           <Input readOnly={!isEditing} />
-        </AntForm.Item>
+        </StyledFormItem>
 
-        <AntForm.Item label="사용 언어" name="communicationLanguage">
+        <StyledFormItem
+          label="Communication Language"
+          name="communicationLanguage"
+        >
           <Input readOnly={!isEditing} />
-        </AntForm.Item>
+        </StyledFormItem>
 
-        <AntForm.Item label="수정된 날짜" name="modifiedAt">
+        <StyledFormItem label="Modified At" name="modifiedAt">
           <Input readOnly />
-        </AntForm.Item>
+        </StyledFormItem>
 
-        <AntForm.Item label="머릿글" name="headerMessage">
+        <StyledFormItem label="Header Message" name="headerMessage">
           <Input.TextArea readOnly={!isEditing} />
-        </AntForm.Item>
+        </StyledFormItem>
 
         <Divider />
 
@@ -186,14 +207,14 @@ const DetailCompanyModal = ({
                 onClick={handleSubmit}
                 loading={loading}
               >
-                저장
+                Save
               </Button>
               <Button
                 type="default"
                 style={{ marginRight: 10 }}
                 onClick={() => setIsEditing(false)}
               >
-                취소
+                Cancel
               </Button>
             </>
           ) : (
@@ -202,7 +223,7 @@ const DetailCompanyModal = ({
               style={{ marginRight: 10 }}
               onClick={() => setIsEditing(true)}
             >
-              수정
+              Edit
             </Button>
           )}
           <Button
@@ -211,10 +232,10 @@ const DetailCompanyModal = ({
             onClick={handleDelete}
             loading={loading}
           >
-            삭제
+            Delete
           </Button>
           <Button type="default" onClick={onClose} style={{ marginLeft: 10 }}>
-            닫기
+            Close
           </Button>
         </div>
       </AntForm>

@@ -109,9 +109,9 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
         originCustomerId: originCustomer?.id || null,
         newCustomerId: selectedCustomer?.id || null,
       });
-      message.success("수정이 완료되었습니다.");
+      message.success("Successfully updated.");
     } catch (error) {
-      message.error("수정 중 오류가 발생했습니다.");
+      message.error("An error occurred while updating.");
     }
   };
 
@@ -119,9 +119,9 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
   const deleteData = async () => {
     try {
       await axios.delete(`/api/vessels/${formData.id}`);
-      message.success("삭제가 완료되었습니다.");
+      message.success("Successfully deleted.");
     } catch (error) {
-      message.error("삭제 중 오류가 발생했습니다.");
+      message.error("An error occurred while deleting.");
     }
   };
 
@@ -135,16 +135,23 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
   // 삭제 SUBMIT 비동기 처리, DELETE 처리 후 FETCH
   const handleDelete = async () => {
     Modal.confirm({
-      title: "정말 삭제하시겠습니까?",
-      okText: "삭제",
+      title: "Are you sure you want to delete?",
+      okText: "Delete",
       okType: "danger",
-      cancelText: "취소",
+      cancelText: "Cancel",
       onOk: async () => {
         await deleteData();
         onUpdate();
         onClose();
       },
     });
+  };
+
+  const handleInputChange = (changedFields: any) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      ...changedFields, // 변경된 필드만 업데이트
+    }));
   };
 
   return (
@@ -164,28 +171,59 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
         <Form.Item
           label="code"
           name="code"
-          rules={[{ required: true, message: "코드를 입력하세요!" }]}
+          rules={[{ required: true, message: "Please enter the code!" }]}
         >
-          <Input readOnly={!isEditing} />
+          <Input
+            readOnly={!isEditing}
+            onChange={
+              (e) => handleInputChange({ code: e.target.value }) // 이 부분에서 formData 업데이트
+            }
+          />
         </Form.Item>
         <Form.Item
           label="Vessel Name"
           name="vesselName"
-          rules={[{ required: true, message: "선명을 입력하세요!" }]}
+          rules={[{ required: true, message: "Please enter the vessel name!" }]}
         >
-          <Input readOnly={!isEditing} />
+          <Input
+            readOnly={!isEditing}
+            onChange={
+              (e) => handleInputChange({ vesselName: e.target.value }) // 이 부분에서 formData 업데이트
+            }
+          />
         </Form.Item>
         <Form.Item label="Vessel Company Name" name="vesselCompanyName">
-          <Input readOnly={!isEditing} />
+          <Input
+            readOnly={!isEditing}
+            onChange={
+              (e) => handleInputChange({ vesselCompanyName: e.target.value }) // 이 부분에서 formData 업데이트
+            }
+          />
         </Form.Item>
         <Form.Item label="IMO No." name="imoNumber">
-          <Input type="number" readOnly={!isEditing} />
+          <Input
+            type="number"
+            readOnly={!isEditing}
+            onChange={
+              (e) => handleInputChange({ imoNumber: e.target.value }) // 이 부분에서 formData 업데이트
+            }
+          />
         </Form.Item>
         <Form.Item label="HULL No." name="hullNumber">
-          <Input readOnly={!isEditing} />
+          <Input
+            readOnly={!isEditing}
+            onChange={
+              (e) => handleInputChange({ hullNumber: e.target.value }) // 이 부분에서 formData 업데이트
+            }
+          />
         </Form.Item>
         <Form.Item label="SHIPYARD" name="shipYard">
-          <Input readOnly={!isEditing} />
+          <Input
+            readOnly={!isEditing}
+            onChange={
+              (e) => handleInputChange({ shipYard: e.target.value }) // 이 부분에서 formData 업데이트
+            }
+          />
         </Form.Item>
         <Form.Item
           label="Customer Name:"
@@ -223,9 +261,9 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
                 onClick={handleSubmit}
                 style={{ marginRight: "8px" }}
               >
-                저장
+                Save
               </Button>
-              <Button onClick={() => setIsEditing(false)}>취소</Button>
+              <Button onClick={() => setIsEditing(false)}>Cancel</Button>
             </>
           ) : (
             <>
@@ -234,13 +272,13 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
                 onClick={() => setIsEditing(true)}
                 style={{ marginRight: "8px" }}
               >
-                수정
+                Edit
               </Button>
               <Button type="primary" danger onClick={handleDelete}>
-                삭제
+                Delete
               </Button>{" "}
               <Button type="default" onClick={onClose}>
-                닫기
+                Close
               </Button>
             </>
           )}
