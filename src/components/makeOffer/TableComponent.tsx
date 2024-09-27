@@ -442,6 +442,7 @@ const TableComponent = ({
     });
   }, [calculateTotalAmount, dataSource, setTotals]);
 
+
   const handleAddItem = (index: number) => {
     const newItem: ItemDataType = {
       position: index + 2,
@@ -602,8 +603,13 @@ const TableComponent = ({
       dataIndex: "itemCode",
       key: "itemCode",
       width: 115,
-      render: (text: string, record: any, index: number) =>
-        record.itemType === "ITEM" ? (
+      render: (text: string, record: any, index: number) => {
+        if (record.itemType !== "ITEM") {
+          // handleInputChange를 호출하여 값을 0으로 설정
+          handleInputChange(index, "itemCode", "");
+          return null;
+        }
+        return (
           <>
             <AutoComplete
               value={text}
@@ -641,7 +647,8 @@ const TableComponent = ({
               </div>
             )}
           </>
-        ) : null,
+        );
+      },
     },
     {
       title: "OPT",
@@ -1002,8 +1009,9 @@ const TableComponent = ({
             parser={(value) =>
               value ? parseFloat(value.replace(/ %/, "")) : 0
             }
-            onChange={(value) => {
-              const parsedValue = typeof value === "number" ? value : 0; // 숫자 타입이 아닐 경우 기본값으로 0 설정
+            onBlur={(e) => {
+              const parsedValue = Number(e.target.value) || 0; // 숫자 타입이 아닐 경우 기본값으로 0 설정
+
               applyMarginToAllRows(parsedValue); // 모든 행에 마진 적용
             }}
             style={{ width: "100%" }}

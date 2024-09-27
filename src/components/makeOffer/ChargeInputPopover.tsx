@@ -147,7 +147,11 @@ const ChargeInputPopover = ({
     calculateDcKrw(totalSalesAmountKRW, dcInfo.dcPercent);
     calculateDcGlobal(totalSalesAmountGlobal, dcInfo.dcPercent);
     applyDcAndCharge();
-  }, []);
+  }, [dcInfo.dcPercent]);
+
+  useEffect(() => {
+    handleDcChange("dcPercent", Number(dcInfo.dcPercent));
+  }, [totals]);
 
   const content = (
     <Form style={{ maxWidth: 600, paddingBottom: 40 }} layout="horizontal">
@@ -166,6 +170,7 @@ const ChargeInputPopover = ({
             placeholder="Enter D/C %"
             addonAfter="%"
             readOnly={isReadOnly}
+            onWheel={(e) => e.currentTarget.blur()}
           />
           <Input
             type="number" // type을 number로 설정
@@ -175,6 +180,7 @@ const ChargeInputPopover = ({
             placeholder="Enter D/C ₩"
             addonAfter="₩"
             readOnly={isReadOnly}
+            onWheel={(e) => e.currentTarget.blur()}
           />
           <Input
             type="number" // type을 number로 설정
@@ -184,6 +190,7 @@ const ChargeInputPopover = ({
             placeholder="Enter D/C Global"
             addonAfter="F"
             readOnly={isReadOnly}
+            onWheel={(e) => e.currentTarget.blur()}
           />
         </InputGroup>
       </Form.Item>

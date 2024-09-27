@@ -521,7 +521,7 @@ const OfferList = () => {
                                   {totals.totalPurchaseAmountKRW.toLocaleString()}
                                 </InfoText>
                                 <InfoText>
-                                  Sales amount(KRW):{" "}
+                                  Sales amount (KRW):{" "}
                                   {totals.totalSalesAmountKRW.toLocaleString()}
                                 </InfoText>
                                 <InfoText style={{ color: "#000" }}>
@@ -545,6 +545,9 @@ const OfferList = () => {
                                 </InfoText>
                               </Section>
                             </CardContent>
+                            <InfoText>
+                              Total Items: {detail.inquiryItemDetails.length}
+                            </InfoText>
                             <InfoText style={{ color: "#000" }}>
                               Profit: {totals.profitMarginKRW}%
                             </InfoText>
