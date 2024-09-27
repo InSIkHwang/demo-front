@@ -115,6 +115,8 @@ export const fetchSupplierDetail = async (suppliersId: number) => {
   return response.data;
 };
 
+
+
 //----------------------------------------------------------------------------------
 // INQUIRY 작성 관련
 

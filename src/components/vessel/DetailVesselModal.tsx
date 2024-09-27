@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
 import axios from "../../api/axios";
-import { Modal, Button, Form, Input, Typography, message } from "antd";
+import {
+  Modal,
+  Button,
+  Form,
+  Input,
+  Typography,
+  message,
+  AutoComplete,
+} from "antd";
 import { Vessel } from "../../types/types";
 
 const { Title } = Typography;
@@ -14,6 +22,13 @@ interface ModalProps {
 const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(vessel);
+  const [customerSuggestions, setCustomerSuggestions] = useState<any[]>([]);
+  const [isCustomerLoading, setIsCustomerLoading] = useState(false);
+  const [customerError, setCustomerError] = useState<string | null>(null);
+  const [originCustomer, setOriginCustomer] = useState<{
+    companyName: string;
+    id: number;
+  } | null>(null);
   const [selectedCustomer, setSelectedCustomer] = useState<{
     companyName: string;
     id: number;
@@ -22,14 +37,63 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
 
   useEffect(() => {
     setFormData(vessel);
+    if (vessel.customer) {
+      setOriginCustomer({
+        companyName: vessel.customer.companyName,
+        id: vessel.customer.id,
+      });
+    } else {
+      setOriginCustomer(null); // customer가 없을 때 null로 설정
+    }
   }, [vessel]);
 
   useEffect(() => {
     form.setFieldsValue({
       ...formData,
-      customerCompanyName: formData.customer?.companyName || "없음",
+      customerCompanyName: formData.customer?.companyName || "None",
     });
   }, [formData, form]);
+
+  // Fetch customer suggestions
+  const fetchCustomerSuggestions = async (customerName: string) => {
+    if (!(customerName + "").trim()) {
+      setCustomerSuggestions([]);
+      return;
+    }
+    setIsCustomerLoading(true);
+    try {
+      const response = await axios.get(
+        `/api/customers/check-name?query=${customerName}`
+      );
+      setCustomerSuggestions(response.data.customerDetailResponse);
+    } catch (error) {
+      console.error("Error fetching customer suggestions:", error);
+    } finally {
+      setIsCustomerLoading(false);
+    }
+  };
+
+  const handleSearch = (value: string) => {
+    fetchCustomerSuggestions(value);
+  };
+
+  const handleSelectCustomer = (value: string, option: any) => {
+    const selected = option as any;
+    setFormData({
+      ...formData,
+      customer: {
+        ...formData.customer,
+        companyName: selected.companyName, // customer 안에 companyName을 설정
+        id: selected.id,
+      },
+    });
+    setSelectedCustomer({
+      companyName: selected.companyName,
+      id: selected.id,
+    });
+    setCustomerSuggestions([]);
+    setCustomerError(null); // Clear any previous error when a customer is selected
+  };
 
   // 데이터 수정 PUT API
   const editData = async () => {
@@ -41,7 +105,7 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
         imoNumber: formData.imoNumber,
         hullNumber: formData.hullNumber,
         shipYard: formData.shipYard,
-        originCustomerId: formData.customer.id,
+        originCustomerId: originCustomer?.id || null,
         newCustomerId: selectedCustomer?.id || null,
       });
       message.success("수정이 완료되었습니다.");
@@ -87,30 +151,30 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
       open={true}
       onCancel={onClose}
       footer={null}
-      title={<Title level={3}>선박 상세 정보</Title>}
+      title={<Title level={3}>Vessel Info</Title>}
       width={700}
     >
       <Form
         form={form}
         initialValues={formData}
         layout="horizontal"
-        labelCol={{ span: 4 }}
+        labelCol={{ span: 7 }}
       >
         <Form.Item
-          label="코드"
+          label="code"
           name="code"
           rules={[{ required: true, message: "코드를 입력하세요!" }]}
         >
           <Input readOnly={!isEditing} />
         </Form.Item>
         <Form.Item
-          label="선명"
+          label="Vessel Name"
           name="vesselName"
           rules={[{ required: true, message: "선명을 입력하세요!" }]}
         >
           <Input readOnly={!isEditing} />
         </Form.Item>
-        <Form.Item label="선박회사" name="vesselCompanyName">
+        <Form.Item label="Vessel Company Name" name="vesselCompanyName">
           <Input readOnly={!isEditing} />
         </Form.Item>
         <Form.Item label="IMO No." name="imoNumber">
@@ -123,11 +187,32 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
           <Input readOnly={!isEditing} />
         </Form.Item>
         <Form.Item
-          label="매출처"
+          label="Customer Name:"
           name="customerCompanyName"
-          rules={[{ required: true, message: "매출처를 선택하세요!" }]}
+          validateStatus={customerError ? "error" : ""}
+          help={customerError}
+          rules={[{ required: true, message: "Select a customer!" }]}
         >
-          <Input readOnly />
+          <AutoComplete
+            onSearch={handleSearch}
+            onSelect={handleSelectCustomer}
+            value={formData.customer?.companyName}
+            placeholder="Customer Name"
+            options={customerSuggestions.map((customer) => ({
+              value: customer.companyName,
+              label: customer.companyName,
+              companyName: customer.companyName,
+              id: customer.id,
+            }))}
+            filterOption={(inputValue, option) =>
+              (option?.value as string)
+                .toUpperCase()
+                .includes(inputValue.toUpperCase())
+            }
+            disabled={!isEditing}
+          >
+            <Input />
+          </AutoComplete>
         </Form.Item>
         <div style={{ textAlign: "right" }}>
           {isEditing ? (
