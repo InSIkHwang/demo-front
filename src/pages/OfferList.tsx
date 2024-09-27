@@ -94,19 +94,19 @@ const SelectedSupplierNameBox = styled.div`
 `;
 
 const StyledCard = styled(Card)`
-  width: 500px;
+  width: 460px;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   padding: 16px;
   .ant-card-body {
     padding: 20px;
   }
-  margin-top: 50px;
+  margin: 50px 0 10px 0;
 `;
 
 const CardTitle = styled.h3`
   margin-bottom: 10px;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: bold;
   cursor: pointer;
 `;
@@ -135,7 +135,7 @@ const Divider = styled.div`
 
 const InfoText = styled.p`
   margin: 0;
-  font-size: 14px;
+  font-size: 13px;
   color: #555;
 `;
 
