@@ -298,13 +298,31 @@ const TableComponent = ({
       });
 
       setItemCodeOptions(
-        items.map((item) => ({
-          value: item.itemCode,
-          name: item.itemName,
-          key: item.itemId.toString(),
-          label: `${item.itemCode}: ${item.itemName}`,
-          itemId: item.itemId,
-        }))
+        items.reduce(
+          (
+            acc: {
+              value: string;
+              name: string;
+              key: string;
+              label: string;
+              itemId: number;
+            }[],
+            item
+          ) => {
+            // 이미 동일한 itemId가 존재하는지 확인
+            if (!acc.some((option) => option.itemId === item.itemId)) {
+              acc.push({
+                value: item.itemCode,
+                name: item.itemName,
+                key: item.itemId.toString(),
+                label: `${item.itemCode}: ${item.itemName}`,
+                itemId: item.itemId,
+              });
+            }
+            return acc;
+          },
+          []
+        )
       );
 
       setItemNameMap((prevMap) => ({ ...prevMap, ...newItemNameMap }));

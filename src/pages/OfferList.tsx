@@ -11,12 +11,7 @@ import {
 } from "antd";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import styled, { keyframes } from "styled-components";
-import {
-  editMurgedOffer,
-  fetchOfferDetail,
-  fetchOfferList,
-  searchOfferList,
-} from "../api/api";
+import { fetchOfferDetail, fetchOfferList, searchOfferList } from "../api/api";
 import { useNavigate } from "react-router-dom";
 import type { ColumnsType } from "antd/es/table";
 import type { SupplierInquiryListIF } from "../types/types";
@@ -307,6 +302,8 @@ const OfferList = () => {
   };
 
   const calculateTotals = (details: any[]) => {
+    console.log(details);
+
     const totalPurchaseAmountKRW = details.reduce(
       (acc, item) => acc + item.purchaseAmountKRW,
       0
@@ -330,7 +327,7 @@ const OfferList = () => {
     const profitMarginKRW =
       totalSalesAmountKRW === 0
         ? 0
-        : ((totalProfitKRW / totalSalesAmountKRW) * 100).toFixed(2);
+        : ((totalProfitKRW / totalPurchaseAmountKRW) * 100).toFixed(2);
     const profitMarginGlobal =
       totalSalesAmountGlobal === 0
         ? 0
@@ -537,8 +534,7 @@ const OfferList = () => {
                               </Section>
                             </CardContent>
                             <InfoText style={{ color: "#000" }}>
-                              Profit: {totals.profitMarginKRW}% (F:{" "}
-                              {totals.profitMarginGlobal}%)
+                              Profit: {totals.profitMarginKRW}%
                             </InfoText>
                             <div
                               style={{
@@ -547,13 +543,14 @@ const OfferList = () => {
                                 margin: "5px 0",
                               }}
                             >
-                              <InfoText>
-                                exchange rate: {record.currency} (
+                              <InfoText style={{ textAlign: "right" }}>
+                                currency: {record.currency} (
                                 {record.currencyType})
                               </InfoText>
                               <Button
                                 type="primary"
                                 onClick={() => handleEditClick(detail)}
+                                style={{ marginTop: 10 }}
                               >
                                 Edit
                               </Button>
