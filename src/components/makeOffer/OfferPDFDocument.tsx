@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
   },
   tableCell: {
     fontSize: 9,
-    textAlign: "center",
+    textAlign: "left",
     wordBreak: "break-all",
   },
   tableTotalAmount: {

@@ -9,6 +9,7 @@ import {
   faCode,
   faSignOutAlt,
   faSignInAlt,
+  faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -145,6 +146,7 @@ const Header = ({ isAuthenticated, onLogout }: HeaderProps) => {
   const [isMenuOpen, setMenuOpen] = useState(false);
   const [isEstimateOpen, setEstimateOpen] = useState(false);
   const [isCodeOpen, setCodeOpen] = useState(false);
+  const [isTrashOpen, setTrashOpen] = useState(false);
   const navigate = useNavigate();
 
   const toggleMenu = (e: React.MouseEvent) => {
@@ -262,6 +264,21 @@ const Header = ({ isAuthenticated, onLogout }: HeaderProps) => {
             onClick={() => handleMenuItemClick(() => navigate("/shiplist"))}
           >
             Vessel
+          </MenuItem>
+        </SubMenu>
+        <MenuItem onClick={() => setTrashOpen(!isTrashOpen)}>
+          <FontAwesomeIcon icon={faTrash} style={{ marginRight: "10px" }} />
+          Trash
+          <FontAwesomeIcon
+            icon={isTrashOpen ? faCaretUp : faCaretDown}
+            style={{ marginLeft: "auto", cursor: "pointer" }}
+          />
+        </MenuItem>
+        <SubMenu $isOpen={isTrashOpen}>
+          <MenuItem
+            onClick={() => handleMenuItemClick(() => navigate("/trashlist"))}
+          >
+            휴지통 - Trash
           </MenuItem>
         </SubMenu>
       </SideMenu>

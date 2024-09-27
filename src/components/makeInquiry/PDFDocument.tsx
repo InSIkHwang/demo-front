@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
   },
   tableCell: {
     fontSize: 9,
-    textAlign: "center",
+    textAlign: "left",
   },
   nonItemtypeCell: {
     marginLeft: 40,

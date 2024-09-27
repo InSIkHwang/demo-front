@@ -314,3 +314,14 @@ export interface InvCharge {
   chargePriceKRW: number;
   chargePriceGlobal: number;
 }
+
+export interface TrashItem {
+  docNumber: string;
+  registerDate: string;
+  shippingDate: string;
+  currencyType: string;
+  currencyValue: number;
+  documentStatus: string;
+  docManagerName: string;
+  categoryType: string[];
+}

@@ -6,6 +6,7 @@ import {
   Select,
   Pagination,
   DatePicker,
+  Tag,
 } from "antd";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import styled from "styled-components";
@@ -123,6 +124,14 @@ const columns: ColumnsType<Quotation> = [
     title: "Document Status",
     dataIndex: "documentStatus",
     key: "documentStatus",
+    render: (status) => {
+      let color;
+      switch (status) {
+        default:
+          color = "green";
+      }
+      return <Tag color={color}>{status}</Tag>;
+    },
   },
 ];
 
@@ -219,7 +228,7 @@ const QuotationList = () => {
           <SearchBar>
             <Select
               defaultValue="documentNumber"
-              style={{ width: 120, marginRight: 10 }}
+              style={{ width: 140, marginRight: 10 }}
               onChange={(value) => setSearchCategory(value)}
             >
               <Select.Option value="documentNumber">

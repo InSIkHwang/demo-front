@@ -10,26 +10,36 @@ const spin = keyframes`
 // 스타일링된 스피너 컴포넌트
 const Spinner = styled.div`
   border: 8px solid rgba(0, 0, 0, 0.1); /* 배경색 */
-  border-left: 8px solid #007bff; /* 스피너 색상 */
+  border-left: 8px solid #3498db; /* 스피너 색상 */
   border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  animation: ${spin} 1.5s linear infinite;
+  width: 80px;
+  height: 80px;
+  animation: ${spin} 1.2s ease-in-out infinite;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 그림자 추가 */
 `;
 
 // 스타일링된 컨테이너
 const LoaderContainer = styled.div`
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background: #f5f5f5; /* 배경색 */
+  background: linear-gradient(135deg, #ffffff, #d4d4d4);
+`;
+
+// 로딩 메시지 스타일링
+const LoadingMessage = styled.p`
+  font-size: 1.5rem;
+  color: #333;
+  margin-top: 20px;
 `;
 
 // 컴포넌트
 const LoadingSpinner = () => (
   <LoaderContainer>
     <Spinner />
+    <LoadingMessage>Loading, please wait...</LoadingMessage>
   </LoaderContainer>
 );
 

@@ -309,10 +309,20 @@ const DetailInquiryModal = ({
                   {inquiryDetail.representative}
                 </Descriptions.Item>
                 <Descriptions.Item label="Document Status">
-                  <TagStyled color="blue">
+                  <TagStyled
+                    color={
+                      inquiryDetail.documentStatus === "WRITING_INQUIRY"
+                        ? "orange"
+                        : inquiryDetail.documentStatus ===
+                          "WAITING_TO_SEND_INQUIRY"
+                        ? "blue"
+                        : "defaultColor"
+                    }
+                  >
                     {inquiryDetail.documentStatus}
                   </TagStyled>
                 </Descriptions.Item>
+
                 <Descriptions.Item label="Inquiry Type">
                   <TagStyled color="green">
                     {inquiryDetail.inquiryType}

@@ -16,6 +16,7 @@ import { refreshToken, removeTokens } from "./api/auth";
 import LoadingSpinner from "./components/LoadingSpinner";
 import OfferList from "./pages/OfferList";
 import QuotationList from "./pages/QuotationList";
+import TrashList from "./pages/TrashList";
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -135,6 +136,12 @@ const App = () => {
             path="/quotationlist"
             element={
               isAuthenticated ? <QuotationList /> : <Navigate to="/userlogin" />
+            }
+          />
+          <Route
+            path="/trashlist"
+            element={
+              isAuthenticated ? <TrashList /> : <Navigate to="/userlogin" />
             }
           />
         </Routes>

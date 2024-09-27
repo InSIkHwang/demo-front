@@ -84,7 +84,7 @@ const SupplierList = () => {
       const response = await axios.get("/api/suppliers", {
         params: {
           page: currentPage - 1,
-          size: itemsPerPage,
+          pageSize: itemsPerPage,
         },
       });
 

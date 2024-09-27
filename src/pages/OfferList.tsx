@@ -8,6 +8,7 @@ import {
   DatePicker,
   Card,
   message,
+  Tag,
 } from "antd";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import styled, { keyframes } from "styled-components";
@@ -179,6 +180,20 @@ const columns: ColumnsType<SupplierInquiryListIF> = [
     title: "Document Status",
     dataIndex: "documentStatus",
     key: "documentStatus",
+    render: (status) => {
+      let color;
+      switch (status) {
+        case "INQUIRY_SENT":
+          color = "orange";
+          break;
+        case " WAITING_TO_SEND_QUOTATION":
+          color = "green";
+          break;
+        default:
+          color = "blue";
+      }
+      return <Tag color={color}>{status}</Tag>;
+    },
   },
 ];
 
@@ -392,7 +407,7 @@ const OfferList = () => {
           <SearchBar>
             <Select
               defaultValue="documentNumber"
-              style={{ width: 120, marginRight: 10 }}
+              style={{ width: 150, marginRight: 10 }}
               onChange={(value) => setSearchCategory(value)}
             >
               <Select.Option value="documentNumber">

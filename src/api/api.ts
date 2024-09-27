@@ -10,6 +10,7 @@ import {
   Quotation,
   Supplier,
   SupplierInquiryListIF,
+  TrashItem,
 } from "../types/types";
 import { setAccessToken, setRefreshToken } from "./auth";
 import dayjs from "dayjs";
@@ -114,8 +115,6 @@ export const fetchSupplierDetail = async (suppliersId: number) => {
 
   return response.data;
 };
-
-
 
 //----------------------------------------------------------------------------------
 // INQUIRY 작성 관련
@@ -578,4 +577,26 @@ export const deleteQutation = async (quotationId: number) => {
 };
 
 //----------------------------------------------------------------------------------
-//
+//휴지통
+
+//TRASH 조회
+export const fetchTrashList = async (page: number, pageSize: number) => {
+  const response = await axios.get<{
+    totalCount: number;
+    trashList: TrashItem[];
+  }>("/api/trash", {
+    params: {
+      page: page - 1, // 페이지는 0부터 시작
+      pageSize: pageSize, // 페이지당 아이템 수
+    },
+  });
+
+  return response.data;
+};
+
+// TRASH 복구 API
+export const recoverTrash = async (docNumber: string) => {
+  const response = await axios.put(`/api/trash/${docNumber}`);
+
+  return response.data;
+};

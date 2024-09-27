@@ -80,7 +80,7 @@ const ShipList = () => {
       const response = await axios.get("/api/vessels", {
         params: {
           page: currentPage - 1, // 페이지는 0
-          size: itemsPerPage,
+          pageSize: itemsPerPage,
         },
       });
       setData(response.data.vessels);
@@ -168,7 +168,7 @@ const ShipList = () => {
       title: "Customer Name",
       key: "customerName",
       render: (text, record) =>
-        record.customer ? record.customer.companyName : "None",
+        record.customer ? record.customer.companyName : "",
     },
   ];
 

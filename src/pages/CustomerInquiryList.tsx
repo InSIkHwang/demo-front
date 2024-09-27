@@ -7,6 +7,7 @@ import {
   Pagination,
   DatePicker,
   Checkbox,
+  Tag,
 } from "antd";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import styled from "styled-components";
@@ -125,6 +126,20 @@ const columns: ColumnsType<Inquiry> = [
     title: "Document Status",
     dataIndex: "documentStatus",
     key: "documentStatus",
+    render: (status) => {
+      let color;
+      switch (status) {
+        case "WRITING_INQUIRY":
+          color = "orange";
+          break;
+        case " WAITING_TO_SEND_INQUIRY":
+          color = "green";
+          break;
+        default:
+          color = "blue";
+      }
+      return <Tag color={color}>{status}</Tag>;
+    },
   },
 ];
 
@@ -250,7 +265,7 @@ const CustomerInquiryList = () => {
           <SearchBar>
             <Select
               defaultValue="documentNumber"
-              style={{ width: 120, marginRight: 10 }}
+              style={{ width: 140, marginRight: 10 }}
               onChange={(value) => setSearchCategory(value)}
             >
               <Select.Option value="documentNumber">

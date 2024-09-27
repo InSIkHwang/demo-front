@@ -33,6 +33,7 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
     companyName: string;
     id: number;
   } | null>(null);
+
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -50,7 +51,7 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
   useEffect(() => {
     form.setFieldsValue({
       ...formData,
-      customerCompanyName: formData.customer?.companyName || "None",
+      customerCompanyName: formData.customer?.companyName || "",
     });
   }, [formData, form]);
 
