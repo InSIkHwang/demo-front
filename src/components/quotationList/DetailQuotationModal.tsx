@@ -84,7 +84,7 @@ const DetailQuotationModal = ({
           const data = await fetchQuotationDetail(quotationId);
           SetquotationDetail(data);
         } catch (error) {
-          console.error("상세 정보를 가져오는 중 오류가 발생했습니다:", error);
+          message.error("상세 정보를 가져오는 중 오류가 발생했습니다:");
         } finally {
           setLoading(false);
         }

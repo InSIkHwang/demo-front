@@ -14,6 +14,7 @@ import {
   Button,
   AutoComplete,
   notification,
+  message,
 } from "antd";
 import { ColumnsType } from "antd/es/table";
 import styled from "styled-components";
@@ -347,7 +348,7 @@ const TableComponent = ({
         });
       }
     } catch (error) {
-      console.error("Error fetching item codes and suppliers:", error);
+      message.error("Error fetching item codes and suppliers:");
     }
   };
 

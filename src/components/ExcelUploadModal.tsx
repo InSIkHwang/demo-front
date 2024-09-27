@@ -180,7 +180,7 @@ const ExcelUploadModal = ({
 
       return { ...item, itemId };
     } catch (error) {
-      console.error("Error fetching item ID for code:", item.itemCode, error);
+      message.error("Error fetching item ID for code:");
       return { ...item, itemId: null };
     }
   };

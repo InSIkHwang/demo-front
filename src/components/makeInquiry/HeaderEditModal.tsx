@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Modal, Button, Input } from "antd";
+import { Modal, Button, Input, message } from "antd";
 import styled from "styled-components";
 import { Supplier } from "../../types/types";
 import { fetchSupplierDetail } from "../../api/api";
@@ -65,7 +65,7 @@ const HeaderEditModal = ({
       setSelectedSupplier(response);
       setText(response.headerMessage || "");
     } catch (error) {
-      console.error("Error fetching data:", error);
+      message.error("Error fetching data:");
     } finally {
       setLoading(false);
     }

@@ -215,7 +215,7 @@ const OfferList = () => {
       setData(response.supplierInquiryList);
       setTotalCount(response.totalCount);
     } catch (error) {
-      console.error("An error occurred while retrieving data:", error);
+      message.error("An error occurred while retrieving data:");
     } finally {
       setLoading(false);
     }
@@ -243,7 +243,7 @@ const OfferList = () => {
       setData(response.supplierInquiryList);
       setTotalCount(response.totalCount);
     } catch (error) {
-      console.error("검색 중 오류가 발생했습니다:", error);
+      message.error("An error occurred while searching");
     } finally {
       setLoading(false);
     }
@@ -287,7 +287,7 @@ const OfferList = () => {
         setSupplierInfoList(details);
         setExpandedRowKeys([record.documentNumber]); // 행을 확장합니다.
       } catch (error) {
-        console.error("세부정보를 가져오는 중 오류가 발생했습니다:", error);
+        message.error("An error occurred while retrieving details");
       }
     }
   };
@@ -302,8 +302,6 @@ const OfferList = () => {
   };
 
   const calculateTotals = (details: any[]) => {
-    console.log(details);
-
     const totalPurchaseAmountKRW = details.reduce(
       (acc, item) => acc + item.purchaseAmountKRW,
       0
@@ -362,7 +360,6 @@ const OfferList = () => {
         // navigate를 사용하여 상태와 함께 페이지 이동
         navigate("/makeoffer/mergedoffer", { state: { info } });
       } catch (error) {
-        console.error("오류가 발생했습니다:", error);
         message.error("An error occurred while sending the email."); // 오류 메시지 표시
       }
     } else {

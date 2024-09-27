@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Modal, Form, Input, Button, notification } from "antd";
+import { Modal, Form, Input, Button, notification, message } from "antd";
 import axios from "../../api/axios";
 import styled from "styled-components";
 
@@ -101,7 +101,7 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
       const response = await axios.get(endpoint);
       setIsCodeUnique(!response.data); // 응답 T/F를 반전시킴
     } catch (error) {
-      console.error("Error checking code unique:", error);
+      message.error("Error checking code unique");
       setIsCodeUnique(true); // 오류가 발생하면 기본적으로 유효하다고 처리
     } finally {
       setIsCheckingCode(false);

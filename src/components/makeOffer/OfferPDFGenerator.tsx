@@ -8,6 +8,7 @@ import {
   SupplierInquiryDetailIF,
 } from "../../types/types";
 import { fetchCustomerDetail } from "../../api/api";
+import { message } from "antd";
 
 interface PDFGeneratorProps {
   info: SupplierInquiryDetailIF;
@@ -64,7 +65,7 @@ const OfferPDFGenerator = ({
   const generateAndSendPDFs = async () => {
     // Ensure customerInfo is correctly populated
     if (customerInfo === null) {
-      console.error("Customer info is incomplete.");
+      message.error("Customer info is incomplete.");
       return;
     }
 

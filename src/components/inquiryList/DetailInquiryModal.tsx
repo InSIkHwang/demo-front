@@ -90,7 +90,7 @@ const DetailInquiryModal = ({
           const data = await fetchInquiryDetail(inquiryId);
           setInquiryDetail(data);
         } catch (error) {
-          console.error("Error fetching details:", error);
+          message.error("Error fetching details:");
         } finally {
           setLoading(false);
         }
