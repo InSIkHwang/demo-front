@@ -225,7 +225,7 @@ const renderTableRows = (items: ItemDataType[]) => {
     }
 
     return (
-      <View style={[styles.tableRow]} key={item.position}>
+      <View style={[styles.tableRow]} key={item.position} wrap={false}>
         {isItemType && (
           <View
             style={[styles.tableSmallCol, { borderLeft: "0.5px solid #000" }]}

@@ -83,7 +83,7 @@ const columns: ColumnsType<Inquiry> = [
     sortDirections: ["ascend", "descend"],
   },
   {
-    title: "REF NO.",
+    title: "REF No.",
     dataIndex: "refNumber",
     key: "refNumber",
   },
@@ -268,10 +268,8 @@ const CustomerInquiryList = () => {
               style={{ width: 140, marginRight: 10 }}
               onChange={(value) => setSearchCategory(value)}
             >
-              <Select.Option value="documentNumber">
-                Document Number
-              </Select.Option>
-              <Select.Option value="refNumber">REF NO.</Select.Option>
+              <Select.Option value="documentNumber">Document No.</Select.Option>
+              <Select.Option value="refNumber">REF No.</Select.Option>
               <Select.Option value="customerName">Costomer Name</Select.Option>
             </Select>
             <Input

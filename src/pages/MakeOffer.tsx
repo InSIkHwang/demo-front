@@ -620,7 +620,7 @@ const MakeOffer = () => {
           style={{ float: "right", width: 100, marginTop: 20 }}
           onClick={handleSave}
         >
-          저장
+          Save
         </Button>
       )}
       {isReadOnly && (

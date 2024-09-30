@@ -5,15 +5,31 @@ import styled from "styled-components";
 import { ItemDataType } from "../../types/types";
 
 const CustomTable = styled(Table)`
-  .ant-table-cell {
-    padding: 12px !important;
-    text-align: center !important;
+  .ant-table-thead .ant-table-cell {
+    text-align: center;
   }
 
-  .highlight-cell {
-    font-weight: bold;
-    background-color: #dff4ff;
+  .ant-table-cell {
+    border-inline-end: 1px solid #d1d1d1 !important;
+    border-bottom: 1px solid #d1d1d1 !important;
   }
+
+  .even-row {
+    background-color: #ffffff;
+    &:hover {
+      background-color: #e7e7e7;
+    }
+  }
+  .odd-row {
+    background-color: #f0f0f0;
+    &:hover {
+      background-color: #e7e7e7;
+    }
+  }
+`;
+
+const HighlightedCell = styled.span`
+  background-color: #ffffe0 !important;
 `;
 
 const TotalCards = styled.div`
@@ -152,10 +168,10 @@ const MergedTableComponent = ({
       dataIndex: "position",
       key: "position",
       render: (text: number) => <span>{text}</span>,
-      width: 50,
+      width: 60,
     },
     {
-      title: "PartNo",
+      title: "PartNo.",
       dataIndex: "itemCode",
       key: "itemCode",
       render: (text: string, record: ItemDataType) =>
@@ -164,28 +180,31 @@ const MergedTableComponent = ({
         ) : (
           <span>{record.itemType}</span>
         ),
+      width: 200,
     },
     {
-      title: "품목명",
+      title: "Name",
       dataIndex: "itemName",
       key: "itemName",
       render: (text: string) => <span>{text}</span>,
+      width: 300,
     },
     {
-      title: "의뢰처",
+      title: "Supplier",
       dataIndex: "supplierCode",
       key: "supplierCode",
       render: (text: string) => <span>{text}</span>,
     },
     {
-      title: "수량",
+      title: "Qty",
       dataIndex: "qty",
       key: "qty",
       render: (text: number, record: ItemDataType) =>
         record.itemType === "ITEM" ? <span>{text}</span> : null,
+      width: 60,
     },
     {
-      title: "단가 (KRW)",
+      title: "Sales Price(KRW)",
       dataIndex: "salesPriceKRW",
       key: "salesPriceKRW",
       render: (text: number, record: ItemDataType) =>
@@ -194,7 +213,7 @@ const MergedTableComponent = ({
         ) : null,
     },
     {
-      title: "단가 (F)",
+      title: "Sales Price(F)",
       dataIndex: "salesPriceGlobal",
       key: "salesPriceGlobal",
       render: (text: number, record: ItemDataType) =>
@@ -216,24 +235,23 @@ const MergedTableComponent = ({
             })()}
           </span>
         ) : null,
-      width: 110,
     },
     {
-      title: "총액 (KRW)",
+      title: "Sales Amount(KRW)",
       dataIndex: "salesAmountKRW",
       key: "salesAmountKRW",
       render: (text: number, record: ItemDataType) =>
         record.itemType === "ITEM" ? (
-          <span>{`₩ ${text?.toLocaleString()}`}</span>
+          <HighlightedCell>{`₩ ${text?.toLocaleString()}`}</HighlightedCell>
         ) : null,
     },
     {
-      title: "총액 (F)",
+      title: "Sales Amount(F)",
       dataIndex: "salesAmountGlobal",
       key: "salesAmountGlobal",
       render: (text: number, record: ItemDataType) =>
         record.itemType === "ITEM" ? (
-          <span>
+          <HighlightedCell>
             {(() => {
               switch (currencyType) {
                 case "USD":
@@ -248,84 +266,85 @@ const MergedTableComponent = ({
                   return `${text?.toLocaleString()}`;
               }
             })()}
-          </span>
+          </HighlightedCell>
         ) : null,
-      width: 110,
     },
     {
-      title: "구매단가 (KRW)",
+      title: "Purchase Price(KRW)",
       dataIndex: "purchasePriceKRW",
       key: "purchasePriceKRW",
       render: (text: number, record: ItemDataType) =>
         record.itemType === "ITEM" ? (
-          <span>{`₩ ${text?.toLocaleString()}`}</span>
+          <span>{`₩ ${(text ?? 0)?.toLocaleString()}`}</span>
         ) : null,
     },
     {
-      title: "구매단가 (F)",
+      title: "Purchase Price(F)",
       dataIndex: "purchasePriceGlobal",
       key: "purchasePriceGlobal",
       render: (text: number, record: ItemDataType) =>
         record.itemType === "ITEM" ? (
           <span>
             {(() => {
+              const value = text ?? 0; // null 또는 undefined일 때 0으로 처리
               switch (currencyType) {
                 case "USD":
-                  return `$ ${text?.toLocaleString()}`;
+                  return `$ ${value?.toLocaleString()}`;
                 case "EUR":
-                  return `€ ${text?.toLocaleString()}`;
+                  return `€ ${value?.toLocaleString()}`;
                 case "INR":
-                  return `₹ ${text?.toLocaleString()}`;
+                  return `₹ ${value?.toLocaleString()}`;
                 case "JPY":
-                  return `¥ ${text?.toLocaleString()}`;
+                  return `¥ ${value?.toLocaleString()}`;
                 default:
-                  return `${text?.toLocaleString()}`;
+                  return `${value?.toLocaleString()}`;
               }
             })()}
           </span>
         ) : null,
-      width: 110,
     },
     {
-      title: "구매총액 (KRW)",
+      title: "Purchase Amount(KRW)",
       dataIndex: "purchaseAmountKRW",
       key: "purchaseAmountKRW",
       render: (text: number, record: ItemDataType) =>
         record.itemType === "ITEM" ? (
-          <span>{`₩ ${text?.toLocaleString()}`}</span>
+          <HighlightedCell className="custom-span">{`₩ ${(
+            text ?? 0
+          )?.toLocaleString()}`}</HighlightedCell>
         ) : null,
     },
     {
-      title: "구매총액 (F)",
+      title: "Purchase Amount(F)",
       dataIndex: "purchaseAmountGlobal",
       key: "purchaseAmountGlobal",
       render: (text: number, record: ItemDataType) =>
         record.itemType === "ITEM" ? (
-          <span>
+          <HighlightedCell>
             {(() => {
+              const value = text ?? 0; // null 또는 undefined일 때 0으로 처리
               switch (currencyType) {
                 case "USD":
-                  return `$ ${text?.toLocaleString()}`;
+                  return `$ ${value?.toLocaleString()}`;
                 case "EUR":
-                  return `€ ${text?.toLocaleString()}`;
+                  return `€ ${value?.toLocaleString()}`;
                 case "INR":
-                  return `₹ ${text?.toLocaleString()}`;
+                  return `₹ ${value?.toLocaleString()}`;
                 case "JPY":
-                  return `¥ ${text?.toLocaleString()}`;
+                  return `¥ ${value?.toLocaleString()}`;
                 default:
-                  return `${text?.toLocaleString()}`;
+                  return `${value?.toLocaleString()}`;
               }
             })()}
-          </span>
+          </HighlightedCell>
         ) : null,
-      width: 110,
     },
     {
-      title: "마진 (%)",
+      title: "Margin(%)",
       dataIndex: "margin",
       key: "margin",
-      render: (text: number) => <span>{text}</span>,
-      width: 80,
+      render: (text: number) => <HighlightedCell>{text}</HighlightedCell>,
+      width: 60,
     },
   ];
 
@@ -333,38 +352,38 @@ const MergedTableComponent = ({
     <>
       <TotalCards>
         <TotalCard>
-          <span>매출총액(KRW)</span>
+          <span>Sales Amount(KRW)</span>
           <span className="value">
             ₩ {finalTotals.totalSalesAmountKRW.toLocaleString()}
           </span>
         </TotalCard>
         <TotalCard>
-          <span>매출총액(F)</span>
+          <span>Sales Amount(F)</span>
           <span className="value">
             F {finalTotals.totalSalesAmountGlobal.toLocaleString()}
           </span>
         </TotalCard>
         <TotalCard>
-          <span>매입총액(KRW)</span>
+          <span>Purchase Amount(KRW)</span>
           <span className="value">
             ₩ {finalTotals.totalPurchaseAmountKRW.toLocaleString()}
           </span>
         </TotalCard>
         <TotalCard>
-          <span>매입총액(F)</span>
+          <span>Purchase Amount(F)</span>
           <span className="value">
             F {finalTotals.totalPurchaseAmountGlobal.toLocaleString()}
           </span>
         </TotalCard>
         <TotalCard $isHighlight $isPositive={finalTotals.totalProfit >= 0}>
-          <span>이익합계</span>
+          <span>Profit Amount</span>
           <span className="value">₩ {finalTotals.totalProfit}</span>
         </TotalCard>
         <TotalCard
           $isHighlight
           $isPositive={finalTotals.totalProfitPercent >= 0}
         >
-          <span>이익율</span>
+          <span>Profit Percent</span>
           <span className="value">
             {isNaN(finalTotals.totalProfitPercent)
               ? 0
@@ -374,10 +393,16 @@ const MergedTableComponent = ({
         </TotalCard>
       </TotalCards>
       <CustomTable
+        rowClassName={(record, index) =>
+          index % 2 === 0 ? "even-row" : "odd-row"
+        }
+        scroll={{ y: 600 }}
+        virtual
         dataSource={sortedData}
         columns={columns}
         rowKey="position"
         pagination={false}
+        bordered
       />
     </>
   );

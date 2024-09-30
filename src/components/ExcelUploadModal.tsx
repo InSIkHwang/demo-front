@@ -134,15 +134,15 @@ const ExcelUploadModal = ({
                 (purchasePriceGlobal + marginValueGlobal).toFixed(2)
               );
               rowData.salesPriceKRW = Math.round(
-                rowData.salesPriceGlobal * currency
+                Number(rowData.salesPriceGlobal) * currency
               );
 
               // salesAmount 계산
               rowData.salesAmountKRW = parseFloat(
-                (rowData.salesPriceKRW * qty).toFixed(2)
+                (Number(rowData.salesPriceKRW) * qty).toFixed(2)
               );
               rowData.salesAmountGlobal = parseFloat(
-                (rowData.salesPriceGlobal * qty).toFixed(2)
+                (Number(rowData.salesPriceGlobal) * qty).toFixed(2)
               );
             }
           }
@@ -275,6 +275,8 @@ const ExcelUploadModal = ({
           pagination={false}
           bordered
           style={{ margin: "20px 0", overflowX: "auto" }}
+          virtual
+          scroll={{ y: 500 }}
         />
       )}
     </Modal>
