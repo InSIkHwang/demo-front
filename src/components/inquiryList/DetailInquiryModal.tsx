@@ -183,7 +183,7 @@ const DetailInquiryModal = ({
       },
     },
     {
-      title: "Remarks",
+      title: "Remark",
       dataIndex: "itemRemark",
       key: "itemRemark",
       width: 150,
@@ -195,7 +195,7 @@ const DetailInquiryModal = ({
       },
     },
     {
-      title: "Quantity",
+      title: "Qty",
       dataIndex: "qty",
       key: "qty",
       width: 50,
@@ -299,7 +299,7 @@ const DetailInquiryModal = ({
                 <Descriptions.Item label="Vessel Hull Number">
                   {inquiryDetail.veeselHullNo}
                 </Descriptions.Item>
-                <Descriptions.Item label="Remarks">
+                <Descriptions.Item label="Remark">
                   {inquiryDetail.docRemark}
                 </Descriptions.Item>
                 <Descriptions.Item label="Document Manager">

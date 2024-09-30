@@ -118,7 +118,7 @@ const columns: ColumnsType<Inquiry> = [
     key: "vesselName",
   },
   {
-    title: "Remarks",
+    title: "Remark",
     dataIndex: "remark",
     key: "remark",
   },

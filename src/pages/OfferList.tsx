@@ -160,7 +160,7 @@ const columns: ColumnsType<SupplierInquiryListIF> = [
     key: "companyName",
   },
   {
-    title: "Remarks",
+    title: "Remark",
     dataIndex: "docRemark",
     key: "docRemark",
     sorter: (a, b) => a.docRemark.localeCompare(b.docRemark),

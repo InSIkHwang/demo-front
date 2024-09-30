@@ -291,10 +291,18 @@ const MakeInquiryTable = ({
     () => [
       {
         title: "No.",
-        dataIndex: "position",
-        key: "position",
-        render: (text: string) => <span>{text}</span>,
-        width: 60,
+        dataIndex: "no",
+        key: "no",
+        width: 0,
+        render: (_: any, record: any, index: number) => {
+          const filteredIndex = dataSource
+            .filter((item: any) => item.itemType === "ITEM")
+            .indexOf(record);
+
+          return record.itemType === "ITEM" ? (
+            <span>{filteredIndex + 1}</span>
+          ) : null;
+        },
       },
       {
         title: "PartNo",

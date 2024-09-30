@@ -251,12 +251,20 @@ const renderTableRows = (items: ItemDataType[]) => {
             </View>
             <View style={styles.tableMedCol}>
               <Text style={styles.tableCell}>
-                {item.salesPriceGlobal?.toFixed(2).toLocaleString()}
+                {item.itemRemark !== ""
+                  ? ""
+                  : item.salesPriceGlobal?.toLocaleString("en-US", {
+                      minimumFractionDigits: 2,
+                    })}
               </Text>
             </View>
             <View style={styles.tableMedCol}>
               <Text style={styles.tableCell}>
-                {item.salesAmountGlobal?.toFixed(2).toLocaleString()}
+                {item.itemRemark !== ""
+                  ? item.itemRemark
+                  : item.salesAmountGlobal?.toLocaleString("en-US", {
+                      minimumFractionDigits: 2,
+                    })}
               </Text>
             </View>
           </>
@@ -476,25 +484,25 @@ const OfferPDFDocument = ({
               {(() => {
                 switch (info.currencyType) {
                   case "USD":
-                    return `$${totalSalesAmountGlobal
-                      .toFixed(2)
-                      .toLocaleString()}`;
+                    return `$${totalSalesAmountGlobal?.toLocaleString("en-US", {
+                      minimumFractionDigits: 2,
+                    })}`;
                   case "EUR":
-                    return `€${totalSalesAmountGlobal
-                      .toFixed(2)
-                      .toLocaleString()}`;
+                    return `€${totalSalesAmountGlobal?.toLocaleString("en-US", {
+                      minimumFractionDigits: 2,
+                    })}`;
                   case "INR":
-                    return `₹${totalSalesAmountGlobal
-                      .toFixed(2)
-                      .toLocaleString()}`;
+                    return `₹${totalSalesAmountGlobal?.toLocaleString("en-US", {
+                      minimumFractionDigits: 2,
+                    })}`;
                   case "JPY":
-                    return `¥${totalSalesAmountGlobal
-                      .toFixed(2)
-                      .toLocaleString()}`;
+                    return `¥${totalSalesAmountGlobal?.toLocaleString("en-US", {
+                      minimumFractionDigits: 2,
+                    })}`;
                   default:
-                    return `${totalSalesAmountGlobal
-                      .toFixed(2)
-                      .toLocaleString()}`;
+                    return `${totalSalesAmountGlobal?.toLocaleString("en-US", {
+                      minimumFractionDigits: 2,
+                    })}`;
                 }
               })()}
             </Text>

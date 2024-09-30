@@ -92,7 +92,7 @@ const ExcelUploadModal = ({
             rowData[header] =
               row[colIdx] !== undefined && row[colIdx] !== null
                 ? String(row[colIdx])
-                : null;
+                : "";
           }
         });
 
@@ -279,7 +279,7 @@ const ExcelUploadModal = ({
               { title: "No.", dataIndex: "position", key: "position" },
               { title: "Part No.", dataIndex: "itemCode", key: "itemCode" },
               { title: "Item Name", dataIndex: "itemName", key: "itemName" },
-              { title: "Quantity", dataIndex: "qty", key: "qty" },
+              { title: "Qty", dataIndex: "qty", key: "qty" },
               { title: "Unit", dataIndex: "unit", key: "unit" },
               {
                 title: "Item Remark",

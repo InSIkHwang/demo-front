@@ -34,7 +34,7 @@ const RefreshBtn = styled(Button)``;
 
 const CustomTable = styled(Table)`
   .ant-table * {
-    font-size: 13px;
+    font-size: 12px;
   }
 
   .ant-table-cell {
@@ -617,10 +617,18 @@ const TableComponent = ({
     },
     {
       title: "No.",
-      dataIndex: "no", // No. 값 표시
+      dataIndex: "no",
       key: "no",
       width: 30,
-      render: (_: any, __: any, index: number) => <span>{index + 1}</span>,
+      render: (_: any, record: any, index: number) => {
+        const filteredIndex = dataSource
+          .filter((item: any) => item.itemType === "ITEM")
+          .indexOf(record);
+
+        return record.itemType === "ITEM" ? (
+          <span>{filteredIndex + 1}</span>
+        ) : null;
+      },
     },
     {
       title: "PartNo",
@@ -810,6 +818,7 @@ const TableComponent = ({
       width: 150,
       render: (text: string, record: any, index: number) => (
         <Input.TextArea
+          placeholder="ex) N/A, Incl#1..."
           autoSize={{ minRows: 1, maxRows: 10 }}
           value={text}
           onChange={(e) =>
