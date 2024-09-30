@@ -83,30 +83,46 @@ const MakeInquiryTable = ({
   const dataSource = useMemo(() => items, [items]);
   const inputRefs = useRef<(TextAreaRef | null)[][]>([]);
 
-  const handleApplyExcelData = (mappedItems: InquiryItem[]) => {
-    setItems((prevItems) => [
-      ...prevItems,
-      ...mappedItems.map((item, idx) => ({
-        ...item,
-        position: prevItems.length + idx + 1,
-      })),
-    ]);
-    setIsModalVisible(false);
-  };
-
-  const handleOverwriteExcelData = (mappedItems: InquiryItem[]) => {
+  // 공통 데이터 처리 함수
+  const updateItems = (
+    mappedItems: InquiryItem[],
+    shouldOverwrite: boolean
+  ) => {
     if (!Array.isArray(mappedItems)) {
       console.error("mappedItems is not an array");
       return;
     }
 
-    setItems(
-      mappedItems.map((item, idx) => ({
-        ...item,
-        position: idx + 1,
-      }))
-    );
-    setIsModalVisible(false);
+    setItems((prevItems) => {
+      if (shouldOverwrite) {
+        // 덮어쓰기 모드
+        return mappedItems.map((item, idx) => ({
+          ...item,
+          position: idx + 1, // 덮어쓰기일 경우 새롭게 인덱스 지정
+        }));
+      } else {
+        // 추가 모드
+        return [
+          ...prevItems,
+          ...mappedItems.map((item, idx) => ({
+            ...item,
+            position: prevItems.length + idx + 1, // 기존 데이터에 추가
+          })),
+        ];
+      }
+    });
+
+    setIsModalVisible(false); // 모달 닫기
+  };
+
+  // 데이터를 추가하는 함수
+  const handleApplyExcelData = (mappedItems: InquiryItem[]) => {
+    updateItems(mappedItems, false); // false는 추가 모드를 의미
+  };
+
+  // 데이터를 덮어쓰는 함수
+  const handleOverwriteExcelData = (mappedItems: InquiryItem[]) => {
+    updateItems(mappedItems, true); // true는 덮어쓰기 모드를 의미
   };
 
   const handleKeyDown = useCallback(

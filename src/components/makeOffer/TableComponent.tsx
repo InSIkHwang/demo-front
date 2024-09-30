@@ -208,30 +208,46 @@ const TableComponent = ({
     useState<SelectedItemData | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
-  const handleApplyExcelData = (mappedItems: ItemDataType[]) => {
-    setDataSource((prevItems) => [
-      ...prevItems,
-      ...mappedItems.map((item, idx) => ({
-        ...item,
-        position: prevItems.length + idx + 1,
-      })),
-    ]);
-    setIsModalVisible(false);
-  };
-
-  const handleOverwriteExcelData = (mappedItems: ItemDataType[]) => {
+  // 공통 데이터 처리 함수
+  const updateDataSource = (
+    mappedItems: ItemDataType[],
+    shouldOverwrite: boolean
+  ) => {
     if (!Array.isArray(mappedItems)) {
       console.error("mappedItems is not an array");
       return;
     }
 
-    setDataSource(
-      mappedItems.map((item, idx) => ({
-        ...item,
-        position: idx + 1,
-      }))
-    );
-    setIsModalVisible(false);
+    setDataSource((prevItems) => {
+      if (shouldOverwrite) {
+        // 기존 데이터를 덮어쓰는 경우
+        return mappedItems.map((item, idx) => ({
+          ...item,
+          position: idx + 1,
+        }));
+      } else {
+        // 기존 데이터에 추가하는 경우
+        return [
+          ...prevItems,
+          ...mappedItems.map((item, idx) => ({
+            ...item,
+            position: prevItems.length + idx + 1,
+          })),
+        ];
+      }
+    });
+
+    setIsModalVisible(false); // 모달 닫기
+  };
+
+  // 데이터를 추가하는 함수
+  const handleApplyExcelData = (mappedItems: ItemDataType[]) => {
+    updateDataSource(mappedItems, false); // 추가하는 작업, 덮어쓰지 않음
+  };
+
+  // 데이터를 덮어쓰는 함수
+  const handleOverwriteExcelData = (mappedItems: ItemDataType[]) => {
+    updateDataSource(mappedItems, true); // 덮어쓰기 작업
   };
 
   const handleExportButtonClick = async () => {

@@ -1,10 +1,23 @@
 import React, { useState } from "react";
-import { Modal, Upload, Table, message, Button } from "antd";
+import { Modal, Upload, Table, message, Button, Spin } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import * as XLSX from "xlsx";
 import { InquiryItem } from "../types/types";
 import { fetchItemData } from "../api/api";
-import { ItemDataType } from "../types/types";
+import styled from "styled-components";
+
+const BlockingLayer = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 10000;
+  display: flex; /* 중앙 정렬을 위해 flex 사용 */
+  justify-content: center; /* 가로 중앙 정렬 */
+  align-items: center; /* 세로 중앙 정렬 */
+`;
 
 interface ExcelUploadModalProps {
   open: boolean;
@@ -25,6 +38,7 @@ const ExcelUploadModal = ({
 }: ExcelUploadModalProps) => {
   const [excelData, setExcelData] = useState<InquiryItem[]>([]);
   const [fileList, setFileList] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const expectedHeader = ["partNo", "itemName", "qty", "unit", "itemRemark"];
 
@@ -185,16 +199,20 @@ const ExcelUploadModal = ({
     }
   };
 
-  const handleApplyExcelData = async () => {
+  const handleExcelData = async (applyFunc: (data: any[]) => void) => {
+    setLoading(true); // 로딩 시작
     const updatedData = await Promise.all(excelData.map(fetchItemId));
 
-    onApply(updatedData);
+    applyFunc(updatedData); // 적용할 함수를 인자로 전달
+    setLoading(false); // 로딩 완료
+  };
+
+  const handleApplyExcelData = async () => {
+    await handleExcelData(onApply); // onApply 함수 전달
   };
 
   const handleOverwriteExcelData = async () => {
-    const updatedData = await Promise.all(excelData.map(fetchItemId));
-
-    onOverWrite(updatedData);
+    await handleExcelData(onOverWrite); // onOverWrite 함수 전달
   };
 
   const handleRemoveFile = () => {
@@ -204,82 +222,89 @@ const ExcelUploadModal = ({
   };
 
   return (
-    <Modal
-      title="Load Excel File"
-      open={open}
-      onCancel={onCancel}
-      footer={[
-        <Button key="cancel" onClick={onCancel}>
-          Cancel
-        </Button>,
-        <Button
-          key="overwrite"
-          type="primary"
-          onClick={handleOverwriteExcelData}
-        >
-          Overwrite
-        </Button>,
-        <Button key="ok" type="primary" onClick={handleApplyExcelData}>
-          Add
-        </Button>,
-      ]}
-      width={1000}
-    >
-      <Upload.Dragger
-        beforeUpload={handleExcelUpload}
-        fileList={fileList}
-        onRemove={handleRemoveFile}
-        accept=".xlsx, .xls"
-      >
-        <p className="ant-upload-drag-icon">
-          <UploadOutlined />
-        </p>
-        <p className="ant-upload-text">
-          Click or drag file to this area to upload
-        </p>
-        <p className="ant-upload-hint">
-          Only one file can be uploaded. Uploading a new file will overwrite the
-          current file.
-        </p>
-      </Upload.Dragger>
-      {excelData.length > 0 && (
-        <Table
-          dataSource={excelData}
-          columns={[
-            { title: "No.", dataIndex: "position", key: "position" },
-            { title: "Part No.", dataIndex: "itemCode", key: "itemCode" },
-            { title: "Item Name", dataIndex: "itemName", key: "itemName" },
-            { title: "Quantity", dataIndex: "qty", key: "qty" },
-            { title: "Unit", dataIndex: "unit", key: "unit" },
-            {
-              title: "Item Remark",
-              dataIndex: "itemRemark",
-              key: "itemRemark",
-            },
-            ...(type === "offer"
-              ? [
-                  {
-                    title: "Purchase Price (KRW)",
-                    dataIndex: "purchasePriceKRW",
-                    key: "purchasePriceKRW",
-                  },
-                  {
-                    title: "Purchase Price (Global)",
-                    dataIndex: "purchasePriceGlobal",
-                    key: "purchasePriceGlobal",
-                  },
-                  { title: "Margin", dataIndex: "margin", key: "margin" },
-                ]
-              : []),
-          ]}
-          pagination={false}
-          bordered
-          style={{ margin: "20px 0", overflowX: "auto" }}
-          virtual
-          scroll={{ y: 500 }}
-        />
+    <>
+      {loading && (
+        <BlockingLayer>
+          <Spin size="large" />
+        </BlockingLayer>
       )}
-    </Modal>
+      <Modal
+        title="Load Excel File"
+        open={open}
+        onCancel={onCancel}
+        footer={[
+          <Button key="cancel" onClick={onCancel}>
+            Cancel
+          </Button>,
+          <Button
+            key="overwrite"
+            type="primary"
+            onClick={handleOverwriteExcelData}
+          >
+            Overwrite
+          </Button>,
+          <Button key="ok" type="primary" onClick={handleApplyExcelData}>
+            Add
+          </Button>,
+        ]}
+        width={1000}
+      >
+        <Upload.Dragger
+          beforeUpload={handleExcelUpload}
+          fileList={fileList}
+          onRemove={handleRemoveFile}
+          accept=".xlsx, .xls"
+        >
+          <p className="ant-upload-drag-icon">
+            <UploadOutlined />
+          </p>
+          <p className="ant-upload-text">
+            Click or drag file to this area to upload
+          </p>
+          <p className="ant-upload-hint">
+            Only one file can be uploaded. Uploading a new file will overwrite
+            the current file.
+          </p>
+        </Upload.Dragger>
+        {excelData.length > 0 && (
+          <Table
+            dataSource={excelData}
+            columns={[
+              { title: "No.", dataIndex: "position", key: "position" },
+              { title: "Part No.", dataIndex: "itemCode", key: "itemCode" },
+              { title: "Item Name", dataIndex: "itemName", key: "itemName" },
+              { title: "Quantity", dataIndex: "qty", key: "qty" },
+              { title: "Unit", dataIndex: "unit", key: "unit" },
+              {
+                title: "Item Remark",
+                dataIndex: "itemRemark",
+                key: "itemRemark",
+              },
+              ...(type === "offer"
+                ? [
+                    {
+                      title: "Purchase Price (KRW)",
+                      dataIndex: "purchasePriceKRW",
+                      key: "purchasePriceKRW",
+                    },
+                    {
+                      title: "Purchase Price (Global)",
+                      dataIndex: "purchasePriceGlobal",
+                      key: "purchasePriceGlobal",
+                    },
+                    { title: "Margin", dataIndex: "margin", key: "margin" },
+                  ]
+                : []),
+            ]}
+            pagination={false}
+            bordered
+            style={{ margin: "20px 0", overflowX: "auto" }}
+            virtual
+            scroll={{ y: 500 }}
+          />
+        )}
+      </Modal>
+    </>
   );
 };
 
