@@ -84,7 +84,16 @@ const ExcelUploadModal = ({
         const rowData: any = { position: index + 1, itemType: "ITEM" };
 
         mappedHeaders.forEach((header, colIdx) => {
-          rowData[header] = row[colIdx] || "";
+          if (header === "qty") {
+            // qty는 숫자로 변환
+            rowData[header] = parseFloat(row[colIdx]) || 0;
+          } else {
+            // 나머지 컬럼은 문자열로 변환, 빈 문자열 대신 null로 설정
+            rowData[header] =
+              row[colIdx] !== undefined && row[colIdx] !== null
+                ? String(row[colIdx])
+                : null;
+          }
         });
 
         // type이 "offer"인 경우 가격 계산 처리
@@ -93,77 +102,74 @@ const ExcelUploadModal = ({
           const purchasePriceKRW = parseFloat(rowData.purchasePriceKRW) || 0;
           const purchasePriceGlobal =
             parseFloat(rowData.purchasePriceGlobal) || 0;
-          const qty = parseFloat(rowData.qty) || 0; // 수량 변환
+          const qty = rowData.qty; // 이미 숫자로 변환됨
+
           const marginPercent = parseFloat(rowData.margin) || 0; // margin을 퍼센트로 변환
+          rowData.margin = marginPercent || 0; // margin 값이 없는 경우 기본값 설정
 
           if (purchasePriceKRW && !purchasePriceGlobal) {
-            rowData.purchasePriceGlobal = parseFloat(
-              (purchasePriceKRW / currency).toFixed(2)
-            );
+            rowData.purchasePriceGlobal =
+              parseFloat((purchasePriceKRW / currency || 0).toFixed(2)) || 0;
 
             // purchaseAmount 계산
-            rowData.purchaseAmountKRW = parseFloat(
-              (purchasePriceKRW * qty).toFixed(2)
-            );
-            rowData.purchaseAmountGlobal = parseFloat(
-              (rowData.purchasePriceGlobal * qty).toFixed(2)
-            );
+            rowData.purchaseAmountKRW =
+              parseFloat((purchasePriceKRW * qty).toFixed(2)) || 0; // 비어있다면 0으로 설정
+            rowData.purchaseAmountGlobal =
+              parseFloat((rowData.purchasePriceGlobal * qty).toFixed(2)) || 0; // 비어있다면 0으로 설정
 
             // margin이 있는 경우 salesPrice 계산
             if (marginPercent) {
               const marginValueKRW = (purchasePriceKRW * marginPercent) / 100;
-              rowData.salesPriceKRW = parseFloat(
-                (purchasePriceKRW + marginValueKRW).toFixed(2)
-              );
-              rowData.salesPriceGlobal = parseFloat(
-                (rowData.salesPriceKRW / currency).toFixed(2)
-              );
+              rowData.salesPriceKRW =
+                parseFloat((purchasePriceKRW + marginValueKRW).toFixed(2)) || 0; // 비어있다면 0으로 설정
+              rowData.salesPriceGlobal =
+                parseFloat((rowData.salesPriceKRW / currency).toFixed(2)) || 0; // 비어있다면 0으로 설정
 
               // salesAmount 계산
-              rowData.salesAmountKRW = parseFloat(
-                (rowData.salesPriceKRW * qty).toFixed(2)
-              );
-              rowData.salesAmountGlobal = parseFloat(
-                (rowData.salesPriceGlobal * qty).toFixed(2)
-              );
+              rowData.salesAmountKRW =
+                parseFloat((rowData.salesPriceKRW * qty).toFixed(2)) || 0; // 비어있다면 0으로 설정
+              rowData.salesAmountGlobal =
+                parseFloat((rowData.salesPriceGlobal * qty).toFixed(2)) || 0; // 비어있다면 0으로 설정
             }
           } else if (!purchasePriceKRW && purchasePriceGlobal) {
-            rowData.purchasePriceKRW = Math.round(
-              purchasePriceGlobal * currency
-            );
+            rowData.purchasePriceKRW =
+              Math.round(purchasePriceGlobal * currency || 0) || 0; // 비어있다면 0으로 설정
 
             // purchaseAmount 계산
-            rowData.purchaseAmountKRW = parseFloat(
-              (rowData.purchasePriceKRW * qty).toFixed(2)
-            );
-            rowData.purchaseAmountGlobal = parseFloat(
-              (purchasePriceGlobal * qty).toFixed(2)
-            );
+            rowData.purchaseAmountKRW =
+              parseFloat((rowData.purchasePriceKRW * qty).toFixed(2)) || 0; // 비어있다면 0으로 설정
+            rowData.purchaseAmountGlobal =
+              parseFloat((purchasePriceGlobal * qty).toFixed(2)) || 0; // 비어있다면 0으로 설정
 
             // margin이 있는 경우 salesPrice 계산
             if (marginPercent) {
               const marginValueGlobal =
                 (purchasePriceGlobal * marginPercent) / 100;
-              rowData.salesPriceGlobal = parseFloat(
-                (purchasePriceGlobal + marginValueGlobal).toFixed(2)
-              );
-              rowData.salesPriceKRW = Math.round(
-                Number(rowData.salesPriceGlobal) * currency
-              );
+              rowData.salesPriceGlobal =
+                parseFloat(
+                  (purchasePriceGlobal + marginValueGlobal).toFixed(2)
+                ) || 0; // 비어있다면 0으로 설정
+              rowData.salesPriceKRW =
+                Math.round(rowData.salesPriceGlobal * currency || 0) || 0; // 비어있다면 0으로 설정
 
               // salesAmount 계산
-              rowData.salesAmountKRW = parseFloat(
-                (Number(rowData.salesPriceKRW) * qty).toFixed(2)
-              );
-              rowData.salesAmountGlobal = parseFloat(
-                (Number(rowData.salesPriceGlobal) * qty).toFixed(2)
-              );
+              rowData.salesAmountKRW =
+                parseFloat((rowData.salesPriceKRW * qty).toFixed(2)) || 0; // 비어있다면 0으로 설정
+              rowData.salesAmountGlobal =
+                parseFloat((rowData.salesPriceGlobal * qty).toFixed(2)) || 0; // 비어있다면 0으로 설정
             }
           }
-
-          // margin 값이 없는 경우 기본값 설정 (예: 0)
-          rowData.margin = marginPercent || 0;
         }
+
+        // 가격 관련 필드 null 대신 0으로 설정
+        rowData.purchasePriceKRW = rowData.purchasePriceKRW || 0;
+        rowData.purchasePriceGlobal = rowData.purchasePriceGlobal || 0;
+        rowData.purchaseAmountKRW = rowData.purchaseAmountKRW || 0;
+        rowData.purchaseAmountGlobal = rowData.purchaseAmountGlobal || 0;
+        rowData.salesPriceKRW = rowData.salesPriceKRW || 0;
+        rowData.salesPriceGlobal = rowData.salesPriceGlobal || 0;
+        rowData.salesAmountKRW = rowData.salesAmountKRW || 0;
+        rowData.salesAmountGlobal = rowData.salesAmountGlobal || 0;
 
         return rowData;
       });

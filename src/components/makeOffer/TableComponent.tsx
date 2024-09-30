@@ -1128,7 +1128,9 @@ const TableComponent = ({
         <RefreshBtn
           icon={<ReloadOutlined />}
           type="primary"
-          onClick={applyDcAndCharge}
+          onClick={() => {
+            applyDcAndCharge();
+          }}
         />
       </TotalCards>
       <Button
