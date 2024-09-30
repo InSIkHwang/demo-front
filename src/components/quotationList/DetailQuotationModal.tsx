@@ -120,7 +120,7 @@ const DetailQuotationModal = ({
 
   const columns = [
     {
-      title: "품목 코드",
+      title: "Code",
       dataIndex: "itemCode",
       key: "itemCode",
       width: 150,
@@ -132,7 +132,7 @@ const DetailQuotationModal = ({
       },
     },
     {
-      title: "품명",
+      title: "Name",
       dataIndex: "itemName",
       key: "itemName",
       render: (text: string, record: any) => {
@@ -143,7 +143,7 @@ const DetailQuotationModal = ({
       },
     },
     {
-      title: "수량",
+      title: "Qty",
       dataIndex: "qty",
       key: "qty",
       width: 50,
@@ -155,7 +155,7 @@ const DetailQuotationModal = ({
       },
     },
     {
-      title: "단위",
+      title: "Unit",
       dataIndex: "unit",
       key: "unit",
       width: 50,
@@ -167,7 +167,7 @@ const DetailQuotationModal = ({
       },
     },
     {
-      title: "판매 금액",
+      title: "Sales Amount(₩)",
       dataIndex: "salesAmountKRW",
       key: "salesAmountKRW",
       width: 100,
@@ -180,7 +180,7 @@ const DetailQuotationModal = ({
       },
     },
     {
-      title: "구매 금액",
+      title: "Purchase Amount(₩)",
       dataIndex: "purchaseAmountKRW",
       key: "purchaseAmountKRW",
       width: 100,
@@ -193,7 +193,7 @@ const DetailQuotationModal = ({
       },
     },
     {
-      title: "마진",
+      title: "Margin",
       dataIndex: "margin",
       key: "margin",
       width: 100,
@@ -205,9 +205,9 @@ const DetailQuotationModal = ({
       },
     },
     {
-      title: "의뢰처",
-      dataIndex: "supplierName",
-      key: "supplierName",
+      title: "Supplier",
+      dataIndex: "supplierCode",
+      key: "supplierCode",
       width: 200,
       render: (text: string, record: any) => {
         if (isSpecialItemType(record.itemType)) {
@@ -220,69 +220,69 @@ const DetailQuotationModal = ({
 
   return (
     <StyledModal
-      title="상세 정보"
+      title="Info"
       open={open}
       onCancel={onClose}
       footer={[
         <Button type="primary" key="edit" onClick={handleEditClick}>
-          수정
+          Edit
         </Button>,
         <Button key="delete" danger onClick={handleDeleteClick}>
-          삭제
+          Delete
         </Button>,
         <Button key="close" onClick={onClose}>
-          닫기
+          Close
         </Button>,
       ]}
       width={1200}
     >
       {loading ? (
-        <p>로딩 중...</p>
+        <p>Loading...</p>
       ) : (
         quotationDetail && (
           <>
             <Descriptions bordered column={2} size="small">
-              <Descriptions.Item label="문서번호">
+              <Descriptions.Item label="Document Number">
                 {quotationDetail.quotationDocumentDetail.docNumber}
               </Descriptions.Item>
-              <Descriptions.Item label="등록 날짜">
+              <Descriptions.Item label="Registration Date">
                 {quotationDetail.quotationDocumentDetail.registerDate}
               </Descriptions.Item>
-              <Descriptions.Item label="매출처명">
+              <Descriptions.Item label="Costomer Name">
                 {quotationDetail.quotationDocumentDetail.companyName}
               </Descriptions.Item>
               <Descriptions.Item label="REF NO.">
                 {quotationDetail.quotationDocumentDetail.refNumber}
               </Descriptions.Item>
-              <Descriptions.Item label="통화">
+              <Descriptions.Item label="Currency">
                 {quotationDetail.quotationDocumentDetail.currencyType}
               </Descriptions.Item>
-              <Descriptions.Item label="환율">
+              <Descriptions.Item label="Exchange Rate">
                 {`$${quotationDetail.quotationDocumentDetail.currency?.toFixed(
                   0
                 )}`}
               </Descriptions.Item>
-              <Descriptions.Item label="선명">
+              <Descriptions.Item label="Vessel Name">
                 {quotationDetail.quotationDocumentDetail.vesselName}
               </Descriptions.Item>
-              <Descriptions.Item label="선박 번호">
+              <Descriptions.Item label="Vessel HullNo">
                 {quotationDetail.quotationDocumentDetail.vesselHullNo}
               </Descriptions.Item>
-              <Descriptions.Item label="비고">
+              <Descriptions.Item label="Remark">
                 {quotationDetail.quotationDocumentDetail.docRemark}
               </Descriptions.Item>
-              <Descriptions.Item label="문서 담당자">
+              <Descriptions.Item label="Manager">
                 {quotationDetail.quotationDocumentDetail.docManager}
               </Descriptions.Item>
-              <Descriptions.Item label="매출처 담당자">
+              <Descriptions.Item label="Customer's Manager">
                 {quotationDetail.quotationDocumentDetail.representative}
               </Descriptions.Item>
-              <Descriptions.Item label="문서 상태">
+              <Descriptions.Item label="Document Status">
                 <TagStyled color="blue">
                   {quotationDetail.quotationDocumentDetail.documentStatus}
                 </TagStyled>
               </Descriptions.Item>
-              <Descriptions.Item label="의뢰처">
+              <Descriptions.Item label="Supplier">
                 {quotationDetail.quotationDocumentDetail.supplierName.map(
                   (name, index) => (
                     <TagStyled key={index} color="green">
@@ -293,7 +293,7 @@ const DetailQuotationModal = ({
               </Descriptions.Item>
             </Descriptions>
             <Divider />
-            <h3>품목 목록</h3>
+            <h3>Items</h3>
             <Table
               columns={columns}
               dataSource={quotationDetail.quotationItemDetailResponseList}

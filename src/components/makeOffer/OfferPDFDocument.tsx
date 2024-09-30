@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   tableCell: {
-    fontSize: 9,
+    fontSize: 8,
     textAlign: "left",
     wordBreak: "break-all",
   },
