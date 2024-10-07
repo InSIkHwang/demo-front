@@ -448,149 +448,150 @@ const OfferList = () => {
               dataSource={data}
               pagination={false}
               loading={loading}
-              rowKey="documentNumber" // Use documentNumber as key for expansion
-              expandedRowRender={(record) => {
-                if (
-                  currentDetail &&
-                  record.documentNumber === currentDetail.documentNumber
-                ) {
-                  return (
-                    <CardContainer>
-                      <Button
-                        type="primary"
-                        style={{ position: "absolute", right: 20 }}
-                        onClick={() => handleSendMailClick()}
-                      >
-                        Send mail
-                      </Button>
-                      <SelectedSupplierNameBox>
-                        Selected Suppliers:{" "}
-                        {Array.from(selectedSupplierIds.values()).map(
-                          (companyName, index) => (
-                            <span key={index}>{companyName}</span>
-                          )
-                        )}
-                        {selectedSupplierIds.size === 0 &&
-                          "There are no suppliers selected."}
-                      </SelectedSupplierNameBox>
+              rowKey="documentNumber"
+              expandable={{
+                expandedRowRender: (record) => {
+                  if (
+                    currentDetail &&
+                    record.documentNumber === currentDetail.documentNumber
+                  ) {
+                    return (
+                      <CardContainer>
+                        <Button
+                          type="primary"
+                          style={{ position: "absolute", right: 20 }}
+                          onClick={() => handleSendMailClick()}
+                        >
+                          Send mail
+                        </Button>
+                        <SelectedSupplierNameBox>
+                          Selected Suppliers:{" "}
+                          {Array.from(selectedSupplierIds.values()).map(
+                            (companyName, index) => (
+                              <span key={index}>{companyName}</span>
+                            )
+                          )}
+                          {selectedSupplierIds.size === 0 &&
+                            "There are no suppliers selected."}
+                        </SelectedSupplierNameBox>
 
-                      {supplierInfoList.map(({ info, detail }) => {
-                        const totals = calculateTotals(
-                          detail.inquiryItemDetails
-                        );
-                        return (
-                          <StyledCard
-                            key={info.supplierInquiryId}
-                            title={
-                              <CardTitle
-                                onClick={() => {
-                                  const isChecked = selectedSupplierIds.has(
-                                    info.supplierInquiryId
-                                  );
-                                  handleCheckboxChange(
-                                    info.supplierInquiryId,
-                                    info.companyName,
-                                    !isChecked
-                                  );
-                                }}
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={selectedSupplierIds.has(
-                                    info.supplierInquiryId
-                                  )}
-                                  onChange={(e) =>
+                        {supplierInfoList.map(({ info, detail }) => {
+                          const totals = calculateTotals(
+                            detail.inquiryItemDetails
+                          );
+                          return (
+                            <StyledCard
+                              key={info.supplierInquiryId}
+                              title={
+                                <CardTitle
+                                  onClick={() => {
+                                    const isChecked = selectedSupplierIds.has(
+                                      info.supplierInquiryId
+                                    );
                                     handleCheckboxChange(
                                       info.supplierInquiryId,
                                       info.companyName,
-                                      e.target.checked
-                                    )
-                                  }
-                                  style={{ marginRight: 8 }}
-                                />
-                                {info.code} ({info.companyName})
-                              </CardTitle>
-                            }
-                          >
-                            <CardContent>
-                              <Section>
-                                <InfoText>
-                                  Purchase amount (KRW):{" "}
-                                  {totals.totalPurchaseAmountKRW.toLocaleString()}
-                                </InfoText>
-                                <InfoText>
-                                  Sales amount (KRW):{" "}
-                                  {totals.totalSalesAmountKRW.toLocaleString()}
-                                </InfoText>
-                                <InfoText style={{ color: "#000" }}>
-                                  Profit (KRW):{" "}
-                                  {totals.totalProfitKRW.toLocaleString()}
-                                </InfoText>
-                              </Section>
-                              <Divider />
-                              <Section>
-                                <InfoText>
-                                  Purchase amount (F):{" "}
-                                  {totals.totalPurchaseAmountGlobal.toLocaleString()}
-                                </InfoText>
-                                <InfoText>
-                                  Sales amount (F):{" "}
-                                  {totals.totalSalesAmountGlobal.toLocaleString()}
-                                </InfoText>
-                                <InfoText style={{ color: "#000" }}>
-                                  Profit (F):{" "}
-                                  {totals.totalProfitGlobal.toLocaleString()}
-                                </InfoText>
-                              </Section>
-                            </CardContent>
-                            <InfoText>
-                              Total Items: {detail.inquiryItemDetails.length}
-                            </InfoText>
-                            <InfoText style={{ color: "#000" }}>
-                              Profit: {totals.profitMarginKRW}%
-                            </InfoText>
-                            <div
-                              style={{
-                                display: "grid",
-                                height: 50,
-                                margin: "5px 0",
-                              }}
+                                      !isChecked
+                                    );
+                                  }}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedSupplierIds.has(
+                                      info.supplierInquiryId
+                                    )}
+                                    onChange={(e) =>
+                                      handleCheckboxChange(
+                                        info.supplierInquiryId,
+                                        info.companyName,
+                                        e.target.checked
+                                      )
+                                    }
+                                    style={{ marginRight: 8 }}
+                                  />
+                                  {info.code} ({info.companyName})
+                                </CardTitle>
+                              }
                             >
-                              <InfoText style={{ textAlign: "right" }}>
-                                currency: {record.currency} (
-                                {record.currencyType})
+                              <CardContent>
+                                <Section>
+                                  <InfoText>
+                                    Purchase amount (KRW):{" "}
+                                    {totals.totalPurchaseAmountKRW.toLocaleString()}
+                                  </InfoText>
+                                  <InfoText>
+                                    Sales amount (KRW):{" "}
+                                    {totals.totalSalesAmountKRW.toLocaleString()}
+                                  </InfoText>
+                                  <InfoText style={{ color: "#000" }}>
+                                    Profit (KRW):{" "}
+                                    {totals.totalProfitKRW.toLocaleString()}
+                                  </InfoText>
+                                </Section>
+                                <Divider />
+                                <Section>
+                                  <InfoText>
+                                    Purchase amount (F):{" "}
+                                    {totals.totalPurchaseAmountGlobal.toLocaleString()}
+                                  </InfoText>
+                                  <InfoText>
+                                    Sales amount (F):{" "}
+                                    {totals.totalSalesAmountGlobal.toLocaleString()}
+                                  </InfoText>
+                                  <InfoText style={{ color: "#000" }}>
+                                    Profit (F):{" "}
+                                    {totals.totalProfitGlobal.toLocaleString()}
+                                  </InfoText>
+                                </Section>
+                              </CardContent>
+                              <InfoText>
+                                Total Items: {detail.inquiryItemDetails.length}
                               </InfoText>
-                              <Button
-                                type="primary"
-                                onClick={() => handleEditClick(detail)}
-                                style={{ marginTop: 10 }}
+                              <InfoText style={{ color: "#000" }}>
+                                Profit: {totals.profitMarginKRW}%
+                              </InfoText>
+                              <div
+                                style={{
+                                  display: "grid",
+                                  height: 50,
+                                  margin: "5px 0",
+                                }}
                               >
-                                Edit
-                              </Button>
-                            </div>
-                          </StyledCard>
-                        );
-                      })}
-                    </CardContainer>
-                  );
-                }
-                return null;
+                                <InfoText style={{ textAlign: "right" }}>
+                                  currency: {record.currency} (
+                                  {record.currencyType})
+                                </InfoText>
+                                <Button
+                                  type="primary"
+                                  onClick={() => handleEditClick(detail)}
+                                  style={{ marginTop: 10 }}
+                                >
+                                  Edit
+                                </Button>
+                              </div>
+                            </StyledCard>
+                          );
+                        })}
+                      </CardContainer>
+                    );
+                  }
+                  return null;
+                },
+                expandedRowKeys: expandedRowKeys,
+                onExpand: (expanded, record) => {
+                  if (expanded) {
+                    handleRowClick(record);
+                  } else {
+                    setCurrentDetail(null);
+                    setSupplierInfoList([]);
+                    setExpandedRowKeys([]);
+                  }
+                },
               }}
-              expandedRowKeys={expandedRowKeys}
               onRow={(record) => ({
                 onClick: () => handleRowClick(record),
               })}
-              onExpand={(expanded, record) => {
-                if (expanded) {
-                  handleRowClick(record);
-                } else {
-                  setCurrentDetail(null);
-                  setSupplierInfoList([]);
-                  setExpandedRowKeys([]);
-                }
-              }}
             />
-
             <PaginationWrapper
               current={currentPage}
               pageSize={itemsPerPage}
@@ -598,7 +599,7 @@ const OfferList = () => {
               onChange={handlePageChange}
               onShowSizeChange={handlePageSizeChange}
               showSizeChanger
-              pageSizeOptions={[10, 15, 20]}
+              pageSizeOptions={[30, 50, 100]}
               showQuickJumper
               itemRender={(page, type, originalElement) => {
                 if (type === "prev") {

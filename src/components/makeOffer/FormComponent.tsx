@@ -65,7 +65,7 @@ const FormComponent = ({
           label="작성일자(Register Date)"
           name="registerDate"
           rules={[{ required: true, message: "Please select register date" }]}
-          style={{ width: 25 }}
+          style={{ width: 140 }}
         >
           <DatePicker
             value={formValues.registerDate}

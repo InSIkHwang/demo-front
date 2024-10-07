@@ -332,7 +332,7 @@ const MakeInquiryTable = ({
                   if (!inputRefs.current[index]) {
                     inputRefs.current[index] = [];
                   }
-                  inputRefs.current[index][1] = el; // columnIndex를 맞추어 설정
+                  inputRefs.current[index][1] = el;
                 }}
                 onKeyDown={(e) => handleNextRowKeyDown(e, index, 1)}
               >
@@ -351,7 +351,18 @@ const MakeInquiryTable = ({
                 </div>
               )}
             </div>
-          ) : null,
+          ) : (
+            <Input
+              readOnly
+              ref={(el) => {
+                if (!inputRefs.current[index]) {
+                  inputRefs.current[index] = [];
+                }
+                inputRefs.current[index][1] = el;
+              }}
+              onKeyDown={(e) => handleNextRowKeyDown(e, index, 1)}
+            ></Input>
+          ),
         width: 300,
       },
       {
@@ -401,14 +412,25 @@ const MakeInquiryTable = ({
                 if (!inputRefs.current[index]) {
                   inputRefs.current[index] = [];
                 }
-                inputRefs.current[index][2] = el; // columnIndex를 맞추어 설정
+                inputRefs.current[index][2] = el;
               }}
               onKeyDown={(e) => handleNextRowKeyDown(e, index, 2)}
               value={text}
               onBlur={(e) => handleUnitBlur(index, e.target.value)}
               onChange={(e) => handleInputChange(index, "unit", e.target.value)}
             />
-          ) : null,
+          ) : (
+            <Input
+              readOnly
+              ref={(el) => {
+                if (!inputRefs.current[index]) {
+                  inputRefs.current[index] = [];
+                }
+                inputRefs.current[index][2] = el;
+              }}
+              onKeyDown={(e) => handleNextRowKeyDown(e, index, 2)}
+            ></Input>
+          ),
         width: 110,
       },
       {
@@ -428,7 +450,7 @@ const MakeInquiryTable = ({
                 if (!inputRefs.current[index]) {
                   inputRefs.current[index] = [];
                 }
-                inputRefs.current[index][3] = el; // columnIndex를 맞추어 설정
+                inputRefs.current[index][3] = el;
               }}
               value={text}
               onKeyDown={(e) => handleNextRowKeyDown(e, index, 3)}
@@ -465,7 +487,7 @@ const MakeInquiryTable = ({
                 if (!inputRefs.current[index]) {
                   inputRefs.current[index] = [];
                 }
-                inputRefs.current[index][4] = el; // columnIndex를 맞추어 설정
+                inputRefs.current[index][4] = el;
               }}
               onKeyDown={(e) => handleNextRowKeyDown(e, index, 4)}
               onChange={(e) => {
@@ -473,7 +495,18 @@ const MakeInquiryTable = ({
                 handleInputChange(index, "qty", isNaN(value) ? 0 : value);
               }}
             />
-          ) : null,
+          ) : (
+            <Input
+              readOnly
+              ref={(el) => {
+                if (!inputRefs.current[index]) {
+                  inputRefs.current[index] = [];
+                }
+                inputRefs.current[index][4] = el;
+              }}
+              onKeyDown={(e) => handleNextRowKeyDown(e, index, 4)}
+            ></Input>
+          ),
         width: 80,
       },
       {
@@ -484,6 +517,13 @@ const MakeInquiryTable = ({
           <Input.TextArea
             autoSize={{ minRows: 1, maxRows: 10 }}
             value={text}
+            ref={(el) => {
+              if (!inputRefs.current[index]) {
+                inputRefs.current[index] = [];
+              }
+              inputRefs.current[index][5] = el;
+            }}
+            onKeyDown={(e) => handleNextRowKeyDown(e, index, 5)}
             onChange={(e) =>
               handleInputChange(index, "itemRemark", e.target.value)
             }
@@ -522,6 +562,7 @@ const MakeInquiryTable = ({
     [
       applyUnitToAllRows,
       unitOptions,
+      dataSource,
       itemCodeOptions,
       duplicateStates,
       handleItemCodeChange,

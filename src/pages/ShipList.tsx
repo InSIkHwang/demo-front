@@ -242,7 +242,7 @@ const ShipList = () => {
               onChange={handlePageChange}
               onShowSizeChange={handlePageSizeChange}
               showSizeChanger
-              pageSizeOptions={[10, 15, 30, 50, 100]}
+              pageSizeOptions={[30, 50, 100]}
               showQuickJumper
               itemRender={(page, type, originalElement) => {
                 if (type === "prev") {

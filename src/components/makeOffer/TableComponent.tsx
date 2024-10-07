@@ -639,7 +639,18 @@ const TableComponent = ({
         if (record.itemType !== "ITEM") {
           // handleInputChange를 호출하여 값을 0으로 설정
           handleInputChange(index, "itemCode", "");
-          return null;
+          return (
+            <Input
+              readOnly
+              ref={(el) => {
+                if (!inputRefs.current[index]) {
+                  inputRefs.current[index] = [];
+                }
+                inputRefs.current[index][1] = el;
+              }}
+              onKeyDown={(e) => handleNextRowKeyDown(e, index, 1)}
+            ></Input>
+          );
         }
         return (
           <>
@@ -660,7 +671,7 @@ const TableComponent = ({
                 if (!inputRefs.current[index]) {
                   inputRefs.current[index] = [];
                 }
-                inputRefs.current[index][1] = el; // columnIndex를 맞추어 설정
+                inputRefs.current[index][1] = el;
               }}
               onKeyDown={(e) => handleNextRowKeyDown(e, index, 1)}
             >
@@ -714,7 +725,7 @@ const TableComponent = ({
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
               }
-              inputRefs.current[index][2] = el; // columnIndex를 맞추어 설정
+              inputRefs.current[index][2] = el;
             }}
             value={text}
             onKeyDown={(e) => handleNextRowKeyDown(e, index, 2)}
@@ -748,7 +759,18 @@ const TableComponent = ({
         if (record.itemType !== "ITEM") {
           // handleInputChange를 호출하여 값을 0으로 설정
           handleInputChange(index, "qty", 0);
-          return null; // 화면에는 0을 표시
+          return (
+            <Input
+              readOnly
+              ref={(el) => {
+                if (!inputRefs.current[index]) {
+                  inputRefs.current[index] = [];
+                }
+                inputRefs.current[index][3] = el;
+              }}
+              onKeyDown={(e) => handleNextRowKeyDown(e, index, 3)}
+            ></Input>
+          ); // 화면에는 0을 표시
         }
 
         return (
@@ -759,7 +781,7 @@ const TableComponent = ({
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
               }
-              inputRefs.current[index][3] = el; // columnIndex를 맞추어 설정
+              inputRefs.current[index][3] = el;
             }}
             onKeyDown={(e) => handleNextRowKeyDown(e, index, 3)}
             onChange={(e) => {
@@ -803,13 +825,24 @@ const TableComponent = ({
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
               }
-              inputRefs.current[index][4] = el; // columnIndex를 맞추어 설정
+              inputRefs.current[index][4] = el;
             }}
             onKeyDown={(e) => handleNextRowKeyDown(e, index, 4)}
             onBlur={(e) => handleUnitBlur(index, e.target.value)}
             onChange={(e) => handleInputChange(index, "unit", e.target.value)}
           />
-        ) : null,
+        ) : (
+          <Input
+            readOnly
+            ref={(el) => {
+              if (!inputRefs.current[index]) {
+                inputRefs.current[index] = [];
+              }
+              inputRefs.current[index][4] = el;
+            }}
+            onKeyDown={(e) => handleNextRowKeyDown(e, index, 4)}
+          ></Input>
+        ),
     },
     {
       title: "Remark",
@@ -821,6 +854,13 @@ const TableComponent = ({
           placeholder="ex) N/A, Incl#1..."
           autoSize={{ minRows: 1, maxRows: 10 }}
           value={text}
+          ref={(el) => {
+            if (!inputRefs.current[index]) {
+              inputRefs.current[index] = [];
+            }
+            inputRefs.current[index][5] = el;
+          }}
+          onKeyDown={(e) => handleNextRowKeyDown(e, index, 5)}
           onChange={(e) =>
             handleInputChange(index, "itemRemark", e.target.value)
           }
@@ -908,7 +948,18 @@ const TableComponent = ({
       render: (text: number, record: any, index: number) => {
         if (record.itemType !== "ITEM") {
           handleInputChange(index, "purchasePriceKRW", 0); // 값을 0으로 설정
-          return null;
+          return (
+            <Input
+              value={0}
+              ref={(el) => {
+                if (!inputRefs.current[index]) {
+                  inputRefs.current[index] = [];
+                }
+                inputRefs.current[index][9] = el;
+              }}
+              onKeyDown={(e) => handleNextRowKeyDown(e, index, 9)}
+            />
+          );
         }
         return (
           <Input
@@ -918,7 +969,7 @@ const TableComponent = ({
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
               }
-              inputRefs.current[index][9] = el; // columnIndex를 맞추어 설정
+              inputRefs.current[index][9] = el;
             }}
             onKeyDown={(e) => handleNextRowKeyDown(e, index, 9)}
             onChange={(e) =>
@@ -952,7 +1003,18 @@ const TableComponent = ({
       render: (text: number, record: any, index: number) => {
         if (record.itemType !== "ITEM") {
           handleInputChange(index, "purchasePriceGlobal", 0); // 값을 0으로 설정
-          return null;
+          return (
+            <Input
+              value={0}
+              ref={(el) => {
+                if (!inputRefs.current[index]) {
+                  inputRefs.current[index] = [];
+                }
+                inputRefs.current[index][10] = el;
+              }}
+              onKeyDown={(e) => handleNextRowKeyDown(e, index, 10)}
+            />
+          );
         }
         return (
           <Input
@@ -962,7 +1024,7 @@ const TableComponent = ({
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
               }
-              inputRefs.current[index][10] = el; // columnIndex를 맞추어 설정
+              inputRefs.current[index][10] = el;
             }}
             onKeyDown={(e) => handleNextRowKeyDown(e, index, 10)}
             onChange={(e) =>
@@ -1060,7 +1122,18 @@ const TableComponent = ({
       render: (text: number, record: any, index: number) => {
         if (record.itemType !== "ITEM") {
           handleInputChange(index, "margin", 0); // 값을 0으로 설정
-          return null;
+          return (
+            <Input
+              value={0}
+              ref={(el) => {
+                if (!inputRefs.current[index]) {
+                  inputRefs.current[index] = [];
+                }
+                inputRefs.current[index][13] = el;
+              }}
+              onKeyDown={(e) => handleNextRowKeyDown(e, index, 13)}
+            />
+          );
         }
         return (
           <Input
@@ -1069,7 +1142,7 @@ const TableComponent = ({
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
               }
-              inputRefs.current[index][13] = el; // columnIndex를 맞추어 설정
+              inputRefs.current[index][13] = el;
             }}
             style={{ width: "100%" }}
             className="custom-input"

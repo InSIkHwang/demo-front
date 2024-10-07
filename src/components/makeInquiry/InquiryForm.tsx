@@ -400,7 +400,7 @@ const InquiryForm = ({
             label="작성일자(Register Date)"
             name="registerDate"
             rules={[{ required: true, message: "Please select register date" }]}
-            style={{ width: 40 }}
+            style={{ width: 120 }}
           >
             <DatePicker
               value={formValues.registerDate}
@@ -433,6 +433,7 @@ const InquiryForm = ({
                 message: "Please enter currency exchange rate",
               },
             ]}
+            style={{ width: 100 }}
           >
             <Input
               type="number"

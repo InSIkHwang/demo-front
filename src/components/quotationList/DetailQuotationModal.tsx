@@ -43,7 +43,7 @@ const StyledModal = styled(Modal)`
     color: #333;
   }
   .descriptions-totals .ant-descriptions-item-label,
-  .ant-descriptions-item-content {
+  .descriptions-totals .ant-descriptions-item-content {
     text-align: center;
   }
   .ant-descriptions-item-content {
@@ -261,10 +261,10 @@ const DetailQuotationModal = ({
       },
     },
     {
-      title: "Sales Amount(₩)",
+      title: "Sales Amount",
       dataIndex: "salesAmountKRW",
       key: "salesAmountKRW",
-      width: 100,
+      width: 130,
       render: (text: number, record: any) => {
         if (isSpecialItemType(record.itemType)) {
           return null;
@@ -274,10 +274,10 @@ const DetailQuotationModal = ({
       },
     },
     {
-      title: "Purchase Amount(₩)",
+      title: "Purchase Amount",
       dataIndex: "purchaseAmountKRW",
       key: "purchaseAmountKRW",
-      width: 100,
+      width: 130,
       render: (text: number, record: any) => {
         if (isSpecialItemType(record.itemType)) {
           return null;
@@ -302,7 +302,6 @@ const DetailQuotationModal = ({
       title: "Supplier",
       dataIndex: "supplierCode",
       key: "supplierCode",
-      width: 200,
       render: (text: string, record: any) => {
         if (isSpecialItemType(record.itemType)) {
           return null;
@@ -362,7 +361,7 @@ const DetailQuotationModal = ({
               <Descriptions.Item label="Vessel HullNo">
                 {quotationDetail.quotationDocumentDetail.vesselHullNo}
               </Descriptions.Item>
-              <Descriptions.Item label="Manager">
+              <Descriptions.Item label="Document Manager">
                 {quotationDetail.quotationDocumentDetail.docManager}
               </Descriptions.Item>
               <Descriptions.Item label="Customer's Manager">
@@ -435,7 +434,7 @@ const DetailQuotationModal = ({
               </Descriptions.Item>
             </Descriptions>
             <Divider variant="dashed" style={{ borderColor: "#007bff" }}>
-              Items
+              Item List
             </Divider>
             <TableStyled
               columns={columns}

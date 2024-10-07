@@ -329,8 +329,9 @@ const DetailInquiryModal = ({
                   </TagStyled>
                 </Descriptions.Item>
               </Descriptions>
-              <Divider />
-              <h3>Item List</h3>
+              <Divider variant="dashed" style={{ borderColor: "#007bff" }}>
+                Item List
+              </Divider>
               <Table
                 columns={columns}
                 dataSource={inquiryDetail.inquiryItemDetails}
