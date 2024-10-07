@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Table, Typography, Card, message } from "antd";
+import { Table, Typography, Card, message, Divider } from "antd";
 import styled from "styled-components";
 import { fetchHome } from "../api/api";
 
@@ -38,21 +38,36 @@ interface HomeData {
 
 const Container = styled.div`
   position: relative;
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 20px;
-  padding: 20px;
-  flex-direction: column;
-  align-items: center;
   top: 150px;
   margin-bottom: 200px;
 `;
 
+const CardContainer = styled.div`
+  position: relative;
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  flex-wrap: wrap;
+  max-width: 70vw;
+  margin: 0 auto;
+  align-items: flex-start;
+  justify-content: center;
+`;
+
 const TableCard = styled(Card)`
-  width: 100%;
-  max-width: 1200px;
-  flex: 1;
+  flex: 1 1 calc(50% - 20px);
+  max-width: calc(33% - 20px);
   border: 1px solid #f0f0f0;
+  box-sizing: border-box;
+`;
+
+const CustomTable = styled(Table)`
+  .ant-table-thead {
+    font-size: 12px;
+  }
+  .ant-table-tbody {
+    font-size: 12px;
+  }
 `;
 
 const columnsCustomerInquiry = [
@@ -85,6 +100,11 @@ const columnsSupplierInquiry = [
     key: "docNumber",
   },
   {
+    title: "Reference Number",
+    dataIndex: "refNumber",
+    key: "refNumber",
+  },
+  {
     title: "Supplier Name",
     dataIndex: "supplierName",
     key: "supplierName",
@@ -98,14 +118,14 @@ const columnsQuotation = [
     key: "docNumber",
   },
   {
-    title: "Customer Name",
-    dataIndex: "customerName",
-    key: "customerName",
-  },
-  {
     title: "Reference Number",
     dataIndex: "refNumber",
     key: "refNumber",
+  },
+  {
+    title: "Customer Name",
+    dataIndex: "customerName",
+    key: "customerName",
   },
   {
     title: "Remark",
@@ -141,32 +161,36 @@ const Home = () => {
 
   return (
     <Container>
-      <TableCard title="Customer Inquiries">
-        <Table
-          columns={columnsCustomerInquiry}
-          dataSource={data.customerInquiry.slice(0, 5)}
-          pagination={false}
-          rowKey="customInquiryId"
-        />
-      </TableCard>
-
-      <TableCard title="Supplier Inquiries">
-        <Table
-          columns={columnsSupplierInquiry}
-          dataSource={data.supplierInquiry.slice(0, 5)}
-          pagination={false}
-          rowKey="supplierInquiryId"
-        />
-      </TableCard>
-
-      <TableCard title="Quotations">
-        <Table
-          columns={columnsQuotation}
-          dataSource={data.quotationListByMemberId.slice(0, 5)}
-          pagination={false}
-          rowKey="quotationId"
-        />
-      </TableCard>
+      <CardContainer>
+        <Divider style={{ borderColor: "#007bff" }}>Quotation List</Divider>
+        <TableCard title="Customer Inquiries">
+          <CustomTable
+            size="small"
+            columns={columnsCustomerInquiry}
+            dataSource={data.customerInquiry.slice(0, 5)}
+            pagination={false}
+            rowKey="customInquiryId"
+          />
+        </TableCard>
+        <TableCard title="Supplier Inquiries">
+          <CustomTable
+            size="small"
+            columns={columnsSupplierInquiry}
+            dataSource={data.supplierInquiry.slice(0, 5)}
+            pagination={false}
+            rowKey="supplierInquiryId"
+          />
+        </TableCard>
+        <TableCard title="Quotations">
+          <CustomTable
+            size="small"
+            columns={columnsQuotation}
+            dataSource={data.quotationListByMemberId.slice(0, 5)}
+            pagination={false}
+            rowKey="quotationId"
+          />
+        </TableCard>
+      </CardContainer>
     </Container>
   );
 };

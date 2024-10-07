@@ -10,7 +10,11 @@ import {
 } from "antd";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import { deleteQutation, fetchQuotationDetail } from "../../api/api";
+import {
+  confirmQutation,
+  deleteQutation,
+  fetchQuotationDetail,
+} from "../../api/api";
 import { QuotationDetail } from "../../types/types";
 
 interface DetailQuotationModalProps {
@@ -108,6 +112,8 @@ const DetailQuotationModal = ({
   const [currencySymbol, setCurrencySymbol] = useState("");
   const navigate = useNavigate();
 
+  console.log(quotationDetail);
+
   useEffect(() => {
     const fetchDetails = async () => {
       if (open) {
@@ -192,21 +198,41 @@ const DetailQuotationModal = ({
     console.log("Edit");
   };
 
-  const handleDeleteClick = () => {
+  const handleConfirmClick = () => {
     Modal.confirm({
-      title: "삭제 확인",
-      content: "정말로 삭제하시겠습니까?",
-      okText: "삭제",
-      cancelText: "취소",
+      title: "Confirm Quotation",
+      content: "Are you sure you want to confirm this quotation?",
+      okText: "Confirm",
+      cancelText: "Cancel",
       onOk: async () => {
         try {
-          await deleteQutation(quotationId);
-          message.success("성공적으로 삭제되었습니다.");
+          await confirmQutation(quotationId);
+          message.success("Quotation confirmed successfully.");
           onClose();
           fetchData();
         } catch (error) {
-          console.error("삭제 중 오류가 발생했습니다:", error);
-          message.error("삭제에 실패했습니다. 다시 시도해 주세요.");
+          console.error("Error confirming the quotation:", error);
+          message.error("Failed to confirm the quotation. Please try again.");
+        }
+      },
+    });
+  };
+
+  const handleDeleteClick = () => {
+    Modal.confirm({
+      title: "Delete Confirmation",
+      content: "Are you sure you want to delete this?",
+      okText: "Delete",
+      cancelText: "Cancel",
+      onOk: async () => {
+        try {
+          await deleteQutation(quotationId);
+          message.success("Deleted successfully.");
+          onClose();
+          fetchData();
+        } catch (error) {
+          console.error("Error occurred while deleting:", error);
+          message.error("Failed to delete. Please try again.");
         }
       },
     });
@@ -317,7 +343,10 @@ const DetailQuotationModal = ({
       open={open}
       onCancel={onClose}
       footer={[
-        <Button type="primary" key="edit" onClick={handleEditClick}>
+        <Button type="primary" key="edit" onClick={handleConfirmClick}>
+          Confirm
+        </Button>,
+        <Button type="default" key="edit" onClick={handleEditClick}>
           Edit
         </Button>,
         <Button key="delete" danger onClick={handleDeleteClick}>

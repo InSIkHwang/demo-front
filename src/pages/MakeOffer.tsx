@@ -106,6 +106,7 @@ const MakeOffer = () => {
   useEffect(() => {
     loadOfferDetail();
   }, []);
+console.log(info);
 
   // formValues의 currency가 변경될 때 updateGlobalPrices 호출
   useEffect(() => {

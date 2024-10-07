@@ -360,7 +360,7 @@ const OfferList = () => {
 
   const handleEditClick = (info: any) => {
     navigate(`/makeoffer/${info.supplierInquiryId}`, {
-      state: { info }, // 상세 정보를 상태로 전달
+      state: { info, catrgory: "offer" }, // 상세 정보를 상태로 전달
     });
   };
 

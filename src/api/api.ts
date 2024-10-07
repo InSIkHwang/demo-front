@@ -576,6 +576,11 @@ export const deleteQutation = async (quotationId: number) => {
   await axios.put(`/api/quotations/${quotationId}/trash`);
 };
 
+//QUOTATION 확정
+export const confirmQutation = async (quotationId: number) => {
+  await axios.post(`/api/quotations/confirm/${quotationId}`);
+};
+
 //----------------------------------------------------------------------------------
 //휴지통
 
