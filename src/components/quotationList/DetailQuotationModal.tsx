@@ -42,6 +42,10 @@ const StyledModal = styled(Modal)`
     font-weight: 600;
     color: #333;
   }
+  .descriptions-totals .ant-descriptions-item-label,
+  .ant-descriptions-item-content {
+    text-align: center;
+  }
   .ant-descriptions-item-content {
     color: #666;
   }
@@ -60,10 +64,37 @@ const TagStyled = styled(Tag)`
   margin-right: 8px;
 `;
 
+const DividerStyled = styled(Divider)`
+  height: 1.5em;
+`;
+
+const TableStyled = styled(Table)`
+  .ant-table-thead .ant-table-cell {
+    font-size: 13px;
+    text-align: center;
+  }
+  .ant-table-tbody {
+    font-size: 13px;
+  }
+`;
+
+const AmountTotal = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+`;
+
 // Constants and utility functions
 const SPECIAL_ITEM_TYPES = ["MAKER", "TYPE", "DESC"];
 
 const isSpecialItemType = (type: string) => SPECIAL_ITEM_TYPES.includes(type);
+
+const currencySymbols = {
+  USD: "$",
+  INR: "₹",
+  EUR: "€",
+  JPY: "¥",
+} as const;
 
 const DetailQuotationModal = ({
   open,
@@ -74,6 +105,7 @@ const DetailQuotationModal = ({
   const [quotationDetail, SetquotationDetail] =
     useState<QuotationDetail | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [currencySymbol, setCurrencySymbol] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -83,6 +115,18 @@ const DetailQuotationModal = ({
           SetquotationDetail(null);
           const data = await fetchQuotationDetail(quotationId);
           SetquotationDetail(data);
+          const currencyType =
+            quotationDetail?.quotationDocumentDetail.currencyType;
+          if (
+            currencyType &&
+            currencySymbols[currencyType as keyof typeof currencySymbols]
+          ) {
+            setCurrencySymbol(
+              currencySymbols[currencyType as keyof typeof currencySymbols]
+            );
+          } else {
+            setCurrencySymbol(""); // currencyType이 undefined일 경우 빈 문자열 설정
+          }
         } catch (error) {
           message.error("상세 정보를 가져오는 중 오류가 발생했습니다:");
         } finally {
@@ -93,6 +137,56 @@ const DetailQuotationModal = ({
 
     fetchDetails();
   }, [open, quotationId]);
+
+  // 총합 계산
+  const totalItem = quotationDetail?.quotationItemDetailResponseList.reduce(
+    (acc, item) => (item.itemType === "ITEM" ? acc + 1 : acc),
+    0
+  );
+
+  const totalSalesAmountKrw =
+    quotationDetail?.quotationItemDetailResponseList.reduce(
+      (acc, item) => acc + (item.salesAmountKRW || 0),
+      0
+    );
+
+  const totalPurchaseAmountKrw =
+    quotationDetail?.quotationItemDetailResponseList.reduce(
+      (acc, item) => acc + (item.purchaseAmountKRW || 0),
+      0
+    );
+
+  const totalSalesAmountGlobal =
+    quotationDetail?.quotationItemDetailResponseList.reduce(
+      (acc, item) => acc + (item.salesAmountGlobal || 0),
+      0
+    );
+
+  const totalPurchaseAmountGlobal =
+    quotationDetail?.quotationItemDetailResponseList.reduce(
+      (acc, item) => acc + (item.purchaseAmountGlobal || 0),
+      0
+    );
+
+  // 총 마진 계산
+  const totalMarginAmountKrw =
+    (totalSalesAmountKrw ?? 0) - (totalPurchaseAmountKrw ?? 0);
+  const totalMarginAmountGlobal =
+    (totalSalesAmountGlobal ?? 0) - (totalPurchaseAmountGlobal ?? 0);
+
+  // 매출 마진 계산
+  const salesMarginAmount = totalSalesAmountKrw ?? 0;
+  const salesMarginRate =
+    salesMarginAmount !== 0
+      ? ((totalMarginAmountKrw / salesMarginAmount) * 100).toFixed(2)
+      : 0;
+
+  // 매입 마진 계산
+  const purchaseMarginAmount = totalPurchaseAmountKrw ?? 0;
+  const purchaseMarginRate =
+    purchaseMarginAmount !== 0
+      ? ((totalMarginAmountKrw / purchaseMarginAmount) * 100).toFixed(2)
+      : 0;
 
   const handleEditClick = () => {
     console.log("Edit");
@@ -201,7 +295,7 @@ const DetailQuotationModal = ({
         if (isSpecialItemType(record.itemType)) {
           return null;
         }
-        return typeof text === "number" ? `${text.toFixed(2)}%` : "0";
+        return typeof text === "number" ? `${text.toFixed(2)}%` : "0.00%";
       },
     },
     {
@@ -268,9 +362,6 @@ const DetailQuotationModal = ({
               <Descriptions.Item label="Vessel HullNo">
                 {quotationDetail.quotationDocumentDetail.vesselHullNo}
               </Descriptions.Item>
-              <Descriptions.Item label="Remark">
-                {quotationDetail.quotationDocumentDetail.docRemark}
-              </Descriptions.Item>
               <Descriptions.Item label="Manager">
                 {quotationDetail.quotationDocumentDetail.docManager}
               </Descriptions.Item>
@@ -291,10 +382,62 @@ const DetailQuotationModal = ({
                   )
                 )}
               </Descriptions.Item>
+              <Descriptions.Item label="Remark">
+                {quotationDetail.quotationDocumentDetail.docRemark}
+              </Descriptions.Item>
             </Descriptions>
-            <Divider />
-            <h3>Items</h3>
-            <Table
+            <Descriptions
+              className="descriptions-totals"
+              layout="vertical"
+              bordered
+              column={7}
+              size="small"
+              style={{ marginTop: 10 }}
+            >
+              <Descriptions.Item label="Total Item">
+                {totalItem}
+              </Descriptions.Item>
+              <Descriptions.Item label="Total Sales Amount">
+                <AmountTotal>
+                  <span>{`₩ ${totalSalesAmountKrw?.toLocaleString()}`}</span>
+                  <DividerStyled
+                    style={{ borderColor: "#ccc" }}
+                    type="vertical"
+                  />
+                  <span>{`${currencySymbol} ${totalSalesAmountGlobal?.toLocaleString()}`}</span>
+                </AmountTotal>
+              </Descriptions.Item>
+              <Descriptions.Item label="Total Purchase Amount">
+                <AmountTotal>
+                  <span>{`₩ ${totalPurchaseAmountKrw?.toLocaleString()}`}</span>
+                  <DividerStyled
+                    style={{ borderColor: "#ccc" }}
+                    type="vertical"
+                  />
+                  <span>{`${currencySymbol} ${totalPurchaseAmountGlobal?.toLocaleString()}`}</span>
+                </AmountTotal>
+              </Descriptions.Item>
+              <Descriptions.Item label="Total Margin Amount">
+                <AmountTotal>
+                  <span>{`₩ ${totalMarginAmountKrw?.toLocaleString()}`}</span>
+                  <DividerStyled
+                    style={{ borderColor: "#ccc" }}
+                    type="vertical"
+                  />
+                  <span>{`${currencySymbol} ${totalMarginAmountGlobal?.toLocaleString()}`}</span>
+                </AmountTotal>
+              </Descriptions.Item>
+              <Descriptions.Item label="Purchase Margin Rate">
+                {`${purchaseMarginRate}%`}
+              </Descriptions.Item>
+              <Descriptions.Item label="Sales Margin Rate">
+                {`${salesMarginRate}%`}
+              </Descriptions.Item>
+            </Descriptions>
+            <Divider variant="dashed" style={{ borderColor: "#007bff" }}>
+              Items
+            </Divider>
+            <TableStyled
               columns={columns}
               dataSource={quotationDetail.quotationItemDetailResponseList}
               pagination={false}
