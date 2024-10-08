@@ -60,6 +60,36 @@ const INITIAL_FORM_VALUES = {
   supplierName: "",
 };
 
+const INITIAL_TABLE_VALUES: InquiryItem[] = [
+  {
+    itemCode: "",
+    itemType: "MAKER",
+    unit: "",
+    itemName: "",
+    qty: 0,
+    itemRemark: "",
+    position: 1,
+  },
+  {
+    itemCode: "",
+    itemType: "TYPE",
+    unit: "",
+    itemName: "",
+    qty: 0,
+    itemRemark: "",
+    position: 2,
+  },
+  {
+    itemCode: "",
+    itemType: "ITEM",
+    unit: "",
+    itemName: "",
+    qty: 0,
+    itemRemark: "",
+    position: 3,
+  },
+];
+
 const getSupplierMap = (
   itemDetails: InquiryItem[]
 ): { id: number; name: string; code: string; email: string }[] => {
@@ -141,6 +171,8 @@ const MakeInquiry = () => {
   const [isLoading, setIsLoading] = useState(true); // 로딩 상태 변수 추가
   const [isDocNumDuplicate, setIsDocNumDuplicate] = useState<boolean>(false);
 
+  console.log(items);
+
   useEffect(() => {
     if (customerInquiryId) {
       fetchDetail();
@@ -178,7 +210,7 @@ const MakeInquiry = () => {
       setIsEditMode(false);
       // 데이터 초기화
       setFormValues(INITIAL_FORM_VALUES);
-      setItems([]);
+      setItems(INITIAL_TABLE_VALUES);
       setSelectedSuppliers([]);
       setSelectedSupplierTag([]);
       setPdfSupplierTag([]);
