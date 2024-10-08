@@ -308,6 +308,44 @@ export interface QuotationDetail {
   }>;
 }
 
+export interface orderAllResponses {
+  orderId: number;
+  documentNumber: string;
+  registerDate: string;
+  shippingDate: string;
+  companyName: string;
+  refNumber: string;
+  currencyType: string;
+  currency: number;
+  vesselName: string;
+  docRemark: string;
+  docManager: string;
+  documentStatus: string;
+}
+export interface OrderItemDetail {
+  itemType: string;
+  itemCode: string;
+  itemName: string;
+  itemRemark: string;
+  qty: number;
+  position: number;
+  unit: string;
+  salesPriceKRW: number;
+  salesPriceGlobal: number;
+  salesAmountKRW: number;
+  salesAmountGlobal: number;
+  margin: number | null;
+  purchasePriceKRW: number;
+  purchasePriceGlobal: number;
+  purchaseAmountKRW: number;
+  purchaseAmountGlobal: number;
+}
+
+export interface OrderResponse {
+  orderDocumentDetail: orderAllResponses;
+  orderItemDetailResponseList: OrderItemDetail[];
+}
+
 export interface InvCharge {
   invChargeId: number | null; // invChargeId는 number 또는 null일 수 있습니다.
   customCharge: string;

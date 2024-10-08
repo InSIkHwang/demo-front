@@ -776,7 +776,7 @@ const TableComponent = ({
         return (
           <Input
             type="text"
-            value={text.toLocaleString()}
+            value={text?.toLocaleString()}
             ref={(el) => {
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
@@ -913,7 +913,7 @@ const TableComponent = ({
             value={calculateTotalAmount(
               record.salesPriceKRW,
               record.qty
-            ).toLocaleString()}
+            )?.toLocaleString()}
             style={{ width: "100%" }}
             readOnly
             addonBefore="₩"
@@ -933,7 +933,7 @@ const TableComponent = ({
             value={calculateTotalAmount(
               record.salesPriceGlobal,
               record.qty
-            ).toLocaleString()}
+            )?.toLocaleString()}
             style={{ width: "100%" }}
             readOnly
             addonBefore="F"
@@ -1063,7 +1063,7 @@ const TableComponent = ({
             value={calculateTotalAmount(
               record.purchasePriceKRW,
               record.qty
-            ).toLocaleString()} // Display formatted value
+            )?.toLocaleString()} // Display formatted value
             onChange={(e) =>
               handleInputChange(index, "purchaseAmountKRW", e.target.value)
             }
@@ -1086,7 +1086,7 @@ const TableComponent = ({
             value={calculateTotalAmount(
               record.purchasePriceGlobal,
               record.qty
-            ).toLocaleString()} // Display formatted value
+            )?.toLocaleString()} // Display formatted value
             onChange={(e) =>
               handleInputChange(index, "purchaseAmountGlobal", e.target.value)
             }
@@ -1168,31 +1168,31 @@ const TableComponent = ({
         <TotalCard>
           <span>Sales Amount(KRW)</span>
           <span className="value">
-            ₩ {finalTotals.totalSalesAmountKRW.toLocaleString()}
+            ₩ {finalTotals.totalSalesAmountKRW?.toLocaleString()}
           </span>
         </TotalCard>
         <TotalCard>
           <span>Sales Amount(F)</span>
           <span className="value">
-            F {finalTotals.totalSalesAmountGlobal.toLocaleString()}
+            F {finalTotals.totalSalesAmountGlobal?.toLocaleString()}
           </span>
         </TotalCard>
         <TotalCard>
           <span>Purchase Amount(KRW)</span>
           <span className="value">
-            ₩ {finalTotals.totalPurchaseAmountKRW.toLocaleString()}
+            ₩ {finalTotals.totalPurchaseAmountKRW?.toLocaleString()}
           </span>
         </TotalCard>
         <TotalCard>
           <span>Purchase Amount(F)</span>
           <span className="value">
-            F {finalTotals.totalPurchaseAmountGlobal.toLocaleString()}
+            F {finalTotals.totalPurchaseAmountGlobal?.toLocaleString()}
           </span>
         </TotalCard>
         <TotalCard $isHighlight $isPositive={finalTotals.totalProfit >= 0}>
           <span>Profit Amount</span>
           <span className="value">
-            ₩ {finalTotals.totalProfit.toLocaleString()}
+            ₩ {finalTotals.totalProfit?.toLocaleString()}
           </span>
         </TotalCard>
         <TotalCard

@@ -17,6 +17,7 @@ import LoadingSpinner from "./components/LoadingSpinner";
 import OfferList from "./pages/OfferList";
 import QuotationList from "./pages/QuotationList";
 import TrashList from "./pages/TrashList";
+import OrderList from "./pages/OrderList";
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -136,6 +137,12 @@ const App = () => {
             path="/quotationlist"
             element={
               isAuthenticated ? <QuotationList /> : <Navigate to="/userlogin" />
+            }
+          />
+          <Route
+            path="/orderlist"
+            element={
+              isAuthenticated ? <OrderList /> : <Navigate to="/userlogin" />
             }
           />
           <Route

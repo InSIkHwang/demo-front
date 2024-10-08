@@ -1,20 +1,12 @@
-import React, { useState, useEffect } from "react";
-import {
-  Table,
-  Input,
-  Button as AntButton,
-  Select,
-  Pagination,
-  DatePicker,
-  Tag,
-} from "antd";
+import { useState, useEffect } from "react";
+import { Table, Button as AntButton, Pagination, Tag } from "antd";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import styled from "styled-components";
-import { fetchQuotationList, searchQutationList } from "../api/api";
+import { fetchOrderList } from "../api/api";
 import type { ColumnsType } from "antd/es/table";
-import { Quotation } from "../types/types";
+import { orderAllResponses } from "../types/types";
 import { useNavigate } from "react-router-dom";
-import DetailQuotationModal from "../components/quotationList/DetailQuotationModal";
+import DetailOrderModal from "../components/orderList/DetailOrderModal";
 
 const Container = styled.div`
   position: relative;
@@ -59,7 +51,7 @@ const PaginationWrapper = styled(Pagination)`
   justify-content: center;
 `;
 
-const columns: ColumnsType<Quotation> = [
+const columns: ColumnsType<orderAllResponses> = [
   {
     title: "Document Number",
     dataIndex: "documentNumber",
@@ -117,8 +109,13 @@ const columns: ColumnsType<Quotation> = [
   },
   {
     title: "Remark",
-    dataIndex: "remark",
-    key: "remark",
+    dataIndex: "docRemark",
+    key: "docRemark",
+  },
+  {
+    title: "Document Manager",
+    dataIndex: "docManager",
+    key: "docManager",
   },
   {
     title: "Document Status",
@@ -135,9 +132,9 @@ const columns: ColumnsType<Quotation> = [
   },
 ];
 
-const QuotationList = () => {
+const OrderList = () => {
   const navigate = useNavigate();
-  const [data, setData] = useState<Quotation[]>([]);
+  const [data, setData] = useState<orderAllResponses[]>([]);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [searchText, setSearchText] = useState<string>("");
@@ -145,16 +142,14 @@ const QuotationList = () => {
     useState<string>("documentNumber");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage, setItemsPerPage] = useState<number>(30);
-  const [selectedQuotationId, setSelectedQuotationId] = useState<number | null>(
-    null
-  );
+  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
   const [registerStartDate, setRegisterStartDate] = useState<string>("");
   const [registerEndDate, setRegisterEndDate] = useState<string>("");
 
   useEffect(() => {
     if (searchText) {
-      handleSearch();
+      // handleSearch();
     } else {
       fetchData();
     }
@@ -162,8 +157,8 @@ const QuotationList = () => {
 
   const fetchData = async () => {
     try {
-      const response = await fetchQuotationList(currentPage, itemsPerPage);
-      setData(response.quotationList);
+      const response = await fetchOrderList(currentPage, itemsPerPage);
+      setData(response.orderAllResponses);
       setTotalCount(response.totalCount);
     } catch (error) {
       console.error("데이터를 가져오는 중 오류가 발생했습니다:", error);
@@ -184,30 +179,30 @@ const QuotationList = () => {
     };
   }, [isDetailModalOpen]);
 
-  const handleSearch = async () => {
-    setLoading(true);
-    try {
-      const response = await searchQutationList(
-        registerStartDate,
-        registerEndDate,
-        searchCategory === "documentNumber" ? searchText : "",
-        searchCategory === "refNumber" ? searchText : "",
-        searchCategory === "customerName" ? searchText : "",
-        currentPage,
-        itemsPerPage
-      );
+  // const handleSearch = async () => {
+  //   setLoading(true);
+  //   try {
+  //     const response = await searchQutationList(
+  //       registerStartDate,
+  //       registerEndDate,
+  //       searchCategory === "documentNumber" ? searchText : "",
+  //       searchCategory === "refNumber" ? searchText : "",
+  //       searchCategory === "customerName" ? searchText : "",
+  //       currentPage,
+  //       itemsPerPage
+  //     );
 
-      setData(response.quotationList);
-      setTotalCount(response.totalCount);
-    } catch (error) {
-      console.error("검색 중 오류가 발생했습니다:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     setData(response.quotationList);
+  //     setTotalCount(response.totalCount);
+  //   } catch (error) {
+  //     console.error("검색 중 오류가 발생했습니다:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
-  const handleRowClick = (record: Quotation) => {
-    setSelectedQuotationId(record.quotationId);
+  const handleRowClick = (record: orderAllResponses) => {
+    setSelectedOrderId(record.orderId);
     setIsDetailModalOpen(true);
   };
 
@@ -223,9 +218,9 @@ const QuotationList = () => {
   return (
     <>
       <Container>
-        <Title>최종 견적 - Quotations</Title>
+        <Title>수주 - Orders</Title>
         <TableHeader>
-          <SearchBar>
+          {/* <SearchBar>
             <Select
               defaultValue="documentNumber"
               style={{ width: 140, marginRight: 10 }}
@@ -262,7 +257,7 @@ const QuotationList = () => {
             <Button type="primary" onClick={handleSearch}>
               Search
             </Button>
-          </SearchBar>
+          </SearchBar> */}
         </TableHeader>
         {data.length > 0 && ( // 데이터가 있을 때만 페이지네이션을 표시
           <>
@@ -299,11 +294,11 @@ const QuotationList = () => {
           </>
         )}
       </Container>
-      {selectedQuotationId !== null && (
-        <DetailQuotationModal
+      {selectedOrderId !== null && (
+        <DetailOrderModal
           open={isDetailModalOpen}
           onClose={() => setIsDetailModalOpen(false)}
-          quotationId={selectedQuotationId}
+          orderId={selectedOrderId}
           fetchData={fetchData}
         />
       )}
@@ -311,4 +306,4 @@ const QuotationList = () => {
   );
 };
 
-export default QuotationList;
+export default OrderList;

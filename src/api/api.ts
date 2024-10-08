@@ -7,6 +7,7 @@ import {
   Inquiry,
   Item,
   ItemDataType,
+  orderAllResponses,
   Quotation,
   Supplier,
   SupplierInquiryListIF,
@@ -579,6 +580,31 @@ export const deleteQutation = async (quotationId: number) => {
 //QUOTATION 확정
 export const confirmQutation = async (quotationId: number) => {
   await axios.post(`/api/quotations/confirm/${quotationId}`);
+};
+
+//----------------------------------------------------------------------------------
+// ORDER 조회 관련
+
+//ORDER 조회
+export const fetchOrderList = async (page: number, pageSize: number) => {
+  const response = await axios.get<{
+    totalCount: number;
+    orderAllResponses: orderAllResponses[];
+  }>("/api/orders", {
+    params: {
+      page: page - 1, // 페이지는 0부터 시작
+      pageSize: pageSize, // 페이지당 아이템 수
+    },
+  });
+
+  return response.data;
+};
+
+//ORDER 상세 정보 조회
+export const fetchOrderDetail = async (orderId: number) => {
+  const response = await axios.get(`/api/orders/${orderId}`);
+
+  return response.data;
 };
 
 //----------------------------------------------------------------------------------

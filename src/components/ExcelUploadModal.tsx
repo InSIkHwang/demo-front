@@ -1,9 +1,7 @@
 import React, { useState } from "react";
-import { Modal, Upload, Table, message, Button, Spin } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+import { Modal, Upload, Table, message, Button, Spin, Select } from "antd";
+import { DeleteOutlined, UploadOutlined } from "@ant-design/icons";
 import * as XLSX from "xlsx";
-import { InquiryItem } from "../types/types";
-import { fetchItemData } from "../api/api";
 import styled from "styled-components";
 
 const BlockingLayer = styled.div`
@@ -14,9 +12,15 @@ const BlockingLayer = styled.div`
   height: 100vh;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 10000;
-  display: flex; /* 중앙 정렬을 위해 flex 사용 */
-  justify-content: center; /* 가로 중앙 정렬 */
-  align-items: center; /* 세로 중앙 정렬 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+const CustomTable = styled(Table)`
+  .ant-table * {
+    font-size: 12px;
+  }
 `;
 
 interface ExcelUploadModalProps {
@@ -36,11 +40,24 @@ const ExcelUploadModal = ({
   type,
   onOverWrite,
 }: ExcelUploadModalProps) => {
-  const [excelData, setExcelData] = useState<InquiryItem[]>([]);
+  const [excelData, setExcelData] = useState<any[]>([]);
   const [fileList, setFileList] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [headerMapping, setHeaderMapping] = useState<
+    Record<string, string | null>
+  >({});
 
-  const expectedHeader = ["partNo", "itemName", "qty", "unit", "itemRemark"];
+  const availableHeaders = [
+    "itemCode",
+    "itemType",
+    "itemName",
+    "qty",
+    "unit",
+    "itemRemark",
+    "purchasePriceKRW",
+    "purchasePriceGlobal",
+    "margin",
+  ];
 
   const handleExcelUpload = (file: any) => {
     setExcelData([]);
@@ -55,177 +72,169 @@ const ExcelUploadModal = ({
         header: 1,
       }) as any[][];
 
-      // 헤더 검증
+      // 헤더 설정을 비워둠
       const fileHeader = jsonData[0] || [];
-      const headerMapping: Record<string, string> = {
-        partNo: "itemCode",
-        "purchase price(KRW)": "purchasePriceKRW",
-        "purchase price(Global)": "purchasePriceGlobal",
-        margin: "margin",
-      };
-
-      if (
-        fileHeader.length < expectedHeader.length ||
-        !expectedHeader.every((header) => fileHeader.includes(header))
-      ) {
-        message.error(
-          "The uploaded file's header does not match the expected format."
-        );
-        setFileList([]); // 파일 제거
-        return;
-      }
-
-      const mappedHeaders = fileHeader.map(
-        (header) => headerMapping[header] || header
-      );
-
-      // 데이터 추출 및 itemType 설정
-      const dataArray = jsonData.slice(1).map((row: any[], index: number) => {
-        const rowData: any = { position: index + 1, itemType: "ITEM" };
-
-        mappedHeaders.forEach((header, colIdx) => {
-          if (header === "qty") {
-            // qty는 숫자로 변환
-            rowData[header] = parseFloat(row[colIdx]) || 0;
-          } else {
-            // 나머지 컬럼은 문자열로 변환, 빈 문자열 대신 null로 설정
-            rowData[header] =
-              row[colIdx] !== undefined && row[colIdx] !== null
-                ? String(row[colIdx])
-                : "";
-          }
-        });
-
-        // type이 "offer"인 경우 가격 계산 처리
-        if (type === "offer") {
-          // 문자열을 숫자 형식으로 변환
-          const purchasePriceKRW = parseFloat(rowData.purchasePriceKRW) || 0;
-          const purchasePriceGlobal =
-            parseFloat(rowData.purchasePriceGlobal) || 0;
-          const qty = rowData.qty; // 이미 숫자로 변환됨
-
-          const marginPercent = parseFloat(rowData.margin) || 0; // margin을 퍼센트로 변환
-          rowData.margin = marginPercent || 0; // margin 값이 없는 경우 기본값 설정
-
-          if (purchasePriceKRW && !purchasePriceGlobal) {
-            rowData.purchasePriceGlobal =
-              parseFloat((purchasePriceKRW / currency || 0).toFixed(2)) || 0;
-
-            // purchaseAmount 계산
-            rowData.purchaseAmountKRW =
-              parseFloat((purchasePriceKRW * qty).toFixed(2)) || 0; // 비어있다면 0으로 설정
-            rowData.purchaseAmountGlobal =
-              parseFloat((rowData.purchasePriceGlobal * qty).toFixed(2)) || 0; // 비어있다면 0으로 설정
-
-            // margin이 있는 경우 salesPrice 계산
-            if (marginPercent) {
-              const marginValueKRW = (purchasePriceKRW * marginPercent) / 100;
-              rowData.salesPriceKRW =
-                parseFloat((purchasePriceKRW + marginValueKRW).toFixed(2)) || 0; // 비어있다면 0으로 설정
-              rowData.salesPriceGlobal =
-                parseFloat((rowData.salesPriceKRW / currency).toFixed(2)) || 0; // 비어있다면 0으로 설정
-
-              // salesAmount 계산
-              rowData.salesAmountKRW =
-                parseFloat((rowData.salesPriceKRW * qty).toFixed(2)) || 0; // 비어있다면 0으로 설정
-              rowData.salesAmountGlobal =
-                parseFloat((rowData.salesPriceGlobal * qty).toFixed(2)) || 0; // 비어있다면 0으로 설정
-            }
-          } else if (!purchasePriceKRW && purchasePriceGlobal) {
-            rowData.purchasePriceKRW =
-              Math.round(purchasePriceGlobal * currency || 0) || 0; // 비어있다면 0으로 설정
-
-            // purchaseAmount 계산
-            rowData.purchaseAmountKRW =
-              parseFloat((rowData.purchasePriceKRW * qty).toFixed(2)) || 0; // 비어있다면 0으로 설정
-            rowData.purchaseAmountGlobal =
-              parseFloat((purchasePriceGlobal * qty).toFixed(2)) || 0; // 비어있다면 0으로 설정
-
-            // margin이 있는 경우 salesPrice 계산
-            if (marginPercent) {
-              const marginValueGlobal =
-                (purchasePriceGlobal * marginPercent) / 100;
-              rowData.salesPriceGlobal =
-                parseFloat(
-                  (purchasePriceGlobal + marginValueGlobal).toFixed(2)
-                ) || 0; // 비어있다면 0으로 설정
-              rowData.salesPriceKRW =
-                Math.round(rowData.salesPriceGlobal * currency || 0) || 0; // 비어있다면 0으로 설정
-
-              // salesAmount 계산
-              rowData.salesAmountKRW =
-                parseFloat((rowData.salesPriceKRW * qty).toFixed(2)) || 0; // 비어있다면 0으로 설정
-              rowData.salesAmountGlobal =
-                parseFloat((rowData.salesPriceGlobal * qty).toFixed(2)) || 0; // 비어있다면 0으로 설정
-            }
-          }
-        }
-
-        // 가격 관련 필드 null 대신 0으로 설정
-        rowData.purchasePriceKRW = rowData.purchasePriceKRW || 0;
-        rowData.purchasePriceGlobal = rowData.purchasePriceGlobal || 0;
-        rowData.purchaseAmountKRW = rowData.purchaseAmountKRW || 0;
-        rowData.purchaseAmountGlobal = rowData.purchaseAmountGlobal || 0;
-        rowData.salesPriceKRW = rowData.salesPriceKRW || 0;
-        rowData.salesPriceGlobal = rowData.salesPriceGlobal || 0;
-        rowData.salesAmountKRW = rowData.salesAmountKRW || 0;
-        rowData.salesAmountGlobal = rowData.salesAmountGlobal || 0;
-
-        return rowData;
+      const initialMapping: Record<string, string | null> = {};
+      fileHeader.forEach((header: string, index: number) => {
+        initialMapping[`column_${index}`] = null;
       });
 
-      setExcelData(dataArray);
+      setHeaderMapping(initialMapping);
+      setExcelData(jsonData);
     };
     reader.readAsArrayBuffer(file);
     return false;
   };
 
-  const fetchItemId = async (item: { itemCode: string; itemName: string }) => {
-    if ((item.itemCode + "").trim() === "") {
-      return { ...item, itemId: null };
+  const calculatePricing = (mappedRow: any, currency: number, type: string) => {
+    const purchasePriceKRW = parseFloat(mappedRow.purchasePriceKRW) || 0;
+    const purchasePriceGlobal = parseFloat(mappedRow.purchasePriceGlobal) || 0;
+    const qty = mappedRow.qty;
+    const marginPercent = parseFloat(mappedRow.margin) || 0;
+
+    // 가격 계산 처리
+    if (type === "offer") {
+      if (purchasePriceKRW && !purchasePriceGlobal) {
+        mappedRow.purchasePriceGlobal =
+          parseFloat((purchasePriceKRW / currency).toFixed(2)) || 0;
+      } else if (!purchasePriceKRW && purchasePriceGlobal) {
+        mappedRow.purchasePriceKRW =
+          Math.round(purchasePriceGlobal * currency) || 0;
+      }
+
+      mappedRow.purchaseAmountKRW =
+        parseFloat((mappedRow.purchasePriceKRW * qty).toFixed(2)) || 0;
+      mappedRow.purchaseAmountGlobal =
+        parseFloat((mappedRow.purchasePriceGlobal * qty).toFixed(2)) || 0;
+
+      if (marginPercent) {
+        const marginValueKRW = (purchasePriceKRW * marginPercent) / 100;
+        const marginValueGlobal = (purchasePriceGlobal * marginPercent) / 100;
+
+        if (purchasePriceKRW) {
+          mappedRow.salesPriceKRW =
+            parseFloat((purchasePriceKRW + marginValueKRW).toFixed(2)) || 0;
+          mappedRow.salesPriceGlobal =
+            parseFloat((mappedRow.salesPriceKRW / currency).toFixed(2)) || 0;
+        } else {
+          mappedRow.salesPriceGlobal =
+            parseFloat((purchasePriceGlobal + marginValueGlobal).toFixed(2)) ||
+            0;
+          mappedRow.salesPriceKRW =
+            Math.round(mappedRow.salesPriceGlobal * currency) || 0;
+        }
+
+        mappedRow.salesAmountKRW =
+          parseFloat((mappedRow.salesPriceKRW * qty).toFixed(2)) || 0;
+        mappedRow.salesAmountGlobal =
+          parseFloat((mappedRow.salesPriceGlobal * qty).toFixed(2)) || 0;
+      }
     }
 
-    try {
-      const { items } = await fetchItemData(item.itemCode);
-
-      const fetchedItem = Array.isArray(items)
-        ? items.find(
-            (fetched) =>
-              fetched.itemCode === item.itemCode &&
-              fetched.itemName === item.itemName
-          )
-        : null;
-
-      const itemId = fetchedItem ? fetchedItem.itemId : null;
-
-      return { ...item, itemId };
-    } catch (error) {
-      message.error("Error fetching item ID for code:");
-      return { ...item, itemId: null };
-    }
+    // 가격 관련 필드 기본값 설정
+    mappedRow.purchasePriceKRW = mappedRow.purchasePriceKRW || 0;
+    mappedRow.purchasePriceGlobal = mappedRow.purchasePriceGlobal || 0;
+    mappedRow.purchaseAmountKRW = mappedRow.purchaseAmountKRW || 0;
+    mappedRow.purchaseAmountGlobal = mappedRow.purchaseAmountGlobal || 0;
+    mappedRow.salesPriceKRW = mappedRow.salesPriceKRW || 0;
+    mappedRow.salesPriceGlobal = mappedRow.salesPriceGlobal || 0;
+    mappedRow.salesAmountKRW = mappedRow.salesAmountKRW || 0;
+    mappedRow.salesAmountGlobal = mappedRow.salesAmountGlobal || 0;
   };
 
-  const handleExcelData = async (applyFunc: (data: any[]) => void) => {
-    setLoading(true); // 로딩 시작
-    const updatedData = await Promise.all(excelData.map(fetchItemId));
+  const handleApplyExcelData = () => {
+    const mappedData = excelData
+      .map((row) => {
+        const mappedRow: any = {};
+        Object.keys(headerMapping).forEach((key, index) => {
+          const mappedKey = headerMapping[key];
+          if (mappedKey) {
+            if (
+              mappedKey === "qty" ||
+              mappedKey === "purchasePriceKRW" ||
+              mappedKey === "purchasePriceGlobal" ||
+              mappedKey === "margin"
+            ) {
+              mappedRow[mappedKey] = parseFloat(row[index]) || 0;
+            } else {
+              mappedRow[mappedKey] =
+                row[index] !== undefined && row[index] !== null
+                  ? String(row[index])
+                  : "";
+            }
+          }
+        });
 
-    applyFunc(updatedData); // 적용할 함수를 인자로 전달
-    setLoading(false); // 로딩 완료
+        // itemType이 없으면 기본값 "ITEM" 설정
+        if (!mappedRow["itemType"]) {
+          mappedRow["itemType"] = "ITEM";
+        }
+
+        // 가격 계산 호출
+        calculatePricing(mappedRow, currency, type);
+
+        return mappedRow;
+      })
+      .filter((row) => Object.keys(row).length > 0);
+
+    onApply(mappedData);
   };
 
-  const handleApplyExcelData = async () => {
-    await handleExcelData(onApply); // onApply 함수 전달
+  const handleOverwriteExcelData = () => {
+    const mappedData = excelData
+      .map((row) => {
+        const mappedRow: any = {};
+        Object.keys(headerMapping).forEach((key, index) => {
+          const mappedKey = headerMapping[key];
+          if (mappedKey) {
+            if (
+              mappedKey === "qty" ||
+              mappedKey === "purchasePriceKRW" ||
+              mappedKey === "purchasePriceGlobal" ||
+              mappedKey === "margin"
+            ) {
+              mappedRow[mappedKey] = parseFloat(row[index]) || 0;
+            } else {
+              mappedRow[mappedKey] =
+                row[index] !== undefined && row[index] !== null
+                  ? String(row[index])
+                  : "";
+            }
+          }
+        });
+
+        // itemType이 없으면 기본값 "ITEM" 설정
+        if (!mappedRow["itemType"]) {
+          mappedRow["itemType"] = "ITEM";
+        }
+
+        // 가격 계산 호출
+        calculatePricing(mappedRow, currency, type);
+
+        return mappedRow;
+      })
+      .filter((row) => Object.keys(row).length > 0);
+    console.log(mappedData);
+
+    onOverWrite(mappedData);
   };
 
-  const handleOverwriteExcelData = async () => {
-    await handleExcelData(onOverWrite); // onOverWrite 함수 전달
+  const handleMappingChange = (fileHeader: string, selectedHeader: string) => {
+    setHeaderMapping((prev) => ({
+      ...prev,
+      [fileHeader]: selectedHeader,
+    }));
   };
 
-  const handleRemoveFile = () => {
-    setExcelData([]);
-    setFileList([]);
-    message.success("File removed successfully");
+  const handleDeleteRow = (index: number) => {
+    const newData = [...excelData];
+    newData.splice(index, 1); // 선택한 인덱스의 행 삭제
+    setExcelData(newData); // 새로운 데이터로 상태 업데이트
   };
+
+  const displayHeaders = availableHeaders.map((header) => {
+    return header === "itemCode" ? "partNo" : header;
+  });
 
   return (
     <>
@@ -253,12 +262,12 @@ const ExcelUploadModal = ({
             Add
           </Button>,
         ]}
-        width={1000}
+        width={1300}
       >
         <Upload.Dragger
           beforeUpload={handleExcelUpload}
           fileList={fileList}
-          onRemove={handleRemoveFile}
+          onRemove={() => setFileList([])}
           accept=".xlsx, .xls"
         >
           <p className="ant-upload-drag-icon">
@@ -273,40 +282,62 @@ const ExcelUploadModal = ({
           </p>
         </Upload.Dragger>
         {excelData.length > 0 && (
-          <Table
-            dataSource={excelData}
+          <CustomTable
+            bordered
+            scroll={{ y: 400 }}
+            virtual
+            dataSource={excelData.map((row, index) => ({
+              key: index,
+              ...row.reduce((acc: any, val: any, idx: number) => {
+                acc[`column_${idx}`] = val;
+                return acc;
+              }, {}),
+              // 각 행에 삭제 버튼 추가
+              deleteButton: (
+                <Button
+                  icon={<DeleteOutlined />}
+                  onClick={() => handleDeleteRow(index)}
+                />
+              ),
+            }))}
             columns={[
-              { title: "No.", dataIndex: "position", key: "position" },
-              { title: "Part No.", dataIndex: "itemCode", key: "itemCode" },
-              { title: "Item Name", dataIndex: "itemName", key: "itemName" },
-              { title: "Qty", dataIndex: "qty", key: "qty" },
-              { title: "Unit", dataIndex: "unit", key: "unit" },
+              ...Object.keys(headerMapping).map((key, index) => ({
+                title: (
+                  <Select
+                    value={
+                      headerMapping[key] === "itemCode"
+                        ? "partNo"
+                        : headerMapping[key]
+                    }
+                    onChange={(value) =>
+                      handleMappingChange(
+                        key,
+                        value === "partNo" ? "itemCode" : value
+                      )
+                    }
+                    style={{ width: "100%" }}
+                    dropdownStyle={{ width: "200px" }}
+                  >
+                    {displayHeaders.map((header) => (
+                      <Select.Option
+                        key={header}
+                        value={header === "partNo" ? "itemCode" : header}
+                      >
+                        {header}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                ),
+                dataIndex: `column_${index}`,
+              })),
               {
-                title: "Item Remark",
-                dataIndex: "itemRemark",
-                key: "itemRemark",
+                title: "Actions",
+                dataIndex: "deleteButton",
+                render: (text) => <>{text}</>,
               },
-              ...(type === "offer"
-                ? [
-                    {
-                      title: "Purchase Price (KRW)",
-                      dataIndex: "purchasePriceKRW",
-                      key: "purchasePriceKRW",
-                    },
-                    {
-                      title: "Purchase Price (Global)",
-                      dataIndex: "purchasePriceGlobal",
-                      key: "purchasePriceGlobal",
-                    },
-                    { title: "Margin", dataIndex: "margin", key: "margin" },
-                  ]
-                : []),
             ]}
             pagination={false}
-            bordered
-            style={{ margin: "20px 0", overflowX: "auto" }}
-            virtual
-            scroll={{ y: 500 }}
+            size="small"
           />
         )}
       </Modal>

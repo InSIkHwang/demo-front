@@ -514,15 +514,15 @@ const OfferPDFDocument = ({
                 {(() => {
                   switch (info.currencyType) {
                     case "USD":
-                      return `-$${dcAmountGlobal.toFixed(2).toLocaleString()}`;
+                      return `-$${dcAmountGlobal?.toFixed(2).toLocaleString()}`;
                     case "EUR":
-                      return `-€${dcAmountGlobal.toFixed(2).toLocaleString()}`;
+                      return `-€${dcAmountGlobal?.toFixed(2).toLocaleString()}`;
                     case "INR":
-                      return `-₹${dcAmountGlobal.toFixed(2).toLocaleString()}`;
+                      return `-₹${dcAmountGlobal?.toFixed(2).toLocaleString()}`;
                     case "JPY":
-                      return `-¥${dcAmountGlobal.toFixed(2).toLocaleString()}`;
+                      return `-¥${dcAmountGlobal?.toFixed(2).toLocaleString()}`;
                     default:
-                      return `-${dcAmountGlobal.toFixed(2).toLocaleString()}`;
+                      return `-${dcAmountGlobal?.toFixed(2).toLocaleString()}`;
                   }
                 })()}
               </Text>
@@ -538,23 +538,23 @@ const OfferPDFDocument = ({
                       switch (info.currencyType) {
                         case "USD":
                           return `$${charge.chargePriceGlobal
-                            .toFixed(2)
+                            ?.toFixed(2)
                             .toLocaleString()}`;
                         case "EUR":
                           return `€${charge.chargePriceGlobal
-                            .toFixed(2)
+                            ?.toFixed(2)
                             .toLocaleString()}`;
                         case "INR":
                           return `₹${charge.chargePriceGlobal
-                            .toFixed(2)
+                            ?.toFixed(2)
                             .toLocaleString()}`;
                         case "JPY":
                           return `¥${charge.chargePriceGlobal
-                            .toFixed(2)
+                            ?.toFixed(2)
                             .toLocaleString()}`;
                         default:
                           return `${charge.chargePriceGlobal
-                            .toFixed(2)
+                            ?.toFixed(2)
                             .toLocaleString()}`;
                       }
                     })()}
@@ -587,23 +587,23 @@ const OfferPDFDocument = ({
                   switch (info.currencyType) {
                     case "USD":
                       return `$${finalTotals.totalSalesAmountGlobal
-                        .toFixed(2)
+                        ?.toFixed(2)
                         .toLocaleString()}`;
                     case "EUR":
                       return `€${finalTotals.totalSalesAmountGlobal
-                        .toFixed(2)
+                        ?.toFixed(2)
                         .toLocaleString()}`;
                     case "INR":
                       return `₹${finalTotals.totalSalesAmountGlobal
-                        .toFixed(2)
+                        ?.toFixed(2)
                         .toLocaleString()}`;
                     case "JPY":
                       return `¥${finalTotals.totalSalesAmountGlobal
-                        .toFixed(2)
+                        ?.toFixed(2)
                         .toLocaleString()}`;
                     default:
                       return `${finalTotals.totalSalesAmountGlobal
-                        .toFixed(2)
+                        ?.toFixed(2)
                         .toLocaleString()}`;
                   }
                 })()}

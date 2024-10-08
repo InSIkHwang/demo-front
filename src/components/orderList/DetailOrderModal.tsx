@@ -10,17 +10,13 @@ import {
 } from "antd";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import {
-  confirmQutation,
-  deleteQutation,
-  fetchQuotationDetail,
-} from "../../api/api";
-import { QuotationDetail } from "../../types/types";
+import { deleteQutation, fetchOrderDetail } from "../../api/api";
+import { OrderResponse } from "../../types/types";
 
-interface DetailQuotationModalProps {
+interface DetailOrderModalProps {
   open: boolean;
   onClose: () => void;
-  quotationId: number;
+  orderId: number;
   fetchData: () => Promise<void>;
 }
 
@@ -100,29 +96,27 @@ const currencySymbols = {
   JPY: "¥",
 } as const;
 
-const DetailQuotationModal = ({
+const DetailOrderModal = ({
   open,
   onClose,
-  quotationId,
+  orderId,
   fetchData,
-}: DetailQuotationModalProps) => {
-  const [quotationDetail, SetquotationDetail] =
-    useState<QuotationDetail | null>(null);
+}: DetailOrderModalProps) => {
+  const [orderDetail, setOrderDetail] = useState<OrderResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [currencySymbol, setCurrencySymbol] = useState("");
   const navigate = useNavigate();
 
-  console.log(quotationDetail);
+  console.log(orderDetail);
 
   useEffect(() => {
     const fetchDetails = async () => {
       if (open) {
         try {
-          SetquotationDetail(null);
-          const data = await fetchQuotationDetail(quotationId);
-          SetquotationDetail(data);
-          const currencyType =
-            quotationDetail?.quotationDocumentDetail.currencyType;
+          setOrderDetail(null);
+          const data = await fetchOrderDetail(orderId);
+          setOrderDetail(data);
+          const currencyType = orderDetail?.orderDocumentDetail.currencyType;
           if (
             currencyType &&
             currencySymbols[currencyType as keyof typeof currencySymbols]
@@ -142,34 +136,33 @@ const DetailQuotationModal = ({
     };
 
     fetchDetails();
-  }, [open, quotationId]);
+  }, [open, orderId]);
 
   // 총합 계산
-  const totalItem = quotationDetail?.quotationItemDetailResponseList.reduce(
+  const totalItem = orderDetail?.orderItemDetailResponseList.reduce(
     (acc, item) => (item.itemType === "ITEM" ? acc + 1 : acc),
     0
   );
 
-  const totalSalesAmountKrw =
-    quotationDetail?.quotationItemDetailResponseList.reduce(
-      (acc, item) => acc + (item.salesAmountKRW || 0),
-      0
-    );
+  const totalSalesAmountKrw = orderDetail?.orderItemDetailResponseList.reduce(
+    (acc, item) => acc + (item.salesAmountKRW || 0),
+    0
+  );
 
   const totalPurchaseAmountKrw =
-    quotationDetail?.quotationItemDetailResponseList.reduce(
+    orderDetail?.orderItemDetailResponseList.reduce(
       (acc, item) => acc + (item.purchaseAmountKRW || 0),
       0
     );
 
   const totalSalesAmountGlobal =
-    quotationDetail?.quotationItemDetailResponseList.reduce(
+    orderDetail?.orderItemDetailResponseList.reduce(
       (acc, item) => acc + (item.salesAmountGlobal || 0),
       0
     );
 
   const totalPurchaseAmountGlobal =
-    quotationDetail?.quotationItemDetailResponseList.reduce(
+    orderDetail?.orderItemDetailResponseList.reduce(
       (acc, item) => acc + (item.purchaseAmountGlobal || 0),
       0
     );
@@ -198,26 +191,6 @@ const DetailQuotationModal = ({
     console.log("Edit");
   };
 
-  const handleConfirmClick = () => {
-    Modal.confirm({
-      title: "Confirm Quotation",
-      content: "Are you sure you want to confirm this quotation?",
-      okText: "Confirm",
-      cancelText: "Cancel",
-      onOk: async () => {
-        try {
-          await confirmQutation(quotationId);
-          message.success("Quotation confirmed successfully.");
-          onClose();
-          fetchData();
-        } catch (error) {
-          console.error("Error confirming the quotation:", error);
-          message.error("Failed to confirm the quotation. Please try again.");
-        }
-      },
-    });
-  };
-
   const handleDeleteClick = () => {
     Modal.confirm({
       title: "Delete Confirmation",
@@ -226,7 +199,7 @@ const DetailQuotationModal = ({
       cancelText: "Cancel",
       onOk: async () => {
         try {
-          await deleteQutation(quotationId);
+          await deleteQutation(orderId);
           message.success("Deleted successfully.");
           onClose();
           fetchData();
@@ -343,9 +316,6 @@ const DetailQuotationModal = ({
       open={open}
       onCancel={onClose}
       footer={[
-        <Button type="primary" key="edit" onClick={handleConfirmClick}>
-          Confirm
-        </Button>,
         <Button type="default" key="edit" onClick={handleEditClick}>
           Edit
         </Button>,
@@ -361,57 +331,40 @@ const DetailQuotationModal = ({
       {loading ? (
         <p>Loading...</p>
       ) : (
-        quotationDetail && (
+        orderDetail && (
           <>
             <Descriptions bordered column={2} size="small">
               <Descriptions.Item label="Document Number">
-                {quotationDetail.quotationDocumentDetail.docNumber}
+                {orderDetail.orderDocumentDetail.documentNumber}
               </Descriptions.Item>
               <Descriptions.Item label="Registration Date">
-                {quotationDetail.quotationDocumentDetail.registerDate}
+                {orderDetail.orderDocumentDetail.registerDate}
               </Descriptions.Item>
               <Descriptions.Item label="Costomer Name">
-                {quotationDetail.quotationDocumentDetail.companyName}
+                {orderDetail.orderDocumentDetail.companyName}
               </Descriptions.Item>
               <Descriptions.Item label="REF NO.">
-                {quotationDetail.quotationDocumentDetail.refNumber}
+                {orderDetail.orderDocumentDetail.refNumber}
               </Descriptions.Item>
               <Descriptions.Item label="Currency">
-                {quotationDetail.quotationDocumentDetail.currencyType}
+                {orderDetail.orderDocumentDetail.currencyType}
               </Descriptions.Item>
               <Descriptions.Item label="Exchange Rate">
-                {`$${quotationDetail.quotationDocumentDetail.currency?.toFixed(
-                  0
-                )}`}
+                {`$${orderDetail.orderDocumentDetail.currency?.toFixed(0)}`}
               </Descriptions.Item>
               <Descriptions.Item label="Vessel Name">
-                {quotationDetail.quotationDocumentDetail.vesselName}
-              </Descriptions.Item>
-              <Descriptions.Item label="Vessel HullNo">
-                {quotationDetail.quotationDocumentDetail.vesselHullNo}
+                {orderDetail.orderDocumentDetail.vesselName}
               </Descriptions.Item>
               <Descriptions.Item label="Document Manager">
-                {quotationDetail.quotationDocumentDetail.docManager}
-              </Descriptions.Item>
-              <Descriptions.Item label="Customer's Manager">
-                {quotationDetail.quotationDocumentDetail.representative}
+                {orderDetail.orderDocumentDetail.docManager}
               </Descriptions.Item>
               <Descriptions.Item label="Document Status">
                 <TagStyled color="blue">
-                  {quotationDetail.quotationDocumentDetail.documentStatus}
+                  {orderDetail.orderDocumentDetail.documentStatus}
                 </TagStyled>
               </Descriptions.Item>
-              <Descriptions.Item label="Supplier">
-                {quotationDetail.quotationDocumentDetail.supplierName.map(
-                  (name, index) => (
-                    <TagStyled key={index} color="green">
-                      {name}
-                    </TagStyled>
-                  )
-                )}
-              </Descriptions.Item>
               <Descriptions.Item label="Remark">
-                {quotationDetail.quotationDocumentDetail.docRemark}
+                {orderDetail.orderDocumentDetail.docRemark}
               </Descriptions.Item>
             </Descriptions>
             <Descriptions
@@ -467,7 +420,7 @@ const DetailQuotationModal = ({
             </Divider>
             <TableStyled
               columns={columns}
-              dataSource={quotationDetail.quotationItemDetailResponseList}
+              dataSource={orderDetail.orderItemDetailResponseList}
               pagination={false}
               rowKey="itemId"
               scroll={{ y: 300 }}
@@ -481,4 +434,4 @@ const DetailQuotationModal = ({
   );
 };
 
-export default DetailQuotationModal;
+export default DetailOrderModal;

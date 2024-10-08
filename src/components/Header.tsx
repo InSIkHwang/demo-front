@@ -10,6 +10,8 @@ import {
   faSignOutAlt,
   faSignInAlt,
   faTrash,
+  faBoxOpen,
+  faFileInvoice,
 } from "@fortawesome/free-solid-svg-icons";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -147,6 +149,7 @@ const Header = ({ isAuthenticated, onLogout }: HeaderProps) => {
   const [isEstimateOpen, setEstimateOpen] = useState(false);
   const [isCodeOpen, setCodeOpen] = useState(false);
   const [isTrashOpen, setTrashOpen] = useState(false);
+  const [isOrderOpen, setOrderOpen] = useState(false);
   const navigate = useNavigate();
 
   const toggleMenu = (e: React.MouseEvent) => {
@@ -204,7 +207,7 @@ const Header = ({ isAuthenticated, onLogout }: HeaderProps) => {
       >
         <MenuItem onClick={() => setEstimateOpen(!isEstimateOpen)}>
           <FontAwesomeIcon
-            icon={faDollarSign}
+            icon={faFileInvoice}
             style={{ marginRight: "10px" }}
           />
           Quotation
@@ -217,7 +220,7 @@ const Header = ({ isAuthenticated, onLogout }: HeaderProps) => {
           <MenuItem
             onClick={() => handleMenuItemClick(() => navigate("/makeinquiry"))}
           >
-            견적생성 - Create Request
+            견적 생성 - Create Request
           </MenuItem>
           <MenuItem
             onClick={() =>
@@ -239,6 +242,21 @@ const Header = ({ isAuthenticated, onLogout }: HeaderProps) => {
             }
           >
             최종 견적 - Quotation
+          </MenuItem>
+        </SubMenu>
+        <MenuItem onClick={() => setOrderOpen(!isOrderOpen)}>
+          <FontAwesomeIcon icon={faBoxOpen} style={{ marginRight: "10px" }} />
+          Order
+          <FontAwesomeIcon
+            icon={isOrderOpen ? faCaretUp : faCaretDown}
+            style={{ marginLeft: "auto", cursor: "pointer" }}
+          />
+        </MenuItem>
+        <SubMenu $isOpen={isOrderOpen}>
+          <MenuItem
+            onClick={() => handleMenuItemClick(() => navigate("/orderlist"))}
+          >
+            수주 관리 - Orders
           </MenuItem>
         </SubMenu>
         <MenuItem onClick={() => setCodeOpen(!isCodeOpen)}>

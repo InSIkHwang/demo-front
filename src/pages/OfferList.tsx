@@ -373,7 +373,9 @@ const OfferList = () => {
         };
 
         // navigate를 사용하여 상태와 함께 페이지 이동
-        navigate("/makeoffer/mergedoffer", { state: { info } });
+        navigate("/makeoffer/mergedoffer", {
+          state: { info, catrgory: "offer" },
+        });
       } catch (error) {
         message.error("An error occurred while sending the email."); // 오류 메시지 표시
       }
@@ -517,30 +519,30 @@ const OfferList = () => {
                                 <Section>
                                   <InfoText>
                                     Purchase amount (KRW):{" "}
-                                    {totals.totalPurchaseAmountKRW.toLocaleString()}
+                                    {totals.totalPurchaseAmountKRW?.toLocaleString()}
                                   </InfoText>
                                   <InfoText>
                                     Sales amount (KRW):{" "}
-                                    {totals.totalSalesAmountKRW.toLocaleString()}
+                                    {totals.totalSalesAmountKRW?.toLocaleString()}
                                   </InfoText>
                                   <InfoText style={{ color: "#000" }}>
                                     Profit (KRW):{" "}
-                                    {totals.totalProfitKRW.toLocaleString()}
+                                    {totals.totalProfitKRW?.toLocaleString()}
                                   </InfoText>
                                 </Section>
                                 <Divider />
                                 <Section>
                                   <InfoText>
                                     Purchase amount (F):{" "}
-                                    {totals.totalPurchaseAmountGlobal.toLocaleString()}
+                                    {totals.totalPurchaseAmountGlobal?.toLocaleString()}
                                   </InfoText>
                                   <InfoText>
                                     Sales amount (F):{" "}
-                                    {totals.totalSalesAmountGlobal.toLocaleString()}
+                                    {totals.totalSalesAmountGlobal?.toLocaleString()}
                                   </InfoText>
                                   <InfoText style={{ color: "#000" }}>
                                     Profit (F):{" "}
-                                    {totals.totalProfitGlobal.toLocaleString()}
+                                    {totals.totalProfitGlobal?.toLocaleString()}
                                   </InfoText>
                                 </Section>
                               </CardContent>
