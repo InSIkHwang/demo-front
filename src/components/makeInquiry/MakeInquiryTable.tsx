@@ -24,8 +24,15 @@ import { TextAreaRef } from "antd/es/input/TextArea";
 const { Option } = Select;
 
 const CustomTable = styled(Table)`
+  .ant-table * {
+    font-size: 13px;
+  }
+
   .ant-table-cell {
+    padding: 14px 4px !important;
     text-align: center !important;
+    align-self: center;
+    border: none !important;
   }
 
   .ant-table-cell-row-hover {
@@ -293,7 +300,7 @@ const MakeInquiryTable = ({
         title: "No.",
         dataIndex: "no",
         key: "no",
-        width: 0,
+        width: 40,
         render: (_: any, record: any, index: number) => {
           const filteredIndex = dataSource
             .filter((item: any) => item.itemType === "ITEM")
@@ -385,7 +392,7 @@ const MakeInquiryTable = ({
             ))}
           </Select>
         ),
-        width: 110,
+        width: 120,
       },
       {
         title: (
@@ -472,7 +479,7 @@ const MakeInquiryTable = ({
             )}
           </div>
         ),
-        width: 500,
+        width: 450,
       },
       {
         title: "QTY",
@@ -606,8 +613,9 @@ const MakeInquiryTable = ({
         dataSource={dataSource}
         pagination={false}
         rowKey="position"
-        scroll={{ y: 600 }}
+        scroll={{ y: 500 }}
         virtual
+        size="small"
       />
       <Button
         type="primary"
