@@ -63,12 +63,30 @@ interface MakeInquiryTableProps {
   items: InquiryItem[];
   handleInputChange: (index: number, key: string, value: any) => void;
   handleItemCodeChange: (index: number, value: string) => void;
-  itemCodeOptions: { value: string; key: string; label: string }[];
+  itemCodeOptions: {
+    itemId: number;
+    value: string;
+    name: string;
+    key: string;
+    label: string;
+  }[];
   handleDelete: (index: number) => void;
   setIsDuplicate: Dispatch<SetStateAction<boolean>>;
   setItems: React.Dispatch<React.SetStateAction<InquiryItem[]>>;
   updateItemId: (index: number, itemId: number | null) => void;
   customerInquiryId: number;
+  setItemCodeOptions: Dispatch<
+    SetStateAction<
+      {
+        itemId: number;
+        value: string;
+        name: string;
+        key: string;
+        label: string;
+      }[]
+    >
+  >;
+  updateSupplierOptions: (value: string) => Promise<void>;
 }
 
 const MakeInquiryTable = ({
@@ -76,10 +94,12 @@ const MakeInquiryTable = ({
   handleInputChange,
   handleItemCodeChange,
   itemCodeOptions,
+  setItemCodeOptions,
   handleDelete,
   setIsDuplicate,
   setItems,
   updateItemId,
+  updateSupplierOptions,
   customerInquiryId,
 }: MakeInquiryTableProps) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -322,16 +342,25 @@ const MakeInquiryTable = ({
                 value={record.itemCode}
                 onChange={(value) => handleItemCodeChange(index, value)}
                 options={itemCodeOptions.map((option) => ({
-                  ...option,
-                  value: option.value,
-                  key: option.key,
+                  value: option.key,
                   label: option.label,
+                  name: option.name,
+                  itemId: option.itemId,
                 }))}
-                onSelect={(value: string, option: any) => {
-                  const itemId = option.itemId; // AutoComplete의 옵션에서 itemId를 가져옴
-                  updateItemId(index, itemId); // itemId로 아이템 업데이트
-                  handleInputChange(index, "itemCode", value); // itemCode 업데이트
-                  handleInputChange(index, "itemName", option.name); // itemName 업데이트
+                onFocus={() => {
+                  setItemCodeOptions([]);
+                }}
+                onSelect={(key: string, option: any) => {
+                  const selectedOption = itemCodeOptions.find(
+                    (opt) => opt.key === key
+                  );
+
+                  if (selectedOption) {
+                    updateItemId(index, selectedOption.itemId);
+                    handleInputChange(index, "itemCode", selectedOption.value);
+                    handleInputChange(index, "itemName", selectedOption.name);
+                    updateSupplierOptions(selectedOption.value);
+                  }
                 }}
                 dropdownStyle={{ width: 400 }}
                 style={{ width: "100%" }}

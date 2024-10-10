@@ -134,6 +134,7 @@ const MakeInquiry = () => {
   >([]);
   const [itemCodeOptions, setItemCodeOptions] = useState<
     {
+      itemId: number;
       value: string;
       name: string;
       key: string;
@@ -529,22 +530,11 @@ const MakeInquiry = () => {
 
         updateItemCodeOptions(itemArray);
         updateItemMaps(itemArray);
-        updateSupplierOptions(itemArray);
-
-        const selectedItem = itemArray.find((item) => item.itemCode === value);
-        if (selectedItem) {
-          handleInputChange(
-            index,
-            "itemName",
-            itemNameMap[selectedItem.itemId]
-          );
-          updateItemId(index, selectedItem.itemId);
-        }
       } catch (error) {
         console.error("Error fetching item codes and suppliers:", error);
       }
     },
-    [handleInputChange, itemNameMap]
+    [handleInputChange]
   );
 
   const fetchAndProcessItemData = async (value: string) => {
@@ -585,25 +575,31 @@ const MakeInquiry = () => {
     setItemIdMap(newItemIdMap);
   };
 
-  const updateSupplierOptions = (itemArray: Item[]) => {
-    const newSupplierOptions = itemArray.flatMap((item) =>
-      item.supplierList.map((supplier) => ({
-        id: supplier.id,
-        name: supplier.companyName,
-        code: supplier.code,
-        email: supplier.email,
-      }))
-    );
+  const updateSupplierOptions = async (value: string) => {
+    try {
+      const itemArray = await fetchAndProcessItemData(value);
 
-    setSelectedSuppliers((prevSuppliers) => [
-      ...prevSuppliers.filter(
-        (existingSupplier) =>
-          !newSupplierOptions.some(
-            (newSupplier) => existingSupplier.id === newSupplier.id
-          )
-      ),
-      ...newSupplierOptions,
-    ]);
+      const newSupplierOptions = itemArray.flatMap((item) =>
+        item.supplierList.map((supplier) => ({
+          id: supplier.id,
+          name: supplier.companyName,
+          code: supplier.code,
+          email: supplier.email,
+        }))
+      );
+
+      setSelectedSuppliers((prevSuppliers) => [
+        ...prevSuppliers.filter(
+          (existingSupplier) =>
+            !newSupplierOptions.some(
+              (newSupplier) => existingSupplier.id === newSupplier.id
+            )
+        ),
+        ...newSupplierOptions,
+      ]);
+    } catch (error) {
+      console.error("Error fetching item codes and suppliers:", error);
+    }
   };
 
   const handleOpenHeaderModal = () => {
@@ -673,6 +669,8 @@ const MakeInquiry = () => {
         setItems={setItems}
         updateItemId={updateItemId}
         customerInquiryId={Number(customerInquiryId)}
+        setItemCodeOptions={setItemCodeOptions}
+        updateSupplierOptions={updateSupplierOptions}
       />
       <Button
         type="primary"
