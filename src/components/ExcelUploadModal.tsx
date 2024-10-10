@@ -262,7 +262,7 @@ const ExcelUploadModal = ({
             Add
           </Button>,
         ]}
-        width={1300}
+        width={1400}
       >
         <Upload.Dragger
           beforeUpload={handleExcelUpload}

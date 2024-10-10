@@ -148,6 +148,8 @@ const InquiryForm = ({
       }[];
     }[]
   >([]);
+  const [showMakerModal, setShowMakerModal] = useState(false);
+  const [showSupplierModal, setShowSupplierModal] = useState(false);
 
   useEffect(() => {
     if (selectedSuppliers.length > 0) {

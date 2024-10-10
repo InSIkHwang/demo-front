@@ -1148,13 +1148,10 @@ const TableComponent = ({
             className="custom-input"
             addonAfter={"%"}
             onKeyDown={(e) => handleNextRowKeyDown(e, index, 13)}
-            onChange={(e) =>
-              handleInputChange(
-                index,
-                "margin",
-                parseFloat(e.target.value.replace(/ %/, "")) || 0
-              )
-            }
+            onChange={(e) => {
+              const value = e.target.value.replace(/[^0-9.]/g, "");
+              handleInputChange(index, "margin", value);
+            }}
             onBlur={() => handleMarginChange(index, text ?? 0)}
           />
         );
