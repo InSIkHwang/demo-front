@@ -148,8 +148,20 @@ const InquiryForm = ({
       }[];
     }[]
   >([]);
-  const [showMakerModal, setShowMakerModal] = useState(false);
-  const [showSupplierModal, setShowSupplierModal] = useState(false);
+
+  useEffect(() => {
+    const checkDuplicateOnMount = async () => {
+      if (formValues.docNumber) {
+        const isDuplicate = await chkDuplicateDocNum(
+          formValues.docNumber.trim(),
+          customerInquiryId
+        );
+        setIsDocNumDuplicate(isDuplicate); // 중복 여부 설정
+      }
+    };
+
+    checkDuplicateOnMount();
+  }, [formValues.docNumber, customerInquiryId, setIsDocNumDuplicate]);
 
   useEffect(() => {
     if (selectedSuppliers.length > 0) {

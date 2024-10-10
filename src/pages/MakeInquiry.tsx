@@ -171,8 +171,6 @@ const MakeInquiry = () => {
   const [isLoading, setIsLoading] = useState(true); // 로딩 상태 변수 추가
   const [isDocNumDuplicate, setIsDocNumDuplicate] = useState<boolean>(false);
 
-  console.log(items);
-
   useEffect(() => {
     if (customerInquiryId) {
       fetchDetail();
