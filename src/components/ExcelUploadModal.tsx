@@ -214,7 +214,6 @@ const ExcelUploadModal = ({
         return mappedRow;
       })
       .filter((row) => Object.keys(row).length > 0);
-    console.log(mappedData);
 
     onOverWrite(mappedData);
   };

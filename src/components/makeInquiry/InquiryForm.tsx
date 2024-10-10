@@ -134,7 +134,6 @@ const InquiryForm = ({
   const [supplierList, setSupplierList] = useState<
     { name: string; id: number; code: string; email: string }[]
   >([]);
-  console.log(supplierList);
 
   const [autoSearchSupCompleteOptions, setAutoSearchSupCompleteOptions] =
     useState<{ value: string }[]>([]);
@@ -277,7 +276,6 @@ const InquiryForm = ({
           );
         } else if (selectedType === "MAKER") {
           const data = await searchSupplierUseMaker(value, categoryType);
-          console.log(data);
 
           const makerSupplierList = data.makerSupplierList.map((maker) => ({
             maker: maker.maker,

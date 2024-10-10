@@ -112,8 +112,6 @@ const DetailQuotationModal = ({
   const [currencySymbol, setCurrencySymbol] = useState("");
   const navigate = useNavigate();
 
-  console.log(quotationDetail);
-
   useEffect(() => {
     const fetchDetails = async () => {
       if (open) {

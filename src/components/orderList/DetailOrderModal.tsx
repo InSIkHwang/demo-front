@@ -107,8 +107,6 @@ const DetailOrderModal = ({
   const [currencySymbol, setCurrencySymbol] = useState("");
   const navigate = useNavigate();
 
-  console.log(orderDetail);
-
   useEffect(() => {
     const fetchDetails = async () => {
       if (open) {
