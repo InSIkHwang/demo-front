@@ -161,7 +161,6 @@ const MakeInquiry = () => {
   const [formValues, setFormValues] = useState(INITIAL_FORM_VALUES);
   const [isMailSenderVisible, setIsMailSenderVisible] = useState(false);
   const [mailDataList, setMailDataList] = useState<emailSendData[]>([]);
-  const [loadMailData, setLoadMailData] = useState<boolean>(false);
   const [isDuplicate, setIsDuplicate] = useState<boolean>(false);
   const [language, setLanguage] = useState<string>("KOR");
   const [fileData, setFileData] = useState<File[]>([]);
@@ -170,6 +169,7 @@ const MakeInquiry = () => {
   const [isPdfAutoUploadChecked, setIsPdfAutoUploadChecked] = useState(true);
   const [isLoading, setIsLoading] = useState(true); // 로딩 상태 변수 추가
   const [isDocNumDuplicate, setIsDocNumDuplicate] = useState<boolean>(false);
+  const [inquiryId, setInquiryId] = useState<number | null>(null);
 
   useEffect(() => {
     if (customerInquiryId) {
@@ -401,44 +401,39 @@ const MakeInquiry = () => {
     setFormValues((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (): Promise<number | null> => {
     try {
-      // 아이템 중복 검사 여부에 따라 적절한 처리를 수행합니다.
       if (isDuplicate) {
-        // Modal.confirm을 사용하여 사용자에게 확인을 요청합니다.
-        const result = await new Promise((resolve, reject) => {
+        const result = await new Promise((resolve) => {
           Modal.confirm({
             title: "There are duplicate items.",
             content: "Do you want to save?",
             okText: "Ok",
             cancelText: "Cancel",
-            onOk: () => resolve(true), // 확인 버튼 클릭 시 true를 resolve
-            onCancel: () => resolve(false), // 취소 버튼 클릭 시 false를 resolve
+            onOk: () => resolve(true),
+            onCancel: () => resolve(false),
           });
         });
 
         if (result) {
-          // 확인 버튼을 클릭한 경우 저장 작업을 수행합니다.
-          await saveInquiry();
-          return true; // 저장 성공
+          const savedInquiryId = await saveInquiry(); // 저장 후 inquiryId 반환
+          return savedInquiryId;
         } else {
-          return false; // 저장 취소
+          return null; // 저장 취소
         }
       } else {
-        // 중복 검사가 필요 없는 경우 직접 저장 작업을 수행합니다.
-        await saveInquiry();
-        return true; // 저장 성공
+        const savedInquiryId = await saveInquiry(); // 저장 후 inquiryId 반환
+        return savedInquiryId;
       }
     } catch (error) {
-      // 모든 오류는 이곳에서 처리합니다.
       console.error("An error occurred while saving inquiry:", error);
       message.error("Retry Please");
-      return false; // 저장 실패
+      return null; // 저장 실패 시 null 반환
     }
   };
 
   // 저장 로직을 함수로 분리
-  const saveInquiry = async () => {
+  const saveInquiry = async (): Promise<number | null> => {
     // 선택된 vessel 및 customer 확인
     const selectedVessel = vesselList.find(
       (v) => v.vesselName === formValues.vesselName
@@ -446,12 +441,12 @@ const MakeInquiry = () => {
 
     if (!selectedVessel) {
       message.error("Please register Vessel!");
-      return;
+      return null;
     }
 
     if (!selectedCustomerId) {
       message.error("Please register Customer!");
-      return;
+      return null;
     }
 
     const inquiryItemDetails = items.map((item) => {
@@ -493,6 +488,8 @@ const MakeInquiry = () => {
       isEditMode
     );
 
+    setInquiryId(response);
+
     message.success("Saved successfully!");
 
     const newInquiryDetail = await fetchInquiryDetail(
@@ -502,6 +499,8 @@ const MakeInquiry = () => {
     navigate(`/makeinquiry/${response}`, {
       state: { inquiry: newInquiryDetail },
     });
+
+    return response;
   };
 
   // itemId 업데이트를 별도의 함수로 분리

@@ -8,6 +8,9 @@ import {
   AutoComplete,
   Tag,
   message,
+  List,
+  Modal,
+  Checkbox,
 } from "antd";
 import styled from "styled-components";
 import CreateCompanyModal from "../company/CreateCompanyModal";
@@ -125,10 +128,14 @@ const InquiryForm = ({
   const [isVesselModalOpen, setIsVesselModalOpen] = useState(false);
   const [tagColors, setTagColors] = useState<{ [id: number]: string }>({});
   const [supplierSearch, setSupplierSearch] = useState("");
-  const [selectedType, setSelectedType] = useState("MAKER");
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedType, setSelectedType] = useState("");
+  const [checkedSuppliers, setCheckedSuppliers] = useState<any[]>([]);
   const [supplierList, setSupplierList] = useState<
     { name: string; id: number; code: string; email: string }[]
   >([]);
+  console.log(supplierList);
+
   const [autoSearchSupCompleteOptions, setAutoSearchSupCompleteOptions] =
     useState<{ value: string }[]>([]);
   const [makerOptions, setMakerOptions] = useState<{ value: string }[]>([]);
@@ -174,6 +181,44 @@ const InquiryForm = ({
     }
   }, []);
 
+  const showModal = (type: string) => {
+    setSelectedType(type);
+    setSupplierSearch("");
+    setCategoryWord("");
+    setSupplierList([]);
+    setMakerSupplierList([]);
+    setIsModalVisible(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalVisible(false);
+    setCheckedSuppliers([]);
+  };
+
+  const handleAddSelectedSuppliers = () => {
+    setSelectedSuppliers((prevSuppliers) => [
+      ...prevSuppliers,
+      ...checkedSuppliers.filter(
+        (supplier) =>
+          !prevSuppliers.some(
+            (existingSupplier) => existingSupplier.id === supplier.id
+          )
+      ),
+    ]);
+    setCheckedSuppliers([]);
+    handleModalClose();
+  };
+
+  const handleCheckboxChange = (supplier: { id: any }) => {
+    setCheckedSuppliers((prevChecked) => {
+      if (prevChecked.some((item) => item.id === supplier.id)) {
+        return prevChecked.filter((item) => item.id !== supplier.id);
+      } else {
+        return [...prevChecked, supplier];
+      }
+    });
+  };
+
   const validateCustomer = () => {
     if (customerUnreg) {
       return {
@@ -217,7 +262,7 @@ const InquiryForm = ({
     setSupplierSearch(value);
     if (value) {
       try {
-        if (selectedType === "의뢰처") {
+        if (selectedType === "SUPPLIER") {
           const data = await searchSupplier(value);
 
           const options = data.suppliers.map((supplier) => ({
@@ -232,6 +277,8 @@ const InquiryForm = ({
           );
         } else if (selectedType === "MAKER") {
           const data = await searchSupplierUseMaker(value, categoryType);
+          console.log(data);
+
           const makerSupplierList = data.makerSupplierList.map((maker) => ({
             maker: maker.maker,
             supplierList: maker.supplierList.map((supplier) => ({
@@ -283,59 +330,19 @@ const InquiryForm = ({
 
   const uniqueSuppliers = removeDuplicates(selectedSuppliers);
 
-  const handleAddSupplier = () => {
-    let matchedSuppliers: any[] = [];
+  const removeListDuplicates = (list: any[]) => {
+    const uniqueItems: any[] = [];
+    const seenIds = new Set();
 
-    if (selectedType === "의뢰처") {
-      const matchedSupplier = supplierList.find(
-        (supplier) =>
-          supplier.code.toLowerCase() === supplierSearch.toLowerCase()
-      );
-      if (matchedSupplier) {
-        matchedSuppliers = [matchedSupplier];
+    list.forEach((item) => {
+      const supplierId = item.supplierList[0].id;
+      if (!seenIds.has(supplierId)) {
+        uniqueItems.push(item);
+        seenIds.add(supplierId);
       }
-    } else if (selectedType === "MAKER") {
-      const matchedMaker = makerSupplierList.find(
-        (maker) => maker.maker.toLowerCase() === supplierSearch.toLowerCase()
-      );
-      if (matchedMaker) {
-        matchedSuppliers = matchedMaker.supplierList;
-      }
-    }
+    });
 
-    if (matchedSuppliers.length > 0) {
-      setSelectedSuppliers((prevSuppliers) => {
-        const newSuppliers = matchedSuppliers.filter(
-          (supplier) =>
-            !prevSuppliers.some(
-              (existingSupplier) => existingSupplier.id === supplier.supplierId
-            )
-        );
-
-        if (newSuppliers.length === 0) {
-          message.warning("This request has already been added.");
-          return prevSuppliers;
-        }
-
-        const updatedSuppliers = [
-          ...prevSuppliers,
-          ...newSuppliers.map((supplier) => ({
-            id: supplier.id,
-            name: supplier.name,
-            code: supplier.code,
-            email: supplier.email,
-          })),
-        ];
-        return updatedSuppliers;
-      });
-
-      setSupplierSearch("");
-      setAutoSearchSupCompleteOptions([]);
-    } else {
-      message.warning(
-        "No matching items were found in the searched supplier list."
-      );
-    }
+    return uniqueItems;
   };
 
   const handleCategorySearch = (searchText: string) => {
@@ -547,50 +554,89 @@ const InquiryForm = ({
         </FormRow>
         <FormRow>
           <SearchBox>
-            <Select
-              value={selectedType}
-              onChange={(value) => setSelectedType(value)}
-              style={{ width: 120, marginRight: 10 }}
+            <Button
+              onClick={() => showModal("SUPPLIER")}
+              style={{ marginRight: 10 }}
             >
-              <Option value="MAKER">MAKER</Option>
-              <Option value="의뢰처">SUPPLIER</Option>
-            </Select>
-            {selectedType === "MAKER" && (
-              <AutoComplete
-                value={categoryWord}
-                options={categoryOptions}
-                style={{ width: 250, marginRight: 5 }}
-                onChange={handleCategorySearch}
-                placeholder="search for category. ex) ENGINE"
-              >
-                <Input />
-              </AutoComplete>
-            )}
-            <InquiryItemForm
-              name="searchSupplier"
-              style={{ margin: "0 10px 0 0" }}
+              Search supplier by supplier name
+            </Button>
+            <Button
+              onClick={() => showModal("MAKER")}
+              style={{ marginRight: 10 }}
             >
+              Search supplier by category & maker
+            </Button>
+            <Modal
+              title={"Search SUPPLIER"}
+              open={isModalVisible}
+              onCancel={handleModalClose}
+              onOk={handleAddSelectedSuppliers}
+              okText="Add"
+              cancelText="Cancel"
+            >
+              {selectedType === "MAKER" && (
+                <AutoComplete
+                  value={categoryWord}
+                  options={categoryOptions}
+                  style={{ width: "100%", marginBottom: 10 }}
+                  onChange={handleCategorySearch}
+                  placeholder="Search Category ex) ENGINE"
+                >
+                  <Input />
+                </AutoComplete>
+              )}
               <AutoComplete
                 value={supplierSearch}
-                onChange={(value) => handleSearch(value, categoryWord)}
+                onChange={(value) =>
+                  handleSearch(
+                    value,
+                    selectedType === "MAKER" ? categoryWord : null
+                  )
+                }
                 options={
                   selectedType === "MAKER"
                     ? makerOptions
                     : autoSearchSupCompleteOptions
                 }
-                style={{ width: "100%" }}
+                style={{ width: "100%", marginBottom: 10 }}
                 placeholder={
                   selectedType === "MAKER"
-                    ? "search for Maker. ex) HYUNDAI"
-                    : "search for Supplier. ex) TECHLOG"
+                    ? "Search MAKER ex) HYUNDAI"
+                    : "Search SUPPLIER ex) TECHLOG"
                 }
               >
-                <Input style={{ width: 300 }} />
+                <Input />
               </AutoComplete>
-            </InquiryItemForm>
-            <Button onClick={handleAddSupplier} style={{ marginRight: 20 }}>
-              Search
-            </Button>
+              <List
+                dataSource={
+                  selectedType === "MAKER"
+                    ? removeListDuplicates(makerSupplierList) // 중복 제거 함수 호출
+                    : removeListDuplicates(
+                        supplierList.map((supplier) => ({
+                          maker: supplier.name,
+                          supplierList: [supplier],
+                        }))
+                      )
+                }
+                renderItem={(item) => (
+                  <List.Item>
+                    {item.supplierList.map(
+                      (supplier: { id: any; name?: any; code?: any }) => (
+                        <Checkbox
+                          key={supplier.id} // key로 각 항목 구분
+                          onChange={() => handleCheckboxChange(supplier)}
+                          checked={checkedSuppliers.some(
+                            (checkedItem) => checkedItem.id === supplier.id
+                          )}
+                        >
+                          {supplier.name} ({supplier.code})
+                        </Checkbox>
+                      )
+                    )}
+                  </List.Item>
+                )}
+              />
+            </Modal>
             <span style={{ marginRight: 10 }}>Searched Suplliers : </span>
             {uniqueSuppliers.map((supplier) => (
               <Tag

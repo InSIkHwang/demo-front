@@ -194,9 +194,10 @@ const MailSenderModal = ({
     });
 
     try {
-      const submitSuccess = await handleSubmit();
+      const savedInquiryId = await handleSubmit(); // inquiryId 반환받기
+      const inquiryId: number | null = savedInquiryId as number | null;
 
-      if (submitSuccess) {
+      if (inquiryId) {
         for (const index of Array.from(selectedMailIndexes)) {
           const updatedFileData = [...uploadFile];
           setFileData(updatedFileData);
@@ -216,19 +217,24 @@ const MailSenderModal = ({
             const finalFileData = [...updatedFileData, ...pdfFiles];
             setFileData(finalFileData);
 
-            await sendInquiryMail(values.docNumber, finalFileData, [
+            await sendInquiryMail(values.docNumber, inquiryId, finalFileData, [
               {
                 ...currentMailDataList[index],
                 ...values.mails[index],
               },
             ]);
           } else {
-            await sendInquiryMail(values.docNumber, updatedFileData, [
-              {
-                ...currentMailDataList[index],
-                ...values.mails[index],
-              },
-            ]);
+            await sendInquiryMail(
+              values.docNumber,
+              inquiryId,
+              updatedFileData,
+              [
+                {
+                  ...currentMailDataList[index],
+                  ...values.mails[index],
+                },
+              ]
+            );
           }
         }
         message.success("The selected email has been sent successfully!");
@@ -241,7 +247,7 @@ const MailSenderModal = ({
       message.error("Email sending failed. Please try again.");
     } finally {
       setLoading(false);
-      modal.destroy(); // 이메일 전송 완료 시 모달 닫기
+      modal.destroy();
     }
   };
 
@@ -300,13 +306,6 @@ const MailSenderModal = ({
             label="ccRecipient"
           >
             <Input placeholder="CC Recipient" />
-          </StyledFormItem>
-          <StyledFormItem
-            style={{ width: "50%" }}
-            name={["mails", index, "bccRecipient"]}
-            label="bccRecipient"
-          >
-            <Input placeholder="BCC Recipient" />
           </StyledFormItem>
         </div>
       </StyledCard>

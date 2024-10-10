@@ -202,6 +202,7 @@ export const deleteInquiry = async (inquiryId: number) => {
 //Inquiry 메일 전송
 export const sendInquiryMail = async (
   docNumber: string,
+  inquiryId: number,
   files: File[], // `file`의 타입에 맞게 구체화할 수 있습니다 (예: File, Blob)
   emailSendData: {
     supplierId: number;
@@ -231,7 +232,7 @@ export const sendInquiryMail = async (
 
   // POST 요청
   const response = await axios.post(
-    `/api/customer-inquiries/send-email?docNumber=${docNumber}`,
+    `/api/customer-inquiries/send-email?docNumber=${docNumber}&inquiryId=${inquiryId}`,
     formData,
     {
       headers: {

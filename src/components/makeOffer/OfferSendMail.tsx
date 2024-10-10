@@ -198,7 +198,15 @@ const OfferMailSender = ({
         >
           <TextArea style={{ height: 300 }} placeholder="Content" rows={6} />
         </StyledFormItem>
-
+        <div style={{ display: "flex", gap: 20 }}>
+          <StyledFormItem
+            style={{ width: "50%" }}
+            name="ccRecipient"
+            label="ccRecipient"
+          >
+            <Input placeholder="CC Recipient" />
+          </StyledFormItem>
+        </div>
         <StyledFormItem>
           <Title level={5}>Attached File</Title>
           <Upload

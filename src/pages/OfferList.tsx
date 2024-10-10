@@ -481,6 +481,7 @@ const OfferList = () => {
                           const totals = calculateTotals(
                             detail.inquiryItemDetails
                           );
+
                           return (
                             <StyledCard
                               key={info.supplierInquiryId}

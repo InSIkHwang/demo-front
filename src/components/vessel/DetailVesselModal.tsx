@@ -236,7 +236,7 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
             onSearch={handleSearch}
             onSelect={handleSelectCustomer}
             value={formData.customer?.companyName}
-            placeholder="Customer Name"
+            placeholder={formData.customer?.companyName}
             options={customerSuggestions.map((customer) => ({
               value: customer.companyName,
               label: customer.companyName,
