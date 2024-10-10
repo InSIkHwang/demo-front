@@ -265,6 +265,12 @@ export interface Quotation {
 }
 
 export interface QuotationDetail {
+  invChargeList?: {
+    invChargeId: number;
+    customCharge: string;
+    chargePriceKRW: number;
+    chargePriceGlobal: number;
+  }[];
   quotationDocumentDetail: {
     quotationId: number;
     docNumber: string;
@@ -283,6 +289,7 @@ export interface QuotationDetail {
     docRemark: string;
     docManager: string;
     supplierName: string[];
+    discount?: number;
   };
   quotationItemDetailResponseList: Array<{
     itemDetailId: number;

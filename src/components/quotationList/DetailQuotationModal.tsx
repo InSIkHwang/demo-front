@@ -150,48 +150,81 @@ const DetailQuotationModal = ({
     0
   );
 
-  const totalSalesAmountKrw =
+  const totalSalesAmountKrw: number =
     quotationDetail?.quotationItemDetailResponseList.reduce(
       (acc, item) => acc + (item.salesAmountKRW || 0),
       0
-    );
+    ) || 0;
 
-  const totalPurchaseAmountKrw =
+  const totalPurchaseAmountKrw: number =
     quotationDetail?.quotationItemDetailResponseList.reduce(
       (acc, item) => acc + (item.purchaseAmountKRW || 0),
       0
-    );
+    ) || 0;
 
-  const totalSalesAmountGlobal =
+  const totalSalesAmountGlobal: number =
     quotationDetail?.quotationItemDetailResponseList.reduce(
       (acc, item) => acc + (item.salesAmountGlobal || 0),
       0
-    );
+    ) || 0;
 
-  const totalPurchaseAmountGlobal =
+  const totalPurchaseAmountGlobal: number =
     quotationDetail?.quotationItemDetailResponseList.reduce(
       (acc, item) => acc + (item.purchaseAmountGlobal || 0),
       0
-    );
+    ) || 0;
 
   // 총 마진 계산
   const totalMarginAmountKrw =
     (totalSalesAmountKrw ?? 0) - (totalPurchaseAmountKrw ?? 0);
-  const totalMarginAmountGlobal =
-    (totalSalesAmountGlobal ?? 0) - (totalPurchaseAmountGlobal ?? 0);
 
   // 매출 마진 계산
   const salesMarginAmount = totalSalesAmountKrw ?? 0;
-  const salesMarginRate =
-    salesMarginAmount !== 0
-      ? ((totalMarginAmountKrw / salesMarginAmount) * 100).toFixed(2)
-      : 0;
 
   // 매입 마진 계산
   const purchaseMarginAmount = totalPurchaseAmountKrw ?? 0;
   const purchaseMarginRate =
     purchaseMarginAmount !== 0
       ? ((totalMarginAmountKrw / purchaseMarginAmount) * 100).toFixed(2)
+      : 0;
+
+  // 할인 및 부과 비용 반영
+  const discount = quotationDetail?.quotationDocumentDetail.discount || 0;
+  const invChargeList = quotationDetail?.invChargeList || [];
+
+  // 할인 반영한 금액 계산
+  const discountedSalesAmountKrw = totalSalesAmountKrw * (1 - discount / 100);
+  const discountedSalesAmountGlobal =
+    totalSalesAmountGlobal * (1 - discount / 100);
+
+  // 부과 비용 추가
+  const totalInvChargeKrw = invChargeList.reduce(
+    (acc, charge) => acc + (charge.chargePriceKRW || 0),
+    0
+  );
+  const totalInvChargeGlobal = invChargeList.reduce(
+    (acc, charge) => acc + (charge.chargePriceGlobal || 0),
+    0
+  );
+
+  // 최종 계산된 금액 (할인 및 부과 비용 적용)
+  const finalSalesAmountKrw = discountedSalesAmountKrw + totalInvChargeKrw;
+  const finalSalesAmountGlobal =
+    discountedSalesAmountGlobal + totalInvChargeGlobal;
+
+  // 최종 마진 계산 (할인 및 부과 비용 적용)
+  const finalMarginAmountKrw = finalSalesAmountKrw - totalPurchaseAmountKrw;
+  const finalMarginAmountGlobal =
+    finalSalesAmountGlobal - totalPurchaseAmountGlobal;
+
+  const salesMarginRate =
+    salesMarginAmount !== 0
+      ? ((finalMarginAmountKrw / salesMarginAmount) * 100).toFixed(2)
+      : 0;
+
+  const totalProfitRate =
+    salesMarginAmount !== 0
+      ? ((finalMarginAmountKrw / totalPurchaseAmountKrw) * 100).toFixed(2)
       : 0;
 
   const handleEditClick = () => {
@@ -418,24 +451,24 @@ const DetailQuotationModal = ({
               className="descriptions-totals"
               layout="vertical"
               bordered
-              column={7}
+              column={4}
               size="small"
               style={{ marginTop: 10 }}
             >
               <Descriptions.Item label="Total Item">
                 {totalItem}
               </Descriptions.Item>
-              <Descriptions.Item label="Total Sales Amount">
+              <Descriptions.Item label="Total Sales Amount (After Discount)">
                 <AmountTotal>
-                  <span>{`₩ ${totalSalesAmountKrw?.toLocaleString()}`}</span>
+                  <span>{`₩ ${finalSalesAmountKrw?.toLocaleString()}`}</span>
                   <DividerStyled
                     style={{ borderColor: "#ccc" }}
                     type="vertical"
                   />
-                  <span>{`${currencySymbol} ${totalSalesAmountGlobal?.toLocaleString()}`}</span>
+                  <span>{`${currencySymbol} ${finalSalesAmountGlobal?.toLocaleString()}`}</span>
                 </AmountTotal>
               </Descriptions.Item>
-              <Descriptions.Item label="Total Purchase Amount">
+              <Descriptions.Item label="Total Purchase Amount ">
                 <AmountTotal>
                   <span>{`₩ ${totalPurchaseAmountKrw?.toLocaleString()}`}</span>
                   <DividerStyled
@@ -447,19 +480,46 @@ const DetailQuotationModal = ({
               </Descriptions.Item>
               <Descriptions.Item label="Total Margin Amount">
                 <AmountTotal>
-                  <span>{`₩ ${totalMarginAmountKrw?.toLocaleString()}`}</span>
+                  <span>{`₩ ${finalMarginAmountKrw?.toLocaleString()}`}</span>
                   <DividerStyled
                     style={{ borderColor: "#ccc" }}
                     type="vertical"
                   />
-                  <span>{`${currencySymbol} ${totalMarginAmountGlobal?.toLocaleString()}`}</span>
+                  <span>{`${currencySymbol} ${finalMarginAmountGlobal?.toLocaleString()}`}</span>
                 </AmountTotal>
+              </Descriptions.Item>
+            </Descriptions>
+            <Descriptions
+              className="descriptions-totals-discount"
+              layout="vertical"
+              bordered
+              column={5}
+              size="small"
+            >
+              <Descriptions.Item label="Discount">
+                {`${discount}%`}
+              </Descriptions.Item>
+              <Descriptions.Item label="Charges">
+                {invChargeList.length > 0 ? (
+                  invChargeList.map((charge) => (
+                    <div key={charge.invChargeId}>
+                      {`${
+                        charge.customCharge
+                      }: ₩ ${charge.chargePriceKRW.toLocaleString()}`}
+                    </div>
+                  ))
+                ) : (
+                  <span>No charges available</span>
+                )}
               </Descriptions.Item>
               <Descriptions.Item label="Purchase Margin Rate">
                 {`${purchaseMarginRate}%`}
               </Descriptions.Item>
               <Descriptions.Item label="Sales Margin Rate">
                 {`${salesMarginRate}%`}
+              </Descriptions.Item>
+              <Descriptions.Item label="Total Profit Rate">
+                {`${totalProfitRate}%`}
               </Descriptions.Item>
             </Descriptions>
             <Divider variant="dashed" style={{ borderColor: "#007bff" }}>

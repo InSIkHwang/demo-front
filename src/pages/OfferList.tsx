@@ -316,7 +316,11 @@ const OfferList = () => {
     setCurrentPage(1);
   };
 
-  const calculateTotals = (details: any[]) => {
+  const calculateTotals = (
+    details: any[],
+    dcPercent: number,
+    invChargeList: any[]
+  ) => {
     const totalPurchaseAmountKRW = details.reduce(
       (acc, item) => acc + item.purchaseAmountKRW,
       0
@@ -334,9 +338,41 @@ const OfferList = () => {
       0
     );
 
-    const totalProfitKRW = totalSalesAmountKRW - totalPurchaseAmountKRW;
+    // DC 적용
+    const discountAmountKRW = dcPercent
+      ? totalSalesAmountKRW * (dcPercent / 100)
+      : 0;
+    const discountAmountGlobal = dcPercent
+      ? totalSalesAmountGlobal * (dcPercent / 100)
+      : 0;
+
+    const newTotalSalesAmountKRW = totalSalesAmountKRW - discountAmountKRW;
+    const newTotalSalesAmountGlobal =
+      totalSalesAmountGlobal - discountAmountGlobal;
+
+    // InvChargeList 합산
+    const chargePriceKRWTotal =
+      invChargeList && Array.isArray(invChargeList)
+        ? invChargeList.reduce((acc, charge) => acc + charge.chargePriceKRW, 0)
+        : 0;
+
+    const chargePriceGlobalTotal =
+      invChargeList && Array.isArray(invChargeList)
+        ? invChargeList.reduce(
+            (acc, charge) => acc + charge.chargePriceGlobal,
+            0
+          )
+        : 0;
+
+    const updatedTotalSalesAmountKRW =
+      newTotalSalesAmountKRW + chargePriceKRWTotal;
+    const updatedTotalSalesAmountGlobal =
+      newTotalSalesAmountGlobal + chargePriceGlobalTotal;
+
+    const totalProfitKRW = updatedTotalSalesAmountKRW - totalPurchaseAmountKRW;
     const totalProfitGlobal =
-      totalSalesAmountGlobal - totalPurchaseAmountGlobal;
+      updatedTotalSalesAmountGlobal - totalPurchaseAmountGlobal;
+
     const profitMarginKRW =
       totalSalesAmountKRW === 0
         ? 0
@@ -348,12 +384,12 @@ const OfferList = () => {
 
     return {
       totalPurchaseAmountKRW,
-      totalSalesAmountKRW,
-      totalProfitKRW: totalProfitKRW,
+      totalSalesAmountKRW: updatedTotalSalesAmountKRW,
+      totalProfitKRW,
       profitMarginKRW,
       totalPurchaseAmountGlobal,
-      totalSalesAmountGlobal,
-      totalProfitGlobal: totalProfitGlobal,
+      totalSalesAmountGlobal: updatedTotalSalesAmountGlobal,
+      totalProfitGlobal,
       profitMarginGlobal,
     };
   };
@@ -478,8 +514,12 @@ const OfferList = () => {
                         </SelectedSupplierNameBox>
 
                         {supplierInfoList.map(({ info, detail }) => {
+                          const dcPercent = detail.discount;
+                          const invChargeList = detail.invChargeList;
                           const totals = calculateTotals(
-                            detail.inquiryItemDetails
+                            detail.inquiryItemDetails,
+                            dcPercent,
+                            invChargeList
                           );
 
                           return (
@@ -546,12 +586,35 @@ const OfferList = () => {
                                     {totals.totalProfitGlobal?.toLocaleString()}
                                   </InfoText>
                                 </Section>
+                                <Divider />
+                                <Section>
+                                  <InfoText>Discount: {dcPercent}%</InfoText>
+                                  {invChargeList &&
+                                    invChargeList.length > 0 && (
+                                      <InfoText>
+                                        Charges:{" "}
+                                        {invChargeList
+                                          .map(
+                                            (charge: {
+                                              customCharge: any;
+                                              chargePriceKRW: {
+                                                toLocaleString: () => any;
+                                              };
+                                            }) =>
+                                              `${
+                                                charge.customCharge
+                                              }: ${charge.chargePriceKRW.toLocaleString()} KRW`
+                                          )
+                                          .join(", ")}
+                                      </InfoText>
+                                    )}
+                                </Section>
                               </CardContent>
                               <InfoText>
                                 Total Items: {detail.inquiryItemDetails.length}
                               </InfoText>
                               <InfoText style={{ color: "#000" }}>
-                                Profit: {totals.profitMarginKRW}%
+                                Profit Margin: {totals.profitMarginKRW}%
                               </InfoText>
                               <div
                                 style={{
@@ -561,8 +624,8 @@ const OfferList = () => {
                                 }}
                               >
                                 <InfoText style={{ textAlign: "right" }}>
-                                  currency: {record.currency} (
-                                  {record.currencyType})
+                                  Currency: {detail.currency} (
+                                  {detail.currencyType})
                                 </InfoText>
                                 <Button
                                   type="primary"

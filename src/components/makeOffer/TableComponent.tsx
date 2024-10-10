@@ -502,12 +502,22 @@ const TableComponent = ({
   };
 
   const handleDeleteItem = (itemDetailId: number, position: number) => {
+    // 선택한 항목을 삭제한 새로운 데이터 소스를 생성
     const updatedDataSource = dataSource.filter(
       (item) =>
         !(item.itemDetailId === itemDetailId && item.position === position)
     );
-    setDataSource(updatedDataSource);
+
+    // 남은 항목들의 position 값을 1부터 다시 정렬
+    const reorderedDataSource = updatedDataSource.map((item, idx) => ({
+      ...item,
+      position: idx + 1,
+    }));
+
+    // 새로운 데이터 소스로 업데이트
+    setDataSource(reorderedDataSource);
   };
+  
 
   const handleUnitBlur = (index: number, value: string) => {
     handleInputChange(index, "unit", value);
