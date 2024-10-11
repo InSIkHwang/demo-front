@@ -128,6 +128,7 @@ const InquiryForm = ({
   const [isVesselModalOpen, setIsVesselModalOpen] = useState(false);
   const [tagColors, setTagColors] = useState<{ [id: number]: string }>({});
   const [supplierSearch, setSupplierSearch] = useState("");
+  const [makerSearch, setMakerSearch] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedType, setSelectedType] = useState("");
   const [checkedSuppliers, setCheckedSuppliers] = useState<any[]>([]);
@@ -192,6 +193,7 @@ const InquiryForm = ({
   const handleModalClose = () => {
     setIsModalVisible(false);
     setCheckedSuppliers([]);
+    setMakerSearch("");
   };
 
   const handleAddSelectedSuppliers = () => {
@@ -257,54 +259,71 @@ const InquiryForm = ({
     });
   };
 
-  const handleSearch = async (value: string, categoryType: string | null) => {
+  const handleSupplierSearch = async (value: string) => {
     setSupplierSearch(value);
     if (value) {
       try {
-        if (selectedType === "SUPPLIER") {
-          const data = await searchSupplier(value);
+        const data = await searchSupplier(value);
+        const options = data.suppliers.map((supplier) => ({
+          name: supplier.companyName,
+          id: supplier.id,
+          code: supplier.code,
+          email: supplier.email,
+        }));
+        setSupplierList(options);
 
-          const options = data.suppliers.map((supplier) => ({
-            name: supplier.companyName,
-            id: supplier.id,
-            code: supplier.code,
-            email: supplier.email,
-          }));
-          setSupplierList(options);
-
-          // 공급자 객체를 포함하여 자동완성 옵션 설정
-          setAutoSearchSupCompleteOptions(
-            options.map((supplier) => ({
-              value: supplier.code, // 선택 시 표시될 값
-              supplier, // 공급자 객체 포함
-            }))
-          );
-        } else if (selectedType === "MAKER") {
-          const data = await searchSupplierUseMaker(value, categoryType);
-
-          const makerSupplierList = data.makerSupplierList.map((maker) => ({
-            maker: maker.maker,
-            supplierList: maker.supplierList.map((supplier) => ({
-              name: supplier.companyName,
-              id: supplier.supplierId,
-              code: supplier.code,
-              email: supplier.email,
-            })),
-          }));
-
-          // 상태 업데이트
-          setMakerSupplierList(makerSupplierList);
-          const makerOptions = data.makerSupplierList.map((maker) => ({
-            value: maker.maker,
-          }));
-          setMakerOptions(makerOptions);
-        }
+        // 공급자 객체를 포함하여 자동완성 옵션 설정
+        setAutoSearchSupCompleteOptions(
+          options.map((supplier) => ({
+            value: supplier.code, // 선택 시 표시될 값
+            supplier, // 공급자 객체 포함
+          }))
+        );
       } catch (error) {
         message.error("An error occurred while searching.");
       }
     } else {
       setSupplierList([]);
+    }
+  };
+
+  const handleMakerSearch = async (
+    value: string,
+    categoryType: string | null
+  ) => {
+    setMakerSearch(value);
+    if (value) {
+      try {
+        const data = await searchSupplierUseMaker(value, categoryType);
+        const makerSupplierList = data.makerSupplierList.map((maker) => ({
+          maker: maker.maker,
+          supplierList: maker.supplierList.map((supplier) => ({
+            name: supplier.companyName,
+            id: supplier.supplierId,
+            code: supplier.code,
+            email: supplier.email,
+          })),
+        }));
+
+        // 상태 업데이트
+        setMakerSupplierList(makerSupplierList);
+        const makerOptions = data.makerSupplierList.map((maker) => ({
+          value: maker.maker,
+        }));
+        setMakerOptions(makerOptions);
+      } catch (error) {
+        message.error("An error occurred while searching.");
+      }
+    } else {
       setMakerSupplierList([]);
+    }
+  };
+
+  const handleSearch = (value: string, categoryType: string | null) => {
+    if (selectedType === "SUPPLIER") {
+      handleSupplierSearch(value);
+    } else if (selectedType === "MAKER") {
+      handleMakerSearch(value, categoryType);
     }
   };
 
@@ -568,8 +587,10 @@ const InquiryForm = ({
             >
               <AutoComplete
                 value={supplierSearch}
-                onChange={(value) => {
+                onFocus={() => {
                   setSelectedType("SUPPLIER");
+                }}
+                onChange={(value) => {
                   handleSearch(value, null);
                 }}
                 onSelect={(value, option: any) => {
@@ -616,7 +637,7 @@ const InquiryForm = ({
                   <Input />
                 </AutoComplete>
                 <AutoComplete
-                  value={supplierSearch}
+                  value={makerSearch}
                   onChange={(value) => handleSearch(value, categoryWord)}
                   options={makerOptions}
                   style={{ width: "100%", marginBottom: 10 }}
