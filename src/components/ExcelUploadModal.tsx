@@ -204,7 +204,11 @@ const ExcelUploadModal = ({
         });
 
         // itemType이 없으면 기본값 "ITEM" 설정
-        if (!mappedRow["itemType"]) {
+        if (mappedRow["itemType"] === "+") {
+          mappedRow["itemType"] = "MAKER";
+        } else if (mappedRow["itemType"] === "-") {
+          mappedRow["itemType"] = "TYPE";
+        } else {
           mappedRow["itemType"] = "ITEM";
         }
 
@@ -261,7 +265,7 @@ const ExcelUploadModal = ({
             Add
           </Button>,
         ]}
-        width={1400}
+        width={1800}
       >
         <Upload.Dragger
           beforeUpload={handleExcelUpload}

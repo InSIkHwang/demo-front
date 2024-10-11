@@ -517,7 +517,6 @@ const TableComponent = ({
     // 새로운 데이터 소스로 업데이트
     setDataSource(reorderedDataSource);
   };
-  
 
   const handleUnitBlur = (index: number, value: string) => {
     handleInputChange(index, "unit", value);
