@@ -155,6 +155,15 @@ const InquiryForm = ({
       }[];
     }[]
   >([]);
+  const [isFromAutoComplete, setIsFromAutoComplete] = useState(false);
+
+  useEffect(() => {
+    if (isFromAutoComplete && selectedSuppliers.length > 0) {
+      const lastSupplier = selectedSuppliers[selectedSuppliers.length - 1];
+      handleTagClick(lastSupplier.id);
+      setIsFromAutoComplete(false); // 플래그를 초기화하여 다른 곳에서는 실행되지 않도록 함
+    }
+  }, [selectedSuppliers, isFromAutoComplete]);
 
   useEffect(() => {
     const checkDuplicateOnMount = async () => {
@@ -197,15 +206,21 @@ const InquiryForm = ({
   };
 
   const handleAddSelectedSuppliers = () => {
-    setSelectedSuppliers((prevSuppliers) => [
-      ...prevSuppliers,
-      ...checkedSuppliers.filter(
-        (supplier) =>
-          !prevSuppliers.some(
-            (existingSupplier) => existingSupplier.id === supplier.id
-          )
-      ),
-    ]);
+    setSelectedSuppliers((prevSuppliers) => {
+      const updatedSuppliers = [
+        ...prevSuppliers,
+        ...checkedSuppliers.filter(
+          (supplier) =>
+            !prevSuppliers.some(
+              (existingSupplier) => existingSupplier.id === supplier.id
+            )
+        ),
+      ];
+
+      // 플래그 설정 - 자동완성 또는 모달에서 추가된 경우
+      setIsFromAutoComplete(true);
+      return updatedSuppliers;
+    });
     setCheckedSuppliers([]);
     handleModalClose();
   };
@@ -599,8 +614,11 @@ const InquiryForm = ({
                   if (selectedSupplier) {
                     setSelectedSuppliers((prevSuppliers) => [
                       ...prevSuppliers,
-                      selectedSupplier, // 선택된 supplier 추가
+                      selectedSupplier,
                     ]);
+
+                    // 자동완성에서 선택된 경우 플래그 설정
+                    setIsFromAutoComplete(true);
                   }
 
                   // 검색창 초기화
