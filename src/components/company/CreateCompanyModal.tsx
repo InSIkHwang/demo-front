@@ -41,8 +41,19 @@ const StyledForm = styled(Form)`
   max-width: 100%;
 `;
 
-const FormGroup = styled(Form.Item)`
-  margin-bottom: 15px;
+const StyledFormItem = styled(Form.Item)`
+  margin-bottom: 16px;
+
+  .ant-form-item-label {
+    white-space: normal;
+    word-wrap: break-word;
+    font-weight: 600;
+  }
+
+  .ant-input[readonly] {
+    background-color: #f5f5f5;
+    border: 1px solid #d9d9d9;
+  }
 `;
 
 interface ModalProps {
@@ -160,129 +171,117 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
           ? "New Supplier registration"
           : "등록"
       }
+      width={700}
     >
-      <StyledForm layout="horizontal" onFinish={handleSubmit}>
-        <FormGroup>
-          <Form.Item
-            label="code:"
+      <StyledForm
+        layout="horizontal"
+        labelCol={{ span: 7 }}
+        onFinish={handleSubmit}
+        size="small"
+      >
+        <StyledFormItem
+          label="code:"
+          name="code"
+          validateStatus={
+            formData.code === "" ? "error" : !isCodeUnique ? "error" : "success"
+          }
+          help={
+            formData.code === ""
+              ? "Enter code!"
+              : !isCodeUnique
+              ? "Invalid code."
+              : ""
+          }
+          rules={[{ required: true, message: "Enter code!" }]}
+          hasFeedback
+        >
+          <Input
             name="code"
-            validateStatus={
-              formData.code === ""
-                ? "error"
-                : !isCodeUnique
-                ? "error"
-                : "success"
-            }
-            help={
-              formData.code === ""
-                ? "Enter code!"
-                : !isCodeUnique
-                ? "Invalid code."
-                : ""
-            }
-            rules={[{ required: true, message: "Enter code!" }]}
-          >
-            <Input
-              name="code"
-              value={formData.code}
-              onChange={handleChange}
-              placeholder="BAS"
-            />
-          </Form.Item>
-        </FormGroup>
+            value={formData.code}
+            onChange={handleChange}
+            placeholder="BAS"
+          />
+        </StyledFormItem>
 
-        <FormGroup>
-          <Form.Item
-            label="name:"
+        <StyledFormItem
+          label="name:"
+          name="name"
+          rules={[{ required: true, message: "Please enter name!" }]}
+        >
+          <Input
             name="name"
-            rules={[{ required: true, message: "Please enter name!" }]}
-          >
-            <Input
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="바스코리아"
-            />
-          </Form.Item>
-        </FormGroup>
+            value={formData.name}
+            onChange={handleChange}
+            placeholder="바스코리아"
+          />
+        </StyledFormItem>
 
-        <FormGroup>
-          <Form.Item label="contact:" name="contact">
-            <Input
-              name="contact"
-              value={formData.contact}
-              onChange={handleChange}
-              placeholder="051-123-4567"
-            />
-          </Form.Item>
-        </FormGroup>
+        <StyledFormItem label="contact:" name="contact">
+          <Input
+            name="contact"
+            value={formData.contact}
+            onChange={handleChange}
+            placeholder="051-123-4567"
+          />
+        </StyledFormItem>
 
-        <FormGroup>
-          <Form.Item label="manager:" name="manager">
-            <Input
-              name="manager"
-              value={formData.manager}
-              onChange={handleChange}
-              placeholder="김바스"
-            />
-          </Form.Item>
-        </FormGroup>
+        <StyledFormItem label="manager:" name="manager">
+          <Input
+            name="manager"
+            value={formData.manager}
+            onChange={handleChange}
+            placeholder="김바스"
+          />
+        </StyledFormItem>
 
-        <FormGroup>
-          <Form.Item label="email:" name="email">
-            <Input
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="info@bas-korea.com"
-            />
-          </Form.Item>
-        </FormGroup>
+        <StyledFormItem label="email:" name="email">
+          <Input
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            placeholder="info@bas-korea.com"
+          />
+        </StyledFormItem>
 
-        <FormGroup>
-          <Form.Item label="address:" name="address">
-            <Input
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              placeholder="부산광역시 해운대구"
-            />
-          </Form.Item>
-        </FormGroup>
+        <StyledFormItem label="address:" name="address">
+          <Input
+            name="address"
+            value={formData.address}
+            onChange={handleChange}
+            placeholder="부산광역시 해운대구"
+          />
+        </StyledFormItem>
 
-        <FormGroup>
-          <Form.Item label="language:" name="language">
-            <Input
-              name="language"
-              value={formData.language}
-              onChange={handleChange}
-              placeholder="KOR"
-            />
-          </Form.Item>
-        </FormGroup>
+        <StyledFormItem label="language:" name="language">
+          <Input
+            name="language"
+            value={formData.language}
+            onChange={handleChange}
+            placeholder="KOR"
+          />
+        </StyledFormItem>
 
-        <FormGroup>
-          <Form.Item label="Header Message:" name="headerMessage">
-            <Input.TextArea
-              name="headerMessage"
-              value={formData.headerMessage}
-              onChange={handleChange}
-              placeholder="We wish your company continued success."
-            />
-          </Form.Item>
-        </FormGroup>
+        <StyledFormItem label="Header Message:" name="headerMessage">
+          <Input.TextArea
+            name="headerMessage"
+            value={formData.headerMessage}
+            onChange={handleChange}
+            placeholder="We wish your company continued success."
+          />
+        </StyledFormItem>
 
-        <FormGroup>
-          <Button
-            type="primary"
-            htmlType="submit"
-            loading={loading}
-            disabled={!isCodeUnique}
-            block
-          >
-            Submit
-          </Button>
-        </FormGroup>
+        <Button
+          type="primary"
+          htmlType="submit"
+          loading={loading}
+          disabled={
+            !isCodeUnique || formData.code === "" || formData.name === ""
+          }
+          block
+          size="middle"
+        >
+          Submit
+        </Button>
       </StyledForm>
     </StyledModal>
   );

@@ -48,8 +48,8 @@ const ExcelUploadModal = ({
   >({});
 
   const availableHeaders = [
-    "itemCode",
     "itemType",
+    "itemCode",
     "itemName",
     "qty",
     "unit",

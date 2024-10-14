@@ -603,7 +603,7 @@ const OfferList = () => {
                                             }) =>
                                               `${
                                                 charge.customCharge
-                                              }: ${charge.chargePriceKRW.toLocaleString()} KRW`
+                                              }(${charge.chargePriceKRW.toLocaleString()} KRW)`
                                           )
                                           .join(", ")}
                                       </InfoText>

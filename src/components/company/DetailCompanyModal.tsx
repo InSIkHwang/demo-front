@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Modal, Button, Divider, message, Form as AntForm, Input } from "antd";
 import axios from "../../api/axios";
 import styled from "styled-components";
@@ -58,10 +58,25 @@ const StyledModal = styled(Modal)`
 `;
 
 const StyledFormItem = styled(AntForm.Item)`
+  margin-bottom: 16px;
+
   .ant-form-item-label {
-    white-space: normal; // 줄바꿈 허용
-    word-wrap: break-word; // 긴 단어의 줄바꿈 허용
+    white-space: normal;
+    word-wrap: break-word;
+    font-weight: 600;
   }
+
+  .ant-input[readonly] {
+    background-color: #f5f5f5;
+    border: 1px solid #d9d9d9;
+  }
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
 `;
 
 const DetailCompanyModal = ({
@@ -74,12 +89,44 @@ const DetailCompanyModal = ({
   const [formData, setFormData] = useState(company);
   const [loading, setLoading] = useState(false);
   const [form] = AntForm.useForm();
+  const [isCodeUnique, setIsCodeUnique] = useState(true);
+  const [isCheckingCode, setIsCheckingCode] = useState(false);
+
+  useEffect(() => {
+    checkCodeUnique();
+  }, [formData.code]);
 
   const handleChange = (changedValues: any) => {
     setFormData({
       ...formData,
       ...changedValues,
     });
+  };
+
+  const checkCodeUnique = async () => {
+    if (company.code !== formData.code) {
+      if ((formData.code + "").trim() === "") {
+        setIsCodeUnique(true);
+        return;
+      }
+      setIsCheckingCode(true);
+      try {
+        const endpoint =
+          category === "customer"
+            ? `/api/customers/check-code/${formData.code}`
+            : `/api/suppliers/check-code/${formData.code}`;
+        const response = await axios.get(endpoint);
+        setIsCodeUnique(!response.data); // 응답 T/F를 반전시킴
+      } catch (error) {
+        message.error("Error checking code unique");
+        setIsCodeUnique(true); // 오류가 발생하면 기본적으로 유효하다고 처리
+      } finally {
+        setIsCheckingCode(false);
+      }
+    } else if (company.code === formData.code) {
+      setIsCodeUnique(true);
+      setIsCheckingCode(false);
+    }
   };
 
   const editData = async () => {
@@ -138,23 +185,34 @@ const DetailCompanyModal = ({
       onCancel={onClose}
       footer={null}
       title={category === "customer" ? "Customer Details" : "Supplier Details"}
-      width={800}
+      width={700}
     >
       <AntForm
         form={form}
         layout="horizontal"
-        labelCol={{ span: 6 }}
+        labelCol={{ span: 7 }}
         initialValues={formData}
         onValuesChange={handleChange}
+        size="small"
       >
         <StyledFormItem
           label="Code"
           name="code"
           rules={[{ required: true, message: "Please enter the code!" }]}
+          hasFeedback={isEditing}
+          validateStatus={
+            formData.code === "" ? "error" : !isCodeUnique ? "error" : "success"
+          }
+          help={
+            formData.code === ""
+              ? "Enter code!"
+              : !isCodeUnique
+              ? "Invalid code."
+              : ""
+          }
         >
           <Input readOnly={!isEditing} />
         </StyledFormItem>
-
         <StyledFormItem
           label="Company Name"
           name="companyName"
@@ -197,22 +255,29 @@ const DetailCompanyModal = ({
         </StyledFormItem>
 
         <Divider />
-
-        <div style={{ textAlign: "right" }}>
+        <ButtonGroup>
           {isEditing ? (
             <>
               <Button
                 type="primary"
-                style={{ marginRight: 10 }}
                 onClick={handleSubmit}
                 loading={loading}
+                disabled={
+                  !isCodeUnique ||
+                  formData.code === "" ||
+                  formData.companyName === ""
+                }
+                size="middle"
               >
                 Save
               </Button>
               <Button
-                type="default"
-                style={{ marginRight: 10 }}
-                onClick={() => setIsEditing(false)}
+                onClick={() => {
+                  setIsEditing(false);
+                  setFormData(company);
+                  form.setFieldsValue(company);
+                }}
+                size="middle"
               >
                 Cancel
               </Button>
@@ -220,24 +285,19 @@ const DetailCompanyModal = ({
           ) : (
             <Button
               type="primary"
-              style={{ marginRight: 10 }}
               onClick={() => setIsEditing(true)}
+              size="middle"
             >
               Edit
             </Button>
           )}
-          <Button
-            type="primary"
-            danger
-            onClick={handleDelete}
-            loading={loading}
-          >
+          <Button danger onClick={handleDelete} loading={loading} size="middle">
             Delete
           </Button>
-          <Button type="default" onClick={onClose} style={{ marginLeft: 10 }}>
+          <Button onClick={onClose} size="middle">
             Close
           </Button>
-        </div>
+        </ButtonGroup>
       </AntForm>
     </StyledModal>
   );

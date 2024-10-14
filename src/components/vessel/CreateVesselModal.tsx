@@ -30,8 +30,19 @@ const StyledForm = styled(Form)`
   max-width: 100%;
 `;
 
-const FormGroup = styled(Form.Item)`
-  margin-bottom: 15px;
+const StyledFormItem = styled(Form.Item)`
+  margin-bottom: 16px;
+
+  .ant-form-item-label {
+    white-space: normal;
+    word-wrap: break-word;
+    font-weight: 600;
+  }
+
+  .ant-input[readonly] {
+    background-color: #f5f5f5;
+    border: 1px solid #d9d9d9;
+  }
 `;
 
 interface ModalProps {
@@ -185,145 +196,129 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
       onCancel={onClose}
       footer={null}
       title="New vessel registration"
+      width={700}
     >
       <StyledForm
         layout="horizontal"
         onFinish={handleSubmit}
         initialValues={formData}
+        labelCol={{ span: 8 }}
+        size="small"
       >
-        <FormGroup>
-          <Form.Item
-            label="code:"
+        <StyledFormItem
+          label="code:"
+          name="code"
+          validateStatus={
+            formData.code === "" ? "error" : !isCodeUnique ? "error" : "success"
+          }
+          help={
+            formData.code === ""
+              ? "Enter code!"
+              : !isCodeUnique
+              ? "Invalid code."
+              : ""
+          }
+          rules={[{ required: true, message: "Enter code!" }]}
+        >
+          <Input
             name="code"
-            validateStatus={
-              formData.code === ""
-                ? "error"
-                : !isCodeUnique
-                ? "error"
-                : "success"
-            }
-            help={
-              formData.code === ""
-                ? "Enter code!"
-                : !isCodeUnique
-                ? "Invalid code."
-                : ""
-            }
-            rules={[{ required: true, message: "Enter code!" }]}
-          >
-            <Input
-              name="code"
-              value={formData.code}
-              onChange={handleChange}
-              placeholder="BAS"
-            />
-          </Form.Item>
-        </FormGroup>
+            value={formData.code}
+            onChange={handleChange}
+            placeholder="BAS"
+          />
+        </StyledFormItem>
 
-        <FormGroup>
-          <Form.Item
-            label="Vessel Name:"
+        <StyledFormItem
+          label="Vessel Name:"
+          name="vesselName"
+          rules={[{ required: true, message: "Enter vessel name!" }]}
+        >
+          <Input
             name="vesselName"
-            rules={[{ required: true, message: "Enter vessel name!" }]}
-          >
-            <Input
-              name="vesselName"
-              value={formData.vesselName}
-              onChange={handleChange}
-              placeholder="BAS VESSEL1"
-            />
-          </Form.Item>
-        </FormGroup>
+            value={formData.vesselName}
+            onChange={handleChange}
+            placeholder="BAS VESSEL1"
+          />
+        </StyledFormItem>
 
-        <FormGroup>
-          <Form.Item label="Vessel Company Name:" name="vesselCompanyName">
-            <Input
-              name="vesselCompanyName"
-              value={formData.vesselCompanyName}
-              onChange={handleChange}
-              placeholder="BAS KOREA"
-            />
-          </Form.Item>
-        </FormGroup>
+        <StyledFormItem label="Vessel Company Name:" name="vesselCompanyName">
+          <Input
+            name="vesselCompanyName"
+            value={formData.vesselCompanyName}
+            onChange={handleChange}
+            placeholder="BAS KOREA"
+          />
+        </StyledFormItem>
 
-        <FormGroup>
-          <Form.Item label="IMO NO.:" name="imoNumber">
-            <Input
-              name="imoNumber"
-              value={formData.imoNumber}
-              onChange={handleChange}
-              placeholder="1234567"
-              type="number"
-            />
-          </Form.Item>
-        </FormGroup>
+        <StyledFormItem label="IMO NO.:" name="imoNumber">
+          <Input
+            name="imoNumber"
+            value={formData.imoNumber}
+            onChange={handleChange}
+            placeholder="1234567"
+            type="number"
+          />
+        </StyledFormItem>
 
-        <FormGroup>
-          <Form.Item label="HULL No.:" name="hullNumber">
-            <Input
-              name="hullNumber"
-              value={formData.hullNumber}
-              onChange={handleChange}
-              placeholder="V001"
-            />
-          </Form.Item>
-        </FormGroup>
+        <StyledFormItem label="HULL No.:" name="hullNumber">
+          <Input
+            name="hullNumber"
+            value={formData.hullNumber}
+            onChange={handleChange}
+            placeholder="V001"
+          />
+        </StyledFormItem>
 
-        <FormGroup>
-          <Form.Item label="SHIPYARD:" name="shipYard">
-            <Input
-              name="shipYard"
-              value={formData.shipYard}
-              onChange={handleChange}
-              placeholder="B123"
-            />
-          </Form.Item>
-        </FormGroup>
+        <StyledFormItem label="SHIPYARD:" name="shipYard">
+          <Input
+            name="shipYard"
+            value={formData.shipYard}
+            onChange={handleChange}
+            placeholder="B123"
+          />
+        </StyledFormItem>
 
-        <FormGroup>
-          <Form.Item
-            label="Customer Name:"
-            name="customerName"
-            validateStatus={customerError ? "error" : ""}
-            help={customerError}
-            rules={[{ required: true, message: "Select a customer!" }]}
-          >
-            <AutoComplete
-              onSearch={handleSearch}
-              onSelect={handleSelectCustomer}
-              value={formData.customerName}
-              placeholder="Customer Name"
-              options={customerSuggestions.map((customer) => ({
-                value: customer.companyName,
-                label: customer.companyName,
-                companyName: customer.companyName,
-                id: customer.id,
-              }))}
-              filterOption={(inputValue, option) =>
-                (option?.value as string)
-                  .toUpperCase()
-                  .includes(inputValue.toUpperCase())
-              }
-            >
-              <Input />
-            </AutoComplete>
-          </Form.Item>
-        </FormGroup>
-
-        <FormGroup>
-          <Button
-            type="primary"
-            htmlType="submit"
-            disabled={
-              formData.customerId === undefined ||
-              !isCodeUnique ||
-              selectedCustomer?.companyName !== formData.customerName
+        <StyledFormItem
+          label="Customer Name:"
+          name="customerName"
+          validateStatus={customerError ? "error" : ""}
+          help={customerError}
+          rules={[{ required: true, message: "Select a customer!" }]}
+        >
+          <AutoComplete
+            onSearch={handleSearch}
+            onSelect={handleSelectCustomer}
+            value={formData.customerName}
+            placeholder="Customer Name"
+            options={customerSuggestions.map((customer) => ({
+              value: customer.companyName,
+              label: customer.companyName,
+              companyName: customer.companyName,
+              id: customer.id,
+            }))}
+            filterOption={(inputValue, option) =>
+              (option?.value as string)
+                .toUpperCase()
+                .includes(inputValue.toUpperCase())
             }
-            block
           >
-            Submit
-          </Button>
-        </FormGroup>
+            <Input />
+          </AutoComplete>
+        </StyledFormItem>
+
+        <Button
+          type="primary"
+          htmlType="submit"
+          disabled={
+            formData.customerId === undefined ||
+            !isCodeUnique ||
+            selectedCustomer?.companyName !== formData.customerName
+          }
+          block
+          size="middle"
+        >
+          Submit
+        </Button>
       </StyledForm>
     </StyledModal>
   );
