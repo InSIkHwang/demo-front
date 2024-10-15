@@ -117,6 +117,28 @@ export const fetchSupplierDetail = async (suppliersId: number) => {
   return response.data;
 };
 
+//Supplier add Maker
+export const AddMaker = async (
+  supplierId: number,
+  categoryType: string,
+  maker: string
+) => {
+  await axios.post(
+    `/api/suppliers/maker/${supplierId}?categoryType=${categoryType}&maker=${maker}`
+  );
+};
+
+//Supplier delete Maker
+export const DeleteMaker = async (
+  supplierId: number,
+  categoryType: string,
+  maker: string
+) => {
+  await axios.delete(
+    `/api/suppliers/maker/${supplierId}?categoryType=${categoryType}&maker=${maker}`
+  );
+};
+
 //----------------------------------------------------------------------------------
 // INQUIRY 작성 관련
 

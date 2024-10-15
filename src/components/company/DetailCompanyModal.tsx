@@ -1,7 +1,29 @@
 import React, { useEffect, useState } from "react";
-import { Modal, Button, Divider, message, Form as AntForm, Input } from "antd";
+import {
+  Modal,
+  Button,
+  Divider,
+  message,
+  Form as AntForm,
+  Input,
+  Card,
+  Select,
+  Flex,
+  Tag,
+  AutoComplete,
+} from "antd";
 import axios from "../../api/axios";
 import styled from "styled-components";
+import {
+  AddMaker,
+  DeleteMaker,
+  fetchSupplierDetail,
+  searchSupplierUseMaker,
+} from "../../api/api";
+import LoadingSpinner from "../LoadingSpinner";
+
+const { Option } = Select;
+const { confirm } = Modal;
 
 interface Company {
   id: number;
@@ -14,6 +36,7 @@ interface Company {
   communicationLanguage: string;
   modifiedAt: string;
   headerMessage: string;
+  makerCategoryList?: { category: string; makers: string[] }[];
 }
 
 interface ModalProps {
@@ -86,15 +109,181 @@ const DetailCompanyModal = ({
   onUpdate,
 }: ModalProps) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState(company);
+  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState<Company | null>(null);
+  const [loadData, setLoadData] = useState<Company | null>(null);
   const [loading, setLoading] = useState(false);
   const [form] = AntForm.useForm();
   const [isCodeUnique, setIsCodeUnique] = useState(true);
   const [isCheckingCode, setIsCheckingCode] = useState(false);
+  const [makerCategoryList, setMakerCategoryList] = useState<
+    { category: string; makers: string[] }[]
+  >([]);
+  const [makerSearch, setMakerSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [makerOptions, setMakerOptions] = useState<{ value: string }[]>([]);
+  const [initialCategoryList, setInitialCategoryList] = useState<string[]>([]);
+  const [categoryList, setCategoryList] = useState<string[]>([]);
+  const [isAddingNewCategory, setIsAddingNewCategory] = useState(false);
+  const [newCategory, setNewCategory] = useState("");
+
+  console.log(formData);
 
   useEffect(() => {
-    checkCodeUnique();
-  }, [formData.code]);
+    const fetchCategoryList = async () => {
+      try {
+        const response = await axios.get("/api/suppliers/category-all");
+        setCategoryList(response.data.categoryType);
+        setInitialCategoryList(response.data.categoryType);
+      } catch (error) {
+        console.error("Error fetching category list:", error);
+      }
+    };
+
+    fetchCategoryList();
+  }, []);
+
+  const getCompanyDetails = async () => {
+    setIsLoading(true);
+    try {
+      const supplierDetail = await fetchSupplierDetail(company.id);
+      setFormData(supplierDetail);
+      setLoadData(supplierDetail);
+      setMakerCategoryList(supplierDetail.makerCategoryList);
+    } catch (error) {
+      console.error("Error fetching supplier details:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (company.id) {
+      getCompanyDetails();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (formData) {
+      // formData가 null이 아닐 때만 실행
+      checkCodeUnique();
+    }
+  }, [formData?.code]);
+
+  const handleMakerSearch = async (
+    value: string,
+    categoryType: string | null
+  ) => {
+    setMakerSearch(value);
+    console.log(categoryType);
+
+    if (categoryType && !initialCategoryList.includes(categoryType)) {
+      categoryType = ""; // 빈 문자열로 설정
+    }
+
+    if (value) {
+      try {
+        const data = await searchSupplierUseMaker(value, categoryType);
+
+        const makerOptions = data.makerSupplierList.map((item) => ({
+          value: item.maker,
+          label: item.maker,
+        }));
+
+        setMakerOptions(makerOptions);
+      } catch (error) {
+        message.error("An error occurred while searching.");
+      }
+    } else {
+      setMakerOptions([]);
+    }
+  };
+
+  const handleCategoryChange = (value: string) => {
+    if (value === "add_new_category") {
+      setIsAddingNewCategory(true);
+      setSelectedCategory("");
+    } else {
+      setSelectedCategory(value);
+      setIsAddingNewCategory(false); // 기존 카테고리를 선택하면 Input 창 숨기기
+    }
+  };
+
+  const handleAddNewCategory = () => {
+    if (newCategory.trim()) {
+      setCategoryList([...categoryList, newCategory]);
+      setSelectedCategory(newCategory);
+      setIsAddingNewCategory(false);
+      setNewCategory(""); // 입력값 초기화
+    }
+  };
+
+  const handleAddMaker = async () => {
+    if (!selectedCategory || !makerSearch) {
+      message.error("Please select a category and enter a maker.");
+      return;
+    }
+
+    const existingCategory = makerCategoryList.find(
+      (item) =>
+        item.category === selectedCategory && item.makers.includes(makerSearch)
+    );
+
+    if (existingCategory) {
+      message.warning("This maker has already been added.");
+    } else {
+      if (formData) {
+        try {
+          await AddMaker(formData.id, selectedCategory, makerSearch);
+
+          getCompanyDetails();
+          message.success("maker has been added successfully.");
+        } catch (error) {
+          console.error("Error add maker:", error);
+          message.error("Failed to add maker. Please try again.");
+        }
+      } else {
+        message.error("Please Check Supplier.");
+        return;
+      }
+    }
+
+    // 입력값 초기화
+    setMakerSearch("");
+  };
+
+  const handleTagClose = async (
+    category: string,
+    maker: string,
+    e: React.MouseEvent
+  ) => {
+    e.preventDefault();
+
+    if (formData) {
+      confirm({
+        title: "Are you sure you want to delete this maker?",
+        content: "Once deleted, this action cannot be undone.",
+        okText: "Delete",
+        cancelText: "Cancel",
+        onOk: async () => {
+          try {
+            await DeleteMaker(formData.id, category, maker);
+            getCompanyDetails();
+            message.success("Maker has been deleted successfully.");
+          } catch (error) {
+            console.error("Error deleting maker:", error);
+            message.error("Failed to delete maker. Please try again.");
+          }
+        },
+        onCancel() {
+          message.info("Deletion has been canceled.");
+        },
+      });
+    } else {
+      message.error("Please check supplier.");
+      return;
+    }
+  };
 
   const handleChange = (changedValues: any) => {
     setFormData({
@@ -104,54 +293,61 @@ const DetailCompanyModal = ({
   };
 
   const checkCodeUnique = async () => {
-    if (company.code !== formData.code) {
-      if ((formData.code + "").trim() === "") {
+    if (formData) {
+      // formData가 null이 아닐 때만 실행
+      if (company.code !== formData.code) {
+        if ((formData.code + "").trim() === "") {
+          setIsCodeUnique(true);
+          return;
+        }
+        setIsCheckingCode(true);
+        try {
+          const endpoint =
+            category === "customer"
+              ? `/api/customers/check-code/${formData.code}`
+              : `/api/suppliers/check-code/${formData.code}`;
+          const response = await axios.get(endpoint);
+          setIsCodeUnique(!response.data); // 응답 T/F를 반전시킴
+        } catch (error) {
+          message.error("Error checking code unique");
+          setIsCodeUnique(true); // 오류가 발생하면 기본적으로 유효하다고 처리
+        } finally {
+          setIsCheckingCode(false);
+        }
+      } else if (company.code === formData.code) {
         setIsCodeUnique(true);
-        return;
-      }
-      setIsCheckingCode(true);
-      try {
-        const endpoint =
-          category === "customer"
-            ? `/api/customers/check-code/${formData.code}`
-            : `/api/suppliers/check-code/${formData.code}`;
-        const response = await axios.get(endpoint);
-        setIsCodeUnique(!response.data); // 응답 T/F를 반전시킴
-      } catch (error) {
-        message.error("Error checking code unique");
-        setIsCodeUnique(true); // 오류가 발생하면 기본적으로 유효하다고 처리
-      } finally {
         setIsCheckingCode(false);
       }
-    } else if (company.code === formData.code) {
-      setIsCodeUnique(true);
-      setIsCheckingCode(false);
     }
   };
 
   const editData = async () => {
-    try {
-      const endpoint =
-        category === "customer"
-          ? `/api/customers/${formData.id}`
-          : `/api/suppliers/${formData.id}`;
-      await axios.put(endpoint, formData);
-      message.success("Successfully updated.");
-    } catch (error) {
-      message.error("An error occurred while updating.");
+    if (formData) {
+      try {
+        const endpoint =
+          category === "customer"
+            ? `/api/customers/${formData.id}`
+            : `/api/suppliers/${formData.id}`;
+        await axios.put(endpoint, formData);
+        message.success("Successfully updated.");
+      } catch (error) {
+        message.error("An error occurred while updating.");
+      }
     }
   };
 
   const deleteData = async () => {
-    try {
-      const endpoint =
-        category === "customer"
-          ? `/api/customers/${formData.id}`
-          : `/api/suppliers/${formData.id}`;
-      await axios.delete(endpoint);
-      message.success("Successfully deleted.");
-    } catch (error) {
-      message.error("An error occurred while deleting.");
+    if (formData) {
+      try {
+        const endpoint =
+          category === "customer"
+            ? `/api/customers/${formData.id}`
+            : `/api/suppliers/${formData.id}`;
+        await axios.delete(endpoint);
+        message.success("Successfully deleted.");
+      } catch (error) {
+        message.error("An error occurred while deleting.");
+      }
     }
   };
 
@@ -160,7 +356,8 @@ const DetailCompanyModal = ({
     await editData();
     setLoading(false);
     onUpdate();
-    onClose();
+    setIsEditing(false);
+    getCompanyDetails();
   };
 
   const handleDelete = async () => {
@@ -179,6 +376,10 @@ const DetailCompanyModal = ({
     });
   };
 
+  if (!formData) {
+    return <LoadingSpinner />;
+  }
+
   return (
     <StyledModal
       open={true}
@@ -191,7 +392,7 @@ const DetailCompanyModal = ({
         form={form}
         layout="horizontal"
         labelCol={{ span: 7 }}
-        initialValues={formData}
+        initialValues={formData || undefined}
         onValuesChange={handleChange}
         size="small"
       >
@@ -201,10 +402,14 @@ const DetailCompanyModal = ({
           rules={[{ required: true, message: "Please enter the code!" }]}
           hasFeedback={isEditing}
           validateStatus={
-            formData.code === "" ? "error" : !isCodeUnique ? "error" : "success"
+            formData?.code === ""
+              ? "error"
+              : !isCodeUnique
+              ? "error"
+              : "success"
           }
           help={
-            formData.code === ""
+            formData?.code === ""
               ? "Enter code!"
               : !isCodeUnique
               ? "Invalid code."
@@ -254,7 +459,110 @@ const DetailCompanyModal = ({
           <Input.TextArea readOnly={!isEditing} />
         </StyledFormItem>
 
-        <Divider />
+        {category === "supplier" && (
+          <>
+            <Divider />
+            <Card
+              title="Category & Maker"
+              style={{
+                padding: "16px",
+                border: "1px solid #ccc",
+                marginBottom: 20,
+              }}
+            >
+              {isEditing && (
+                <div style={{ display: "flex", gap: 5 }}>
+                  <Select
+                    dropdownStyle={{ width: "300px" }}
+                    style={{ flex: 2 }}
+                    placeholder="Select Category"
+                    onChange={handleCategoryChange}
+                    value={selectedCategory}
+                  >
+                    <Option
+                      key="add_new_category"
+                      value="add_new_category"
+                      style={{ color: "#4096ff" }}
+                    >
+                      Add new category...
+                    </Option>
+                    {categoryList.map((category) => (
+                      <Option key={category} value={category}>
+                        {category}
+                      </Option>
+                    ))}
+                  </Select>
+                  {isAddingNewCategory && (
+                    <div style={{ flex: 7, display: "flex", gap: 5 }}>
+                      <Input
+                        style={{ flex: 7 }}
+                        value={newCategory}
+                        onChange={(e) => setNewCategory(e.target.value)}
+                        placeholder="Enter new category name"
+                      />
+                      <Button
+                        type="primary"
+                        style={{ flex: 3 }}
+                        onClick={handleAddNewCategory}
+                      >
+                        Add new category
+                      </Button>
+                    </div>
+                  )}
+                  {!isAddingNewCategory && (
+                    <>
+                      <AutoComplete
+                        value={makerSearch}
+                        onChange={(value) =>
+                          handleMakerSearch(value, selectedCategory)
+                        }
+                        options={makerOptions}
+                        style={{ flex: 7 }}
+                        placeholder="Maker name: ex) HYUNDAI"
+                      >
+                        <Input />
+                      </AutoComplete>
+                      <Button
+                        style={{ float: "right", flex: 1 }}
+                        type="primary"
+                        onClick={handleAddMaker}
+                      >
+                        Add
+                      </Button>
+                    </>
+                  )}
+                </div>
+              )}
+              {formData.makerCategoryList?.map(({ category, makers }) => (
+                <>
+                  <Divider
+                    orientation="left"
+                    plain
+                    style={{ borderColor: "#555" }}
+                  >
+                    {category}
+                  </Divider>
+                  <Flex gap="4px 0" wrap>
+                    {makers.map((maker) => (
+                      <Tag
+                        key={maker}
+                        closeIcon={isEditing ? true : null}
+                        onClose={
+                          isEditing
+                            ? (e) => handleTagClose(category, maker, e)
+                            : undefined
+                        }
+                      >
+                        {maker}
+                      </Tag>
+                    ))}
+                  </Flex>
+                </>
+              ))}
+            </Card>
+            <Divider />
+          </>
+        )}
         <ButtonGroup>
           {isEditing ? (
             <>
@@ -274,8 +582,8 @@ const DetailCompanyModal = ({
               <Button
                 onClick={() => {
                   setIsEditing(false);
-                  setFormData(company);
-                  form.setFieldsValue(company);
+                  setFormData(loadData);
+                  form.setFieldsValue(loadData);
                 }}
                 size="middle"
               >
