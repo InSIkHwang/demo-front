@@ -241,7 +241,7 @@ const Header = ({ isAuthenticated, onLogout }: HeaderProps) => {
               handleMenuItemClick(() => navigate("/quotationlist"))
             }
           >
-            최종 견적 - Quotation
+            최종 견적 - FInal Quotations
           </MenuItem>
         </SubMenu>
         <MenuItem onClick={() => setOrderOpen(!isOrderOpen)}>

@@ -223,7 +223,7 @@ const QuotationList = () => {
   return (
     <>
       <Container>
-        <Title>최종 견적 - Quotations</Title>
+        <Title>최종 견적 - FInal Quotations</Title>
         <TableHeader>
           <SearchBar>
             <Select
