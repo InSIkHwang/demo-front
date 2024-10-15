@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
-import { Button, message, Modal, Select } from "antd";
+import { Button, FloatButton, message, Modal, Select } from "antd";
+import { FileSearchOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import {
   fetchDocData,
@@ -8,7 +9,7 @@ import {
   fetchItemData,
   submitInquiry,
   fetchInquiryDetail,
-  chkDuplicateDocNum,
+  searchInquiryWithMaker,
 } from "../api/api";
 import InquiryForm from "../components/makeInquiry/InquiryForm";
 import MakeInquiryTable from "../components/makeInquiry/MakeInquiryTable";
@@ -20,12 +21,14 @@ import {
   emailSendData,
   VesselList,
   Item,
+  InquirySearchMakerInquirySearchResult,
 } from "../types/types";
 import { useNavigate, useParams } from "react-router-dom";
 import HeaderEditModal from "../components/makeInquiry/HeaderEditModal";
 import MailSenderModal from "../components/makeInquiry/MailSenderModal";
 import PDFGenerator from "../components/makeInquiry/PDFGenerator";
 import LoadingSpinner from "../components/LoadingSpinner";
+import InquirySearchModal from "../components/makeInquiry/InquirySearchModal";
 
 // Styles
 const FormContainer = styled.div`
@@ -44,6 +47,10 @@ const Title = styled.h1`
   font-size: 24px;
   margin-bottom: 30px;
   color: #333;
+`;
+
+const BtnGroup = styled(FloatButton.Group)`
+  bottom: 10vh;
 `;
 
 // Constants
@@ -65,7 +72,7 @@ const INITIAL_TABLE_VALUES: InquiryItem[] = [
     itemCode: "",
     itemType: "MAKER",
     unit: "",
-    itemName: "",
+    itemName: "[MAKER]",
     qty: 0,
     itemRemark: "",
     position: 1,
@@ -74,7 +81,7 @@ const INITIAL_TABLE_VALUES: InquiryItem[] = [
     itemCode: "",
     itemType: "TYPE",
     unit: "",
-    itemName: "",
+    itemName: "[TYPE]",
     qty: 0,
     itemRemark: "",
     position: 2,
@@ -171,12 +178,32 @@ const MakeInquiry = () => {
   const [isLoading, setIsLoading] = useState(true); // 로딩 상태 변수 추가
   const [isDocNumDuplicate, setIsDocNumDuplicate] = useState<boolean>(false);
   const [inquiryId, setInquiryId] = useState<number | null>(null);
+  const [isInquirySearchModalVisible, setIsInquirySearchModalVisible] =
+    useState(false);
+  const [inquirySearchMakerName, setInquirySearchMakerName] = useState("");
+  const [inquirySearchMakerNameResult, setInquirySearchMakerNameResult] =
+    useState<InquirySearchMakerInquirySearchResult | null>(null);
+
+  const [tagColors, setTagColors] = useState<{ [id: number]: string }>({});
+  const [isFromInquirySearchModal, setIsFromInquirySearchModal] =
+    useState(false);
 
   useEffect(() => {
     if (customerInquiryId) {
       fetchDetail();
+    } else {
+      setFormValues(INITIAL_FORM_VALUES);
+      setItems([]);
     }
   }, []);
+
+  useEffect(() => {
+    if (isFromInquirySearchModal && selectedSuppliers.length > 0) {
+      const lastSupplier = selectedSuppliers[selectedSuppliers.length - 1];
+      handleTagClick(lastSupplier.id);
+      setIsFromInquirySearchModal(false); // 플래그를 초기화하여 다른 곳에서는 실행되지 않도록 함
+    }
+  }, [selectedSuppliers, isFromInquirySearchModal]);
 
   // Load document data
   const loadDocData = useCallback(async () => {
@@ -638,6 +665,54 @@ const MakeInquiry = () => {
     setLanguage(value);
   };
 
+  const openInquirySearchMakerModal = () => {
+    setIsInquirySearchModalVisible(true);
+  };
+
+  const closeInquirySearchMakerModal = () => {
+    setIsInquirySearchModalVisible(false);
+    setInquirySearchMakerName("");
+    setInquirySearchMakerNameResult(null);
+  };
+
+  const fetchInquirySearchResults = async () => {
+    if (!inquirySearchMakerName) return;
+    try {
+      const result = await searchInquiryWithMaker(inquirySearchMakerName);
+      setInquirySearchMakerNameResult(result);
+    } catch (error) {
+      console.error("Search Error:", error);
+    }
+  };
+
+  const handleInquirySearch = () => {
+    fetchInquirySearchResults(); // 검색 수행
+  };
+
+  const handleTagClick = (id: number) => {
+    setSelectedSupplierTag((prevTags) => {
+      const isAlreadySelected = prevTags.some((tag) => tag.id === id);
+      const currentTags = [...prevTags];
+
+      if (isAlreadySelected) {
+        setTagColors((prevColors) => ({ ...prevColors, [id]: "#d9d9d9" }));
+        return currentTags.filter((tag) => tag.id !== id);
+      } else {
+        const newTag = selectedSuppliers.find((supplier) => supplier.id === id);
+
+        if (newTag) {
+          if (currentTags.length >= 5) {
+            message.error("Only up to 5 supplier can be registered.");
+            return currentTags;
+          }
+          setTagColors((prevColors) => ({ ...prevColors, [id]: "#007bff" }));
+          return [...currentTags, newTag];
+        }
+        return currentTags;
+      }
+    });
+  };
+
   return (
     <FormContainer>
       <Title>견적요청서 작성(MAKE INQUIRY)</Title>
@@ -657,6 +732,9 @@ const MakeInquiry = () => {
           isDocNumDuplicate={isDocNumDuplicate}
           setIsDocNumDuplicate={setIsDocNumDuplicate}
           customerInquiryId={Number(customerInquiryId)}
+          tagColors={tagColors}
+          setTagColors={setTagColors}
+          handleTagClick={handleTagClick}
         />
       )}
       <MakeInquiryTable
@@ -795,6 +873,28 @@ const MakeInquiry = () => {
           language={language}
         />
       )}
+      <BtnGroup>
+        <FloatButton
+          type="primary"
+          tooltip="Search the maker's inquiries to identify the supplier"
+          icon={<FileSearchOutlined />}
+          onClick={openInquirySearchMakerModal}
+        />
+        <InquirySearchModal
+          isVisible={isInquirySearchModalVisible}
+          onClose={closeInquirySearchMakerModal}
+          inquirySearchMakerName={inquirySearchMakerName}
+          setInquirySearchMakerName={setInquirySearchMakerName}
+          selectedSuppliers={selectedSuppliers}
+          handleTagClick={handleTagClick}
+          inquirySearchMakerNameResult={inquirySearchMakerNameResult}
+          handleInquirySearch={handleInquirySearch}
+          tagColors={tagColors}
+          setSelectedSuppliers={setSelectedSuppliers}
+          setIsFromInquirySearchModal={setIsFromInquirySearchModal}
+        />
+        <FloatButton.BackTop visibilityHeight={0} />
+      </BtnGroup>
     </FormContainer>
   );
 };

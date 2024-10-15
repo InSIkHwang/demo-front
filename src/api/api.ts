@@ -275,6 +275,14 @@ export const handleExport = async (inquiryId: number) => {
   return response.data;
 };
 
+//
+export const searchInquiryWithMaker = async (makerName: string) => {
+  const response = await axios.get(
+    `/api/document/search?makerName=${makerName}`
+  );
+
+  return response.data;
+};
 //----------------------------------------------------------------------------------
 // INQUIRY 조회 관련
 

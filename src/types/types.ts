@@ -370,3 +370,24 @@ export interface TrashItem {
   docManagerName: string;
   categoryType: string[];
 }
+
+export interface InquirySearchMakerSupplier {
+  id: number;
+  code: string;
+  companyName: string;
+  representative: string;
+  email: string;
+  count?: number;
+}
+
+export interface InquirySearchMakerInquiryItem {
+  inquiryItemType: string;
+  itemName: string;
+  itemRemark: string;
+  supplierList: InquirySearchMakerSupplier[];
+}
+
+export interface InquirySearchMakerInquirySearchResult {
+  bestSupplierList: InquirySearchMakerSupplier[];
+  searchList: InquirySearchMakerInquiryItem[];
+}

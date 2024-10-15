@@ -106,6 +106,9 @@ interface InquiryFormProps {
   isDocNumDuplicate: boolean;
   setIsDocNumDuplicate: Dispatch<SetStateAction<boolean>>;
   customerInquiryId: number;
+  tagColors: { [id: number]: string };
+  setTagColors: Dispatch<SetStateAction<{ [id: number]: string }>>;
+  handleTagClick: (id: number) => void;
 }
 
 const InquiryForm = ({
@@ -123,10 +126,12 @@ const InquiryForm = ({
   isDocNumDuplicate,
   setIsDocNumDuplicate,
   customerInquiryId,
+  tagColors,
+  setTagColors,
+  handleTagClick,
 }: InquiryFormProps) => {
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
   const [isVesselModalOpen, setIsVesselModalOpen] = useState(false);
-  const [tagColors, setTagColors] = useState<{ [id: number]: string }>({});
   const [supplierSearch, setSupplierSearch] = useState("");
   const [makerSearch, setMakerSearch] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -340,30 +345,6 @@ const InquiryForm = ({
     } else if (selectedType === "MAKER") {
       handleMakerSearch(value, categoryType);
     }
-  };
-
-  const handleTagClick = (id: number) => {
-    setSelectedSupplierTag((prevTags) => {
-      const isAlreadySelected = prevTags.some((tag) => tag.id === id);
-      const currentTags = [...prevTags];
-
-      if (isAlreadySelected) {
-        setTagColors((prevColors) => ({ ...prevColors, [id]: "#d9d9d9" }));
-        return currentTags.filter((tag) => tag.id !== id);
-      } else {
-        const newTag = selectedSuppliers.find((supplier) => supplier.id === id);
-
-        if (newTag) {
-          if (currentTags.length >= 5) {
-            message.error("Only up to 5 supplier can be registered.");
-            return currentTags;
-          }
-          setTagColors((prevColors) => ({ ...prevColors, [id]: "#007bff" }));
-          return [...currentTags, newTag];
-        }
-        return currentTags;
-      }
-    });
   };
 
   const uniqueSuppliers = removeDuplicates(selectedSuppliers);
