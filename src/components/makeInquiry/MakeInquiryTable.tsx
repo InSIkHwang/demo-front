@@ -424,52 +424,6 @@ const MakeInquiryTable = ({
         width: 120,
       },
       {
-        title: (
-          <div>
-            <Select
-              placeholder="Unit"
-              onChange={applyUnitToAllRows}
-              style={{ width: "100%" }}
-            >
-              {unitOptions.map((unit) => (
-                <Option key={unit} value={unit}>
-                  {unit}
-                </Option>
-              ))}
-            </Select>
-          </div>
-        ),
-        dataIndex: "unit",
-        key: "unit",
-        render: (text: string, record: InquiryItem, index: number) =>
-          record.itemType === "ITEM" ? (
-            <Input
-              ref={(el) => {
-                if (!inputRefs.current[index]) {
-                  inputRefs.current[index] = [];
-                }
-                inputRefs.current[index][2] = el;
-              }}
-              onKeyDown={(e) => handleNextRowKeyDown(e, index, 2)}
-              value={text}
-              onBlur={(e) => handleUnitBlur(index, e.target.value)}
-              onChange={(e) => handleInputChange(index, "unit", e.target.value)}
-            />
-          ) : (
-            <Input
-              readOnly
-              ref={(el) => {
-                if (!inputRefs.current[index]) {
-                  inputRefs.current[index] = [];
-                }
-                inputRefs.current[index][2] = el;
-              }}
-              onKeyDown={(e) => handleNextRowKeyDown(e, index, 2)}
-            ></Input>
-          ),
-        width: 110,
-      },
-      {
         title: "Name",
         dataIndex: "itemName",
         key: "itemName",
@@ -544,6 +498,52 @@ const MakeInquiryTable = ({
             ></Input>
           ),
         width: 80,
+      },
+      {
+        title: (
+          <div>
+            <Select
+              placeholder="Unit"
+              onChange={applyUnitToAllRows}
+              style={{ width: "100%" }}
+            >
+              {unitOptions.map((unit) => (
+                <Option key={unit} value={unit}>
+                  {unit}
+                </Option>
+              ))}
+            </Select>
+          </div>
+        ),
+        dataIndex: "unit",
+        key: "unit",
+        render: (text: string, record: InquiryItem, index: number) =>
+          record.itemType === "ITEM" ? (
+            <Input
+              ref={(el) => {
+                if (!inputRefs.current[index]) {
+                  inputRefs.current[index] = [];
+                }
+                inputRefs.current[index][2] = el;
+              }}
+              onKeyDown={(e) => handleNextRowKeyDown(e, index, 2)}
+              value={text}
+              onBlur={(e) => handleUnitBlur(index, e.target.value)}
+              onChange={(e) => handleInputChange(index, "unit", e.target.value)}
+            />
+          ) : (
+            <Input
+              readOnly
+              ref={(el) => {
+                if (!inputRefs.current[index]) {
+                  inputRefs.current[index] = [];
+                }
+                inputRefs.current[index][2] = el;
+              }}
+              onKeyDown={(e) => handleNextRowKeyDown(e, index, 2)}
+            ></Input>
+          ),
+        width: 110,
       },
       {
         title: "Remark",

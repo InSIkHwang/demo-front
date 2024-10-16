@@ -125,10 +125,15 @@ const DetailInquiryModal = ({
         return; // 중복일 경우 처리 중단
       }
 
-      await copyInquiry(inquiryDetail!.documentNumber, newDocumentNumber);
+      const { inquiryId: newInquiryId } = await copyInquiry(
+        inquiryDetail!.documentNumber,
+        newDocumentNumber
+      );
       message.success("Copied successfully");
       fetchData();
       setIsModalVisible(false);
+
+      navigate(`/makeinquiry/${newInquiryId}`);
     } catch (error) {
       message.error("Error copying inquiry. Please check document number");
     }
@@ -336,7 +341,7 @@ const DetailInquiryModal = ({
                 columns={columns}
                 dataSource={inquiryDetail.inquiryItemDetails}
                 pagination={false}
-                rowKey="itemId"
+                rowKey="position"
                 scroll={{ y: 300 }}
                 bordered
                 size="small"
