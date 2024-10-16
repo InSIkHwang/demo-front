@@ -142,6 +142,10 @@ interface InquiryFormProps {
   tagColors: { [id: number]: string };
   setTagColors: Dispatch<SetStateAction<{ [id: number]: string }>>;
   handleTagClick: (id: number) => void;
+  isCustomerModalOpen: boolean;
+  setIsCustomerModalOpen: Dispatch<SetStateAction<boolean>>;
+  isVesselModalOpen: boolean;
+  setIsVesselModalOpen: Dispatch<SetStateAction<boolean>>;
 }
 
 const InquiryForm = ({
@@ -162,9 +166,11 @@ const InquiryForm = ({
   tagColors,
   setTagColors,
   handleTagClick,
+  isCustomerModalOpen,
+  setIsCustomerModalOpen,
+  isVesselModalOpen,
+  setIsVesselModalOpen,
 }: InquiryFormProps) => {
-  const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
-  const [isVesselModalOpen, setIsVesselModalOpen] = useState(false);
   const [supplierSearch, setSupplierSearch] = useState("");
   const [makerSearch, setMakerSearch] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);

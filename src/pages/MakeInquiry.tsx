@@ -187,6 +187,8 @@ const MakeInquiry = () => {
   const [tagColors, setTagColors] = useState<{ [id: number]: string }>({});
   const [isFromInquirySearchModal, setIsFromInquirySearchModal] =
     useState(false);
+  const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
+  const [isVesselModalOpen, setIsVesselModalOpen] = useState(false);
 
   useEffect(() => {
     if (customerInquiryId) {
@@ -374,7 +376,7 @@ const MakeInquiry = () => {
       setVesselNameList([]);
       setVesselList([]);
     }
-  }, [formValues.customer]);
+  }, [formValues.customer, isCustomerModalOpen, isVesselModalOpen]);
 
   useEffect(() => {
     const selectedVessel = vesselList.find(
@@ -735,6 +737,10 @@ const MakeInquiry = () => {
           tagColors={tagColors}
           setTagColors={setTagColors}
           handleTagClick={handleTagClick}
+          isCustomerModalOpen={isCustomerModalOpen}
+          setIsCustomerModalOpen={setIsCustomerModalOpen}
+          isVesselModalOpen={isVesselModalOpen}
+          setIsVesselModalOpen={setIsVesselModalOpen}
         />
       )}
       <MakeInquiryTable

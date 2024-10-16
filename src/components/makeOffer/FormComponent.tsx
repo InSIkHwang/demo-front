@@ -56,7 +56,7 @@ const FormComponent = ({
           rules={[{ required: true, message: "Please enter ref number" }]}
           style={{ maxWidth: 350 }}
         >
-          <Input readOnly />
+          <Input readOnly={readOnly} />
         </FormItem>
         <FormItem label="문서상태" name="documentStatus">
           <Input readOnly />
@@ -117,14 +117,14 @@ const FormComponent = ({
           name="customerName"
           rules={[{ required: true, message: "매출처를 입력하세요!" }]}
         >
-          <Input readOnly />
+          <Input readOnly={readOnly} />
         </FormItem>
         <FormItem
           label="선명(Vessel Name)"
           name="vesselName"
           rules={[{ required: true, message: "선박명을 입력하세요!" }]}
         >
-          <Input readOnly />
+          <Input readOnly={readOnly} />
         </FormItem>
         <FormItem label="HULL NO." name="veeselHullNo">
           <Input
