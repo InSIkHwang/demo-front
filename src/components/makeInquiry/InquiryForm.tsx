@@ -41,6 +41,39 @@ const SearchBox = styled.div`
   align-items: baseline;
 `;
 
+const StyledListItem = styled(List.Item)`
+  display: flex;
+  padding: 12px 0;
+  color: rgba(0, 0, 0, 0.88);
+  justify-content: flex-start;
+  align-items: flex-start;
+  flex-wrap: wrap;
+`;
+
+const MakerTitle = styled.h3`
+  width: 100%;
+  margin: 0;
+  position: relative;
+  font-size: 16px;
+  color: #333;
+`;
+
+const SupplierContainer = styled.div`
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+`;
+
+const SupplierItem = styled.div`
+  display: flex;
+  align-items: center;
+  margin: 8px 0;
+`;
+
+const StyledCheckbox = styled(Checkbox)`
+  margin-right: 8px;
+`;
+
 const categoryList = [
   "ENGINE_AUX_ENGINE",
   "COMPRESSOR",
@@ -625,6 +658,7 @@ const InquiryForm = ({
                 onOk={handleAddSelectedSuppliers}
                 okText="Add"
                 cancelText="Cancel"
+                width={800}
               >
                 <AutoComplete
                   value={categoryWord}
@@ -647,21 +681,26 @@ const InquiryForm = ({
                 <List
                   dataSource={removeListDuplicates(makerSupplierList)}
                   renderItem={(item) => (
-                    <List.Item>
-                      {item.supplierList.map(
-                        (supplier: { id: any; name?: any; code?: any }) => (
-                          <Checkbox
-                            key={supplier.id}
-                            onChange={() => handleCheckboxChange(supplier)}
-                            checked={checkedSuppliers.some(
-                              (checkedItem) => checkedItem.id === supplier.id
-                            )}
-                          >
-                            {supplier.name} ({supplier.code})
-                          </Checkbox>
-                        )
-                      )}
-                    </List.Item>
+                    <StyledListItem>
+                      <MakerTitle>{item.maker}</MakerTitle>
+                      <SupplierContainer>
+                        {item.supplierList.map(
+                          (supplier: { id: any; name?: any; code?: any }) => (
+                            <SupplierItem key={supplier.id}>
+                              <StyledCheckbox
+                                onChange={() => handleCheckboxChange(supplier)}
+                                checked={checkedSuppliers.some(
+                                  (checkedItem) =>
+                                    checkedItem.id === supplier.id
+                                )}
+                              >
+                                {supplier.name || ""} ({supplier.code})
+                              </StyledCheckbox>
+                            </SupplierItem>
+                          )
+                        )}
+                      </SupplierContainer>
+                    </StyledListItem>
                   )}
                 />
               </Modal>
