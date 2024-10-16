@@ -196,12 +196,12 @@ const InquiryForm = ({
   const [isFromAutoComplete, setIsFromAutoComplete] = useState(false);
 
   useEffect(() => {
-    if (isFromAutoComplete && selectedSuppliers.length > 0) {
-      const lastSupplier = selectedSuppliers[selectedSuppliers.length - 1];
-      handleTagClick(lastSupplier.id);
+    if (isFromAutoComplete) {
+      checkedSuppliers.forEach((supplier) => handleTagClick(supplier.id));
       setIsFromAutoComplete(false); // 플래그를 초기화하여 다른 곳에서는 실행되지 않도록 함
+      setCheckedSuppliers([]);
     }
-  }, [selectedSuppliers, isFromAutoComplete]);
+  }, [selectedSuppliers, isFromAutoComplete, checkedSuppliers, handleTagClick]);
 
   useEffect(() => {
     const checkDuplicateOnMount = async () => {
@@ -234,12 +234,12 @@ const InquiryForm = ({
     setCategoryWord("");
     setSupplierList([]);
     setMakerSupplierList([]);
+    setCheckedSuppliers([]);
     setIsModalVisible(true);
   };
 
   const handleModalClose = () => {
     setIsModalVisible(false);
-    setCheckedSuppliers([]);
     setMakerSearch("");
   };
 
@@ -259,7 +259,7 @@ const InquiryForm = ({
       setIsFromAutoComplete(true);
       return updatedSuppliers;
     });
-    setCheckedSuppliers([]);
+
     handleModalClose();
   };
 

@@ -1,5 +1,5 @@
 import React, { Dispatch, SetStateAction } from "react";
-import { Modal, Button, Input, Tag, Table } from "antd";
+import { Modal, Button, Input, Tag, Table, Empty } from "antd";
 import {
   InquirySearchMakerInquirySearchResult,
   InquirySearchMakerSupplier,
@@ -94,7 +94,7 @@ const InquirySearchModal = ({
               }}
               style={{ cursor: "pointer" }}
             >
-              {supplier.companyName}
+              {supplier.code}({supplier.companyName})
             </Tag>
           ))}
         </div>
@@ -123,25 +123,28 @@ const InquirySearchModal = ({
         onChange={(e) => setInquirySearchMakerName(e.target.value)}
         onPressEnter={handleInquirySearch}
       />
-      <div style={{ marginTop: 10 }}>
-        <span>Suppliers: </span>
-        {selectedSuppliers.map((supplier) => (
-          <Tag
-            key={supplier.id}
-            style={{
-              borderColor: tagColors[supplier.id] || "default",
-              cursor: "pointer",
-            }}
-            onClick={() => handleTagClick(supplier.id)}
-            onClose={() => handleTagClick(supplier.id)}
-          >
-            {supplier.code}
-          </Tag>
-        ))}
-      </div>
-      {inquirySearchMakerNameResult && (
+      {selectedSuppliers.length > 0 && (
+        <div style={{ marginTop: 10 }}>
+          <span>Suppliers: </span>
+          {selectedSuppliers.map((supplier) => (
+            <Tag
+              key={supplier.id}
+              style={{
+                borderColor: tagColors[supplier.id] || "default",
+                cursor: "pointer",
+              }}
+              onClick={() => handleTagClick(supplier.id)}
+              onClose={() => handleTagClick(supplier.id)}
+            >
+              {supplier.code}
+            </Tag>
+          ))}
+        </div>
+      )}
+      {inquirySearchMakerNameResult ? (
         <>
           <h4>Best Suppliers</h4>
+
           <CustomTable
             dataSource={inquirySearchMakerNameResult.bestSupplierList}
             columns={[
@@ -164,14 +167,18 @@ const InquirySearchModal = ({
             pagination={false}
           />
           <h4>Search List</h4>
-          <CustomTable
-            dataSource={inquirySearchMakerNameResult.searchList}
-            columns={searchListColumns}
-            pagination={{ pageSize: 5 }}
-            size="small"
-            className="custom-table"
-          />
+          {
+            <CustomTable
+              dataSource={inquirySearchMakerNameResult.searchList}
+              columns={searchListColumns}
+              pagination={{ pageSize: 5 }}
+              size="small"
+              className="custom-table"
+            />
+          }
         </>
+      ) : (
+        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
       )}
     </Modal>
   );

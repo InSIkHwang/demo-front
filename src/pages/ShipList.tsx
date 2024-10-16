@@ -113,9 +113,7 @@ const ShipList = () => {
         page: currentPage - 1, // 페이지는 0부터 시작
         pageSize: itemsPerPage, // 페이지당 아이템 수
       };
-      if (searchCategory === "code") {
-        params.code = searchText;
-      } else if (searchCategory === "vesselName") {
+      if (searchCategory === "vesselName") {
         params.vesselName = searchText;
       } else if (searchCategory === "all") {
         params.query = searchText;
@@ -131,11 +129,6 @@ const ShipList = () => {
   };
 
   const columns: ColumnsType<Vessel> = [
-    {
-      title: "Code",
-      dataIndex: "code",
-      key: "code",
-    },
     {
       title: "Vessel Name",
       dataIndex: "vesselName",
@@ -206,7 +199,6 @@ const ShipList = () => {
               onChange={(value) => setSearchCategory(value)}
             >
               <Option value="all">All</Option>
-              <Option value="code">Code</Option>
               <Option value="vesselName">Vessel Name</Option>
             </Select>
             <Input
@@ -229,7 +221,7 @@ const ShipList = () => {
               dataSource={data}
               pagination={false}
               loading={loading}
-              rowKey="code"
+              rowKey="id"
               onRow={(record) => ({
                 onClick: () => openDetailVesselModal(record),
               })}

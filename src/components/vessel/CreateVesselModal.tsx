@@ -52,7 +52,6 @@ interface ModalProps {
 
 const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
   const [formData, setFormData] = useState({
-    code: "",
     vesselName: "",
     vesselCompanyName: "",
     imoNumber: undefined,
@@ -62,7 +61,7 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
     customerId: undefined,
   });
 
-  const [isCodeUnique, setIsCodeUnique] = useState(true);
+  const [isImoUnique, setIsImoUnique] = useState(true);
   const [customerSuggestions, setCustomerSuggestions] = useState<any[]>([]);
   const [isCustomerLoading, setIsCustomerLoading] = useState(false);
   const [customerError, setCustomerError] = useState<string | null>(null);
@@ -90,25 +89,25 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
   };
 
   // 중복 코드 체크 로직
-  const checkCodeUnique = debounce(async () => {
-    if ((formData.code + "").trim() === "") {
-      setIsCodeUnique(true);
+  const checkImoUnique = debounce(async () => {
+    if (!formData.imoNumber) {
+      setIsImoUnique(true);
       return;
     }
     try {
       const response = await axios.get(
-        `/api/vessels/check-code/${formData.code}`
+        `/api/vessels/check-number/${formData.imoNumber}`
       );
-      setIsCodeUnique(!response.data); // 응답을 반전시켜서 코드 유무 판단
+      setIsImoUnique(!response.data); // 응답을 반전시켜서 코드 유무 판단
     } catch (error) {
-      console.error("Error checking code unique:", error);
-      setIsCodeUnique(true); // 오류 발생 시 기본적으로 유효한 코드로 처리
+      console.error("Error checking imoNumber unique:", error);
+      setIsImoUnique(true); // 오류 발생 시 기본적으로 유효한 코드로 처리
     }
   }, 200);
 
   useEffect(() => {
-    checkCodeUnique();
-  }, [checkCodeUnique, formData.code]);
+    checkImoUnique();
+  }, [checkImoUnique, formData.imoNumber]);
 
   // Fetch customer suggestions
   const fetchCustomerSuggestions = async (customerName: string) => {
@@ -151,7 +150,6 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
   const postCreate = async () => {
     try {
       await axios.post(`/api/vessels`, {
-        code: formData.code,
         vesselName: formData.vesselName,
         vesselCompanyName: formData.vesselCompanyName,
         imoNumber: Number(formData.imoNumber),
@@ -173,7 +171,7 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
   };
 
   const handleSubmit = async (values: any) => {
-    if (!isCodeUnique) return;
+    if (!isImoUnique) return;
 
     if (formData.customerId === undefined) {
       setCustomerError("Please select a customer");
@@ -206,32 +204,10 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
         size="small"
       >
         <StyledFormItem
-          label="code:"
-          name="code"
-          validateStatus={
-            formData.code === "" ? "error" : !isCodeUnique ? "error" : "success"
-          }
-          help={
-            formData.code === ""
-              ? "Enter code!"
-              : !isCodeUnique
-              ? "Invalid code."
-              : ""
-          }
-          rules={[{ required: true, message: "Enter code!" }]}
-        >
-          <Input
-            name="code"
-            value={formData.code}
-            onChange={handleChange}
-            placeholder="BAS"
-          />
-        </StyledFormItem>
-
-        <StyledFormItem
           label="Vessel Name:"
           name="vesselName"
           rules={[{ required: true, message: "Enter vessel name!" }]}
+          hasFeedback
         >
           <Input
             name="vesselName"
@@ -250,7 +226,13 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
           />
         </StyledFormItem>
 
-        <StyledFormItem label="IMO NO.:" name="imoNumber">
+        <StyledFormItem
+          label="IMO NO.:"
+          name="imoNumber"
+          hasFeedback
+          validateStatus={!isImoUnique ? "warning" : "success"}
+          help={!isImoUnique ? "It's a duplicate Imo No." : ""}
+        >
           <Input
             name="imoNumber"
             value={formData.imoNumber}
@@ -284,6 +266,7 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
           validateStatus={customerError ? "error" : ""}
           help={customerError}
           rules={[{ required: true, message: "Select a customer!" }]}
+          hasFeedback
         >
           <AutoComplete
             onSearch={handleSearch}
@@ -305,13 +288,11 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
             <Input />
           </AutoComplete>
         </StyledFormItem>
-
         <Button
           type="primary"
           htmlType="submit"
           disabled={
             formData.customerId === undefined ||
-            !isCodeUnique ||
             selectedCustomer?.companyName !== formData.customerName
           }
           block

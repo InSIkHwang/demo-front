@@ -45,7 +45,7 @@ const ButtonGroup = styled.div`
 const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(vessel);
-  const [isCodeUnique, setIsCodeUnique] = useState(true);
+  const [isImoUnique, setIsImoUnique] = useState(true);
   const [customerSuggestions, setCustomerSuggestions] = useState<any[]>([]);
   const [isCustomerLoading, setIsCustomerLoading] = useState(false);
   const [customerError, setCustomerError] = useState<string | null>(null);
@@ -80,28 +80,27 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
   }, [formData, form]);
 
   useEffect(() => {
-    checkCodeUnique();
-  }, [formData.code]);
-
-  const checkCodeUnique = async () => {
-    if (vessel.code !== formData.code) {
-      if ((formData.code + "").trim() === "") {
-        setIsCodeUnique(true);
-        return;
+    const checkImoUnique = async () => {
+      if (vessel.imoNumber !== formData.imoNumber) {
+        if (!formData.imoNumber) {
+          setIsImoUnique(true);
+          return;
+        }
+        try {
+          const response = await axios.get(
+            `/api/vessels/check-number/${formData.imoNumber}`
+          );
+          setIsImoUnique(!response.data); // 응답을 반전시켜서 코드 유무 판단
+        } catch (error) {
+          console.error("Error checking imoNumber unique:", error);
+          setIsImoUnique(true); // 오류 발생 시 기본적으로 유효한 코드로 처리
+        }
+      } else if (vessel.imoNumber === formData.imoNumber) {
+        setIsImoUnique(true);
       }
-      try {
-        const response = await axios.get(
-          `/api/vessels/check-code/${formData.code}`
-        );
-        setIsCodeUnique(!response.data); // 응답을 반전시켜서 코드 유무 판단
-      } catch (error) {
-        console.error("Error checking code unique:", error);
-        setIsCodeUnique(true); // 오류 발생 시 기본적으로 유효한 코드로 처리
-      }
-    } else if (vessel.code === formData.code) {
-      setIsCodeUnique(true);
-    }
-  };
+    };
+    checkImoUnique();
+  }, [formData.imoNumber, vessel.imoNumber]);
 
   // Fetch customer suggestions
   const fetchCustomerSuggestions = async (customerName: string) => {
@@ -148,7 +147,6 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
   const editData = async () => {
     try {
       await axios.put(`/api/vessels/${formData.id}`, {
-        code: formData.code,
         vesselName: formData.vesselName,
         vesselCompanyName: formData.vesselCompanyName,
         imoNumber: formData.imoNumber,
@@ -218,29 +216,6 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
         size="small"
       >
         <StyledFormItem
-          label="code"
-          name="code"
-          rules={[{ required: true, message: "Please enter the code!" }]}
-          hasFeedback={isEditing}
-          validateStatus={
-            formData.code === "" ? "error" : !isCodeUnique ? "error" : "success"
-          }
-          help={
-            formData.code === ""
-              ? "Enter code!"
-              : !isCodeUnique
-              ? "Invalid code."
-              : ""
-          }
-        >
-          <Input
-            readOnly={!isEditing}
-            onChange={
-              (e) => handleInputChange({ code: e.target.value }) // 이 부분에서 formData 업데이트
-            }
-          />
-        </StyledFormItem>
-        <StyledFormItem
           label="Vessel Name"
           name="vesselName"
           rules={[{ required: true, message: "Please enter the vessel name!" }]}
@@ -260,7 +235,13 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
             }
           />
         </StyledFormItem>
-        <StyledFormItem label="IMO No." name="imoNumber">
+        <StyledFormItem
+          label="IMO No."
+          name="imoNumber"
+          hasFeedback={isEditing}
+          validateStatus={!isImoUnique ? "warning" : "success"}
+          help={!isImoUnique ? "It's a duplicate Imo No." : ""}
+        >
           <Input
             type="number"
             readOnly={!isEditing}
@@ -291,6 +272,7 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
           validateStatus={customerError ? "error" : ""}
           help={customerError}
           rules={[{ required: true, message: "Select a customer!" }]}
+          hasFeedback={isEditing}
         >
           <AutoComplete
             onSearch={handleSearch}
@@ -319,11 +301,7 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
               <Button
                 type="primary"
                 onClick={handleSubmit}
-                disabled={
-                  !isCodeUnique ||
-                  formData.code === "" ||
-                  formData.vesselName === ""
-                }
+                disabled={formData.vesselName === "" || !formData.customer}
                 size="middle"
               >
                 Save

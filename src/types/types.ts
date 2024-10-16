@@ -17,7 +17,7 @@ export interface Customer {
 
 export interface VesselList {
   id: number;
-  code: string;
+  // code: string;
   vesselName: string;
   vesselCompanyName: string;
   imoNumber: number;
@@ -42,7 +42,7 @@ export interface Supplier {
 
 export interface Vessel {
   id: number;
-  code: string;
+  // code: string;
   vesselName: string;
   vesselCompanyName: string;
   imoNumber: number;
