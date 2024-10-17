@@ -115,7 +115,7 @@ interface FormValues {
 interface InquiryFormProps {
   formValues: FormValues;
   autoCompleteOptions: { value: string }[];
-  vesselNameList: { id: number; name: string }[];
+  vesselNameList: { id: number; name: string; imoNumber: number }[];
   supplierOptions: { value: string; id: number; code: string; email: string }[];
   selectedSuppliers: {
     id: number;
@@ -202,10 +202,14 @@ const InquiryForm = ({
   const [isFromAutoComplete, setIsFromAutoComplete] = useState(false);
 
   useEffect(() => {
-    if (isFromAutoComplete) {
+    if (isFromAutoComplete && checkedSuppliers.length > 0) {
       checkedSuppliers.forEach((supplier) => handleTagClick(supplier.id));
       setIsFromAutoComplete(false); // 플래그를 초기화하여 다른 곳에서는 실행되지 않도록 함
       setCheckedSuppliers([]);
+    } else if (isFromAutoComplete && selectedSuppliers.length > 0) {
+      const lastSupplier = selectedSuppliers[selectedSuppliers.length - 1];
+      handleTagClick(lastSupplier.id);
+      setIsFromAutoComplete(false);
     }
   }, [selectedSuppliers, isFromAutoComplete, checkedSuppliers, handleTagClick]);
 
@@ -334,6 +338,7 @@ const InquiryForm = ({
         // 공급자 객체를 포함하여 자동완성 옵션 설정
         setAutoSearchSupCompleteOptions(
           options.map((supplier) => ({
+            key: supplier.id,
             value: supplier.code, // 선택 시 표시될 값
             supplier, // 공급자 객체 포함
           }))
@@ -588,7 +593,10 @@ const InquiryForm = ({
                 handleFormChange("vesselName", value);
               }}
               options={vesselNameList.map((vessel) => ({
-                value: vessel.name, // UI에 표시될 이름
+                label: vessel.imoNumber
+                  ? `${vessel.name} (IMO No.: ${vessel.imoNumber})`
+                  : `${vessel.name} (IMO No.: None)`, // 표시용 텍스트
+                value: vessel.name, // 실제로 선택되는 값은 vessel.name
                 key: vessel.id, // 각 항목의 고유 ID
               }))}
               style={{ width: "100%" }}

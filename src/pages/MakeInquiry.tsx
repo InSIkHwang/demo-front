@@ -129,7 +129,7 @@ const MakeInquiry = () => {
     { companyName: string; code: string }[]
   >([]);
   const [vesselNameList, setVesselNameList] = useState<
-    { id: number; name: string }[]
+    { id: number; name: string; imoNumber: number }[]
   >([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(
     null
@@ -349,6 +349,7 @@ const MakeInquiry = () => {
               selectedCustomer.vesselList.map((v) => ({
                 id: v.id,
                 name: v.vesselName,
+                imoNumber: v.imoNumber,
               }))
             );
             setVesselList(selectedCustomer.vesselList);

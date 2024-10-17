@@ -39,6 +39,13 @@ const CustomTable = styled(Table)`
     background-color: #e7e7e7 !important;
   }
 
+  .maker-row {
+    background-color: #deefff; /* MAKER 행의 배경색 */
+  }
+  .type-row {
+    background-color: #fffdde; /* TYPE 행의 배경색 */
+  }
+
   .even-row {
     background-color: #ffffff;
     &:hover {
@@ -637,9 +644,15 @@ const MakeInquiryTable = ({
         </Button>
       </div>
       <CustomTable
-        rowClassName={(record, index) =>
-          index % 2 === 0 ? "even-row" : "odd-row"
-        }
+        rowClassName={(record: any, index) => {
+          if (record.itemType === "MAKER") {
+            return "maker-row";
+          } else if (record.itemType === "TYPE") {
+            return "type-row";
+          } else {
+            return index % 2 === 0 ? "even-row" : "odd-row"; // 기본 행 스타일
+          }
+        }}
         columns={columns}
         dataSource={dataSource}
         pagination={false}

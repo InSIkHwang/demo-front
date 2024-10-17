@@ -56,7 +56,7 @@ const FormComponent = ({
   );
   const [vesselList, setVesselList] = useState<VesselList[]>([]);
   const [vesselNameList, setVesselNameList] = useState<
-    { id: number; name: string }[]
+    { id: number; name: string; imoNumber: number }[]
   >([]);
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
   const [isVesselModalOpen, setIsVesselModalOpen] = useState(false);
@@ -114,6 +114,7 @@ const FormComponent = ({
               selectedCustomer.vesselList.map((v) => ({
                 id: v.id,
                 name: v.vesselName,
+                imoNumber: v.imoNumber,
               }))
             );
             setVesselList(selectedCustomer.vesselList);
@@ -333,7 +334,10 @@ const FormComponent = ({
                 handleFormChange("vesselName", value);
               }}
               options={vesselNameList.map((vessel) => ({
-                value: vessel.name, // UI에 표시될 이름
+                label: vessel.imoNumber
+                  ? `${vessel.name} (IMO No.: ${vessel.imoNumber})`
+                  : `${vessel.name} (IMO No.: None)`, // 표시용 텍스트
+                value: vessel.name, // 실제로 선택되는 값은 vessel.name
                 key: vessel.id, // 각 항목의 고유 ID
               }))}
               style={{ width: "100%" }}

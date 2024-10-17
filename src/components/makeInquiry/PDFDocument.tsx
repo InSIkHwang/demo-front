@@ -278,6 +278,16 @@ const renderHeader = (
         <Text style={styles.inquiryInfoText}>
           HULL NO: {vesselInfo?.hullNumber}
         </Text>
+        {vesselInfo?.shipYard && (
+          <Text style={styles.inquiryInfoText}>
+            SHIPYARD: {vesselInfo?.shipYard}
+          </Text>
+        )}
+        {vesselInfo?.countryOfManufacture && (
+          <Text style={styles.inquiryInfoText}>
+            Nationality: {vesselInfo?.countryOfManufacture}
+          </Text>
+        )}
       </View>
       <View style={[styles.inquiryInfoColumn, { alignItems: "flex-end" }]}>
         <Text style={styles.inquiryInfoText}>

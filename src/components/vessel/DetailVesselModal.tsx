@@ -152,6 +152,7 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
         imoNumber: formData.imoNumber,
         hullNumber: formData.hullNumber,
         shipYard: formData.shipYard,
+        countryOfManufacture: formData.countryOfManufacture,
         originCustomerId: originCustomer?.id || null,
         newCustomerId: selectedCustomer?.id || null,
       });
@@ -263,6 +264,14 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
             readOnly={!isEditing}
             onChange={
               (e) => handleInputChange({ shipYard: e.target.value }) // 이 부분에서 formData 업데이트
+            }
+          />
+        </StyledFormItem>
+        <StyledFormItem label="Nationality" name="countryOfManufacture">
+          <Input
+            readOnly={!isEditing}
+            onChange={
+              (e) => handleInputChange({ countryOfManufacture: e.target.value }) // 이 부분에서 formData 업데이트
             }
           />
         </StyledFormItem>

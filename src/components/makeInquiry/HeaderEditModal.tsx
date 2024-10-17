@@ -78,7 +78,7 @@ const HeaderEditModal = ({
 
   return (
     <StyledModal
-      title="머릿글 수정"
+      title="Edit Header Text"
       open={open}
       onCancel={onClose}
       footer={[
@@ -93,7 +93,7 @@ const HeaderEditModal = ({
       <StyledTextArea
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder="여기에 텍스트를 입력하세요. (엔터키로 줄바꿈 가능합니다.)"
+        placeholder="Enter your text here. (You can change lines with the Enter key.)"
         autoSize={{ minRows: 5 }}
       />
     </StyledModal>

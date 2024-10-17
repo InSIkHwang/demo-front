@@ -57,6 +57,7 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
     imoNumber: undefined,
     hullNumber: "",
     shipYard: "",
+    countryOfManufacture: "",
     customerName: "",
     customerId: undefined,
   });
@@ -155,6 +156,7 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
         imoNumber: Number(formData.imoNumber),
         hullNumber: formData.hullNumber,
         shipYard: formData.shipYard,
+        countryOfManufacture: formData.countryOfManufacture,
         customerId: formData.customerId,
       });
       notification.success({
@@ -257,6 +259,14 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
             value={formData.shipYard}
             onChange={handleChange}
             placeholder="B123"
+          />
+        </StyledFormItem>
+        <StyledFormItem label="Nationality:" name="countryOfManufacture">
+          <Input
+            name="countryOfManufacture"
+            value={formData.countryOfManufacture}
+            onChange={handleChange}
+            placeholder="KR, JP..."
           />
         </StyledFormItem>
 

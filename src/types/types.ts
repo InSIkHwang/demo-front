@@ -23,6 +23,7 @@ export interface VesselList {
   imoNumber: number;
   hullNumber: string;
   shipYard: string;
+  countryOfManufacture?: string;
 }
 
 export interface Supplier {
@@ -48,6 +49,7 @@ export interface Vessel {
   imoNumber: number;
   hullNumber: string;
   shipYard: string;
+  countryOfManufacture?: string;
   customer: {
     id: number;
     newCustomerId: string;

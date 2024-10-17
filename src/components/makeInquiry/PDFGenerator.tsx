@@ -54,8 +54,8 @@ const generateMailData = (
               vesselInfo?.vesselName
             }\nIMO No: ${vesselInfo?.imoNumber || ""}\nHull No: ${
               vesselInfo?.hullNumber || ""
-            }\nShip Yard: ${
-              vesselInfo?.shipYard || ""
+            }\nShipyard: ${vesselInfo?.shipYard || ""}\nNationality: ${
+              vesselInfo?.countryOfManufacture || ""
             }\n\nD.Y.KIM\nBAS KOREA CO.\n17, APEC-ro, Haeundae-gu, Busan,\nRepublic of Korea / 48060\nTel. 070-7600-5067\nFax. +82-51-793-0635\nE-mail. info@bas-korea.com\n\n`
           : `수신: ${
               supplierTag.name
@@ -63,8 +63,8 @@ const generateMailData = (
               vesselInfo?.vesselName
             }\nIMO No: ${vesselInfo?.imoNumber || ""}\nHull No: ${
               vesselInfo?.hullNumber || ""
-            }\nShip Yard: ${
-              vesselInfo?.shipYard || ""
+            }\nShipyard: ${vesselInfo?.shipYard || ""}\nNationality: ${
+              vesselInfo?.countryOfManufacture || ""
             }\n\nD.Y.KIM\nBAS KOREA CO.\n부산 해운대구 APEC로 17 3106호 / 48060\nTel. 070-7600-5067\nFax. 051-793-0635\nMobile. 010-3321-2688\nE-mail. info@bas-korea.com\n\n`,
       ccRecipient: "",
       supplierName: supplierTag.name,

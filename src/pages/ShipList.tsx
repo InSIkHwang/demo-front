@@ -159,6 +159,11 @@ const ShipList = () => {
       key: "shipYard",
     },
     {
+      title: "Nationality",
+      dataIndex: "countryOfManufacture",
+      key: "countryOfManufacture",
+    },
+    {
       title: "Customer Name",
       key: "customerName",
       render: (text, record) =>
