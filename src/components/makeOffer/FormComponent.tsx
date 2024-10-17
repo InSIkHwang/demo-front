@@ -207,7 +207,7 @@ const FormComponent = ({
                 const newValue = e.target.value.trim();
                 handleFormChange("documentNumber", newValue); // 그냥 newValue로 설정
               }}
-              readOnly
+              disabled
             />
           </FormItem>
           <FormItem
@@ -216,10 +216,10 @@ const FormComponent = ({
             rules={[{ required: true, message: "Please enter ref number" }]}
             style={{ maxWidth: 350 }}
           >
-            <Input readOnly={readOnly} />
+            <Input disabled={readOnly} />
           </FormItem>
           <FormItem label="문서상태" name="documentStatus">
-            <Input readOnly />
+            <Input disabled />
           </FormItem>
           <FormItem
             label="작성일자(Register Date)"
@@ -294,6 +294,7 @@ const FormComponent = ({
               type="primary"
               style={{ position: "absolute", top: "-35px", right: "0" }}
               onClick={() => setIsCustomerModalOpen(true)}
+              disabled={readOnly}
             >
               Register
             </Button>
@@ -302,6 +303,7 @@ const FormComponent = ({
               onChange={(value) => handleFormChange("customerName", value)}
               options={autoCompleteOptions}
               style={{ width: "100%" }}
+              disabled={readOnly}
             >
               <Input readOnly={readOnly} />
             </AutoComplete>
@@ -325,6 +327,7 @@ const FormComponent = ({
               type="primary"
               style={{ position: "absolute", top: "-35px", right: "0" }}
               onClick={() => setIsVesselModalOpen(true)}
+              disabled={readOnly}
             >
               Register
             </Button>
@@ -344,6 +347,7 @@ const FormComponent = ({
               filterOption={(inputValue, option) =>
                 option!.value.toLowerCase().includes(inputValue.toLowerCase())
               }
+              disabled={readOnly}
             >
               <Input readOnly={readOnly} />
             </AutoComplete>
@@ -352,7 +356,7 @@ const FormComponent = ({
             <Input
               value={formValues.veeselHullNo}
               onChange={(e) => handleFormChange("veeselHullNo", e.target.value)}
-              readOnly={readOnly}
+              disabled={readOnly}
             />
           </FormItem>
         </Row>
@@ -368,14 +372,14 @@ const FormComponent = ({
             ]}
             style={{ flex: 3 }}
           >
-            <Input readOnly />
+            <Input disabled />
           </FormItem>
           <FormItem label="비고(Remark)" name="docRemark" style={{ flex: 7 }}>
             <Input.TextArea
               value={formValues.docRemark}
               onChange={(e) => handleFormChange("docRemark", e.target.value)}
               rows={1}
-              readOnly={readOnly}
+              disabled={readOnly}
             />
           </FormItem>
         </Row>
