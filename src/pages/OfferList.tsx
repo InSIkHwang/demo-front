@@ -145,6 +145,7 @@ const columns: ColumnsType<SupplierInquiryListIF> = [
     title: "Document Number",
     dataIndex: "documentNumber",
     key: "documentNumber",
+    sorter: (a, b) => a.documentNumber.localeCompare(b.documentNumber),
   },
   {
     title: "Registration Date",
@@ -175,6 +176,7 @@ const columns: ColumnsType<SupplierInquiryListIF> = [
     title: "Manager",
     dataIndex: "docManager",
     key: "docManager",
+    sorter: (a, b) => a.docManager.localeCompare(b.docManager),
   },
   {
     title: "Document Status",

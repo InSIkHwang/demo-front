@@ -56,6 +56,7 @@ const columns: ColumnsType<orderAllResponses> = [
     title: "Document Number",
     dataIndex: "documentNumber",
     key: "documentNumber",
+    sorter: (a, b) => a.documentNumber.localeCompare(b.documentNumber),
   },
   {
     title: "Registration Date",
