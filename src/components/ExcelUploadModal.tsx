@@ -68,9 +68,12 @@ const ExcelUploadModal = ({
       const data = new Uint8Array(e.target?.result as ArrayBuffer);
       const workbook = XLSX.read(data, { type: "array" });
       const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-      const jsonData = XLSX.utils.sheet_to_json(firstSheet, {
+      let jsonData = XLSX.utils.sheet_to_json(firstSheet, {
         header: 1,
       }) as any[][];
+
+      // 모든 열이 null인 경우 해당 열 제거
+      jsonData = jsonData.map((row) => row.filter((cell) => cell !== null));
 
       // 헤더 설정을 비워둠
       const fileHeader = jsonData[0] || [];
