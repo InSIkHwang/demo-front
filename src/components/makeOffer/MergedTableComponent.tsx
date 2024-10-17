@@ -19,22 +19,30 @@ const CustomTable = styled(Table)`
   }
 
   .maker-row {
-    background-color: #deefff; /* MAKER 행의 배경색 */
-  }
-  .type-row {
-    background-color: #fffdde; /* TYPE 행의 배경색 */
-  }
-
-  .even-row {
-    background-color: #ffffff;
+    background-color: #deefffd8; /* MAKER 행의 배경색 */
     &:hover {
-      background-color: #e7e7e7;
+      background-color: #deefff !important;
+    }
+    .ant-table-cell-row-hover {
+      background-color: #deefff !important;
     }
   }
-  .odd-row {
-    background-color: #f0f0f0;
+  .type-row {
+    background-color: #fffdded8; /* TYPE 행의 배경색 */
     &:hover {
-      background-color: #e7e7e7;
+      background-color: #fffdde !important;
+    }
+    .ant-table-cell-row-hover {
+      background-color: #fffdde !important;
+    }
+  }
+  .desc-row {
+    background-color: #f0f0f0d8;
+    &:hover {
+      background-color: #f0f0f0 !important;
+    }
+    .ant-table-cell-row-hover {
+      background-color: #f0f0f0 !important;
     }
   }
 `;
