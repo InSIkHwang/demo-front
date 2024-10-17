@@ -455,6 +455,7 @@ export const editOffer = async (
     currencyType: string;
     currency: number;
     vesselId: number;
+    customerId: number;
     veeselHullNo: string | null;
     docRemark: string;
   },

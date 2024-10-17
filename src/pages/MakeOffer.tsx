@@ -17,7 +17,6 @@ import OfferPDFDocument from "../components/makeOffer/OfferPDFDocument";
 import LoadingSpinner from "../components/LoadingSpinner";
 import OfferPDFGenerator from "../components/makeOffer/OfferPDFGenerator";
 import OfferMailSender from "../components/makeOffer/OfferSendMail";
-import debounce from "lodash/debounce";
 import { InvCharge } from "./../types/types";
 import ChargeInputPopover from "../components/makeOffer/ChargeInputPopover";
 
@@ -102,6 +101,10 @@ const MakeOffer = () => {
     dcGlobal: 0,
   });
   const [invChargeList, setInvChargeList] = useState<InvCharge[] | null>([]);
+  const [cusVesIdList, setCusVesIdList] = useState<{
+    customerId: number | null;
+    vesselId: number | null;
+  }>({ customerId: null, vesselId: null });
 
   useEffect(() => {
     loadOfferDetail();
@@ -144,6 +147,10 @@ const MakeOffer = () => {
         setPdfCustomerTag({
           id: response.customerId,
           name: response.customerName,
+        });
+        setCusVesIdList({
+          customerId: response.customerId,
+          vesselId: response.vesselId,
         });
 
         if (response.inquiryItemDetails) {
@@ -311,17 +318,14 @@ const MakeOffer = () => {
     }
   };
 
-  const handleFormChange = debounce(
-    <K extends keyof typeof formValues>(
-      key: K,
-      value: (typeof formValues)[K]
-    ) => {
-      if (!isReadOnly) {
-        setFormValues((prev) => ({ ...prev, [key]: value }));
-      }
-    },
-    500
-  );
+  const handleFormChange = <K extends keyof typeof formValues>(
+    key: K,
+    value: (typeof formValues)[K]
+  ) => {
+    if (!isReadOnly) {
+      setFormValues((prev) => ({ ...prev, [key]: value }));
+    }
+  };
 
   // 소수점 둘째자리까지 반올림하는 함수
   const roundToTwoDecimalPlaces = (value: number) => {
@@ -430,6 +434,7 @@ const MakeOffer = () => {
       } else {
         // 중복이 없을 경우 바로 저장
         await saveData(formattedData);
+        loadOfferDetail();
       }
     } catch (error) {
       message.error("An error occurred while saving data.");
@@ -438,42 +443,47 @@ const MakeOffer = () => {
 
   // 저장 로직을 함수로 분리
   const saveData = async (formattedData: any) => {
-    try {
-      const formData = {
-        registerDate: formValues.registerDate.format("YYYY-MM-DD"),
-        shippingDate: formValues.shippingDate.format("YYYY-MM-DD"),
-        currencyType: formValues.currencyType,
-        currency: formValues.currency,
-        vesselId: info.vesselId,
-        veeselHullNo: formValues.veeselHullNo,
-        docRemark: formValues.docRemark,
-      };
+    if (cusVesIdList.customerId && cusVesIdList.vesselId) {
+      try {
+        const formData = {
+          registerDate: formValues.registerDate.format("YYYY-MM-DD"),
+          shippingDate: formValues.shippingDate.format("YYYY-MM-DD"),
+          currencyType: formValues.currencyType,
+          currency: formValues.currency,
+          vesselId: cusVesIdList.vesselId,
+          veeselHullNo: formValues.veeselHullNo,
+          docRemark: formValues.docRemark,
+          customerId: cusVesIdList.customerId,
+        };
 
-      await editOffer(
-        info.supplierInquiryId,
-        info.supplierInfo.supplierId,
-        formData,
-        formattedData,
-        dcInfo.dcPercent,
-        invChargeList
-      );
+        await editOffer(
+          info.supplierInquiryId,
+          info.supplierInfo.supplierId,
+          formData,
+          formattedData,
+          dcInfo.dcPercent,
+          invChargeList
+        );
 
-      message.success("Saved successfully!");
+        message.success("Saved successfully!");
 
-      // 저장 후 최신 데이터로 업데이트
-      const response = await fetchOfferDetail(
-        info.supplierInquiryId,
-        info.supplierInfo.supplierId
-      );
-      setInfo(response);
-      setDataSource(response.inquiryItemDetails || []);
-      setPdfCustomerTag({
-        id: response.customerId,
-        name: response.customerName,
-      });
-    } catch (error) {
-      console.error("Error saving data:", error);
-      message.error("An error occurred while saving data.");
+        // 저장 후 최신 데이터로 업데이트
+        const response = await fetchOfferDetail(
+          info.supplierInquiryId,
+          info.supplierInfo.supplierId
+        );
+        setInfo(response);
+        setDataSource(response.inquiryItemDetails || []);
+        setPdfCustomerTag({
+          id: response.customerId,
+          name: response.customerName,
+        });
+      } catch (error) {
+        console.error("Error saving data:", error);
+        message.error("An error occurred while saving data.");
+      }
+    } else {
+      message.error("Please check customer and vessel");
     }
   };
 
@@ -572,6 +582,8 @@ const MakeOffer = () => {
           formValues={formValues}
           readOnly={isReadOnly}
           handleFormChange={handleFormChange}
+          setCusVesIdList={setCusVesIdList}
+          cusVesIdList={cusVesIdList}
         />
       )}
       <ChargeInputPopover

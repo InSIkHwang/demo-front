@@ -117,6 +117,8 @@ const ShipList = () => {
         params.vesselName = searchText;
       } else if (searchCategory === "all") {
         params.query = searchText;
+      } else if (searchCategory === "imoNumber") {
+        params.imoNumber = searchText;
       }
       const response = await axios.get("/api/vessels/search", { params });
       setData(response.data.vessels);
@@ -134,18 +136,17 @@ const ShipList = () => {
       dataIndex: "vesselName",
       key: "vesselName",
       sorter: (a, b) => a.vesselName.localeCompare(b.vesselName),
-      sortDirections: ["ascend", "descend"],
     },
     {
       title: "Company Name",
       dataIndex: "vesselCompanyName",
       key: "vesselCompanyName",
     },
-
     {
       title: "IMO No.",
       dataIndex: "imoNumber",
       key: "imoNumber",
+      sorter: (a, b) => a.imoNumber - b.imoNumber,
     },
     {
       title: "HULL No.",
@@ -200,6 +201,7 @@ const ShipList = () => {
             >
               <Option value="all">All</Option>
               <Option value="vesselName">Vessel Name</Option>
+              <Option value="imoNumber">IMO No.</Option>
             </Select>
             <Input
               placeholder="Search..."
