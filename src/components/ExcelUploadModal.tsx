@@ -72,18 +72,27 @@ const ExcelUploadModal = ({
         header: 1,
       }) as any[][];
 
-      // 모든 열이 null인 경우 해당 열 제거
-      jsonData = jsonData.map((row) => row.filter((cell) => cell !== null));
+      // 빈 열 제거
+      const filteredData = jsonData[0]
+        .map((_, colIndex) => jsonData.map((row) => row[colIndex]))
+        .filter((col) =>
+          col.some((cell) => cell !== null && cell !== undefined && cell !== "")
+        );
 
-      // 헤더 설정을 비워둠
-      const fileHeader = jsonData[0] || [];
+      const newData = filteredData[0].map((_, rowIndex) =>
+        filteredData.map((col) => col[rowIndex])
+      );
+
+      // 헤더 설정
+      const fileHeader = newData[0] || [];
       const initialMapping: Record<string, string | null> = {};
       fileHeader.forEach((header: string, index: number) => {
         initialMapping[`column_${index}`] = null;
       });
 
       setHeaderMapping(initialMapping);
-      setExcelData(jsonData);
+      setExcelData(newData);
+      console.log(newData);
     };
     reader.readAsArrayBuffer(file);
     return false;
