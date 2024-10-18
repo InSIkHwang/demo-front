@@ -290,7 +290,7 @@ const TableComponent = ({
       return;
     }
 
-    handleInputChange(index, "itemCode", value);
+    handleInputChange(index, "itemCode", value?.trim());
     setUpdatedIndex(index);
 
     try {

@@ -173,7 +173,7 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
   };
 
   const handleSubmit = async (values: any) => {
-    if (!isImoUnique) return;
+    // if (!isImoUnique) return;
 
     if (formData.customerId === undefined) {
       setCustomerError("Please select a customer");

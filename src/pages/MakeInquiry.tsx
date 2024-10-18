@@ -548,7 +548,7 @@ const MakeInquiry = () => {
 
   const handleItemCodeChange = useCallback(
     async (index: number, value: string) => {
-      handleInputChange(index, "itemCode", value);
+      handleInputChange(index, "itemCode", value?.trim());
 
       if ((value + "").trim() === "") {
         updateItemId(index, null);
