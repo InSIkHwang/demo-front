@@ -95,7 +95,9 @@ export const searchSupplierUseMaker = async (
       supplierList: Supplier[];
     }[];
   }>(
-    `/api/items/search/maker?maker=${maker}&itemType=MAKER&categoryType=${categoryType}`
+    `/api/items/search/maker?maker=${encodeURIComponent(
+      maker
+    )}&itemType=MAKER&categoryType=${encodeURIComponent(categoryType || "")}`
   );
 
   return response.data;
@@ -137,6 +139,13 @@ export const DeleteMaker = async (
   await axios.delete(
     `/api/suppliers/maker/${supplierId}?categoryType=${categoryType}&maker=${maker}`
   );
+};
+
+//fetch Item Category
+export const fetchCategory = async () => {
+  const response = await axios.get("/api/suppliers/category-all");
+
+  return response.data;
 };
 
 //----------------------------------------------------------------------------------

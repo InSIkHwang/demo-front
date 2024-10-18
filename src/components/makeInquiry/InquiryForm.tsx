@@ -18,6 +18,7 @@ import CreateVesselModal from "../vessel/CreateVesselModal";
 import {
   chkDuplicateDocNum,
   chkDuplicateRefNum,
+  fetchCategory,
   searchSupplier,
   searchSupplierUseMaker,
 } from "../../api/api";
@@ -73,31 +74,6 @@ const SupplierItem = styled.div`
 const StyledCheckbox = styled(Checkbox)`
   margin-right: 8px;
 `;
-
-const categoryList = [
-  "ENGINE_AUX_ENGINE",
-  "COMPRESSOR",
-  "PUMP",
-  "BOILER_INCINERATOR",
-  "PURIFIER",
-  "ELEC_EQUIPMENTS",
-  "SEPARATOR",
-  "CRANE",
-  "SHIP_SUPPLIES",
-  "VALVE",
-  "CRANE_GRAB",
-  "BLOWER_MOTOR",
-  "THE_OTHERS",
-  "ANODE",
-  "FIRE_FIGHTING",
-  "STEERING_GEAR",
-  "LIFE_BOAT",
-  "GALLEY_EQUIPMENTS",
-  "HATCHCOVER",
-  "COOLER",
-  "AIR_DRYER",
-  "BWTS",
-];
 
 interface FormValues {
   docNumber: string;
@@ -172,6 +148,7 @@ const InquiryForm = ({
   setIsVesselModalOpen,
 }: InquiryFormProps) => {
   const [supplierSearch, setSupplierSearch] = useState("");
+  const [categoryList, setCategoryList] = useState<string[]>([]);
   const [makerSearch, setMakerSearch] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedType, setSelectedType] = useState("");
@@ -200,6 +177,19 @@ const InquiryForm = ({
     }[]
   >([]);
   const [isFromAutoComplete, setIsFromAutoComplete] = useState(false);
+
+  useEffect(() => {
+    const fetchCategoryList = async () => {
+      try {
+        const response = await fetchCategory();
+        setCategoryList(response.categoryType);
+      } catch (error) {
+        console.error("Error fetching category list:", error);
+      }
+    };
+
+    fetchCategoryList();
+  }, []);
 
   useEffect(() => {
     if (isFromAutoComplete && checkedSuppliers.length > 0) {
@@ -358,7 +348,7 @@ const InquiryForm = ({
     setMakerSearch(value);
     if (value) {
       try {
-        const data = await searchSupplierUseMaker(value, categoryType);
+        const data = await searchSupplierUseMaker(value, categoryType!.trim());
         const makerSupplierList = data.makerSupplierList.map((maker) => ({
           maker: maker.maker,
           supplierList: maker.supplierList.map((supplier) => ({

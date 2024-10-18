@@ -15,7 +15,7 @@ import {
 } from "antd";
 import axios from "../../api/axios";
 import styled from "styled-components";
-import { searchSupplierUseMaker } from "../../api/api";
+import { fetchCategory, searchSupplierUseMaker } from "../../api/api";
 
 const { Option } = Select;
 
@@ -118,9 +118,9 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
   useEffect(() => {
     const fetchCategoryList = async () => {
       try {
-        const response = await axios.get("/api/suppliers/category-all");
-        setCategoryList(response.data.categoryType);
-        setInitialCategoryList(response.data.categoryType);
+        const response = await fetchCategory();
+        setCategoryList(response.categoryType);
+        setInitialCategoryList(response.categoryType);
       } catch (error) {
         console.error("Error fetching category list:", error);
       }

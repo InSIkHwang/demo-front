@@ -92,7 +92,6 @@ const ExcelUploadModal = ({
 
       setHeaderMapping(initialMapping);
       setExcelData(newData);
-      console.log(newData);
     };
     reader.readAsArrayBuffer(file);
     return false;

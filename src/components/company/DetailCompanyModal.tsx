@@ -17,6 +17,7 @@ import styled from "styled-components";
 import {
   AddMaker,
   DeleteMaker,
+  fetchCategory,
   fetchSupplierDetail,
   searchSupplierUseMaker,
 } from "../../api/api";
@@ -132,9 +133,9 @@ const DetailCompanyModal = ({
   useEffect(() => {
     const fetchCategoryList = async () => {
       try {
-        const response = await axios.get("/api/suppliers/category-all");
-        setCategoryList(response.data.categoryType);
-        setInitialCategoryList(response.data.categoryType);
+        const response = await fetchCategory();
+        setCategoryList(response.categoryType);
+        setInitialCategoryList(response.categoryType);
       } catch (error) {
         console.error("Error fetching category list:", error);
       }
