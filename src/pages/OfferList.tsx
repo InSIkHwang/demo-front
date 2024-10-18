@@ -16,6 +16,7 @@ import { fetchOfferDetail, fetchOfferList, searchOfferList } from "../api/api";
 import { useNavigate } from "react-router-dom";
 import type { ColumnsType } from "antd/es/table";
 import type { SupplierInquiryListIF } from "../types/types";
+import Checkbox, { CheckboxChangeEvent } from "antd/es/checkbox";
 
 const expandAnimation = keyframes`
    from {
@@ -217,6 +218,7 @@ const OfferList = () => {
   const [selectedSupplierIds, setSelectedSupplierIds] = useState<
     Map<number, string>
   >(new Map());
+  const [viewMyOfferOnly, setViewMyOfferOnly] = useState<boolean>(false);
 
   useEffect(() => {
     if (searchText) {
@@ -228,7 +230,11 @@ const OfferList = () => {
 
   const fetchData = async () => {
     try {
-      const response = await fetchOfferList(currentPage, itemsPerPage);
+      const response = await fetchOfferList(
+        currentPage,
+        itemsPerPage,
+        viewMyOfferOnly
+      );
       setData(response.supplierInquiryList);
       setTotalCount(response.totalCount);
     } catch (error) {
@@ -254,7 +260,8 @@ const OfferList = () => {
         refNumber,
         customerName,
         currentPage,
-        itemsPerPage
+        itemsPerPage,
+        viewMyOfferOnly
       );
 
       setData(response.supplierInquiryList);
@@ -316,6 +323,11 @@ const OfferList = () => {
   const handlePageSizeChange = (current: number, size: number) => {
     setItemsPerPage(size);
     setCurrentPage(1);
+  };
+
+  const fetchFilteredData = () => {
+    setCurrentPage(1); // 페이지를 1로 초기화
+    fetchData(); // 데이터 재요청
   };
 
   const calculateTotals = (
@@ -439,6 +451,14 @@ const OfferList = () => {
     });
   };
 
+  const handleViewMyOfferOnlyChange = (e: CheckboxChangeEvent) => {
+    setViewMyOfferOnly(e.target.checked);
+  };
+
+  useEffect(() => {
+    fetchFilteredData(); // 상태가 변경되면 데이터 재요청
+  }, [viewMyOfferOnly]);
+
   return (
     <>
       <Container>
@@ -479,6 +499,11 @@ const OfferList = () => {
             <Button type="primary" onClick={handleSearch}>
               Search
             </Button>
+            <div style={{ marginLeft: 15 }}>
+              <Checkbox onChange={handleViewMyOfferOnlyChange}>
+                View My Offer Only
+              </Checkbox>
+            </div>
           </SearchBar>
         </TableHeader>{" "}
         {data.length > 0 && ( // 데이터가 있을 때만 페이지네이션을 표시

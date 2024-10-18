@@ -215,10 +215,21 @@ const ExcelUploadModal = ({
         });
 
         // itemType이 없으면 기본값 "ITEM" 설정
-        if (mappedRow["itemType"] === "+") {
+        if (
+          mappedRow["itemType"] === "+" ||
+          mappedRow["itemType"] === "MAKER"
+        ) {
           mappedRow["itemType"] = "MAKER";
-        } else if (mappedRow["itemType"] === "-") {
+        } else if (
+          mappedRow["itemType"] === "-" ||
+          mappedRow["itemType"] === "TYPE"
+        ) {
           mappedRow["itemType"] = "TYPE";
+        } else if (
+          mappedRow["itemType"] === "=" ||
+          mappedRow["itemType"] === "DESC"
+        ) {
+          mappedRow["itemType"] = "DESC";
         } else {
           mappedRow["itemType"] = "ITEM";
         }

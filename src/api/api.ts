@@ -386,7 +386,11 @@ export const searchInquiryList = async (
 // OFFER 조회 관련
 
 //OFFER(Supplier Inquiry) 조회
-export const fetchOfferList = async (page: number, pageSize: number) => {
+export const fetchOfferList = async (
+  page: number,
+  pageSize: number,
+  viewMyInquiryOnly: boolean
+) => {
   const response = await axios.get<{
     totalCount: number;
     supplierInquiryList: SupplierInquiryListIF[];
@@ -394,6 +398,7 @@ export const fetchOfferList = async (page: number, pageSize: number) => {
     params: {
       page: page - 1, // 페이지는 0부터 시작
       pageSize: pageSize, // 페이지당 아이템 수
+      writer: viewMyInquiryOnly ? "MY" : "ALL",
     },
   });
 
@@ -420,7 +425,8 @@ export const searchOfferList = async (
   refNumber: string = "",
   customerName: string = "",
   page: number,
-  pageSize: number
+  pageSize: number,
+  viewMyInquiryOnly: boolean
 ): Promise<{
   totalCount: number;
   supplierInquiryList: SupplierInquiryListIF[];
@@ -434,6 +440,7 @@ export const searchOfferList = async (
     customerName,
     page: (page - 1).toString(), // 페이지는 0부터 시작
     pageSize: pageSize.toString(), // 페이지당 아이템 수
+    writer: viewMyInquiryOnly ? "MY" : "ALL",
   };
 
   // 쿼리 문자열을 생성
