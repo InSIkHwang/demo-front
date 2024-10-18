@@ -283,7 +283,13 @@ const CustomerList = () => {
         <CreateCompanyModal
           category={category}
           onClose={closeModal}
-          onUpdate={fetchData}
+          onUpdate={() => {
+            if (searchText) {
+              fetchFilteredData();
+            } else {
+              fetchData();
+            }
+          }}
         />
       )}
       {isDetailCompanyModalOpen && selectedCustomer && (
@@ -291,7 +297,13 @@ const CustomerList = () => {
           category={category}
           company={selectedCustomer}
           onClose={closeDetailCompanyModal}
-          onUpdate={fetchData}
+          onUpdate={() => {
+            if (searchText) {
+              fetchFilteredData();
+            } else {
+              fetchData();
+            }
+          }}
         />
       )}
     </>

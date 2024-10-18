@@ -274,7 +274,13 @@ const SupplierList = () => {
         <CreateCompanyModal
           category={category}
           onClose={closeModal}
-          onUpdate={fetchData}
+          onUpdate={() => {
+            if (searchText) {
+              fetchFilteredData();
+            } else {
+              fetchData();
+            }
+          }}
         />
       )}
       {isDetailCompanyModalOpen && selectedSupplier && (
@@ -282,7 +288,13 @@ const SupplierList = () => {
           category={category}
           company={selectedSupplier}
           onClose={closeDetailCompanyModal}
-          onUpdate={fetchData}
+          onUpdate={() => {
+            if (searchText) {
+              fetchFilteredData();
+            } else {
+              fetchData();
+            }
+          }}
         />
       )}
     </>

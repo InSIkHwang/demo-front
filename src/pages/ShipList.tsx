@@ -257,13 +257,28 @@ const ShipList = () => {
         )}
       </Container>
       {isModalOpen && (
-        <CreateVesselModal onUpdate={fetchData} onClose={closeModal} />
+        <CreateVesselModal
+          onUpdate={() => {
+            if (searchText) {
+              fetchFilteredData();
+            } else {
+              fetchData();
+            }
+          }}
+          onClose={closeModal}
+        />
       )}
       {isDetailVesselModalOpen && selectedVessel && (
         <DetailVesselModal
           vessel={selectedVessel}
           onClose={closeDetailVesselModal}
-          onUpdate={fetchData}
+          onUpdate={() => {
+            if (searchText) {
+              fetchFilteredData();
+            } else {
+              fetchData();
+            }
+          }}
         />
       )}
     </>
