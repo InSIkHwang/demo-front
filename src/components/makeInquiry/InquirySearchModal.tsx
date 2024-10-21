@@ -111,6 +111,59 @@ const InquirySearchModal = ({
     },
   ];
 
+  const bestSupplierList: ColumnsType<any> = [
+    {
+      title: "Supplier Code",
+      dataIndex: "code",
+      key: "code",
+      render: (code, record) => (
+        <Tag
+          onClick={() => {
+            Modal.confirm({
+              title: "Add Supplier",
+              content: `Do you want to add ${record.companyName} as a supplier?`,
+              okText: "Yes",
+              cancelText: "No",
+              onOk: () => {
+                const selectedSupplier = {
+                  id: record.id,
+                  name: record.companyName,
+                  korName: record.korCompanyName || record.companyName,
+                  code: record.code || "",
+                  email: record.email || "",
+                };
+
+                // 새로운 공급업체 추가
+                setSelectedSuppliers((prevSuppliers) => {
+                  const newSuppliers = [...prevSuppliers, selectedSupplier];
+
+                  setIsFromInquirySearchModal(true);
+
+                  return newSuppliers; // 업데이트된 공급업체 리스트 반환
+                });
+              },
+            });
+          }}
+          style={{ cursor: "pointer" }}
+        >
+          {code}({record.companyName})
+        </Tag>
+      ),
+    },
+    {
+      title: "Supplier Name",
+      dataIndex: "companyName",
+      key: "companyName",
+    },
+    {
+      title: "Representative",
+      dataIndex: "representative",
+      key: "representative",
+    },
+    { title: "Email", dataIndex: "email", key: "email" },
+    { title: "Count", dataIndex: "count", key: "count" },
+  ];
+
   return (
     <Modal
       title="Search Inquiry(Supplier) by Maker"
@@ -156,21 +209,7 @@ const InquirySearchModal = ({
 
           <CustomTable
             dataSource={inquirySearchMakerNameResult.bestSupplierList}
-            columns={[
-              { title: "Supplier Code", dataIndex: "code", key: "code" },
-              {
-                title: "Supplier Name",
-                dataIndex: "companyName",
-                key: "companyName",
-              },
-              {
-                title: "Representative",
-                dataIndex: "representative",
-                key: "representative",
-              },
-              { title: "Email", dataIndex: "email", key: "email" },
-              { title: "Count", dataIndex: "count", key: "count" },
-            ]}
+            columns={bestSupplierList}
             size="small"
             className="custom-table"
             pagination={false}
