@@ -31,6 +31,7 @@ export interface Supplier {
   id: number;
   code: string;
   companyName: string;
+  korCompanyName?: string;
   phoneNumber: string;
   representative: string;
   email: string;
@@ -82,6 +83,7 @@ export interface Item {
     code: string;
     itemId: number;
     companyName: string;
+    korCompanyName?: string;
     phoneNumber: string;
     representative: string;
     email: string;
@@ -95,6 +97,7 @@ export interface InquiryListSupplier {
   supplierId: number;
   code: string;
   companyName: string;
+  korCompanyName?: string;
   representative: string;
   email: string;
 }
@@ -377,6 +380,7 @@ export interface InquirySearchMakerSupplier {
   id: number;
   code: string;
   companyName: string;
+  korCompanyName: string;
   representative: string;
   email: string;
   count?: number;

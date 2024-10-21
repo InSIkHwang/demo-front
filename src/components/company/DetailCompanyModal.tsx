@@ -30,6 +30,7 @@ interface Company {
   id: number;
   code: string;
   companyName: string;
+  korCompanyName?: string;
   phoneNumber: string;
   representative: string;
   email: string;
@@ -128,8 +129,6 @@ const DetailCompanyModal = ({
   const [isAddingNewCategory, setIsAddingNewCategory] = useState(false);
   const [newCategory, setNewCategory] = useState("");
 
-  console.log(formData);
-
   useEffect(() => {
     const fetchCategoryList = async () => {
       try {
@@ -176,7 +175,6 @@ const DetailCompanyModal = ({
     categoryType: string | null
   ) => {
     setMakerSearch(value);
-    console.log(categoryType);
 
     if (categoryType && !initialCategoryList.includes(categoryType)) {
       categoryType = ""; // 빈 문자열로 설정
@@ -428,7 +426,11 @@ const DetailCompanyModal = ({
         >
           <Input readOnly={!isEditing} />
         </StyledFormItem>
-
+        {category === "supplier" && (
+          <StyledFormItem label="Company Name(KOR)" name="korCompanyName">
+            <Input readOnly={!isEditing} />
+          </StyledFormItem>
+        )}
         <StyledFormItem label="Phone Number" name="phoneNumber">
           <Input readOnly={!isEditing} />
         </StyledFormItem>

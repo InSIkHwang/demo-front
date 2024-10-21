@@ -318,6 +318,7 @@ const PDFDocument = ({
 }: PDFDocumentProps) => {
   const sortedItems = [...items].sort((a, b) => a.position! - b.position!);
   const headerMessage = pdfHeader;
+console.log(supplierName);
 
   if (viewMode) {
     return (

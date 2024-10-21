@@ -106,10 +106,26 @@ interface InquiryFormProps {
   customerUnreg: boolean;
   vesselUnreg: boolean;
   setSelectedSupplierTag: Dispatch<
-    SetStateAction<{ id: number; name: string; code: string; email: string }[]>
+    SetStateAction<
+      {
+        id: number;
+        name: string;
+        korName: string;
+        code: string;
+        email: string;
+      }[]
+    >
   >;
   setSelectedSuppliers: Dispatch<
-    SetStateAction<{ id: number; name: string; code: string; email: string }[]>
+    SetStateAction<
+      {
+        id: number;
+        name: string;
+        korName: string;
+        code: string;
+        email: string;
+      }[]
+    >
   >;
   isEditMode: boolean;
   isDocNumDuplicate: boolean;
@@ -154,7 +170,7 @@ const InquiryForm = ({
   const [selectedType, setSelectedType] = useState("");
   const [checkedSuppliers, setCheckedSuppliers] = useState<any[]>([]);
   const [supplierList, setSupplierList] = useState<
-    { name: string; id: number; code: string; email: string }[]
+    { name: string; korName: string; id: number; code: string; email: string }[]
   >([]);
 
   const [autoSearchSupCompleteOptions, setAutoSearchSupCompleteOptions] =
@@ -172,6 +188,7 @@ const InquiryForm = ({
         id: number;
         code: string;
         name: string;
+        korName: string;
         email: string;
       }[];
     }[]
@@ -319,6 +336,7 @@ const InquiryForm = ({
         const data = await searchSupplier(value);
         const options = data.suppliers.map((supplier) => ({
           name: supplier.companyName,
+          korName: supplier.korCompanyName || supplier.companyName,
           id: supplier.id,
           code: supplier.code,
           email: supplier.email,
@@ -353,6 +371,7 @@ const InquiryForm = ({
           maker: maker.maker,
           supplierList: maker.supplierList.map((supplier) => ({
             name: supplier.companyName,
+            korName: supplier.korCompanyName || supplier.companyName,
             id: supplier.supplierId,
             code: supplier.code,
             email: supplier.email,

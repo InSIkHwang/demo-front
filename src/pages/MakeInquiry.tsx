@@ -99,16 +99,23 @@ const INITIAL_TABLE_VALUES: InquiryItem[] = [
 
 const getSupplierMap = (
   itemDetails: InquiryItem[]
-): { id: number; name: string; code: string; email: string }[] => {
+): {
+  id: number;
+  name: string;
+  korName: string;
+  code: string;
+  email: string;
+}[] => {
   const supplierMap = new Map<
     number,
-    { id: number; name: string; code: string; email: string }
+    { id: number; name: string; korName: string; code: string; email: string }
   >();
   itemDetails.forEach((item) =>
     item.suppliers?.forEach((supplier: InquiryListSupplier) =>
       supplierMap.set(supplier.supplierId, {
         id: supplier.supplierId,
         name: supplier.companyName,
+        korName: supplier.korCompanyName || supplier.companyName,
         code: supplier.code,
         email: supplier.email,
       })
@@ -154,14 +161,14 @@ const MakeInquiry = () => {
     { value: string; id: number; itemId: number; code: string; email: string }[]
   >([]);
   const [selectedSuppliers, setSelectedSuppliers] = useState<
-    { id: number; name: string; code: string; email: string }[]
+    { id: number; name: string; korName: string; code: string; email: string }[]
   >([]);
   const [selectedSupplierTag, setSelectedSupplierTag] = useState<
-    { id: number; name: string; code: string; email: string }[]
+    { id: number; name: string; korName: string; code: string; email: string }[]
   >([]);
   const [showPDFPreview, setShowPDFPreview] = useState(false);
   const [pdfSupplierTag, setPdfSupplierTag] = useState<
-    { id: number; name: string }[]
+    { id: number; name: string; korName: string }[]
   >([]);
   const [headerEditModalVisible, setHeaderEditModalVisible] =
     useState<boolean>(false);
@@ -613,6 +620,7 @@ const MakeInquiry = () => {
         item.supplierList.map((supplier) => ({
           id: supplier.id,
           name: supplier.companyName,
+          korName: supplier.korCompanyName || supplier.companyName,
           code: supplier.code,
           email: supplier.email,
         }))
@@ -873,7 +881,13 @@ const MakeInquiry = () => {
         <PDFDocument
           formValues={formValues}
           items={items}
-          supplierName={pdfSupplierTag.length > 0 ? pdfSupplierTag[0].name : ""}
+          supplierName={
+            pdfSupplierTag.length > 0
+              ? language === "ENG"
+                ? pdfSupplierTag[0].name
+                : pdfSupplierTag[0].korName
+              : ""
+          }
           vesselInfo={selectedVessel}
           pdfHeader={pdfHeader}
           viewMode={true}

@@ -19,6 +19,7 @@ interface PDFGeneratorProps {
   selectedSupplierTag: {
     id: number;
     name: string;
+    korName: string;
     code: string;
     email: string;
   }[];
@@ -62,7 +63,7 @@ const generateMailData = (
                 : ""
             }\n\nD.Y.KIM\nBAS KOREA CO.\n17, APEC-ro, Haeundae-gu, Busan,\nRepublic of Korea / 48060\nTel. 070-7600-5067\nFax. +82-51-793-0635\nE-mail. info@bas-korea.com\n\n`
           : `수신: ${
-              supplierTag.name
+              supplierTag.korName
             } 영업부 담당자님\n발신: 바스코리아 D.Y.KIM 드림\n\n업무에 노고가 많으십니다.\n상기 건 견적의뢰 부탁드립니다.\n제품 확인을 위한 추가 자료가 있다면 함께 전달 부탁 드립니다.\n항상 도움 주셔서 감사합니다.\n감사합니다.\n\nThanks & Best Regards\n\n<VESSEL INFO>\nVESSEL: ${
               vesselInfo?.vesselName
             }\nIMO No: ${vesselInfo?.imoNumber || ""}\nHull No: ${
@@ -75,7 +76,7 @@ const generateMailData = (
                 : ""
             }\n\nD.Y.KIM\nBAS KOREA CO.\n부산 해운대구 APEC로 17 3106호 / 48060\nTel. 070-7600-5067\nFax. 051-793-0635\nMobile. 010-3321-2688\nE-mail. info@bas-korea.com\n\n`,
       ccRecipient: "",
-      supplierName: supplierTag.name,
+      supplierName: language === "ENG" ? supplierTag.name : supplierTag.korName,
     };
 
     mailDataList.push(mailData);
@@ -98,6 +99,7 @@ export const generatePDFs = async (
 
   // 특정 인덱스의 supplierTag만 사용
   const supplierTag = selectedSupplierTag[selectedSupplierIndex];
+  console.log(supplierTag);
 
   if (supplierTag) {
     const doc = (
@@ -105,7 +107,9 @@ export const generatePDFs = async (
         language={language}
         formValues={formValues}
         items={items}
-        supplierName={supplierTag.name}
+        supplierName={
+          language === "ENG" ? supplierTag.name : supplierTag.korName
+        }
         vesselInfo={vesselInfo}
         pdfHeader={pdfHeader}
         viewMode={false}
@@ -116,7 +120,7 @@ export const generatePDFs = async (
     const fileName =
       language === "ENG"
         ? `${supplierTag.name} REQUEST FOR QUOTATION ${formValues.docNumber}.pdf`
-        : `${supplierTag.name} 견적의뢰서 ${formValues.docNumber}.pdf`;
+        : `${supplierTag.korName} 견적의뢰서 ${formValues.docNumber}.pdf`;
     const newFile = new File([pdfBlob], fileName, {
       type: "application/pdf",
     });

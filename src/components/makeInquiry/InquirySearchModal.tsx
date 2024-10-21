@@ -29,7 +29,15 @@ interface InquirySearchModalProps {
   handleInquirySearch: () => void;
   tagColors: { [id: number]: string };
   setSelectedSuppliers: Dispatch<
-    SetStateAction<{ id: number; name: string; code: string; email: string }[]>
+    SetStateAction<
+      {
+        id: number;
+        name: string;
+        korName: string;
+        code: string;
+        email: string;
+      }[]
+    >
   >;
   setIsFromInquirySearchModal: Dispatch<SetStateAction<boolean>>;
 }
@@ -77,6 +85,7 @@ const InquirySearchModal = ({
                     const selectedSupplier = {
                       id: supplier.id,
                       name: supplier.companyName,
+                      korName: supplier.korCompanyName || supplier.companyName,
                       code: supplier.code || "",
                       email: supplier.email || "",
                     };

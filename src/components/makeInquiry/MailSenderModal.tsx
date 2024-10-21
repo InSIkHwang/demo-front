@@ -99,6 +99,7 @@ const MailSenderModal = ({
   selectedSupplierTag: {
     id: number;
     name: string;
+    korName: string;
     code: string;
     email: string;
   }[];
@@ -122,10 +123,6 @@ const MailSenderModal = ({
   const [uploadFile, setUploadFile] = useState<File[]>([]);
 
   const navigate = useNavigate();
-
-  const handlePdfAutoUploadChange = (e: CheckboxChangeEvent) => {
-    setIsPdfAutoUploadChecked(e.target.checked);
-  };
 
   const filteredSupplierTags = selectedSupplierTag.filter((_, index) =>
     selectedMailIndexes.has(index)
@@ -202,40 +199,30 @@ const MailSenderModal = ({
           const updatedFileData = [...uploadFile];
           setFileData(updatedFileData);
 
-          if (isPdfAutoUploadChecked) {
-            const pdfFiles = await generatePDFs(
-              filteredSupplierTags,
-              inquiryFormValues,
-              items,
-              vesselInfo,
-              pdfHeader,
-              language,
-              setPdfFileData,
-              index
-            );
+          const pdfFiles = await generatePDFs(
+            filteredSupplierTags,
+            inquiryFormValues,
+            items,
+            vesselInfo,
+            pdfHeader,
+            language,
+            setPdfFileData,
+            index
+          );
 
-            const finalFileData = [...updatedFileData, ...pdfFiles];
-            setFileData(finalFileData);
-
-            await sendInquiryMail(values.docNumber, inquiryId, finalFileData, [
-              {
-                ...currentMailDataList[index],
-                ...values.mails[index],
-              },
-            ]);
-          } else {
-            await sendInquiryMail(
-              values.docNumber,
-              inquiryId,
-              updatedFileData,
-              [
-                {
-                  ...currentMailDataList[index],
-                  ...values.mails[index],
-                },
-              ]
-            );
+          if (!pdfFiles || pdfFiles.length === 0) {
+            throw new Error("Failed to generate PDF files");
           }
+
+          const finalFileData = [...updatedFileData, ...pdfFiles];
+          setFileData(finalFileData);
+
+          await sendInquiryMail(values.docNumber, inquiryId, finalFileData, [
+            {
+              ...currentMailDataList[index],
+              ...values.mails[index],
+            },
+          ]);
         }
         message.success("The selected email has been sent successfully!");
         navigate("/customerInquirylist");
@@ -243,8 +230,19 @@ const MailSenderModal = ({
         message.error("Save failed.");
       }
     } catch (error) {
-      console.error("Error sending email:", error);
-      message.error("Email sending failed. Please try again.");
+      if (error instanceof Error) {
+        console.error("Error sending email:", error);
+        if (error.message === "Failed to generate PDF files") {
+          message.error("Failed to generate PDF files. Please try again.");
+        } else if (error.message === "404") {
+          message.error("PLEASE CHECK YOUR ATTACHED FILE");
+        } else {
+          message.error("Email sending failed. Please try again.");
+        }
+      } else {
+        console.error("Unknown error:", error);
+        message.error("An unknown error occurred. Please try again.");
+      }
     } finally {
       setLoading(false);
       modal.destroy();
@@ -395,20 +393,18 @@ const MailSenderModal = ({
           ))}
         </div>
         <StyledFormItem>
-          <Title level={5}>Attached File</Title>
+          <Title level={5}>
+            Attached File
+            <span style={{ fontSize: 12 }}>
+              (PDF files are automatically attached)
+            </span>
+          </Title>
           <Upload
             customRequest={({ file }) => handleFileUpload(file)}
             showUploadList={false}
           >
             <Button icon={<UploadOutlined />}>Upload File</Button>
           </Upload>
-          <Checkbox
-            checked={isPdfAutoUploadChecked}
-            onChange={handlePdfAutoUploadChange}
-            style={{ marginLeft: 15 }}
-          >
-            Automatic PDF File Upload
-          </Checkbox>
           {uploadFile.length > 0 && (
             <div style={{ marginTop: "16px" }}>
               {uploadFile.map((file, fileIndex) => (

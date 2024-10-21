@@ -75,6 +75,7 @@ const StyledFormItem = styled(Form.Item)`
 interface Payload {
   code: string;
   companyName: string;
+  korCompanyName?: string;
   phoneNumber: string;
   representative: string;
   email: string;
@@ -93,6 +94,7 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
   const [formData, setFormData] = useState({
     code: "",
     name: "",
+    korName: "",
     contact: "",
     manager: "",
     email: "",
@@ -266,6 +268,7 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
   const postCreate = async (values: {
     code: string;
     name: string;
+    korName: string;
     contact: string;
     manager: string;
     email: string;
@@ -290,6 +293,7 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
       // category가 supplier인 경우 makerCategoryList 추가
       if (category === "supplier") {
         payload.makerCategoryList = makerCategoryList;
+        payload.korCompanyName = values.korName;
       }
 
       await axios.post(endpoint, payload);
@@ -368,9 +372,19 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
             name="name"
             value={formData.name}
             onChange={handleChange}
-            placeholder="바스코리아"
+            placeholder="BAS KOREA"
           />
         </StyledFormItem>
+        {category === "supplier" && (
+          <StyledFormItem label="name (KOR):" name="korName">
+            <Input
+              name="korName"
+              value={formData.korName}
+              onChange={handleChange}
+              placeholder="바스코리아"
+            />
+          </StyledFormItem>
+        )}
         <StyledFormItem label="contact:" name="contact">
           <Input
             name="contact"
