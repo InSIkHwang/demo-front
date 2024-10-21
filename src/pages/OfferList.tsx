@@ -455,6 +455,19 @@ const OfferList = () => {
     setViewMyOfferOnly(e.target.checked);
   };
 
+  const handlePdfDownload = (detail: any) => {
+    if (detail.pdfUrl) {
+      const link = document.createElement("a");
+      link.href = detail.pdfUrl;
+      link.download = `${detail.supplierName}_REQUEST FOR QUOTATION_${detail.documentNumber}.pdf`; // 다운로드할 파일 이름
+      link.click();
+    } else {
+      message.warning(
+        `PDF URL for supplier ${detail.documentNumber} is not available`
+      );
+    }
+  };
+
   useEffect(() => {
     fetchFilteredData(); // 상태가 변경되면 데이터 재요청
   }, [viewMyOfferOnly]);
@@ -553,34 +566,50 @@ const OfferList = () => {
                             <StyledCard
                               key={info.supplierInquiryId}
                               title={
-                                <CardTitle
-                                  onClick={() => {
-                                    const isChecked = selectedSupplierIds.has(
-                                      info.supplierInquiryId
-                                    );
-                                    handleCheckboxChange(
-                                      info.supplierInquiryId,
-                                      info.companyName,
-                                      !isChecked
-                                    );
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "baseline",
+                                    justifyContent: "space-between",
                                   }}
                                 >
-                                  <input
-                                    type="checkbox"
-                                    checked={selectedSupplierIds.has(
-                                      info.supplierInquiryId
-                                    )}
-                                    onChange={(e) =>
+                                  <CardTitle
+                                    onClick={() => {
+                                      const isChecked = selectedSupplierIds.has(
+                                        info.supplierInquiryId
+                                      );
                                       handleCheckboxChange(
                                         info.supplierInquiryId,
                                         info.companyName,
-                                        e.target.checked
-                                      )
-                                    }
-                                    style={{ marginRight: 8 }}
-                                  />
-                                  {info.code} ({info.companyName})
-                                </CardTitle>
+                                        !isChecked
+                                      );
+                                    }}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedSupplierIds.has(
+                                        info.supplierInquiryId
+                                      )}
+                                      onChange={(e) =>
+                                        handleCheckboxChange(
+                                          info.supplierInquiryId,
+                                          info.companyName,
+                                          e.target.checked
+                                        )
+                                      }
+                                      style={{ marginRight: 8 }}
+                                    />
+                                    {info.code} ({info.companyName})
+                                  </CardTitle>{" "}
+                                  <Button
+                                    type="primary"
+                                    size="small"
+                                    style={{ float: "right" }}
+                                    onClick={() => handlePdfDownload(detail)}
+                                  >
+                                    PDF file download
+                                  </Button>
+                                </div>
                               }
                             >
                               <CardContent>

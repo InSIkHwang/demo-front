@@ -154,6 +154,7 @@ export interface SupplierInquiryListIF {
   supplierInfoList: {
     supplierInquiryId: number;
     supplierId: number;
+    pdfUrl: string;
     code: string;
     companyName: string;
   }[];
