@@ -10,6 +10,8 @@
 
 # production
 /build
+/build(dev)
+/build(release)
 build.zip
 build(dev).zip
 build(release).zip
