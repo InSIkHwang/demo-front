@@ -8,6 +8,7 @@ import {
   Typography,
   message,
   AutoComplete,
+  Tag,
 } from "antd";
 import { Vessel } from "../../types/types";
 import styled from "styled-components";
@@ -50,36 +51,13 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
   const [isHullUnique, setIsHullUnique] = useState(true);
   const [customerSuggestions, setCustomerSuggestions] = useState<any[]>([]);
   const [isCustomerLoading, setIsCustomerLoading] = useState(false);
-  const [customerError, setCustomerError] = useState<string | null>(null);
-  const [originCustomer, setOriginCustomer] = useState<{
-    companyName: string;
-    id: number;
-  } | null>(null);
   const [selectedCustomer, setSelectedCustomer] = useState<{
     companyName: string;
     id: number;
   } | null>(null);
+  const [searchCustomer, setSearchCustomer] = useState<string>("");
 
   const [form] = Form.useForm();
-
-  useEffect(() => {
-    setFormData(vessel);
-    if (vessel.customer) {
-      setOriginCustomer({
-        companyName: vessel.customer.companyName,
-        id: vessel.customer.id,
-      });
-    } else {
-      setOriginCustomer(null); // customer가 없을 때 null로 설정
-    }
-  }, [vessel]);
-
-  useEffect(() => {
-    form.setFieldsValue({
-      ...formData,
-      customerCompanyName: formData.customer?.companyName || "",
-    });
-  }, [formData, form]);
 
   useEffect(() => {
     const checkUnique = async (
@@ -104,11 +82,14 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
     };
 
     const checkImoAndHullUnique = async () => {
-      const isImoValid = await checkUnique(
-        "imo-number",
-        formData.imoNumber,
-        vessel.imoNumber
-      );
+      const isImoValid =
+        formData.imoNumber && (formData.imoNumber + "").toString().length >= 7
+          ? await checkUnique(
+              "imo-number",
+              formData.imoNumber,
+              vessel.imoNumber
+            )
+          : true;
       const isHullValid = await checkUnique(
         "hull-number",
         formData.hullNumber,
@@ -146,25 +127,22 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
   };
 
   const handleSearch = (value: string) => {
+    if (value !== selectedCustomer?.companyName) {
+      setSelectedCustomer(null);
+    }
     fetchCustomerSuggestions(value);
   };
 
   const handleSelectCustomer = (value: string, option: any) => {
     const selected = option as any;
-    setFormData({
-      ...formData,
-      customer: {
-        ...formData.customer,
-        companyName: selected.companyName, // customer 안에 companyName을 설정
-        id: selected.id,
-      },
-    });
+    if (!value) {
+      setSelectedCustomer(null);
+    }
     setSelectedCustomer({
       companyName: selected.companyName,
       id: selected.id,
     });
     setCustomerSuggestions([]);
-    setCustomerError(null); // Clear any previous error when a customer is selected
   };
 
   // 데이터 수정 PUT API
@@ -177,7 +155,7 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
         hullNumber: formData.hullNumber,
         shipYard: formData.shipYard,
         countryOfManufacture: formData.countryOfManufacture,
-        originCustomerId: originCustomer?.id || null,
+        // originCustomerId: originCustomer?.id || null,
         newCustomerId: selectedCustomer?.id || null,
       });
       message.success("Successfully updated.");
@@ -225,6 +203,8 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
     }));
   };
 
+  const customerCompanyName = form.getFieldsValue().customerCompanyName;
+
   return (
     <Modal
       open={true}
@@ -256,13 +236,17 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
           label="IMO No."
           name="imoNumber"
           hasFeedback={isEditing}
-          rules={[{ required: true, message: "Enter IMO number!" }]}
+          rules={[
+            { required: true, message: "Enter IMO number!" },
+            { len: 7, message: "IMO number must be 7 characters." },
+          ]}
           validateStatus={
             !isImoUnique
               ? "warning"
               : formData.imoNumber === null ||
                 formData.imoNumber === undefined ||
-                formData.imoNumber + "" === ""
+                formData.imoNumber + "" === "" ||
+                (formData.imoNumber + "").toString().length !== 7
               ? "error"
               : "success"
           }
@@ -273,6 +257,8 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
                 formData.imoNumber === undefined ||
                 formData.imoNumber + "" === ""
               ? "Enter IMO number!"
+              : (formData.imoNumber + "").toString().length !== 7
+              ? "IMO number must be 7 characters."
               : ""
           }
         >
@@ -333,18 +319,23 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
           />
         </StyledFormItem>
         <StyledFormItem
-          label="Customer Name:"
+          label="Customer name to add:"
           name="customerCompanyName"
-          validateStatus={customerError ? "error" : ""}
-          help={customerError}
-          rules={[{ required: true, message: "Select a customer!" }]}
-          hasFeedback={isEditing}
+          validateStatus={
+            selectedCustomer?.companyName !== customerCompanyName
+              ? "error"
+              : "success"
+          }
+          help={
+            selectedCustomer?.companyName !== customerCompanyName
+              ? "Please select the correct customer from autocomplete."
+              : ""
+          }
         >
           <AutoComplete
             onSearch={handleSearch}
             onSelect={handleSelectCustomer}
-            value={formData.customer?.companyName}
-            placeholder={formData.customer?.companyName}
+            value={searchCustomer}
             options={customerSuggestions.map((customer) => ({
               value: customer.companyName,
               label: customer.companyName,
@@ -361,6 +352,18 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
             <Input />
           </AutoComplete>
         </StyledFormItem>
+        <StyledFormItem
+          label="Registered Customers:"
+          name="registeredCustomers"
+        >
+          {formData.customers.map(
+            (customer) =>
+              customer.companyName && (
+                <Tag key={customer.id}>{customer.companyName}</Tag>
+              )
+          )}
+        </StyledFormItem>
+
         <ButtonGroup>
           {isEditing ? (
             <>
@@ -369,10 +372,13 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
                 onClick={handleSubmit}
                 disabled={
                   formData.vesselName === "" ||
-                  !formData.customer ||
+                  formData.hullNumber === "" ||
+                  !formData.hullNumber ||
                   formData.imoNumber === null ||
                   formData.imoNumber === undefined ||
-                  formData.imoNumber + "" === ""
+                  formData.imoNumber + "" === "" ||
+                  (formData.imoNumber + "").toString().length !== 7 ||
+                  selectedCustomer?.companyName !== customerCompanyName
                 }
                 size="middle"
               >

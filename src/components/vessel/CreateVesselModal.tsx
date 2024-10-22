@@ -96,8 +96,14 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
     };
 
     const checkImoAndHullUnique = async () => {
-      const isImoValid = await checkUnique("imo-number", formData.imoNumber);
+      // 7자리 이상일 때만 imoNumber 검사
+      const isImoValid =
+        formData.imoNumber && (formData.imoNumber + "").toString().length >= 7
+          ? await checkUnique("imo-number", formData.imoNumber)
+          : true;
+
       const isHullValid = await checkUnique("hull-number", formData.hullNumber);
+
       setIsImoUnique(isImoValid);
       setIsHullUnique(isHullValid);
     };
@@ -109,6 +115,7 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
   const fetchCustomerSuggestions = async (customerName: string) => {
     if (!(customerName + "").trim()) {
       setCustomerSuggestions([]);
+      setSelectedCustomer(null);
       return;
     }
     setIsCustomerLoading(true);
@@ -116,7 +123,9 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
       const response = await axios.get(
         `/api/customers/check-name?query=${customerName}`
       );
-      setCustomerSuggestions(response.data.customerDetailResponse);
+      const searchCustomer = response.data.customerDetailResponse;
+
+      setCustomerSuggestions(searchCustomer);
     } catch (error) {
       console.error("Error fetching customer suggestions:", error);
     } finally {
@@ -125,6 +134,9 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
   };
 
   const handleSearch = (value: string) => {
+    if (value !== selectedCustomer?.companyName) {
+      setSelectedCustomer(null);
+    }
     fetchCustomerSuggestions(value);
   };
 
@@ -217,13 +229,17 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
           label="IMO NO.:"
           name="imoNumber"
           hasFeedback
-          rules={[{ required: true, message: "Enter IMO number!" }]}
+          rules={[
+            { required: true, message: "Enter IMO number!" },
+            { len: 7, message: "IMO number must be 7 characters." },
+          ]}
           validateStatus={
             !isImoUnique
               ? "warning"
               : formData.imoNumber === null ||
                 formData.imoNumber === undefined ||
-                formData.imoNumber + "" === ""
+                formData.imoNumber + "" === "" ||
+                (formData.imoNumber + "").toString().length !== 7
               ? "error"
               : "success"
           }
@@ -234,6 +250,8 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
                 formData.imoNumber === undefined ||
                 formData.imoNumber + "" === ""
               ? "Enter IMO number!"
+              : (formData.imoNumber + "").toString().length !== 7
+              ? "IMO number must be 7 characters."
               : ""
           }
         >
@@ -328,10 +346,13 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
           htmlType="submit"
           disabled={
             formData.customerId === undefined ||
-            selectedCustomer?.companyName !== formData.customerName ||
+            formData.hullNumber === "" ||
+            !formData.hullNumber ||
+            !selectedCustomer ||
             formData.imoNumber === null ||
             formData.imoNumber === undefined ||
-            formData.imoNumber + "" === ""
+            formData.imoNumber + "" === "" ||
+            (formData.imoNumber + "").toString().length !== 7
           }
           block
           size="middle"

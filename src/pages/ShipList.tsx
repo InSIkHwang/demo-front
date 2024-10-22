@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Table, Input, Button as AntButton, Select, Pagination } from "antd";
+import {
+  Table,
+  Input,
+  Button as AntButton,
+  Select,
+  Pagination,
+  Tag,
+} from "antd";
 import { SearchOutlined, LeftOutlined, RightOutlined } from "@ant-design/icons";
 import CreateVesselModal from "../components/vessel/CreateVesselModal";
 import type { ColumnsType } from "antd/es/table";
@@ -164,7 +171,14 @@ const ShipList = () => {
       title: "Customer Name",
       key: "customerName",
       render: (text, record) =>
-        record.customer ? record.customer.companyName : "",
+        record.customers
+          ? record.customers.map(
+              (customer) =>
+                customer.companyName && (
+                  <Tag key={customer.id}>{customer.companyName}</Tag>
+                )
+            )
+          : "",
     },
   ];
 

@@ -51,13 +51,13 @@ export interface Vessel {
   hullNumber: string;
   shipYard: string;
   countryOfManufacture?: string;
-  customer: {
+  customers: {
     id: number;
     newCustomerId: string;
     code: string;
     companyName: string;
     newCustomerName: string;
-  };
+  }[];
 }
 
 export interface InquiryItem {

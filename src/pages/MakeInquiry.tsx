@@ -472,7 +472,44 @@ const MakeInquiry = () => {
   };
 
   const handleSubmit = async (): Promise<number | null> => {
+    const selectedVessel = vesselList.find(
+      (v) => v.vesselName === formValues.vesselName
+    );
+
     try {
+      // imoNumber와 hullNumber 체크
+      if (!selectedVessel?.imoNumber || !selectedVessel?.hullNumber) {
+        const result = await new Promise((resolve) => {
+          Modal.confirm({
+            title: "IMO number or Hull number is missing.",
+            content: (
+              <>
+                <span style={{ color: selectedVessel?.imoNumber ? "" : "red" }}>
+                  IMO number: {selectedVessel?.imoNumber}
+                </span>
+                <br />
+                <span
+                  style={{ color: selectedVessel?.hullNumber ? "" : "red" }}
+                >
+                  Hull number: {selectedVessel?.hullNumber}
+                </span>
+                <br />
+                <br />
+                Do you want to proceed with saving?
+              </>
+            ),
+            okText: "Ok",
+            cancelText: "Cancel",
+            onOk: () => resolve(true),
+            onCancel: () => resolve(false),
+          });
+        });
+
+        if (!result) {
+          return null; // 저장 취소
+        }
+      }
+
       if (isDuplicate) {
         const result = await new Promise((resolve) => {
           Modal.confirm({
