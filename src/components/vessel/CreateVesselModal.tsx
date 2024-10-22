@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "../../api/axios";
 import styled from "styled-components";
 import { AutoComplete, Input, Button, Form, Modal, notification } from "antd";
+import { vesselCheckImoAndHullUnique } from "../../api/api";
 
 const StyledModal = styled(Modal)`
   .ant-modal-content {
@@ -63,6 +64,7 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
   });
 
   const [isImoUnique, setIsImoUnique] = useState(true);
+  const [isHullUnique, setIsHullUnique] = useState(true);
   const [customerSuggestions, setCustomerSuggestions] = useState<any[]>([]);
   const [isCustomerLoading, setIsCustomerLoading] = useState(false);
   const [customerError, setCustomerError] = useState<string | null>(null);
@@ -78,37 +80,30 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
     });
   };
 
-  const debounce = <T extends (...args: any[]) => void>(
-    func: T,
-    delay: number
-  ) => {
-    let timer: NodeJS.Timeout;
-    return (...args: Parameters<T>) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => func(...args), delay);
-    };
-  };
-
   // 중복 코드 체크 로직
-  const checkImoUnique = debounce(async () => {
-    if (!formData.imoNumber) {
-      setIsImoUnique(true);
-      return;
-    }
-    try {
-      const response = await axios.get(
-        `/api/vessels/check-number/${formData.imoNumber}`
-      );
-      setIsImoUnique(!response.data); // 응답을 반전시켜서 코드 유무 판단
-    } catch (error) {
-      console.error("Error checking imoNumber unique:", error);
-      setIsImoUnique(true); // 오류 발생 시 기본적으로 유효한 코드로 처리
-    }
-  }, 200);
-
   useEffect(() => {
-    checkImoUnique();
-  }, [checkImoUnique, formData.imoNumber]);
+    const checkUnique = async (type: string, value: any) => {
+      if (!value) {
+        return true;
+      }
+      try {
+        const response = await vesselCheckImoAndHullUnique(type, value);
+        return response;
+      } catch (error) {
+        console.error(`Error checking ${type} unique:`, error);
+        return true; // 오류 발생 시 기본적으로 유효한 코드로 처리
+      }
+    };
+
+    const checkImoAndHullUnique = async () => {
+      const isImoValid = await checkUnique("imo-number", formData.imoNumber);
+      const isHullValid = await checkUnique("hull-number", formData.hullNumber);
+      setIsImoUnique(isImoValid);
+      setIsHullUnique(isHullValid);
+    };
+
+    checkImoAndHullUnique();
+  }, [formData.imoNumber, formData.hullNumber]);
 
   // Fetch customer suggestions
   const fetchCustomerSuggestions = async (customerName: string) => {
@@ -152,7 +147,7 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
     try {
       await axios.post(`/api/vessels`, {
         vesselName: formData.vesselName,
-        vesselCompanyName: formData.vesselCompanyName,
+        vesselCompanyName: "default",
         imoNumber: Number(formData.imoNumber),
         hullNumber: formData.hullNumber,
         shipYard: formData.shipYard,
@@ -218,22 +213,29 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
             placeholder="BAS VESSEL1"
           />
         </StyledFormItem>
-
-        <StyledFormItem label="Vessel Company Name:" name="vesselCompanyName">
-          <Input
-            name="vesselCompanyName"
-            value={formData.vesselCompanyName}
-            onChange={handleChange}
-            placeholder="BAS KOREA"
-          />
-        </StyledFormItem>
-
         <StyledFormItem
           label="IMO NO.:"
           name="imoNumber"
           hasFeedback
-          validateStatus={!isImoUnique ? "warning" : "success"}
-          help={!isImoUnique ? "It's a duplicate Imo No." : ""}
+          rules={[{ required: true, message: "Enter IMO number!" }]}
+          validateStatus={
+            !isImoUnique
+              ? "warning"
+              : formData.imoNumber === null ||
+                formData.imoNumber === undefined ||
+                formData.imoNumber + "" === ""
+              ? "error"
+              : "success"
+          }
+          help={
+            !isImoUnique
+              ? "It's a duplicate Imo No."
+              : formData.imoNumber === null ||
+                formData.imoNumber === undefined ||
+                formData.imoNumber + "" === ""
+              ? "Enter IMO number!"
+              : ""
+          }
         >
           <Input
             name="imoNumber"
@@ -244,7 +246,30 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
           />
         </StyledFormItem>
 
-        <StyledFormItem label="HULL No.:" name="hullNumber">
+        <StyledFormItem
+          label="HULL No.:"
+          name="hullNumber"
+          hasFeedback
+          rules={[{ required: true, message: "Enter Hull number!" }]}
+          validateStatus={
+            !isHullUnique
+              ? "warning"
+              : formData.hullNumber === null ||
+                formData.hullNumber === undefined ||
+                formData.hullNumber + "" === ""
+              ? "error"
+              : "success"
+          }
+          help={
+            !isHullUnique
+              ? "It's a duplicate Hull No."
+              : formData.hullNumber === null ||
+                formData.hullNumber === undefined ||
+                formData.hullNumber + "" === ""
+              ? "Enter Hull number!"
+              : ""
+          }
+        >
           <Input
             name="hullNumber"
             value={formData.hullNumber}
@@ -303,7 +328,10 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
           htmlType="submit"
           disabled={
             formData.customerId === undefined ||
-            selectedCustomer?.companyName !== formData.customerName
+            selectedCustomer?.companyName !== formData.customerName ||
+            formData.imoNumber === null ||
+            formData.imoNumber === undefined ||
+            formData.imoNumber + "" === ""
           }
           block
           size="middle"

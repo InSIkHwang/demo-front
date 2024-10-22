@@ -226,6 +226,7 @@ const CustomerList = () => {
               defaultValue="all"
               style={{ width: 120, marginRight: 10 }}
               onChange={(value) => setSearchCategory(value)}
+              dropdownStyle={{ width: 150 }}
             >
               <Option value="all">All</Option>
               <Option value="code">Code</Option>

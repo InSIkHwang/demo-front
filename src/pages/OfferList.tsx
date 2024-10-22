@@ -107,10 +107,10 @@ const StyledCard = styled(Card)`
 `;
 
 const CardTitle = styled.h3`
-  margin-bottom: 10px;
   font-size: 14px;
   font-weight: bold;
   cursor: pointer;
+  margin-bottom: 0;
 `;
 
 const CardContent = styled.div`
@@ -187,13 +187,13 @@ const columns: ColumnsType<SupplierInquiryListIF> = [
       let color;
       switch (status) {
         case "INQUIRY_SENT":
-          color = "orange";
+          color = "cornflowerblue";
           break;
-        case " WAITING_TO_SEND_QUOTATION":
-          color = "green";
+        case "WAITING_TO_SEND_QUOTATION":
+          color = "blue";
           break;
         default:
-          color = "blue";
+          color = "steelblue";
       }
       return <Tag color={color}>{status}</Tag>;
     },
@@ -569,8 +569,9 @@ const OfferList = () => {
                                 <div
                                   style={{
                                     display: "flex",
-                                    alignItems: "baseline",
-                                    justifyContent: "space-between",
+                                    flexDirection: "column",
+                                    alignItems: "flex-start",
+                                    marginBottom: 10,
                                   }}
                                 >
                                   <CardTitle
@@ -600,15 +601,16 @@ const OfferList = () => {
                                       style={{ marginRight: 8 }}
                                     />
                                     {info.code} ({info.companyName})
-                                  </CardTitle>{" "}
-                                  <Button
-                                    type="primary"
-                                    size="small"
-                                    style={{ float: "right" }}
-                                    onClick={() => handlePdfDownload(detail)}
-                                  >
-                                    PDF file download
-                                  </Button>
+                                  </CardTitle>
+                                  <div style={{ alignSelf: "flex-end" }}>
+                                    <Button
+                                      type="primary"
+                                      size="small"
+                                      onClick={() => handlePdfDownload(detail)}
+                                    >
+                                      PDF file download
+                                    </Button>
+                                  </div>
                                 </div>
                               }
                             >

@@ -129,7 +129,7 @@ const columns: ColumnsType<Quotation> = [
       let color;
       switch (status) {
         default:
-          color = "green";
+          color = "cornflowerblue";
       }
       return <Tag color={color}>{status}</Tag>;
     },
@@ -231,6 +231,7 @@ const QuotationList = () => {
               defaultValue="documentNumber"
               style={{ width: 140, marginRight: 10 }}
               onChange={(value) => setSearchCategory(value)}
+              dropdownStyle={{ width: 200 }}
             >
               <Select.Option value="documentNumber">
                 Document Number

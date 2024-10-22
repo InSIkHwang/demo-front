@@ -148,6 +148,15 @@ export const fetchCategory = async () => {
   return response.data;
 };
 
+export const vesselCheckImoAndHullUnique = async (
+  type: string,
+  value: string | number | null
+) => {
+  const response = await axios.get(`/api/vessels/check/${type}/${value}`);
+
+  return !response.data; //응답 반전
+};
+
 //----------------------------------------------------------------------------------
 // INQUIRY 작성 관련
 

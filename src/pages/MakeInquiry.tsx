@@ -170,11 +170,8 @@ const MakeInquiry = () => {
   const [pdfSupplierTag, setPdfSupplierTag] = useState<
     { id: number; name: string; korName: string }[]
   >([]);
-  const [headerEditModalVisible, setHeaderEditModalVisible] =
-    useState<boolean>(false);
   const [pdfHeader, setPdfHeader] = useState<string>("");
   const [formValues, setFormValues] = useState(INITIAL_FORM_VALUES);
-  const [isMailSenderVisible, setIsMailSenderVisible] = useState(false);
   const [mailDataList, setMailDataList] = useState<emailSendData[]>([]);
   const [isDuplicate, setIsDuplicate] = useState<boolean>(false);
   const [language, setLanguage] = useState<string>("KOR");
@@ -185,8 +182,6 @@ const MakeInquiry = () => {
   const [isLoading, setIsLoading] = useState(true); // 로딩 상태 변수 추가
   const [isDocNumDuplicate, setIsDocNumDuplicate] = useState<boolean>(false);
   const [inquiryId, setInquiryId] = useState<number | null>(null);
-  const [isInquirySearchModalVisible, setIsInquirySearchModalVisible] =
-    useState(false);
   const [inquirySearchMakerName, setInquirySearchMakerName] = useState("");
   const [inquirySearchMakerNameResult, setInquirySearchMakerNameResult] =
     useState<InquirySearchMakerInquirySearchResult | null>(null);
@@ -196,6 +191,43 @@ const MakeInquiry = () => {
     useState(false);
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
   const [isVesselModalOpen, setIsVesselModalOpen] = useState(false);
+  const [headerEditModalVisible, setHeaderEditModalVisible] =
+    useState<boolean>(false);
+  const [isMailSenderVisible, setIsMailSenderVisible] = useState(false);
+  const [isInquirySearchModalVisible, setIsInquirySearchModalVisible] =
+    useState(false);
+
+  const setModalVisibility = (
+    modalType: "header" | "mail" | "inquirySearch",
+    isVisible: boolean
+  ) => {
+    if (modalType === "header") {
+      setHeaderEditModalVisible(isVisible);
+    } else if (modalType === "mail") {
+      setIsMailSenderVisible(isVisible);
+    } else if (modalType === "inquirySearch") {
+      setIsInquirySearchModalVisible(isVisible);
+      if (!isVisible) {
+        setInquirySearchMakerName("");
+        setInquirySearchMakerNameResult(null);
+      }
+    }
+  };
+
+  // Edit Header Modal 열기/닫기
+  const handleOpenHeaderModal = () => setModalVisibility("header", true);
+  const handleCloseHeaderModal = () => setModalVisibility("header", false);
+
+  // Mail Sender Modal 열기/닫기
+  const showMailSenderModal = () => setModalVisibility("mail", true);
+  const handleMailSenderOk = () => setModalVisibility("mail", false);
+  const handleMailSenderCancel = () => setModalVisibility("mail", false);
+
+  // Inquiry Search Modal 열기/닫기
+  const openInquirySearchMakerModal = () =>
+    setModalVisibility("inquirySearch", true);
+  const closeInquirySearchMakerModal = () =>
+    setModalVisibility("inquirySearch", false);
 
   useEffect(() => {
     if (customerInquiryId) {
@@ -640,50 +672,16 @@ const MakeInquiry = () => {
     }
   };
 
-  const handleOpenHeaderModal = () => {
-    setHeaderEditModalVisible(true);
-  };
-
-  const handleCloseHeaderModal = () => {
-    setHeaderEditModalVisible(false);
-  };
-
   const handleHeaderSave = (text: string) => {
     setPdfHeader(text);
-  };
-
-  const showMailSenderModal = () => {
-    setIsMailSenderVisible(true);
-  };
-
-  const handleMailSenderOk = () => {
-    setIsMailSenderVisible(false);
-  };
-
-  const handleMailSenderCancel = () => {
-    setIsMailSenderVisible(false);
   };
 
   const handlePDFPreview = () => {
     setShowPDFPreview((prevState) => !prevState);
   };
 
-  if (docDataloading || isLoading) {
-    return <LoadingSpinner />;
-  }
-
   const handleLanguageChange = (value: string) => {
     setLanguage(value);
-  };
-
-  const openInquirySearchMakerModal = () => {
-    setIsInquirySearchModalVisible(true);
-  };
-
-  const closeInquirySearchMakerModal = () => {
-    setIsInquirySearchModalVisible(false);
-    setInquirySearchMakerName("");
-    setInquirySearchMakerNameResult(null);
   };
 
   const fetchInquirySearchResults = async () => {
@@ -723,6 +721,10 @@ const MakeInquiry = () => {
       }
     });
   };
+
+  if (docDataloading || isLoading) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <FormContainer>

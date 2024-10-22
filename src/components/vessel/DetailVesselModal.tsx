@@ -11,6 +11,7 @@ import {
 } from "antd";
 import { Vessel } from "../../types/types";
 import styled from "styled-components";
+import { vesselCheckImoAndHullUnique } from "../../api/api";
 
 const { Title } = Typography;
 
@@ -46,6 +47,7 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(vessel);
   const [isImoUnique, setIsImoUnique] = useState(true);
+  const [isHullUnique, setIsHullUnique] = useState(true);
   const [customerSuggestions, setCustomerSuggestions] = useState<any[]>([]);
   const [isCustomerLoading, setIsCustomerLoading] = useState(false);
   const [customerError, setCustomerError] = useState<string | null>(null);
@@ -80,27 +82,49 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
   }, [formData, form]);
 
   useEffect(() => {
-    const checkImoUnique = async () => {
-      if (vessel.imoNumber !== formData.imoNumber) {
-        if (!formData.imoNumber) {
-          setIsImoUnique(true);
-          return;
+    const checkUnique = async (
+      type: string,
+      value: string | number | null,
+      originalValue: string | number | null
+    ) => {
+      if (originalValue !== value) {
+        if (!value) {
+          return true; // 값이 없으면 중복 아님
         }
         try {
-          const response = await axios.get(
-            `/api/vessels/check-number/${formData.imoNumber}`
-          );
-          setIsImoUnique(!response.data); // 응답을 반전시켜서 코드 유무 판단
+          const response = await vesselCheckImoAndHullUnique(type, value);
+          return response;
         } catch (error) {
-          console.error("Error checking imoNumber unique:", error);
-          setIsImoUnique(true); // 오류 발생 시 기본적으로 유효한 코드로 처리
+          console.error(`Error checking ${type} unique:`, error);
+          return true; // 오류 발생 시 기본적으로 유효한 값으로 처리
         }
-      } else if (vessel.imoNumber === formData.imoNumber) {
-        setIsImoUnique(true);
+      } else {
+        return true; // 기존 값과 같으면 유효한 것으로 처리
       }
     };
-    checkImoUnique();
-  }, [formData.imoNumber, vessel.imoNumber]);
+
+    const checkImoAndHullUnique = async () => {
+      const isImoValid = await checkUnique(
+        "imo-number",
+        formData.imoNumber,
+        vessel.imoNumber
+      );
+      const isHullValid = await checkUnique(
+        "hull-number",
+        formData.hullNumber,
+        vessel.hullNumber
+      );
+      setIsImoUnique(isImoValid);
+      setIsHullUnique(isHullValid);
+    };
+
+    checkImoAndHullUnique();
+  }, [
+    formData.imoNumber,
+    formData.hullNumber,
+    vessel.imoNumber,
+    vessel.hullNumber,
+  ]);
 
   // Fetch customer suggestions
   const fetchCustomerSuggestions = async (customerName: string) => {
@@ -148,7 +172,7 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
     try {
       await axios.put(`/api/vessels/${formData.id}`, {
         vesselName: formData.vesselName,
-        vesselCompanyName: formData.vesselCompanyName,
+        vesselCompanyName: "default",
         imoNumber: formData.imoNumber,
         hullNumber: formData.hullNumber,
         shipYard: formData.shipYard,
@@ -228,35 +252,68 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
             }
           />
         </StyledFormItem>
-        <StyledFormItem label="Vessel Company Name" name="vesselCompanyName">
-          <Input
-            readOnly={!isEditing}
-            onChange={
-              (e) => handleInputChange({ vesselCompanyName: e.target.value }) // 이 부분에서 formData 업데이트
-            }
-          />
-        </StyledFormItem>
         <StyledFormItem
           label="IMO No."
           name="imoNumber"
           hasFeedback={isEditing}
-          validateStatus={!isImoUnique ? "warning" : "success"}
-          help={!isImoUnique ? "It's a duplicate Imo No." : ""}
+          rules={[{ required: true, message: "Enter IMO number!" }]}
+          validateStatus={
+            !isImoUnique
+              ? "warning"
+              : formData.imoNumber === null ||
+                formData.imoNumber === undefined ||
+                formData.imoNumber + "" === ""
+              ? "error"
+              : "success"
+          }
+          help={
+            !isImoUnique
+              ? "It's a duplicate Imo No."
+              : formData.imoNumber === null ||
+                formData.imoNumber === undefined ||
+                formData.imoNumber + "" === ""
+              ? "Enter IMO number!"
+              : ""
+          }
         >
           <Input
             type="number"
             readOnly={!isEditing}
-            onChange={
-              (e) => handleInputChange({ imoNumber: e.target.value }) // 이 부분에서 formData 업데이트
-            }
+            value={formData.imoNumber} // formData 값 반영
+            onChange={(e) => handleInputChange({ imoNumber: e.target.value })}
+            placeholder={isEditing ? "1234567" : ""}
           />
         </StyledFormItem>
-        <StyledFormItem label="HULL No." name="hullNumber">
+
+        <StyledFormItem
+          label="HULL No."
+          name="hullNumber"
+          hasFeedback={isEditing}
+          rules={[{ required: true, message: "Enter Hull number!" }]}
+          validateStatus={
+            !isHullUnique
+              ? "warning"
+              : formData.hullNumber === null ||
+                formData.hullNumber === undefined ||
+                formData.hullNumber + "" === ""
+              ? "error"
+              : "success"
+          }
+          help={
+            !isHullUnique
+              ? "It's a duplicate Hull No."
+              : formData.hullNumber === null ||
+                formData.hullNumber === undefined ||
+                formData.hullNumber + "" === ""
+              ? "Enter Hull number!"
+              : ""
+          }
+        >
           <Input
             readOnly={!isEditing}
-            onChange={
-              (e) => handleInputChange({ hullNumber: e.target.value }) // 이 부분에서 formData 업데이트
-            }
+            value={formData.hullNumber} // formData 값 반영
+            onChange={(e) => handleInputChange({ hullNumber: e.target.value })}
+            placeholder="V001"
           />
         </StyledFormItem>
         <StyledFormItem label="SHIPYARD" name="shipYard">
@@ -310,7 +367,13 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
               <Button
                 type="primary"
                 onClick={handleSubmit}
-                disabled={formData.vesselName === "" || !formData.customer}
+                disabled={
+                  formData.vesselName === "" ||
+                  !formData.customer ||
+                  formData.imoNumber === null ||
+                  formData.imoNumber === undefined ||
+                  formData.imoNumber + "" === ""
+                }
                 size="middle"
               >
                 Save

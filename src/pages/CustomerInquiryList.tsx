@@ -133,11 +133,14 @@ const columns: ColumnsType<Inquiry> = [
         case "WRITING_INQUIRY":
           color = "orange";
           break;
-        case " WAITING_TO_SEND_INQUIRY":
-          color = "green";
+        case "WAITING_TO_SEND_INQUIRY":
+          color = "blue";
+          break;
+        case "INQUIRY_SENT":
+          color = "cornflowerblue";
           break;
         default:
-          color = "blue";
+          color = "steelblue";
       }
       return <Tag color={color}>{status}</Tag>;
     },

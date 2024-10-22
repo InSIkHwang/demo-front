@@ -321,7 +321,7 @@ const DetailInquiryModal = ({
                         : inquiryDetail.documentStatus ===
                           "WAITING_TO_SEND_INQUIRY"
                         ? "blue"
-                        : "defaultColor"
+                        : "steelblue"
                     }
                   >
                     {inquiryDetail.documentStatus}

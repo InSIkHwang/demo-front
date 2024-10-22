@@ -217,10 +217,11 @@ const SupplierList = () => {
               defaultValue="all"
               style={{ width: 120, marginRight: 10 }}
               onChange={(value) => setSearchCategory(value)}
+              dropdownStyle={{ width: 150 }}
             >
               <Option value="all">All</Option>
               <Option value="code">Code</Option>
-              <Option value="companyName">Customer Name</Option>
+              <Option value="companyName">Supplier Name</Option>
             </Select>
             <Input
               placeholder="Search..."

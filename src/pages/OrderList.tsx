@@ -126,7 +126,7 @@ const columns: ColumnsType<orderAllResponses> = [
       let color;
       switch (status) {
         default:
-          color = "green";
+          color = "cornflowerblue";
       }
       return <Tag color={color}>{status}</Tag>;
     },
