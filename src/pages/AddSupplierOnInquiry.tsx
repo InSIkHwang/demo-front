@@ -1,0 +1,384 @@
+import { useState, useEffect } from "react";
+import styled from "styled-components";
+import { Button, FloatButton, message, Modal, Select } from "antd";
+import { FileSearchOutlined } from "@ant-design/icons";
+import dayjs from "dayjs";
+import { searchInquiryWithMaker } from "../api/api";
+import PDFDocument from "../components/makeInquiry/PDFDocument";
+import {
+  InquiryItem,
+  emailSendData,
+  VesselList,
+  InquirySearchMakerInquirySearchResult,
+} from "../types/types";
+import { useLocation, useNavigate } from "react-router-dom";
+import HeaderEditModal from "../components/makeInquiry/HeaderEditModal";
+import MailSenderModal from "../components/makeInquiry/MailSenderModal";
+import PDFGenerator from "../components/makeInquiry/PDFGenerator";
+import LoadingSpinner from "../components/LoadingSpinner";
+import InquirySearchModal from "../components/makeInquiry/InquirySearchModal";
+import FormComponent from "../components/addSupplier/FormComponent";
+import TableComponent from "../components/addSupplier/TableComponent";
+
+// Styles
+const FormContainer = styled.div`
+  position: relative;
+  top: 150px;
+  padding: 20px;
+  padding-bottom: 80px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  max-width: 80vw;
+  margin: 0 auto;
+  margin-bottom: 200px;
+`;
+
+const Title = styled.h1`
+  font-size: 24px;
+  margin-bottom: 30px;
+  color: #333;
+`;
+
+const BtnGroup = styled(FloatButton.Group)`
+  bottom: 10vh;
+`;
+
+// Constants
+const INITIAL_FORM_VALUES = {
+  docNumber: "",
+  registerDate: dayjs(),
+  shippingDate: dayjs(),
+  customer: "",
+  vesselName: "",
+  refNumber: "",
+  currencyType: "USD",
+  currency: 0,
+  remark: "",
+  supplierName: "",
+};
+
+const AddSupplierOnInquiry = () => {
+  const location = useLocation();
+  const data = location.state;
+  const navigate = useNavigate();
+  const [items, setItems] = useState<InquiryItem[]>([]);
+  const [selectedVessel, setSelectedVessel] = useState<VesselList | null>(null);
+  const [selectedSuppliers, setSelectedSuppliers] = useState<
+    { id: number; name: string; korName: string; code: string; email: string }[]
+  >([]);
+  const [selectedSupplierTag, setSelectedSupplierTag] = useState<
+    { id: number; name: string; korName: string; code: string; email: string }[]
+  >([]);
+  const [showPDFPreview, setShowPDFPreview] = useState(false);
+  const [pdfSupplierTag, setPdfSupplierTag] = useState<
+    { id: number; name: string; korName: string }[]
+  >([]);
+  const [pdfHeader, setPdfHeader] = useState<string>("");
+  const [formValues, setFormValues] = useState(INITIAL_FORM_VALUES);
+  const [mailDataList, setMailDataList] = useState<emailSendData[]>([]);
+  const [language, setLanguage] = useState<string>("KOR");
+  const [fileData, setFileData] = useState<File[]>([]);
+  const [pdfFileData, setPdfFileData] = useState<File[]>([]);
+  const [isSendMail, setIsSendMail] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState(true); // 로딩 상태 변수 추가
+  const [inquirySearchMakerName, setInquirySearchMakerName] = useState("");
+  const [inquirySearchMakerNameResult, setInquirySearchMakerNameResult] =
+    useState<InquirySearchMakerInquirySearchResult | null>(null);
+
+  const [tagColors, setTagColors] = useState<{ [id: number]: string }>({});
+  const [isFromInquirySearchModal, setIsFromInquirySearchModal] =
+    useState(false);
+  const [headerEditModalVisible, setHeaderEditModalVisible] =
+    useState<boolean>(false);
+  const [isMailSenderVisible, setIsMailSenderVisible] = useState(false);
+  const [isInquirySearchModalVisible, setIsInquirySearchModalVisible] =
+    useState(false);
+
+  const setModalVisibility = (
+    modalType: "header" | "mail" | "inquirySearch",
+    isVisible: boolean
+  ) => {
+    if (modalType === "header") {
+      setHeaderEditModalVisible(isVisible);
+    } else if (modalType === "mail") {
+      setIsMailSenderVisible(isVisible);
+    } else if (modalType === "inquirySearch") {
+      setIsInquirySearchModalVisible(isVisible);
+      if (!isVisible) {
+        setInquirySearchMakerName("");
+        setInquirySearchMakerNameResult(null);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (data) {
+      // 최초 렌더링 시 data로 formValues 설정
+      setFormValues({
+        docNumber: data.documentNumber,
+        registerDate: dayjs(data.registerDate), // 날짜 형식 변환
+        shippingDate: dayjs(data.shippingDate), // 날짜 형식 변환
+        customer: data.companyName, // 회사 이름
+        vesselName: data.vesselName, // 선박 이름
+        refNumber: data.refNumber, // 참조 번호
+        currencyType: data.currencyType, // 통화 유형
+        currency: data.currency, // 통화 금액
+        remark: data.docRemark, // 비고
+        supplierName: "", // 공급자 이름은 초기값으로 설정
+      });
+
+      // inquiryItemDetails를 items로 설정
+      setItems(data.inquiryItemDetails);
+      setIsLoading(false);
+    }
+  }, [data]);
+
+  // Edit Header Modal 열기/닫기
+  const handleOpenHeaderModal = () => setModalVisibility("header", true);
+  const handleCloseHeaderModal = () => setModalVisibility("header", false);
+
+  // Mail Sender Modal 열기/닫기
+  const showMailSenderModal = () => setModalVisibility("mail", true);
+  const handleMailSenderOk = () => setModalVisibility("mail", false);
+  const handleMailSenderCancel = () => setModalVisibility("mail", false);
+
+  // Inquiry Search Modal 열기/닫기
+  const openInquirySearchMakerModal = () =>
+    setModalVisibility("inquirySearch", true);
+  const closeInquirySearchMakerModal = () =>
+    setModalVisibility("inquirySearch", false);
+
+  useEffect(() => {
+    if (isFromInquirySearchModal && selectedSuppliers.length > 0) {
+      const lastSupplier = selectedSuppliers[selectedSuppliers.length - 1];
+      handleTagClick(lastSupplier.id);
+      setIsFromInquirySearchModal(false); // 플래그를 초기화하여 다른 곳에서는 실행되지 않도록 함
+    }
+  }, [selectedSuppliers, isFromInquirySearchModal]);
+
+  const handleFormChange = <K extends keyof typeof formValues>(
+    key: K,
+    value: (typeof formValues)[K]
+  ) => {
+    setFormValues((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleHeaderSave = (text: string) => {
+    setPdfHeader(text);
+  };
+
+  const handlePDFPreview = () => {
+    setShowPDFPreview((prevState) => !prevState);
+  };
+
+  const handleLanguageChange = (value: string) => {
+    setLanguage(value);
+  };
+
+  const fetchInquirySearchResults = async () => {
+    if (!inquirySearchMakerName) return;
+    try {
+      const result = await searchInquiryWithMaker(inquirySearchMakerName);
+      setInquirySearchMakerNameResult(result);
+    } catch (error) {
+      console.error("Search Error:", error);
+    }
+  };
+
+  const handleInquirySearch = () => {
+    fetchInquirySearchResults(); // 검색 수행
+  };
+
+  const handleTagClick = (id: number) => {
+    setSelectedSupplierTag((prevTags) => {
+      const isAlreadySelected = prevTags.some((tag) => tag.id === id);
+      const currentTags = [...prevTags];
+
+      if (isAlreadySelected) {
+        setTagColors((prevColors) => ({ ...prevColors, [id]: "#d9d9d9" }));
+        return currentTags.filter((tag) => tag.id !== id);
+      } else {
+        const newTag = selectedSuppliers.find((supplier) => supplier.id === id);
+
+        if (newTag) {
+          if (currentTags.length >= 5) {
+            message.error("Only up to 5 supplier can be registered.");
+            return currentTags;
+          }
+          setTagColors((prevColors) => ({ ...prevColors, [id]: "#007bff" }));
+          return [...currentTags, newTag];
+        }
+        return currentTags;
+      }
+    });
+  };
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  const handleSubmit = (): Promise<unknown> => {
+    return Promise.resolve(); // 빈 Promise를 반환
+  };
+
+  return (
+    <FormContainer>
+      <Title>매입처 추가(ADD SUPPLIER)</Title>
+      {formValues !== INITIAL_FORM_VALUES && (
+        <FormComponent
+          formValues={formValues}
+          selectedSuppliers={selectedSuppliers}
+          handleFormChange={handleFormChange}
+          setSelectedSuppliers={setSelectedSuppliers}
+          tagColors={tagColors}
+          setTagColors={setTagColors}
+          handleTagClick={handleTagClick}
+        />
+      )}
+      <TableComponent items={items} />
+      <Button
+        type="primary"
+        onClick={showMailSenderModal}
+        style={{ margin: "20px 0 0 15px", float: "right" }}
+      >
+        Send Email
+      </Button>
+      <Button
+        type="default"
+        onClick={() => navigate("/makeoffer")}
+        style={{ margin: "20px 0 0 15px", float: "right" }}
+      >
+        Back
+      </Button>
+      <Modal
+        title="Send Mail"
+        open={isMailSenderVisible}
+        onOk={handleMailSenderOk}
+        onCancel={handleMailSenderCancel}
+        footer={null}
+        width={1200}
+      >
+        <MailSenderModal
+          mode="addSupplier"
+          mailDataList={mailDataList}
+          inquiryFormValues={formValues}
+          handleSubmit={handleSubmit}
+          selectedSupplierTag={selectedSupplierTag}
+          setFileData={setFileData}
+          setIsSendMail={setIsSendMail}
+          items={items}
+          vesselInfo={selectedVessel}
+          pdfHeader={pdfHeader}
+          language={language}
+          setPdfFileData={setPdfFileData}
+        />
+      </Modal>
+      <div
+        style={{
+          display: "flex",
+          marginTop: 20,
+          alignItems: "center",
+          paddingLeft: 20,
+        }}
+      >
+        <span>Supplier: </span>
+        <Select
+          style={{ width: 200, float: "left", marginLeft: 10 }}
+          onChange={(value) => {
+            const selected = selectedSupplierTag.find(
+              (tag) => tag.name === value
+            );
+            if (selected) {
+              setPdfSupplierTag([selected]);
+            }
+          }}
+        >
+          {selectedSupplierTag.map((tag) => (
+            <Select.Option key={tag.id} value={tag.name}>
+              {tag.name}
+            </Select.Option>
+          ))}
+        </Select>
+        <Button onClick={handleOpenHeaderModal} style={{ marginLeft: 20 }}>
+          Edit Header Text
+        </Button>
+        <Button
+          type="default"
+          onClick={handlePDFPreview}
+          style={{ marginLeft: "10px" }}
+        >
+          {showPDFPreview ? "Close Preview" : "PDF Preview"}
+        </Button>
+        <span style={{ marginLeft: 20 }}>LANGUAGE: </span>
+        <Select
+          style={{ width: 100, float: "left", marginLeft: 10 }}
+          value={language}
+          onChange={handleLanguageChange}
+        >
+          <Select.Option value="KOR">KOR</Select.Option>
+          <Select.Option value="ENG">ENG</Select.Option>
+        </Select>
+        <HeaderEditModal
+          open={headerEditModalVisible}
+          onClose={handleCloseHeaderModal}
+          onSave={handleHeaderSave}
+          pdfCompanyTag={pdfSupplierTag}
+        />
+      </div>
+      {isMailSenderVisible && (
+        <PDFGenerator
+          selectedSupplierTag={selectedSupplierTag}
+          formValues={formValues}
+          setMailDataList={setMailDataList}
+          items={items}
+          vesselInfo={selectedVessel}
+          pdfHeader={pdfHeader}
+          language={language}
+          setPdfFileData={setPdfFileData}
+        />
+      )}
+
+      {showPDFPreview && (
+        <PDFDocument
+          formValues={formValues}
+          items={items}
+          supplierName={
+            pdfSupplierTag.length > 0
+              ? language === "ENG"
+                ? pdfSupplierTag[0].name
+                : pdfSupplierTag[0].korName
+              : ""
+          }
+          vesselInfo={selectedVessel}
+          pdfHeader={pdfHeader}
+          viewMode={true}
+          language={language}
+        />
+      )}
+      <BtnGroup>
+        <FloatButton
+          type="primary"
+          tooltip="Search the maker's inquiries to identify the supplier"
+          icon={<FileSearchOutlined />}
+          onClick={openInquirySearchMakerModal}
+        />
+        <InquirySearchModal
+          isVisible={isInquirySearchModalVisible}
+          onClose={closeInquirySearchMakerModal}
+          inquirySearchMakerName={inquirySearchMakerName}
+          setInquirySearchMakerName={setInquirySearchMakerName}
+          selectedSuppliers={selectedSuppliers}
+          handleTagClick={handleTagClick}
+          inquirySearchMakerNameResult={inquirySearchMakerNameResult}
+          handleInquirySearch={handleInquirySearch}
+          tagColors={tagColors}
+          setSelectedSuppliers={setSelectedSuppliers}
+          setIsFromInquirySearchModal={setIsFromInquirySearchModal}
+        />
+        <FloatButton.BackTop visibilityHeight={0} />
+      </BtnGroup>
+    </FormContainer>
+  );
+};
+
+export default AddSupplierOnInquiry;

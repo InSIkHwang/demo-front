@@ -241,8 +241,9 @@ export const deleteInquiry = async (inquiryId: number) => {
 
 //Inquiry 메일 전송
 export const sendInquiryMail = async (
+  mode: string,
   docNumber: string,
-  inquiryId: number,
+  inquiryId: number | null,
   files: File[], // `file`의 타입에 맞게 구체화할 수 있습니다 (예: File, Blob)
   emailSendData: {
     supplierId: number;
@@ -263,7 +264,7 @@ export const sendInquiryMail = async (
   });
 
   files.forEach((file) => {
-    console.log(file.name); // 파일 이름 출력
+    // console.log(file.name); // 파일 이름 출력
     formData.append("file", file); // 동일한 이름으로 여러 파일 추가
   });
 
@@ -271,17 +272,32 @@ export const sendInquiryMail = async (
   formData.append("emailSendData", JSON.stringify(emailSendData));
 
   // POST 요청
-  const response = await axios.post(
-    `/api/customer-inquiries/send-email?docNumber=${docNumber}&inquiryId=${inquiryId}`,
-    formData,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    }
-  );
 
-  return response.data;
+  if (mode === "makeInquiry") {
+    const response = await axios.post(
+      `/api/customer-inquiries/send-email?docNumber=${docNumber}&inquiryId=${inquiryId}`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    return response.data;
+  } else if (mode === "addSupplier") {
+    const response = await axios.post(
+      `/api/supplier-inquiries/add/suppliers/send-email?docNumber=${docNumber}`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    return response.data;
+  }
 };
 
 //엑셀 내보내기
@@ -463,6 +479,15 @@ export const searchOfferList = async (
     totalCount: number;
     supplierInquiryList: SupplierInquiryListIF[];
   }>(`/api/supplier-inquiries/search?${queryString}`);
+
+  return response.data;
+};
+
+//매입처 추가
+export const addSupplierFetchData = async (docNumber: string) => {
+  const response = await axios.get(
+    `/api/supplier-inquiries/add/suppliers?docNumber=${docNumber}`
+  );
 
   return response.data;
 };

@@ -99,7 +99,6 @@ export const generatePDFs = async (
 
   // 특정 인덱스의 supplierTag만 사용
   const supplierTag = selectedSupplierTag[selectedSupplierIndex];
-  console.log(supplierTag);
 
   if (supplierTag) {
     const doc = (

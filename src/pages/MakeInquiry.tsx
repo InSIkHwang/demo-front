@@ -178,7 +178,6 @@ const MakeInquiry = () => {
   const [fileData, setFileData] = useState<File[]>([]);
   const [pdfFileData, setPdfFileData] = useState<File[]>([]);
   const [isSendMail, setIsSendMail] = useState<boolean>(false);
-  const [isPdfAutoUploadChecked, setIsPdfAutoUploadChecked] = useState(true);
   const [isLoading, setIsLoading] = useState(true); // 로딩 상태 변수 추가
   const [isDocNumDuplicate, setIsDocNumDuplicate] = useState<boolean>(false);
   const [inquiryId, setInquiryId] = useState<number | null>(null);
@@ -836,14 +835,13 @@ const MakeInquiry = () => {
         width={1200}
       >
         <MailSenderModal
+          mode="makeInquiry"
           mailDataList={mailDataList}
           inquiryFormValues={formValues}
           handleSubmit={handleSubmit}
           selectedSupplierTag={selectedSupplierTag}
           setFileData={setFileData}
           setIsSendMail={setIsSendMail}
-          isPdfAutoUploadChecked={isPdfAutoUploadChecked}
-          setIsPdfAutoUploadChecked={setIsPdfAutoUploadChecked}
           items={items}
           vesselInfo={selectedVessel}
           pdfHeader={pdfHeader}
