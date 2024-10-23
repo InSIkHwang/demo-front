@@ -187,8 +187,6 @@ const FormComponent = ({
     return { status: undefined, message: undefined };
   };
 
-  console.log(cusVesIdList);
-
   return (
     <>
       <Form layout="vertical" initialValues={formValues}>

@@ -19,14 +19,10 @@ interface ChargeComponentProps {
     totalSalesAmountGlobal: number;
     totalPurchaseAmountKRW: number;
     totalPurchaseAmountGlobal: number;
-    totalProfit: number;
-    totalProfitPercent: number;
-  };
-  totals: {
-    totalSalesAmountKRW: number;
-    totalSalesAmountGlobal: number;
-    totalPurchaseAmountKRW: number;
-    totalPurchaseAmountGlobal: number;
+    totalSalesAmountUnDcKRW: number;
+    totalSalesAmountUnDcGlobal: number;
+    totalPurchaseAmountUnDcKRW: number;
+    totalPurchaseAmountUnDcGlobal: number;
     totalProfit: number;
     totalProfitPercent: number;
   };
@@ -50,7 +46,6 @@ const ChargeInputPopover = ({
   applyDcAndCharge,
   isReadOnly,
   finalTotals,
-  totals,
 }: ChargeComponentProps) => {
   const calculateDcKrw = (totalSalesAmountKRW: number, value: number) => {
     return Number((totalSalesAmountKRW * (value / 100)).toFixed(2));
@@ -70,26 +65,30 @@ const ChargeInputPopover = ({
   const handleDcChange = (key: string, value: number) => {
     setDcInfo((prevInfo) => {
       let newDcInfo = { ...prevInfo, [key]: value };
-      const { totalSalesAmountKRW, totalSalesAmountGlobal } = totals;
+      const { totalSalesAmountUnDcKRW, totalSalesAmountUnDcGlobal } =
+        finalTotals;
 
       if (key === "dcPercent") {
-        newDcInfo.dcKrw = calculateDcKrw(totalSalesAmountKRW, value);
-        newDcInfo.dcGlobal = calculateDcGlobal(totalSalesAmountGlobal, value);
+        newDcInfo.dcKrw = calculateDcKrw(totalSalesAmountUnDcKRW, value);
+        newDcInfo.dcGlobal = calculateDcGlobal(
+          totalSalesAmountUnDcGlobal,
+          value
+        );
       } else if (key === "dcKrw") {
         newDcInfo.dcPercent = calculateDcPercentFromKrw(
           value,
-          totalSalesAmountKRW
+          totalSalesAmountUnDcKRW
         );
         newDcInfo.dcGlobal = calculateDcGlobal(
-          totalSalesAmountGlobal,
+          totalSalesAmountUnDcGlobal,
           newDcInfo.dcPercent
         );
       } else if (key === "dcGlobal") {
         newDcInfo.dcPercent = Number(
-          ((value / totalSalesAmountGlobal) * 100).toFixed(2)
+          ((value / totalSalesAmountUnDcGlobal) * 100).toFixed(2)
         );
         newDcInfo.dcKrw = calculateDcKrw(
-          totalSalesAmountKRW,
+          totalSalesAmountUnDcKRW,
           newDcInfo.dcPercent
         );
       }
@@ -142,16 +141,8 @@ const ChargeInputPopover = ({
   };
 
   useEffect(() => {
-    const { totalSalesAmountKRW, totalSalesAmountGlobal } = finalTotals;
-
-    calculateDcKrw(totalSalesAmountKRW, dcInfo.dcPercent);
-    calculateDcGlobal(totalSalesAmountGlobal, dcInfo.dcPercent);
-    applyDcAndCharge();
-  }, [dcInfo.dcPercent]);
-
-  useEffect(() => {
     handleDcChange("dcPercent", Number(dcInfo.dcPercent));
-  }, [totals]);
+  }, [finalTotals]);
 
   const content = (
     <Form style={{ maxWidth: 600, paddingBottom: 40 }} layout="horizontal">

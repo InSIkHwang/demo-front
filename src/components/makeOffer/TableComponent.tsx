@@ -160,24 +160,6 @@ interface TableComponentProps {
     totalProfit: number;
     totalProfitPercent: number;
   };
-  totals: {
-    totalSalesAmountKRW: number;
-    totalSalesAmountGlobal: number;
-    totalPurchaseAmountKRW: number;
-    totalPurchaseAmountGlobal: number;
-    totalProfit: number;
-    totalProfitPercent: number;
-  };
-  setTotals: Dispatch<
-    SetStateAction<{
-      totalSalesAmountKRW: number;
-      totalSalesAmountGlobal: number;
-      totalPurchaseAmountKRW: number;
-      totalPurchaseAmountGlobal: number;
-      totalProfit: number;
-      totalProfitPercent: number;
-    }>
-  >;
   applyDcAndCharge: () => void;
   offerId: number;
 }
@@ -199,7 +181,6 @@ const TableComponent = ({
   handleMarginChange,
   handlePriceInputChange,
   finalTotals,
-  setTotals,
   applyDcAndCharge,
   offerId,
 }: TableComponentProps) => {
@@ -432,51 +413,6 @@ const TableComponent = ({
 
     setIsDuplicate(hasDuplicate);
   }, [checkDuplicate, dataSource, setIsDuplicate]);
-
-  useEffect(() => {
-    const totalSalesAmountKRW =
-      dataSource.reduce(
-        (acc, record) =>
-          acc + calculateTotalAmount(record.salesPriceKRW, record.qty),
-        0
-      ) || 0; // NaN일 경우 0으로 처리
-
-    const totalSalesAmountGlobal =
-      dataSource.reduce(
-        (acc, record) =>
-          acc + calculateTotalAmount(record.salesPriceGlobal, record.qty),
-        0
-      ) || 0; // NaN일 경우 0으로 처리
-
-    const totalPurchaseAmountKRW =
-      dataSource.reduce(
-        (acc, record) =>
-          acc + calculateTotalAmount(record.purchasePriceKRW, record.qty),
-        0
-      ) || 0; // NaN일 경우 0으로 처리
-
-    const totalPurchaseAmountGlobal =
-      dataSource.reduce(
-        (acc, record) =>
-          acc + calculateTotalAmount(record.purchasePriceGlobal, record.qty),
-        0
-      ) || 0; // NaN일 경우 0으로 처리
-
-    const totalProfit = totalSalesAmountKRW - totalPurchaseAmountKRW;
-    const totalProfitPercent =
-      totalPurchaseAmountKRW === 0
-        ? 0 // NaN일 경우 0으로 처리
-        : Number(((totalProfit / totalPurchaseAmountKRW) * 100).toFixed(2));
-
-    setTotals({
-      totalSalesAmountKRW: totalSalesAmountKRW,
-      totalSalesAmountGlobal: totalSalesAmountGlobal,
-      totalPurchaseAmountKRW: totalPurchaseAmountKRW,
-      totalPurchaseAmountGlobal: totalPurchaseAmountGlobal,
-      totalProfit: totalProfit || 0, // NaN일 경우 0으로 처리
-      totalProfitPercent,
-    });
-  }, [calculateTotalAmount, dataSource, setTotals]);
 
   const handleAddItem = (index: number) => {
     const newItem: ItemDataType = {

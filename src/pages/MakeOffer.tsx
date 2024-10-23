@@ -79,19 +79,15 @@ const MakeOffer = () => {
   const [pdfFileData, setPdfFileData] = useState<File | null>(null);
   const [fileData, setFileData] = useState<(File | null)[]>([]);
   const [isPdfAutoUploadChecked, setIsPdfAutoUploadChecked] = useState(true);
-  const [totals, setTotals] = useState({
-    totalSalesAmountKRW: 0,
-    totalSalesAmountGlobal: 0,
-    totalPurchaseAmountKRW: 0,
-    totalPurchaseAmountGlobal: 0,
-    totalProfit: 0,
-    totalProfitPercent: 0,
-  });
   const [finalTotals, setFinalTotals] = useState({
     totalSalesAmountKRW: 0,
     totalSalesAmountGlobal: 0,
     totalPurchaseAmountKRW: 0,
     totalPurchaseAmountGlobal: 0,
+    totalSalesAmountUnDcKRW: 0,
+    totalSalesAmountUnDcGlobal: 0,
+    totalPurchaseAmountUnDcKRW: 0,
+    totalPurchaseAmountUnDcGlobal: 0,
     totalProfit: 0,
     totalProfitPercent: 0,
   });
@@ -154,54 +150,10 @@ const MakeOffer = () => {
         });
 
         if (response.inquiryItemDetails) {
-          const totalSalesAmountKRW = response.inquiryItemDetails.reduce(
-            (acc: number, record: { salesPriceKRW: number; qty: number }) =>
-              acc + calculateTotalAmount(record.salesPriceKRW, record.qty),
-            0
-          );
-          const totalSalesAmountGlobal = response.inquiryItemDetails.reduce(
-            (acc: number, record: { salesPriceGlobal: number; qty: number }) =>
-              acc + calculateTotalAmount(record.salesPriceGlobal, record.qty),
-            0
-          );
-          const totalPurchaseAmountKRW = response.inquiryItemDetails.reduce(
-            (acc: number, record: { purchasePriceKRW: number; qty: number }) =>
-              acc + calculateTotalAmount(record.purchasePriceKRW, record.qty),
-            0
-          );
-          const totalPurchaseAmountGlobal = response.inquiryItemDetails.reduce(
-            (
-              acc: number,
-              record: { purchasePriceGlobal: number; qty: number }
-            ) =>
-              acc +
-              calculateTotalAmount(record.purchasePriceGlobal, record.qty),
-            0
-          );
-          const totalProfit = totalSalesAmountKRW - totalPurchaseAmountKRW;
-          const totalProfitPercent = Number(
-            ((totalProfit / totalPurchaseAmountKRW) * 100).toFixed(2)
-          );
-
-          setTotals({
-            totalSalesAmountKRW,
-            totalSalesAmountGlobal,
-            totalPurchaseAmountKRW,
-            totalPurchaseAmountGlobal,
-            totalProfit,
-            totalProfitPercent,
-          });
-
           setDcInfo({
             dcPercent: response.discount || 0,
-            dcKrw:
-              Number(
-                (totalSalesAmountKRW * (response.discount / 100)).toFixed(2)
-              ) || 0,
-            dcGlobal:
-              Number(
-                (totalSalesAmountGlobal * (response.discount / 100)).toFixed(2)
-              ) || 0,
+            dcKrw: 0,
+            dcGlobal: 0,
           });
           setInvChargeList(response.invChargeList || []);
         }
@@ -216,7 +168,6 @@ const MakeOffer = () => {
     (price: number, qty: number) => roundToTwoDecimalPlaces(price * qty),
     []
   );
-
   // 환율을 적용하여 KRW와 USD를 상호 변환하는 함수
   const convertCurrency = (
     value: number,
@@ -519,56 +470,123 @@ const MakeOffer = () => {
   const handleMailSenderCancel = () => {
     setIsMailSenderVisible(false);
   };
+  /*******************************최종가격 적용*******************************/
+  // 공통 함수: reduce를 사용한 합계 계산
+  const calculateTotal = (
+    data: Array<any>,
+    key: string,
+    qtyKey: string = "qty"
+  ) => {
+    return data.reduce((acc: number, record: any) => {
+      const price = record[key] || 0; // chargePriceKRW
+      // data가 invChargeList인 경우에만 qty를 1로 설정
+      const qty =
+        data === invChargeList ? record[qtyKey] || 1 : record[qtyKey] || 0;
+      return acc + calculateTotalAmount(price, qty);
+    }, 0);
+  };
+
+  // 공통 함수: 할인 적용
+  const applyDiscount = (amount: number, discountPercent: number | undefined) =>
+    discountPercent ? amount * (1 - discountPercent / 100) : amount;
+
+  // 공통 함수: 환율 적용
+  const convertToGlobal = (amount: number, exchangeRate: number) =>
+    roundToTwoDecimalPlaces(amount / exchangeRate);
 
   const applyDcAndCharge = () => {
-    // Calculate new totals
-    const newTotalSalesAmountKRW =
-      totals.totalSalesAmountKRW -
-      (dcInfo.dcPercent
-        ? totals.totalSalesAmountKRW * (dcInfo.dcPercent / 100)
-        : 0);
-    const newTotalSalesAmountGlobal =
-      totals.totalSalesAmountGlobal -
-      (dcInfo.dcPercent
-        ? totals.totalSalesAmountGlobal * (dcInfo.dcPercent / 100)
-        : 0);
+    const updatedDataSource = dataSource.map((currentItem) => {
+      const { purchasePriceKRW = 0, qty = 0, margin = 0 } = currentItem;
 
-    const chargePriceKRWTotal =
-      invChargeList && Array.isArray(invChargeList) && invChargeList.length > 0
-        ? invChargeList.reduce((acc, charge) => acc + charge.chargePriceKRW, 0)
-        : 0;
+      const salesPriceKRW = roundToTwoDecimalPlaces(
+        purchasePriceKRW * (1 + margin / 100)
+      );
+      const salesAmountKRW = calculateTotalAmount(salesPriceKRW, qty);
 
-    const chargePriceGlobalTotal =
-      invChargeList && Array.isArray(invChargeList) && invChargeList.length > 0
-        ? invChargeList.reduce(
-            (acc, charge) => acc + charge.chargePriceGlobal,
-            0
-          )
-        : 0;
+      const exchangeRate = formValues.currency;
+      const salesPriceGlobal = convertToGlobal(salesPriceKRW, exchangeRate);
+      const salesAmountGlobal = calculateTotalAmount(salesPriceGlobal, qty);
+
+      return {
+        ...currentItem,
+        salesPriceKRW,
+        salesAmountKRW,
+        salesPriceGlobal,
+        salesAmountGlobal,
+      };
+    });
+
+    setDataSource(updatedDataSource);
+
+    // 공통 계산
+    const totalSalesAmountKRW = calculateTotal(
+      updatedDataSource,
+      "salesPriceKRW"
+    );
+    const totalSalesAmountGlobal = calculateTotal(
+      updatedDataSource,
+      "salesPriceGlobal"
+    );
+    const totalPurchaseAmountKRW = calculateTotal(
+      updatedDataSource,
+      "purchasePriceKRW"
+    );
+    const totalPurchaseAmountGlobal = calculateTotal(
+      updatedDataSource,
+      "purchasePriceGlobal"
+    );
+
+    // 할인 적용된 총액 계산
+    const newTotalSalesAmountKRW = applyDiscount(
+      totalSalesAmountKRW,
+      dcInfo.dcPercent
+    );
+    const newTotalSalesAmountGlobal = applyDiscount(
+      totalSalesAmountGlobal,
+      dcInfo.dcPercent
+    );
+
+    // charge 계산
+    const chargePriceKRWTotal = calculateTotal(
+      invChargeList || [],
+      "chargePriceKRW"
+    );
+    console.log(invChargeList);
+    console.log(chargePriceKRWTotal);
+
+    const chargePriceGlobalTotal = calculateTotal(
+      invChargeList || [],
+      "chargePriceGlobal"
+    );
 
     const updatedTotalSalesAmountKRW =
       newTotalSalesAmountKRW + chargePriceKRWTotal;
-
     const updatedTotalSalesAmountGlobal =
       newTotalSalesAmountGlobal + chargePriceGlobalTotal;
 
-    const updatedtotalProfit =
-      updatedTotalSalesAmountKRW - totals.totalPurchaseAmountKRW;
-    const updatedtotalProfitPercent = Number(
-      ((updatedtotalProfit / totals.totalPurchaseAmountKRW) * 100).toFixed(2)
+    const updatedTotalProfit =
+      updatedTotalSalesAmountKRW - totalPurchaseAmountKRW;
+    const updatedTotalProfitPercent = Number(
+      ((updatedTotalProfit / totalPurchaseAmountKRW) * 100).toFixed(2)
     );
 
-    // Set final totals
+    // 최종 가격 설정
     setFinalTotals({
       ...finalTotals,
       totalSalesAmountKRW: updatedTotalSalesAmountKRW,
       totalSalesAmountGlobal: updatedTotalSalesAmountGlobal,
-      totalPurchaseAmountKRW: totals.totalPurchaseAmountKRW,
-      totalPurchaseAmountGlobal: totals.totalPurchaseAmountGlobal,
-      totalProfit: updatedtotalProfit, // Adjust if needed
-      totalProfitPercent: updatedtotalProfitPercent, // Adjust if needed
+      totalPurchaseAmountKRW,
+      totalPurchaseAmountGlobal,
+      totalSalesAmountUnDcKRW: totalSalesAmountKRW,
+      totalSalesAmountUnDcGlobal: totalSalesAmountGlobal,
+      totalPurchaseAmountUnDcKRW: totalPurchaseAmountKRW,
+      totalPurchaseAmountUnDcGlobal: totalPurchaseAmountGlobal,
+      totalProfit: updatedTotalProfit,
+      totalProfitPercent: updatedTotalProfitPercent,
     });
   };
+
+  /**********************************************************************/
 
   if (isLoading) {
     return <LoadingSpinner />; // 로딩 중 화면
@@ -595,7 +613,6 @@ const MakeOffer = () => {
         applyDcAndCharge={applyDcAndCharge}
         isReadOnly={isReadOnly}
         finalTotals={finalTotals}
-        totals={totals}
       />
       {!isReadOnly && (
         <TableComponent
@@ -609,8 +626,6 @@ const MakeOffer = () => {
           handleMarginChange={handleMarginChange}
           handlePriceInputChange={handlePriceInputChange}
           finalTotals={finalTotals}
-          totals={totals}
-          setTotals={setTotals}
           applyDcAndCharge={applyDcAndCharge}
           offerId={idList.offerId}
         />
