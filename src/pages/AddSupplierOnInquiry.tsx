@@ -3,11 +3,7 @@ import styled from "styled-components";
 import { Button, FloatButton, message, Modal, Select } from "antd";
 import { FileSearchOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
-import {
-  fetchCompanyNames,
-  fetchVessel,
-  searchInquiryWithMaker,
-} from "../api/api";
+import { fetchVessel, searchInquiryWithMaker } from "../api/api";
 import PDFDocument from "../components/makeInquiry/PDFDocument";
 import {
   InquiryItem,

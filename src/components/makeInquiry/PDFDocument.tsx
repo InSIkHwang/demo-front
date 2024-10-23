@@ -269,17 +269,21 @@ const renderHeader = (
     <View style={styles.inquiryInfoWrap}>
       <View style={styles.inquiryInfoColumn}>
         <Text style={styles.inquiryInfoText}>MESSRS: {supplierName}</Text>
-        {vesselInfo?.imoNumber && (
+        {vesselName.trim().toUpperCase() !== "UNKNOWN" && (
           <>
             <Text style={[styles.inquiryInfoText, { marginBottom: 10 }]}>
               VESSEL: {vesselName}
             </Text>
-            <Text style={styles.inquiryInfoText}>
-              IMO NO: {vesselInfo?.imoNumber}
-            </Text>
-            <Text style={styles.inquiryInfoText}>
-              HULL NO: {vesselInfo?.hullNumber}
-            </Text>
+            {vesselInfo?.imoNumber && (
+              <Text style={styles.inquiryInfoText}>
+                IMO NO: {vesselInfo?.imoNumber}
+              </Text>
+            )}
+            {vesselInfo?.hullNumber && (
+              <Text style={styles.inquiryInfoText}>
+                HULL NO: {vesselInfo?.hullNumber}
+              </Text>
+            )}
             {vesselInfo?.shipYard && (
               <Text style={styles.inquiryInfoText}>
                 SHIPYARD: {vesselInfo?.shipYard}
@@ -287,7 +291,7 @@ const renderHeader = (
             )}
             {vesselInfo?.countryOfManufacture && (
               <Text style={styles.inquiryInfoText}>
-                Nationality: {vesselInfo?.countryOfManufacture}
+                NATIONALITY: {vesselInfo?.countryOfManufacture}
               </Text>
             )}
           </>
@@ -323,6 +327,7 @@ const PDFDocument = ({
   const sortedItems = [...items].sort((a, b) => a.position! - b.position!);
   const headerMessage = pdfHeader;
 
+  console.log(vesselInfo);
   if (viewMode) {
     return (
       <PDFViewer width="100%" height="600" style={{ margin: "20px 0" }}>

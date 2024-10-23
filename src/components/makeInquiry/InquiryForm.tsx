@@ -134,10 +134,19 @@ interface InquiryFormProps {
   tagColors: { [id: number]: string };
   setTagColors: Dispatch<SetStateAction<{ [id: number]: string }>>;
   handleTagClick: (id: number) => void;
+  toggleModal: (
+    modalType:
+      | "header"
+      | "mail"
+      | "inquirySearch"
+      | "customer"
+      | "vessel"
+      | "supplier",
+    isVisible: boolean
+  ) => void;
   isCustomerModalOpen: boolean;
-  setIsCustomerModalOpen: Dispatch<SetStateAction<boolean>>;
   isVesselModalOpen: boolean;
-  setIsVesselModalOpen: Dispatch<SetStateAction<boolean>>;
+  isSupplierModalOpen: boolean;
 }
 
 const InquiryForm = ({
@@ -148,20 +157,17 @@ const InquiryForm = ({
   handleFormChange,
   customerUnreg,
   vesselUnreg,
-  setSelectedSupplierTag,
   setSelectedSuppliers,
-  supplierOptions,
-  isEditMode,
   isDocNumDuplicate,
   setIsDocNumDuplicate,
   customerInquiryId,
   tagColors,
   setTagColors,
   handleTagClick,
+  toggleModal,
   isCustomerModalOpen,
-  setIsCustomerModalOpen,
   isVesselModalOpen,
-  setIsVesselModalOpen,
+  isSupplierModalOpen,
 }: InquiryFormProps) => {
   const [supplierSearch, setSupplierSearch] = useState("");
   const [categoryList, setCategoryList] = useState<string[]>([]);
@@ -561,7 +567,7 @@ const InquiryForm = ({
             <Button
               type="primary"
               style={{ position: "absolute", top: "-35px", right: "0" }}
-              onClick={() => setIsCustomerModalOpen(true)}
+              onClick={() => toggleModal("customer", true)}
             >
               Register
             </Button>
@@ -592,7 +598,7 @@ const InquiryForm = ({
             <Button
               type="primary"
               style={{ position: "absolute", top: "-35px", right: "0" }}
-              onClick={() => setIsVesselModalOpen(true)}
+              onClick={() => toggleModal("vessel", true)}
             >
               Register
             </Button>
@@ -629,49 +635,69 @@ const InquiryForm = ({
         </FormRow>
         <FormRow>
           <SearchBox>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                marginRight: 20,
-                width: 400,
-              }}
-            >
-              <AutoComplete
-                value={supplierSearch}
-                onFocus={() => {
-                  setSelectedType("SUPPLIER");
+            <div>
+              <div
+                style={{
+                  display: "flex",
+                  marginRight: 20,
+                  width: 400,
+                  marginBottom: 3,
+                  alignItems: "center",
+                  justifyContent: "space-between",
                 }}
-                onChange={(value) => {
-                  handleSearch(value, null);
-                }}
-                onSelect={(value, option: any) => {
-                  const selectedSupplier = option.supplier; // option.supplier를 통해 supplier 객체 접근
-
-                  if (selectedSupplier) {
-                    setSelectedSuppliers((prevSuppliers) => [
-                      ...prevSuppliers,
-                      selectedSupplier,
-                    ]);
-
-                    // 자동완성에서 선택된 경우 플래그 설정
-                    setIsFromAutoComplete(true);
-                  }
-
-                  // 검색창 초기화
-                  setSupplierSearch("");
-                }}
-                options={autoSearchSupCompleteOptions} // supplier 객체 포함된 옵션 사용
-                placeholder="Search SUPPLIER ex) TECHLOG"
               >
-                <Input style={{ width: "100%" }} />
-              </AutoComplete>
-              <Button
-                onClick={() => showModal("MAKER")}
-                style={{ marginTop: 10, width: 250 }}
+                <span>매입처(Supplier)</span>
+                <Button
+                  type="primary"
+                  onClick={() => toggleModal("supplier", true)}
+                >
+                  Register
+                </Button>
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  marginRight: 20,
+                  width: 400,
+                }}
               >
-                Search supplier by category & maker
-              </Button>
+                <AutoComplete
+                  value={supplierSearch}
+                  onFocus={() => {
+                    setSelectedType("SUPPLIER");
+                  }}
+                  onChange={(value) => {
+                    handleSearch(value, null);
+                  }}
+                  onSelect={(value, option: any) => {
+                    const selectedSupplier = option.supplier; // option.supplier를 통해 supplier 객체 접근
+
+                    if (selectedSupplier) {
+                      setSelectedSuppliers((prevSuppliers) => [
+                        ...prevSuppliers,
+                        selectedSupplier,
+                      ]);
+
+                      // 자동완성에서 선택된 경우 플래그 설정
+                      setIsFromAutoComplete(true);
+                    }
+
+                    // 검색창 초기화
+                    setSupplierSearch("");
+                  }}
+                  options={autoSearchSupCompleteOptions} // supplier 객체 포함된 옵션 사용
+                  placeholder="Search SUPPLIER ex) TECHLOG"
+                >
+                  <Input style={{ width: "100%" }} />
+                </AutoComplete>
+                <Button
+                  onClick={() => showModal("MAKER")}
+                  style={{ marginTop: 10, width: 250 }}
+                >
+                  Search supplier by category & maker
+                </Button>
+              </div>
             </div>
             {selectedType === "MAKER" && (
               <Modal
@@ -748,14 +774,21 @@ const InquiryForm = ({
       {isCustomerModalOpen && (
         <CreateCompanyModal
           category={"customer"}
-          onClose={() => setIsCustomerModalOpen(false)}
-          onUpdate={() => setIsCustomerModalOpen(false)}
+          onClose={() => toggleModal("customer", false)}
+          onUpdate={() => toggleModal("customer", false)}
         />
       )}
       {isVesselModalOpen && (
         <CreateVesselModal
-          onClose={() => setIsVesselModalOpen(false)}
-          onUpdate={() => setIsVesselModalOpen(false)}
+          onClose={() => toggleModal("vessel", false)}
+          onUpdate={() => toggleModal("vessel", false)}
+        />
+      )}
+      {isSupplierModalOpen && (
+        <CreateCompanyModal
+          category={"supplier"}
+          onClose={() => toggleModal("supplier", false)}
+          onUpdate={() => toggleModal("supplier", false)}
         />
       )}
     </>

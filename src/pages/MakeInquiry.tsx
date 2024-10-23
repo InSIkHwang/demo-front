@@ -190,43 +190,44 @@ const MakeInquiry = () => {
     useState(false);
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
   const [isVesselModalOpen, setIsVesselModalOpen] = useState(false);
+  const [isSupplierModalOpen, setIsSupplierModalOpen] = useState(false);
   const [headerEditModalVisible, setHeaderEditModalVisible] =
     useState<boolean>(false);
   const [isMailSenderVisible, setIsMailSenderVisible] = useState(false);
   const [isInquirySearchModalVisible, setIsInquirySearchModalVisible] =
     useState(false);
 
-  const setModalVisibility = (
-    modalType: "header" | "mail" | "inquirySearch",
-    isVisible: boolean
-  ) => {
-    if (modalType === "header") {
-      setHeaderEditModalVisible(isVisible);
-    } else if (modalType === "mail") {
-      setIsMailSenderVisible(isVisible);
-    } else if (modalType === "inquirySearch") {
-      setIsInquirySearchModalVisible(isVisible);
-      if (!isVisible) {
-        setInquirySearchMakerName("");
-        setInquirySearchMakerNameResult(null);
-      }
-    }
+  const modalActions = {
+    header: [setHeaderEditModalVisible, () => {}],
+    mail: [setIsMailSenderVisible, () => {}],
+    inquirySearch: [
+      (isVisible: boolean) => {
+        setIsInquirySearchModalVisible(isVisible);
+        if (!isVisible) {
+          setInquirySearchMakerName("");
+          setInquirySearchMakerNameResult(null);
+        }
+      },
+      () => {},
+    ],
+    customer: [setIsCustomerModalOpen, () => {}],
+    vessel: [setIsVesselModalOpen, () => {}],
+    supplier: [setIsSupplierModalOpen, () => {}],
   };
 
-  // Edit Header Modal 열기/닫기
-  const handleOpenHeaderModal = () => setModalVisibility("header", true);
-  const handleCloseHeaderModal = () => setModalVisibility("header", false);
+  const setModalVisibility = (
+    modalType: keyof typeof modalActions,
+    isVisible: boolean
+  ) => {
+    modalActions[modalType][0](isVisible);
+  };
 
-  // Mail Sender Modal 열기/닫기
-  const showMailSenderModal = () => setModalVisibility("mail", true);
-  const handleMailSenderOk = () => setModalVisibility("mail", false);
-  const handleMailSenderCancel = () => setModalVisibility("mail", false);
-
-  // Inquiry Search Modal 열기/닫기
-  const openInquirySearchMakerModal = () =>
-    setModalVisibility("inquirySearch", true);
-  const closeInquirySearchMakerModal = () =>
-    setModalVisibility("inquirySearch", false);
+  const toggleModal = (
+    modalType: keyof typeof modalActions,
+    isVisible: boolean
+  ) => {
+    setModalVisibility(modalType, isVisible);
+  };
 
   useEffect(() => {
     if (customerInquiryId) {
@@ -790,10 +791,10 @@ const MakeInquiry = () => {
           tagColors={tagColors}
           setTagColors={setTagColors}
           handleTagClick={handleTagClick}
+          toggleModal={toggleModal}
           isCustomerModalOpen={isCustomerModalOpen}
-          setIsCustomerModalOpen={setIsCustomerModalOpen}
           isVesselModalOpen={isVesselModalOpen}
-          setIsVesselModalOpen={setIsVesselModalOpen}
+          isSupplierModalOpen={isSupplierModalOpen}
         />
       )}
       <MakeInquiryTable
@@ -819,7 +820,7 @@ const MakeInquiry = () => {
       </Button>
       <Button
         type="primary"
-        onClick={showMailSenderModal}
+        onClick={() => toggleModal("mail", true)}
         style={{ margin: "20px 0 0 15px", float: "right" }}
         disabled={isDocNumDuplicate}
       >
@@ -835,8 +836,8 @@ const MakeInquiry = () => {
       <Modal
         title="Send Mail"
         open={isMailSenderVisible}
-        onOk={handleMailSenderOk}
-        onCancel={handleMailSenderCancel}
+        onOk={() => toggleModal("mail", false)}
+        onCancel={() => toggleModal("mail", false)}
         footer={null}
         width={1200}
       >
@@ -881,7 +882,10 @@ const MakeInquiry = () => {
             </Select.Option>
           ))}
         </Select>
-        <Button onClick={handleOpenHeaderModal} style={{ marginLeft: 20 }}>
+        <Button
+          onClick={() => toggleModal("header", true)}
+          style={{ marginLeft: 20 }}
+        >
           Edit Header Text
         </Button>
         <Button
@@ -902,7 +906,7 @@ const MakeInquiry = () => {
         </Select>
         <HeaderEditModal
           open={headerEditModalVisible}
-          onClose={handleCloseHeaderModal}
+          onClose={() => toggleModal("header", false)}
           onSave={handleHeaderSave}
           pdfCompanyTag={pdfSupplierTag}
         />
@@ -942,11 +946,11 @@ const MakeInquiry = () => {
           type="primary"
           tooltip="Search the maker's inquiries to identify the supplier"
           icon={<FileSearchOutlined />}
-          onClick={openInquirySearchMakerModal}
+          onClick={() => toggleModal("inquirySearch", true)}
         />
         <InquirySearchModal
           isVisible={isInquirySearchModalVisible}
-          onClose={closeInquirySearchMakerModal}
+          onClose={() => toggleModal("inquirySearch", false)}
           inquirySearchMakerName={inquirySearchMakerName}
           setInquirySearchMakerName={setInquirySearchMakerName}
           selectedSuppliers={selectedSuppliers}
