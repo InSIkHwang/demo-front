@@ -18,6 +18,7 @@ import OfferList from "./pages/OfferList";
 import QuotationList from "./pages/QuotationList";
 import TrashList from "./pages/TrashList";
 import OrderList from "./pages/OrderList";
+import AddSupplierOnInquiry from "./pages/AddSupplierOnInquiry";
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -103,6 +104,16 @@ const App = () => {
             path="/makeinquiry"
             element={
               isAuthenticated ? <MakeInquiry /> : <Navigate to="/userlogin" />
+            }
+          />
+          <Route
+            path="/addsupplierininquiry/:documentNumber"
+            element={
+              isAuthenticated ? (
+                <AddSupplierOnInquiry />
+              ) : (
+                <Navigate to="/userlogin" />
+              )
             }
           />
           <Route

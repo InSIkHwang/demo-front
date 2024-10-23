@@ -12,7 +12,12 @@ import {
 } from "antd";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import styled, { keyframes } from "styled-components";
-import { fetchOfferDetail, fetchOfferList, searchOfferList } from "../api/api";
+import {
+  addSupplierFetchData,
+  fetchOfferDetail,
+  fetchOfferList,
+  searchOfferList,
+} from "../api/api";
 import { useNavigate } from "react-router-dom";
 import type { ColumnsType } from "antd/es/table";
 import type { SupplierInquiryListIF } from "../types/types";
@@ -468,6 +473,17 @@ const OfferList = () => {
     }
   };
 
+  const handleAddSupplier = async (documentNumber: string) => {
+    try {
+      const response = await addSupplierFetchData(documentNumber);
+      const data = response;
+
+      navigate(`/addsupplierininquiry/${documentNumber}`, { state: data });
+    } catch (error) {
+      console.error("Error fetching supplier data:", error);
+    }
+  };
+
   useEffect(() => {
     fetchFilteredData(); // 상태가 변경되면 데이터 재요청
   }, [viewMyOfferOnly]);
@@ -535,13 +551,23 @@ const OfferList = () => {
                   ) {
                     return (
                       <CardContainer>
-                        <Button
-                          type="primary"
-                          style={{ position: "absolute", right: 20 }}
-                          onClick={() => handleSendMailClick()}
-                        >
-                          Send mail
-                        </Button>
+                        <div style={{ position: "absolute", right: 20 }}>
+                          <Button
+                            type="primary"
+                            style={{ marginRight: 10 }}
+                            onClick={() =>
+                              handleAddSupplier(currentDetail.documentNumber)
+                            }
+                          >
+                            Add Supplier
+                          </Button>
+                          <Button
+                            type="primary"
+                            onClick={() => handleSendMailClick()}
+                          >
+                            Send mail
+                          </Button>
+                        </div>
                         <SelectedSupplierNameBox>
                           Selected Suppliers:{" "}
                           {Array.from(selectedSupplierIds.values()).map(

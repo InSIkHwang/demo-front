@@ -269,24 +269,28 @@ const renderHeader = (
     <View style={styles.inquiryInfoWrap}>
       <View style={styles.inquiryInfoColumn}>
         <Text style={styles.inquiryInfoText}>MESSRS: {supplierName}</Text>
-        <Text style={[styles.inquiryInfoText, { marginBottom: 10 }]}>
-          VESSEL: {vesselName}
-        </Text>
-        <Text style={styles.inquiryInfoText}>
-          IMO NO: {vesselInfo?.imoNumber}
-        </Text>
-        <Text style={styles.inquiryInfoText}>
-          HULL NO: {vesselInfo?.hullNumber}
-        </Text>
-        {vesselInfo?.shipYard && (
-          <Text style={styles.inquiryInfoText}>
-            SHIPYARD: {vesselInfo?.shipYard}
-          </Text>
-        )}
-        {vesselInfo?.countryOfManufacture && (
-          <Text style={styles.inquiryInfoText}>
-            Nationality: {vesselInfo?.countryOfManufacture}
-          </Text>
+        {vesselInfo?.imoNumber && (
+          <>
+            <Text style={[styles.inquiryInfoText, { marginBottom: 10 }]}>
+              VESSEL: {vesselName}
+            </Text>
+            <Text style={styles.inquiryInfoText}>
+              IMO NO: {vesselInfo?.imoNumber}
+            </Text>
+            <Text style={styles.inquiryInfoText}>
+              HULL NO: {vesselInfo?.hullNumber}
+            </Text>
+            {vesselInfo?.shipYard && (
+              <Text style={styles.inquiryInfoText}>
+                SHIPYARD: {vesselInfo?.shipYard}
+              </Text>
+            )}
+            {vesselInfo?.countryOfManufacture && (
+              <Text style={styles.inquiryInfoText}>
+                Nationality: {vesselInfo?.countryOfManufacture}
+              </Text>
+            )}
+          </>
         )}
       </View>
       <View style={[styles.inquiryInfoColumn, { alignItems: "flex-end" }]}>
@@ -318,7 +322,6 @@ const PDFDocument = ({
 }: PDFDocumentProps) => {
   const sortedItems = [...items].sort((a, b) => a.position! - b.position!);
   const headerMessage = pdfHeader;
-console.log(supplierName);
 
   if (viewMode) {
     return (

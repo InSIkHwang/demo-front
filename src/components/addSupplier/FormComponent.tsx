@@ -1,0 +1,530 @@
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import {
+  Form,
+  Input,
+  Button,
+  DatePicker,
+  AutoComplete,
+  Tag,
+  message,
+  List,
+  Modal,
+  Checkbox,
+} from "antd";
+import styled from "styled-components";
+import {
+  chkDuplicateDocNum,
+  fetchCategory,
+  searchSupplier,
+  searchSupplierUseMaker,
+} from "../../api/api";
+
+const InquiryItemForm = styled(Form.Item)`
+  margin-bottom: 8px;
+  margin-right: 10px;
+  flex: auto;
+`;
+
+const FormRow = styled.div`
+  display: flex;
+  margin-bottom: 5px;
+`;
+
+const SearchBox = styled.div`
+  margin-top: 10px;
+  display: flex;
+  align-items: baseline;
+`;
+
+const StyledListItem = styled(List.Item)`
+  display: flex;
+  padding: 12px 0;
+  color: rgba(0, 0, 0, 0.88);
+  justify-content: flex-start;
+  align-items: flex-start;
+  flex-wrap: wrap;
+`;
+
+const MakerTitle = styled.h3`
+  width: 100%;
+  margin: 0;
+  position: relative;
+  font-size: 16px;
+  color: #333;
+`;
+
+const SupplierContainer = styled.div`
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+`;
+
+const SupplierItem = styled.div`
+  display: flex;
+  align-items: center;
+  margin: 8px 0;
+`;
+
+const StyledCheckbox = styled(Checkbox)`
+  margin-right: 8px;
+`;
+
+interface FormValues {
+  docNumber: string;
+  registerDate: any;
+  shippingDate: any;
+  customer: string;
+  vesselName: string;
+  refNumber: string;
+  currencyType: string;
+  currency: number;
+  remark: string;
+  supplierName: string;
+}
+
+interface InquiryFormProps {
+  formValues: FormValues;
+  selectedSuppliers: {
+    id: number;
+    name: string;
+    code: string;
+    email: string;
+  }[];
+  handleFormChange: <K extends keyof FormValues>(
+    key: K,
+    value: FormValues[K]
+  ) => void;
+  setSelectedSuppliers: Dispatch<
+    SetStateAction<
+      {
+        id: number;
+        name: string;
+        korName: string;
+        code: string;
+        email: string;
+      }[]
+    >
+  >;
+  tagColors: { [id: number]: string };
+  setTagColors: Dispatch<SetStateAction<{ [id: number]: string }>>;
+  handleTagClick: (id: number) => void;
+}
+
+const FormComponent = ({
+  formValues,
+  selectedSuppliers,
+  setSelectedSuppliers,
+  tagColors,
+  setTagColors,
+  handleTagClick,
+}: InquiryFormProps) => {
+  const [supplierSearch, setSupplierSearch] = useState("");
+  const [categoryList, setCategoryList] = useState<string[]>([]);
+  const [makerSearch, setMakerSearch] = useState("");
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedType, setSelectedType] = useState("");
+  const [checkedSuppliers, setCheckedSuppliers] = useState<any[]>([]);
+  const [supplierList, setSupplierList] = useState<
+    { name: string; korName: string; id: number; code: string; email: string }[]
+  >([]);
+
+  const [autoSearchSupCompleteOptions, setAutoSearchSupCompleteOptions] =
+    useState<{ value: string }[]>([]);
+  const [makerOptions, setMakerOptions] = useState<{ value: string }[]>([]);
+  const [categoryOptions, setCategoryOptions] = useState<{ value: string }[]>(
+    []
+  );
+  const [categoryWord, setCategoryWord] = useState<string>("");
+  const [makerSupplierList, setMakerSupplierList] = useState<
+    {
+      maker: string;
+      supplierList: {
+        id: number;
+        code: string;
+        name: string;
+        korName: string;
+        email: string;
+      }[];
+    }[]
+  >([]);
+  const [isFromAutoComplete, setIsFromAutoComplete] = useState(false);
+
+  useEffect(() => {
+    const fetchCategoryList = async () => {
+      try {
+        const response = await fetchCategory();
+        setCategoryList(response.categoryType);
+      } catch (error) {
+        console.error("Error fetching category list:", error);
+      }
+    };
+
+    fetchCategoryList();
+  }, []);
+
+  useEffect(() => {
+    if (isFromAutoComplete && checkedSuppliers.length > 0) {
+      checkedSuppliers.forEach((supplier) => handleTagClick(supplier.id));
+      setIsFromAutoComplete(false); // 플래그를 초기화하여 다른 곳에서는 실행되지 않도록 함
+      setCheckedSuppliers([]);
+    } else if (isFromAutoComplete && selectedSuppliers.length > 0) {
+      const lastSupplier = selectedSuppliers[selectedSuppliers.length - 1];
+      handleTagClick(lastSupplier.id);
+      setIsFromAutoComplete(false);
+    }
+  }, [selectedSuppliers, isFromAutoComplete, checkedSuppliers, handleTagClick]);
+
+  useEffect(() => {
+    if (selectedSuppliers.length > 0) {
+      const initialColors = selectedSuppliers.reduce((colors, supplier) => {
+        colors[supplier.id] = "#007bff";
+        return colors;
+      }, {} as { [id: number]: string });
+
+      setTagColors(initialColors);
+    }
+  }, []);
+
+  const showModal = (type: string) => {
+    setSelectedType(type);
+    setSupplierSearch("");
+    setCategoryWord("");
+    setSupplierList([]);
+    setMakerSupplierList([]);
+    setCheckedSuppliers([]);
+    setIsModalVisible(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalVisible(false);
+    setMakerSearch("");
+  };
+
+  const handleAddSelectedSuppliers = () => {
+    setSelectedSuppliers((prevSuppliers) => {
+      const updatedSuppliers = [
+        ...prevSuppliers,
+        ...checkedSuppliers.filter(
+          (supplier) =>
+            !prevSuppliers.some(
+              (existingSupplier) => existingSupplier.id === supplier.id
+            )
+        ),
+      ];
+
+      // 플래그 설정 - 자동완성 또는 모달에서 추가된 경우
+      setIsFromAutoComplete(true);
+      return updatedSuppliers;
+    });
+
+    handleModalClose();
+  };
+
+  const handleCheckboxChange = (supplier: { id: any }) => {
+    setCheckedSuppliers((prevChecked) => {
+      if (prevChecked.some((item) => item.id === supplier.id)) {
+        return prevChecked.filter((item) => item.id !== supplier.id);
+      } else {
+        return [...prevChecked, supplier];
+      }
+    });
+  };
+
+  const removeDuplicates = (
+    arr: { id: number; name: string; code: string }[]
+  ) => {
+    const uniqueIds = new Set<number>();
+    return arr.filter((item) => {
+      if (uniqueIds.has(item.id)) {
+        return false;
+      }
+      uniqueIds.add(item.id);
+      return true;
+    });
+  };
+
+  const handleSupplierSearch = async (value: string) => {
+    setSupplierSearch(value);
+    if (value) {
+      try {
+        const data = await searchSupplier(value);
+        const options = data.suppliers.map((supplier) => ({
+          name: supplier.companyName,
+          korName: supplier.korCompanyName || supplier.companyName,
+          id: supplier.id,
+          code: supplier.code,
+          email: supplier.email,
+        }));
+        setSupplierList(options);
+
+        // 공급자 객체를 포함하여 자동완성 옵션 설정
+        setAutoSearchSupCompleteOptions(
+          options.map((supplier) => ({
+            key: supplier.id,
+            value: supplier.code, // 선택 시 표시될 값
+            supplier, // 공급자 객체 포함
+          }))
+        );
+      } catch (error) {
+        message.error("An error occurred while searching.");
+      }
+    } else {
+      setSupplierList([]);
+    }
+  };
+
+  const handleMakerSearch = async (
+    value: string,
+    categoryType: string | null
+  ) => {
+    setMakerSearch(value);
+    if (value) {
+      try {
+        const data = await searchSupplierUseMaker(value, categoryType!.trim());
+        const makerSupplierList = data.makerSupplierList.map((maker) => ({
+          maker: maker.maker,
+          supplierList: maker.supplierList.map((supplier) => ({
+            name: supplier.companyName,
+            korName: supplier.korCompanyName || supplier.companyName,
+            id: supplier.supplierId,
+            code: supplier.code,
+            email: supplier.email,
+          })),
+        }));
+
+        // 상태 업데이트
+        setMakerSupplierList(makerSupplierList);
+        const makerOptions = data.makerSupplierList.map((maker) => ({
+          value: maker.maker,
+        }));
+        setMakerOptions(makerOptions);
+      } catch (error) {
+        message.error("An error occurred while searching.");
+      }
+    } else {
+      setMakerSupplierList([]);
+    }
+  };
+
+  const handleSearch = (value: string, categoryType: string | null) => {
+    if (selectedType === "SUPPLIER") {
+      handleSupplierSearch(value);
+    } else if (selectedType === "MAKER") {
+      handleMakerSearch(value, categoryType);
+    }
+  };
+
+  const uniqueSuppliers = removeDuplicates(selectedSuppliers);
+
+  const removeListDuplicates = (list: any[]) => {
+    const uniqueItems: any[] = [];
+    const seenIds = new Set();
+
+    list.forEach((item) => {
+      const supplierId = item.supplierList[0].id;
+      if (!seenIds.has(supplierId)) {
+        uniqueItems.push(item);
+        seenIds.add(supplierId);
+      }
+    });
+
+    return uniqueItems;
+  };
+
+  const handleCategorySearch = (searchText: string) => {
+    setCategoryWord(searchText);
+    if (searchText.length > 0) {
+      const filteredOptions = categoryList
+        .filter((category) =>
+          category.toLowerCase().includes(searchText.toLowerCase())
+        )
+        .map((category) => ({ value: category }));
+
+      setCategoryOptions(filteredOptions);
+    } else {
+      setCategoryOptions([]);
+    }
+  };
+
+  return (
+    <>
+      <Form layout="vertical" initialValues={formValues}>
+        <FormRow>
+          <InquiryItemForm
+            label="문서번호(Document No.)"
+            name="docNumber"
+            style={{ maxWidth: 300 }}
+          >
+            <Input disabled />
+          </InquiryItemForm>
+          <InquiryItemForm
+            style={{ flex: "20%" }}
+            label="Ref No."
+            name="refNumber"
+          >
+            <Input value={formValues.refNumber} disabled />
+          </InquiryItemForm>
+          <InquiryItemForm
+            label="작성일자(Register Date)"
+            name="registerDate"
+            style={{ width: 120 }}
+          >
+            <DatePicker
+              value={formValues.registerDate}
+              style={{ width: "100%" }}
+              disabled
+            />
+          </InquiryItemForm>
+          <InquiryItemForm label="화폐(Currency)" name="currencyType">
+            <Input value={formValues.currencyType} disabled />
+          </InquiryItemForm>
+          <InquiryItemForm
+            label="환율(Exchange Rate)"
+            name="currency"
+            style={{ width: 100 }}
+          >
+            <Input
+              type="number"
+              value={formValues.currency || 0} // currency의 초기값이 없는 경우 빈 문자열
+              disabled
+            />
+          </InquiryItemForm>
+        </FormRow>
+        <FormRow>
+          <InquiryItemForm label="매출처(Customer)" name="customer">
+            <Input value={formValues.customer} disabled />
+          </InquiryItemForm>
+          <InquiryItemForm label="선명(Vessel Name)" name="vesselName">
+            <Input value={formValues.vesselName} disabled />
+          </InquiryItemForm>
+          <InquiryItemForm
+            label="비고(Remark)"
+            name="remark"
+            style={{ flex: "30%" }}
+          >
+            <Input value={formValues.remark} disabled />
+          </InquiryItemForm>
+        </FormRow>
+        <FormRow>
+          <SearchBox>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                marginRight: 20,
+                width: 400,
+              }}
+            >
+              <AutoComplete
+                value={supplierSearch}
+                onFocus={() => {
+                  setSelectedType("SUPPLIER");
+                }}
+                onChange={(value) => {
+                  handleSearch(value, null);
+                }}
+                onSelect={(value, option: any) => {
+                  const selectedSupplier = option.supplier; // option.supplier를 통해 supplier 객체 접근
+
+                  if (selectedSupplier) {
+                    setSelectedSuppliers((prevSuppliers) => [
+                      ...prevSuppliers,
+                      selectedSupplier,
+                    ]);
+
+                    // 자동완성에서 선택된 경우 플래그 설정
+                    setIsFromAutoComplete(true);
+                  }
+
+                  // 검색창 초기화
+                  setSupplierSearch("");
+                }}
+                options={autoSearchSupCompleteOptions} // supplier 객체 포함된 옵션 사용
+                placeholder="Search SUPPLIER ex) TECHLOG"
+              >
+                <Input style={{ width: "100%" }} />
+              </AutoComplete>
+              <Button
+                onClick={() => showModal("MAKER")}
+                style={{ marginTop: 10, width: 250 }}
+              >
+                Search supplier by category & maker
+              </Button>
+            </div>
+            {selectedType === "MAKER" && (
+              <Modal
+                title={"Search MAKER"}
+                open={isModalVisible}
+                onCancel={handleModalClose}
+                onOk={handleAddSelectedSuppliers}
+                okText="Add"
+                cancelText="Cancel"
+                width={800}
+              >
+                <AutoComplete
+                  value={categoryWord}
+                  options={categoryOptions}
+                  style={{ width: "100%", marginBottom: 10 }}
+                  onChange={handleCategorySearch}
+                  placeholder="Search Category ex) ENGINE"
+                >
+                  <Input />
+                </AutoComplete>
+                <AutoComplete
+                  value={makerSearch}
+                  onChange={(value) => handleSearch(value, categoryWord)}
+                  options={makerOptions}
+                  style={{ width: "100%", marginBottom: 10 }}
+                  placeholder="Search MAKER ex) HYUNDAI"
+                >
+                  <Input />
+                </AutoComplete>
+                <List
+                  dataSource={removeListDuplicates(makerSupplierList)}
+                  renderItem={(item) => (
+                    <StyledListItem>
+                      <MakerTitle>{item.maker}</MakerTitle>
+                      <SupplierContainer>
+                        {item.supplierList.map(
+                          (supplier: { id: any; name?: any; code?: any }) => (
+                            <SupplierItem key={supplier.id}>
+                              <StyledCheckbox
+                                onChange={() => handleCheckboxChange(supplier)}
+                                checked={checkedSuppliers.some(
+                                  (checkedItem) =>
+                                    checkedItem.id === supplier.id
+                                )}
+                              >
+                                {supplier.name || ""} ({supplier.code})
+                              </StyledCheckbox>
+                            </SupplierItem>
+                          )
+                        )}
+                      </SupplierContainer>
+                    </StyledListItem>
+                  )}
+                />
+              </Modal>
+            )}
+            <span style={{ marginRight: 10 }}>Searched Suppliers: </span>
+            {uniqueSuppliers.map((supplier) => (
+              <Tag
+                key={supplier.id}
+                style={{
+                  borderColor: tagColors[supplier.id] || "default",
+                  cursor: "pointer",
+                }}
+                onClick={() => handleTagClick(supplier.id)}
+                onClose={() => handleTagClick(supplier.id)}
+              >
+                {supplier.code}
+              </Tag>
+            ))}
+          </SearchBox>
+        </FormRow>
+      </Form>
+    </>
+  );
+};
+
+export default FormComponent;

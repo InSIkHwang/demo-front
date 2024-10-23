@@ -79,20 +79,20 @@ interface FormValue {
 }
 
 const MailSenderModal = ({
+  mode,
   mailDataList,
   inquiryFormValues,
   handleSubmit,
   selectedSupplierTag,
   setFileData,
   setIsSendMail,
-  isPdfAutoUploadChecked,
-  setIsPdfAutoUploadChecked,
   items,
   vesselInfo,
   pdfHeader,
   language,
   setPdfFileData,
 }: {
+  mode: string;
   mailDataList: emailSendData[];
   inquiryFormValues: FormValue;
   handleSubmit: () => Promise<unknown>;
@@ -105,8 +105,6 @@ const MailSenderModal = ({
   }[];
   setFileData: Dispatch<SetStateAction<File[]>>;
   setIsSendMail: Dispatch<SetStateAction<boolean>>;
-  isPdfAutoUploadChecked: boolean;
-  setIsPdfAutoUploadChecked: Dispatch<SetStateAction<boolean>>;
   items: InquiryItem[];
   vesselInfo: VesselList | null;
   pdfHeader: string;
@@ -194,7 +192,7 @@ const MailSenderModal = ({
       const savedInquiryId = await handleSubmit(); // inquiryId 반환받기
       const inquiryId: number | null = savedInquiryId as number | null;
 
-      if (inquiryId) {
+      if (inquiryId || mode === "addSupplier") {
         for (const index of Array.from(selectedMailIndexes)) {
           const updatedFileData = [...uploadFile];
           setFileData(updatedFileData);
@@ -217,15 +215,21 @@ const MailSenderModal = ({
           const finalFileData = [...updatedFileData, ...pdfFiles];
           setFileData(finalFileData);
 
-          await sendInquiryMail(values.docNumber, inquiryId, finalFileData, [
-            {
-              ...currentMailDataList[index],
-              ...values.mails[index],
-            },
-          ]);
+          await sendInquiryMail(
+            mode,
+            values.docNumber,
+            inquiryId,
+            finalFileData,
+            [
+              {
+                ...currentMailDataList[index],
+                ...values.mails[index],
+              },
+            ]
+          );
         }
         message.success("The selected email has been sent successfully!");
-        navigate("/customerInquirylist");
+        navigate("/supplierInquirylist");
       } else {
         message.error("Save failed.");
       }
