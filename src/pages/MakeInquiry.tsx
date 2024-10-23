@@ -483,6 +483,12 @@ const MakeInquiry = () => {
             title: "IMO number or Hull number is missing.",
             content: (
               <>
+                <span
+                  style={{ color: selectedVessel?.vesselName ? "" : "red" }}
+                >
+                  Vessel name: {selectedVessel?.vesselName}
+                </span>
+                <br />
                 <span style={{ color: selectedVessel?.imoNumber ? "" : "red" }}>
                   IMO number: {selectedVessel?.imoNumber}
                 </span>

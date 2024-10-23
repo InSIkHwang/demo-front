@@ -192,7 +192,7 @@ const MailSenderModal = ({
       const savedInquiryId = await handleSubmit(); // inquiryId 반환받기
       const inquiryId: number | null = savedInquiryId as number | null;
 
-      if (inquiryId) {
+      if (inquiryId || mode === "addSupplier") {
         for (const index of Array.from(selectedMailIndexes)) {
           const updatedFileData = [...uploadFile];
           setFileData(updatedFileData);
@@ -229,7 +229,7 @@ const MailSenderModal = ({
           );
         }
         message.success("The selected email has been sent successfully!");
-        navigate("/customerInquirylist");
+        navigate("/supplierInquirylist");
       } else {
         message.error("Save failed.");
       }

@@ -3,7 +3,11 @@ import styled from "styled-components";
 import { Button, FloatButton, message, Modal, Select } from "antd";
 import { FileSearchOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
-import { searchInquiryWithMaker } from "../api/api";
+import {
+  fetchCompanyNames,
+  fetchVessel,
+  searchInquiryWithMaker,
+} from "../api/api";
 import PDFDocument from "../components/makeInquiry/PDFDocument";
 import {
   InquiryItem,
@@ -130,8 +134,20 @@ const AddSupplierOnInquiry = () => {
       // inquiryItemDetails를 items로 설정
       setItems(data.inquiryItemDetails);
       setIsLoading(false);
+
+      fetchVesselInfo(data.vesselId);
     }
-  }, [data]);
+  }, []);
+
+  const fetchVesselInfo = async (vesselId: number) => {
+    try {
+      const response = await fetchVessel(vesselId);
+
+      setSelectedVessel(response);
+    } catch (error) {
+      console.error("Error fetching company name:", error);
+    }
+  };
 
   // Edit Header Modal 열기/닫기
   const handleOpenHeaderModal = () => setModalVisibility("header", true);

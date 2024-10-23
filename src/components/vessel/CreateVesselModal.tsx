@@ -67,7 +67,9 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
   const [isHullUnique, setIsHullUnique] = useState(true);
   const [customerSuggestions, setCustomerSuggestions] = useState<any[]>([]);
   const [isCustomerLoading, setIsCustomerLoading] = useState(false);
-  const [customerError, setCustomerError] = useState<string | null>(null);
+  const [customerError, setCustomerError] = useState<string | null>(
+    "Please select a customer"
+  );
   const [selectedCustomer, setSelectedCustomer] = useState<{
     companyName: string;
     id: number;
@@ -182,7 +184,7 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
   const handleSubmit = async (values: any) => {
     // if (!isImoUnique) return;
 
-    if (formData.customerId === undefined) {
+    if (!formData.customerId) {
       setCustomerError("Please select a customer");
       return;
     }
@@ -230,25 +232,31 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
           name="imoNumber"
           hasFeedback
           rules={[
-            { required: true, message: "Enter IMO number!" },
+            {
+              required:
+                formData.vesselName?.trim().toUpperCase() === "UNKNOWN"
+                  ? false
+                  : true,
+              message: "Enter IMO number!",
+            },
             { len: 7, message: "IMO number must be 7 characters." },
           ]}
           validateStatus={
-            !isImoUnique
+            formData.vesselName?.trim().toUpperCase() === "UNKNOWN"
+              ? "success"
+              : !isImoUnique
               ? "warning"
-              : formData.imoNumber === null ||
-                formData.imoNumber === undefined ||
-                formData.imoNumber + "" === "" ||
+              : !formData.imoNumber ||
                 (formData.imoNumber + "").toString().length !== 7
               ? "error"
               : "success"
           }
           help={
-            !isImoUnique
+            formData.vesselName?.trim().toUpperCase() === "UNKNOWN"
+              ? ""
+              : !isImoUnique
               ? "It's a duplicate Imo No."
-              : formData.imoNumber === null ||
-                formData.imoNumber === undefined ||
-                formData.imoNumber + "" === ""
+              : !formData.imoNumber
               ? "Enter IMO number!"
               : (formData.imoNumber + "").toString().length !== 7
               ? "IMO number must be 7 characters."
@@ -268,22 +276,30 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
           label="HULL No.:"
           name="hullNumber"
           hasFeedback
-          rules={[{ required: true, message: "Enter Hull number!" }]}
+          rules={[
+            {
+              required:
+                formData.vesselName?.trim().toUpperCase() === "UNKNOWN"
+                  ? false
+                  : true,
+              message: "Enter Hull number!",
+            },
+          ]}
           validateStatus={
-            !isHullUnique
+            formData.vesselName?.trim().toUpperCase() === "UNKNOWN"
+              ? "success"
+              : !isHullUnique
               ? "warning"
-              : formData.hullNumber === null ||
-                formData.hullNumber === undefined ||
-                formData.hullNumber + "" === ""
+              : !formData.hullNumber
               ? "error"
               : "success"
           }
           help={
-            !isHullUnique
+            formData.vesselName?.trim().toUpperCase() === "UNKNOWN"
+              ? ""
+              : !isHullUnique
               ? "It's a duplicate Hull No."
-              : formData.hullNumber === null ||
-                formData.hullNumber === undefined ||
-                formData.hullNumber + "" === ""
+              : !formData.hullNumber
               ? "Enter Hull number!"
               : ""
           }
@@ -316,7 +332,9 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
         <StyledFormItem
           label="Customer Name:"
           name="customerName"
-          validateStatus={customerError ? "error" : ""}
+          validateStatus={
+            !selectedCustomer ? "error" : customerError ? "error" : ""
+          }
           help={customerError}
           rules={[{ required: true, message: "Select a customer!" }]}
           hasFeedback
@@ -345,14 +363,13 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
           type="primary"
           htmlType="submit"
           disabled={
-            formData.customerId === undefined ||
-            formData.hullNumber === "" ||
-            !formData.hullNumber ||
-            !selectedCustomer ||
-            formData.imoNumber === null ||
-            formData.imoNumber === undefined ||
-            formData.imoNumber + "" === "" ||
-            (formData.imoNumber + "").toString().length !== 7
+            formData.vesselName?.trim().toUpperCase() !== "UNKNOWN"
+              ? !formData.vesselName ||
+                !formData.imoNumber ||
+                !formData.hullNumber ||
+                !selectedCustomer ||
+                (formData.imoNumber + "").toString().length !== 7
+              : !formData.vesselName || !selectedCustomer
           }
           block
           size="middle"

@@ -148,6 +148,13 @@ export const fetchCategory = async () => {
   return response.data;
 };
 
+//fetch Vessel
+export const fetchVessel = async (vesselId: number) => {
+  const response = await axios.get(`/api/vessels/${vesselId}`);
+
+  return response.data;
+};
+
 export const vesselCheckImoAndHullUnique = async (
   type: string,
   value: string | number | null

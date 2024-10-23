@@ -204,6 +204,7 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
   };
 
   const customerCompanyName = form.getFieldsValue().customerCompanyName;
+  console.log(vessel);
 
   return (
     <Modal
@@ -237,25 +238,31 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
           name="imoNumber"
           hasFeedback={isEditing}
           rules={[
-            { required: true, message: "Enter IMO number!" },
+            {
+              required:
+                formData.vesselName?.trim().toUpperCase() === "UNKNOWN"
+                  ? false
+                  : true,
+              message: "Enter IMO number!",
+            },
             { len: 7, message: "IMO number must be 7 characters." },
           ]}
           validateStatus={
-            !isImoUnique
+            formData.vesselName?.trim().toUpperCase() === "UNKNOWN"
+              ? "success"
+              : !isImoUnique
               ? "warning"
-              : formData.imoNumber === null ||
-                formData.imoNumber === undefined ||
-                formData.imoNumber + "" === "" ||
+              : !formData.imoNumber ||
                 (formData.imoNumber + "").toString().length !== 7
               ? "error"
               : "success"
           }
           help={
-            !isImoUnique
+            formData.vesselName?.trim().toUpperCase() === "UNKNOWN"
+              ? ""
+              : !isImoUnique
               ? "It's a duplicate Imo No."
-              : formData.imoNumber === null ||
-                formData.imoNumber === undefined ||
-                formData.imoNumber + "" === ""
+              : !formData.imoNumber
               ? "Enter IMO number!"
               : (formData.imoNumber + "").toString().length !== 7
               ? "IMO number must be 7 characters."
@@ -275,22 +282,30 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
           label="HULL No."
           name="hullNumber"
           hasFeedback={isEditing}
-          rules={[{ required: true, message: "Enter Hull number!" }]}
+          rules={[
+            {
+              required:
+                formData.vesselName?.trim().toUpperCase() === "UNKNOWN"
+                  ? false
+                  : true,
+              message: "Enter Hull number!",
+            },
+          ]}
           validateStatus={
-            !isHullUnique
+            formData.vesselName?.trim().toUpperCase() === "UNKNOWN"
+              ? "success"
+              : !isHullUnique
               ? "warning"
-              : formData.hullNumber === null ||
-                formData.hullNumber === undefined ||
-                formData.hullNumber + "" === ""
+              : !formData.hullNumber
               ? "error"
               : "success"
           }
           help={
-            !isHullUnique
+            formData.vesselName?.trim().toUpperCase() === "UNKNOWN"
+              ? ""
+              : !isHullUnique
               ? "It's a duplicate Hull No."
-              : formData.hullNumber === null ||
-                formData.hullNumber === undefined ||
-                formData.hullNumber + "" === ""
+              : !formData.hullNumber
               ? "Enter Hull number!"
               : ""
           }
@@ -299,7 +314,6 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
             readOnly={!isEditing}
             value={formData.hullNumber} // formData 값 반영
             onChange={(e) => handleInputChange({ hullNumber: e.target.value })}
-            placeholder="V001"
           />
         </StyledFormItem>
         <StyledFormItem label="SHIPYARD" name="shipYard">
@@ -322,11 +336,15 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
           label="Customer name to add:"
           name="customerCompanyName"
           validateStatus={
+            isEditing &&
+            customerCompanyName &&
             selectedCustomer?.companyName !== customerCompanyName
               ? "error"
               : "success"
           }
           help={
+            isEditing &&
+            customerCompanyName &&
             selectedCustomer?.companyName !== customerCompanyName
               ? "Please select the correct customer from autocomplete."
               : ""
@@ -371,14 +389,15 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
                 type="primary"
                 onClick={handleSubmit}
                 disabled={
-                  formData.vesselName === "" ||
-                  formData.hullNumber === "" ||
-                  !formData.hullNumber ||
-                  formData.imoNumber === null ||
-                  formData.imoNumber === undefined ||
-                  formData.imoNumber + "" === "" ||
-                  (formData.imoNumber + "").toString().length !== 7 ||
-                  selectedCustomer?.companyName !== customerCompanyName
+                  formData.vesselName?.trim().toUpperCase() === "UNKNOWN"
+                    ? customerCompanyName &&
+                      selectedCustomer?.companyName !== customerCompanyName
+                    : !formData.vesselName ||
+                      !formData.hullNumber ||
+                      !formData.imoNumber ||
+                      (formData.imoNumber + "").toString().length !== 7 ||
+                      (customerCompanyName &&
+                        selectedCustomer?.companyName !== customerCompanyName)
                 }
                 size="middle"
               >
@@ -388,7 +407,10 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
                 onClick={() => {
                   setIsEditing(false);
                   setFormData(vessel);
-                  form.setFieldsValue(vessel);
+                  form.setFieldsValue({
+                    ...vessel, // vessel의 모든 필드 업데이트
+                    customerCompanyName: "", // customerCompanyName을 빈 문자열로 설정
+                  });
                 }}
                 size="middle"
               >
