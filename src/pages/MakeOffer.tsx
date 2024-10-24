@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button, message, Modal, Select } from "antd";
 import styled from "styled-components";
 import dayjs from "dayjs";
@@ -101,6 +101,7 @@ const MakeOffer = () => {
     customerId: number | null;
     vesselId: number | null;
   }>({ customerId: null, vesselId: null });
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadOfferDetail();
@@ -639,14 +640,24 @@ const MakeOffer = () => {
       )}
 
       {!isReadOnly && (
-        <Button
-          type="primary"
-          htmlType="submit"
-          style={{ float: "right", width: 100, marginTop: 20 }}
-          onClick={handleSave}
-        >
-          Save
-        </Button>
+        <>
+          {" "}
+          <Button
+            type="primary"
+            htmlType="submit"
+            style={{ float: "right", width: 100, marginTop: 20 }}
+            onClick={handleSave}
+          >
+            Save
+          </Button>{" "}
+          <Button
+            type="default"
+            onClick={() => navigate(-1)}
+            style={{ margin: "20px 15px 0 0 ", float: "right" }}
+          >
+            Back
+          </Button>
+        </>
       )}
       {isReadOnly && (
         <div style={{ marginTop: 20 }}>
@@ -680,6 +691,13 @@ const MakeOffer = () => {
             style={{ margin: "20px 0 0 15px", float: "right" }}
           >
             Send Email
+          </Button>{" "}
+          <Button
+            type="default"
+            onClick={() => navigate(-1)}
+            style={{ margin: "20px 0 0 0 ", float: "right" }}
+          >
+            Back
           </Button>
         </div>
       )}

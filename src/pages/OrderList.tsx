@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Table, Button as AntButton, Pagination, Tag } from "antd";
+import { Table, Button as AntButton, Pagination, Tag, Empty } from "antd";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 import { fetchOrderList } from "../api/api";
@@ -260,7 +260,7 @@ const OrderList = () => {
             </Button>
           </SearchBar> */}
         </TableHeader>
-        {data.length > 0 && ( // 데이터가 있을 때만 페이지네이션을 표시
+        {data.length > 0 ? ( // 데이터가 있을 때만 페이지네이션을 표시
           <>
             <Table
               columns={columns}
@@ -293,6 +293,8 @@ const OrderList = () => {
               }}
             />
           </>
+        ) : (
+          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
         )}
       </Container>
       {selectedOrderId !== null && (
