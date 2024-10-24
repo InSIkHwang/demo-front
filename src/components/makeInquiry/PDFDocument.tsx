@@ -343,8 +343,6 @@ const PDFDocument = ({
   const sortedItems = [...items].sort((a, b) => a.position! - b.position!);
   const headerMessage = pdfHeader;
   if (viewMode) {
-    console.log(supplier);
-
     return (
       <PDFViewer width="100%" height="600" style={{ margin: "20px 0" }}>
         <Document>

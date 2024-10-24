@@ -232,7 +232,6 @@ const OfferList = () => {
       fetchData();
     }
   }, [currentPage, itemsPerPage]);
-  console.log(currentPage);
 
   const fetchData = async () => {
     try {
