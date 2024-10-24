@@ -59,16 +59,16 @@ const CustomTable = styled(Table)`
   }
 
   .maker-row {
-    background-color: #deefffd8; /* MAKER 행의 배경색 */
+    background-color: #c8e4ff90; /* MAKER 행의 배경색 */
     &:hover {
-      background-color: #deefff !important;
+      background-color: #c8e4ff !important;
     }
     .ant-table-cell-row-hover {
-      background-color: #deefff !important;
+      background-color: #c8e4ff !important;
     }
   }
   .type-row {
-    background-color: #fffdded8; /* TYPE 행의 배경색 */
+    background-color: #fffdde90; /* TYPE 행의 배경색 */
     &:hover {
       background-color: #fffdde !important;
     }
@@ -77,12 +77,21 @@ const CustomTable = styled(Table)`
     }
   }
   .desc-row {
-    background-color: #f0f0f0d8;
+    background-color: #f0f0f090;
     &:hover {
       background-color: #f0f0f0 !important;
     }
     .ant-table-cell-row-hover {
       background-color: #f0f0f0 !important;
+    }
+  }
+  .remark-row {
+    background-color: #d5ffd190;
+    &:hover {
+      background-color: #dcffd1 !important;
+    }
+    .ant-table-cell-row-hover {
+      background-color: #dcffd1 !important;
     }
   }
 
@@ -830,7 +839,7 @@ const TableComponent = ({
       key: "salesPriceKRW",
       width: 115,
       render: (text: number, record: any) =>
-        record.itemType === "ITEM" ? (
+        record.itemType === "ITEM" && !record.itemRemark ? (
           <Input
             type="text"
             value={text?.toLocaleString()}
@@ -846,7 +855,7 @@ const TableComponent = ({
       key: "salesPriceGlobal",
       width: 115,
       render: (text: number, record: any) =>
-        record.itemType === "ITEM" ? (
+        record.itemType === "ITEM" && !record.itemRemark ? (
           <Input
             type="text"
             value={text?.toLocaleString()}
@@ -863,7 +872,7 @@ const TableComponent = ({
       width: 115,
       className: "highlight-cell",
       render: (text: number, record: any) =>
-        record.itemType === "ITEM" ? (
+        record.itemType === "ITEM" && !record.itemRemark ? (
           <Input
             type="text"
             value={calculateTotalAmount(
@@ -883,7 +892,7 @@ const TableComponent = ({
       width: 115,
       className: "highlight-cell",
       render: (text: number, record: any) =>
-        record.itemType === "ITEM" ? (
+        record.itemType === "ITEM" && !record.itemRemark ? (
           <Input
             type="text"
             value={calculateTotalAmount(
@@ -902,8 +911,9 @@ const TableComponent = ({
       key: "purchasePriceKRW",
       width: 115,
       render: (text: number, record: any, index: number) => {
-        if (record.itemType !== "ITEM") {
+        if (record.itemType !== "ITEM" || record.itemRemark) {
           handleInputChange(index, "purchasePriceKRW", 0); // 값을 0으로 설정
+          handleInputChange(index, "purchaseAmountKRW", 0);
           return (
             <Input
               value={0}
@@ -957,8 +967,9 @@ const TableComponent = ({
       key: "purchasePriceGlobal",
       width: 115,
       render: (text: number, record: any, index: number) => {
-        if (record.itemType !== "ITEM") {
+        if (record.itemType !== "ITEM" || record.itemRemark) {
           handleInputChange(index, "purchasePriceGlobal", 0); // 값을 0으로 설정
+          handleInputChange(index, "purchaseAmountGlobal", 0);
           return (
             <Input
               value={0}
@@ -1013,7 +1024,7 @@ const TableComponent = ({
       width: 115,
       className: "highlight-cell",
       render: (text: number, record: any, index: number) =>
-        record.itemType === "ITEM" ? (
+        record.itemType === "ITEM" && !record.itemRemark ? (
           <Input
             type="text" // Change to "text" to handle formatted input
             value={calculateTotalAmount(
@@ -1036,7 +1047,7 @@ const TableComponent = ({
       width: 115,
       className: "highlight-cell",
       render: (text: number, record: any, index: number) =>
-        record.itemType === "ITEM" ? (
+        record.itemType === "ITEM" && !record.itemRemark ? (
           <Input
             type="text" // Change to "text" to handle formatted input
             value={calculateTotalAmount(
@@ -1076,7 +1087,7 @@ const TableComponent = ({
       className: "highlight-cell",
 
       render: (text: number, record: any, index: number) => {
-        if (record.itemType !== "ITEM") {
+        if (record.itemType !== "ITEM" || record.itemRemark) {
           handleInputChange(index, "margin", 0); // 값을 0으로 설정
           return (
             <Input
@@ -1192,6 +1203,8 @@ const TableComponent = ({
             return "type-row";
           } else if (record.itemType === "DESC") {
             return "desc-row";
+          } else if (record.itemRemark) {
+            return "remark-row";
           } else {
             return index % 2 === 0 ? "even-row" : "odd-row"; // 기본 행 스타일
           }

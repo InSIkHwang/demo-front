@@ -551,8 +551,6 @@ const MakeOffer = () => {
       invChargeList || [],
       "chargePriceKRW"
     );
-    console.log(invChargeList);
-    console.log(chargePriceKRWTotal);
 
     const chargePriceGlobalTotal = calculateTotal(
       invChargeList || [],
