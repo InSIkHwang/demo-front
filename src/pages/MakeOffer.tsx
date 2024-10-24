@@ -162,6 +162,7 @@ const MakeOffer = () => {
         message.error("An error occurred while importing data.");
       }
     }
+
     setIsLoading(false);
   };
 
@@ -636,6 +637,7 @@ const MakeOffer = () => {
           currency={formValues.currency}
           currencyType={formValues.currencyType}
           finalTotals={finalTotals}
+          applyDcAndCharge={applyDcAndCharge}
         />
       )}
 

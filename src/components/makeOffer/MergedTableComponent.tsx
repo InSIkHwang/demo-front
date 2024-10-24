@@ -104,6 +104,7 @@ interface MergedTableComponentProps {
   setDataSource: Dispatch<SetStateAction<ItemDataType[]>>;
   currency: number;
   currencyType: string;
+  applyDcAndCharge: () => void;
   finalTotals: {
     totalSalesAmountKRW: number;
     totalSalesAmountGlobal: number;
@@ -120,6 +121,7 @@ const MergedTableComponent = ({
   setDataSource,
   currencyType,
   finalTotals,
+  applyDcAndCharge,
 }: MergedTableComponentProps) => {
   const [totals, setTotals] = useState({
     totalSalesAmountKRW: 0,
@@ -179,6 +181,8 @@ const MergedTableComponent = ({
       totalProfit,
       totalProfitPercent,
     });
+
+    applyDcAndCharge();
   }, []);
 
   const columns: ColumnsType<any> = [
