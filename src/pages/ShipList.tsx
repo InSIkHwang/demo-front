@@ -224,9 +224,25 @@ const ShipList = () => {
               placeholder="Search..."
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
-              onPressEnter={fetchFilteredData}
+              onPressEnter={() => {
+                if (currentPage === 1) {
+                  fetchFilteredData();
+                } else {
+                  setCurrentPage(1);
+                }
+              }}
               style={{ width: 300, marginRight: 10 }}
-              suffix={<SearchOutlined onClick={fetchFilteredData} />}
+              suffix={
+                <SearchOutlined
+                  onClick={() => {
+                    if (currentPage === 1) {
+                      fetchFilteredData();
+                    } else {
+                      setCurrentPage(1);
+                    }
+                  }}
+                />
+              }
             />
           </SearchBar>
           <Button type="primary" onClick={openModal}>

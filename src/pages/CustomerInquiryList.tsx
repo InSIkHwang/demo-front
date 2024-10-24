@@ -298,7 +298,16 @@ const CustomerInquiryList = () => {
               }
               style={{ marginRight: 10 }}
             />
-            <Button type="primary" onClick={handleSearch}>
+            <Button
+              type="primary"
+              onClick={() => {
+                if (currentPage === 1) {
+                  handleSearch();
+                } else {
+                  setCurrentPage(1);
+                }
+              }}
+            >
               Search
             </Button>
             <div style={{ marginLeft: 15 }}>
