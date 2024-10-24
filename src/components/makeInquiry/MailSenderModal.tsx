@@ -12,6 +12,7 @@ import {
   Tag,
   Modal,
   Spin,
+  Select,
 } from "antd";
 import { SendOutlined, MailOutlined } from "@ant-design/icons";
 import { UploadOutlined } from "@ant-design/icons";
@@ -91,6 +92,7 @@ const MailSenderModal = ({
   pdfHeader,
   language,
   setPdfFileData,
+  handleLanguageChange,
 }: {
   mode: string;
   mailDataList: emailSendData[];
@@ -102,6 +104,7 @@ const MailSenderModal = ({
     korName: string;
     code: string;
     email: string;
+    communicationLanguage: string;
   }[];
   setFileData: Dispatch<SetStateAction<File[]>>;
   setIsSendMail: Dispatch<SetStateAction<boolean>>;
@@ -110,6 +113,7 @@ const MailSenderModal = ({
   pdfHeader: string;
   language: string;
   setPdfFileData: Dispatch<SetStateAction<File[]>>;
+  handleLanguageChange: (value: string, id: number) => void;
 }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -203,7 +207,6 @@ const MailSenderModal = ({
             items,
             vesselInfo,
             pdfHeader,
-            language,
             setPdfFileData,
             index
           );
@@ -279,7 +282,7 @@ const MailSenderModal = ({
       <StyledCard>
         <div style={{ display: "flex", gap: 20 }}>
           <StyledFormItem
-            style={{ width: "50%" }}
+            style={{ width: "30%" }}
             name={["mails", index, "toRecipient"]}
             rules={[{ required: true, message: "Please enter the recipient" }]}
             label="Recipient"
@@ -293,6 +296,21 @@ const MailSenderModal = ({
             label="Title"
           >
             <Input placeholder="Title" />
+          </StyledFormItem>
+          <StyledFormItem
+            style={{ width: "20%" }}
+            rules={[{ required: true, message: "Please select a language." }]}
+            label="Language"
+          >
+            <Select
+              value={selectedSupplierTag[index]?.communicationLanguage}
+              onChange={(value) =>
+                handleLanguageChange(value, selectedSupplierTag[0]?.id)
+              }
+            >
+              <Select.Option value="KOR">KOR</Select.Option>
+              <Select.Option value="ENG">ENG</Select.Option>
+            </Select>
           </StyledFormItem>
         </div>
         <StyledFormItem

@@ -47,9 +47,13 @@ interface PDFDocumentProps {
   items: InquiryItem[];
   vesselInfo: VesselList | null;
   pdfHeader: string;
-  supplierName: string; // 개별 공급자 이름
+  supplier: {
+    id: number;
+    name: string;
+    korName: string;
+    communicationLanguage: string;
+  };
   viewMode: boolean;
-  language: string;
 }
 
 // 스타일 정의
@@ -239,13 +243,17 @@ const renderTableRows = (items: InquiryItem[]) => {
 // 헤더를 렌더링하는 함수
 const renderHeader = (
   logoUrl: string,
-  supplierName: string,
+  supplier: {
+    id: number;
+    name: string;
+    korName: string;
+    communicationLanguage: string;
+  },
   vesselName: string,
   vesselInfo: VesselList | null,
   docNumber: string,
   registerDate: string | dayjs.Dayjs,
-  pdfHeader: string,
-  language: string
+  pdfHeader: string
 ) => (
   <>
     <View style={styles.header}>
@@ -263,12 +271,19 @@ const renderHeader = (
     </View>
     <View style={styles.section}>
       <Text style={styles.title}>
-        {language === "KOR" ? "견 적 의 뢰 서" : "I N Q U I R Y"}
+        {supplier?.communicationLanguage === "KOR"
+          ? "견 적 의 뢰 서"
+          : "I N Q U I R Y"}
       </Text>
     </View>
     <View style={styles.inquiryInfoWrap}>
       <View style={styles.inquiryInfoColumn}>
-        <Text style={styles.inquiryInfoText}>MESSRS: {supplierName}</Text>
+        <Text style={styles.inquiryInfoText}>
+          MESSRS:{" "}
+          {supplier?.communicationLanguage === "KOR"
+            ? supplier?.korName || ""
+            : supplier?.name || ""}
+        </Text>
         {vesselName.trim().toUpperCase() !== "UNKNOWN" && (
           <>
             <Text style={[styles.inquiryInfoText, { marginBottom: 10 }]}>
@@ -302,10 +317,12 @@ const renderHeader = (
           OUR REF No: {docNumber?.split("")}
         </Text>
         <Text style={styles.inquiryInfoText}>
-          {language === "KOR"
-            ? "DATE: " + dayjs(registerDate).format("YYYY-MM-DD")
+          {supplier?.communicationLanguage === "KOR"
+            ? "DATE: " + dayjs(registerDate).format("YYYY-MM-DD") ||
+              "DATE: " + dayjs().format("YYYY-MM-DD")
             : "DATE: " +
-              dayjs(registerDate).format("DD MMM, YYYY").toUpperCase()}
+                dayjs(registerDate).format("DD MMM, YYYY").toUpperCase() ||
+              "DATE: " + dayjs().format("DD MMM, YYYY").toUpperCase()}
         </Text>
       </View>
     </View>
@@ -320,28 +337,26 @@ const PDFDocument = ({
   items,
   vesselInfo,
   pdfHeader,
-  supplierName,
+  supplier,
   viewMode,
-  language,
 }: PDFDocumentProps) => {
   const sortedItems = [...items].sort((a, b) => a.position! - b.position!);
   const headerMessage = pdfHeader;
-
-  console.log(vesselInfo);
   if (viewMode) {
+    console.log(supplier);
+
     return (
       <PDFViewer width="100%" height="600" style={{ margin: "20px 0" }}>
         <Document>
           <Page size="A4" style={styles.page}>
             {renderHeader(
               logoUrl,
-              supplierName,
+              supplier,
               formValues.vesselName,
               vesselInfo,
               formValues.docNumber,
               dayjs().format("YYYY-MM-DD"),
-              headerMessage,
-              language
+              headerMessage
             )}
             <View style={styles.table}>
               <View
@@ -391,13 +406,12 @@ const PDFDocument = ({
       <Page size="A4" style={styles.page}>
         {renderHeader(
           logoUrl,
-          supplierName,
+          supplier,
           formValues.vesselName,
           vesselInfo,
           formValues.docNumber,
           dayjs().format("YYYY-MM-DD"),
-          headerMessage,
-          language
+          headerMessage
         )}
         <View style={styles.table}>
           <View

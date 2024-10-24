@@ -98,6 +98,7 @@ interface InquiryFormProps {
     name: string;
     code: string;
     email: string;
+    communicationLanguage: string;
   }[];
   handleFormChange: <K extends keyof FormValues>(
     key: K,
@@ -113,6 +114,7 @@ interface InquiryFormProps {
         korName: string;
         code: string;
         email: string;
+        communicationLanguage: string;
       }[]
     >
   >;
@@ -124,6 +126,7 @@ interface InquiryFormProps {
         korName: string;
         code: string;
         email: string;
+        communicationLanguage: string;
       }[]
     >
   >;
@@ -346,6 +349,7 @@ const InquiryForm = ({
           id: supplier.id,
           code: supplier.code,
           email: supplier.email,
+          communicationLanguage: supplier.communicationLanguage || "KOR",
         }));
         setSupplierList(options);
 
@@ -381,6 +385,7 @@ const InquiryForm = ({
             id: supplier.supplierId,
             code: supplier.code,
             email: supplier.email,
+            communicationLanguage: supplier.communicationLanguage || "KOR",
           })),
         }));
 

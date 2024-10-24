@@ -22,13 +22,13 @@ interface PDFGeneratorProps {
     korName: string;
     code: string;
     email: string;
+    communicationLanguage: string;
   }[];
   formValues: FormValues;
   setMailDataList: Dispatch<SetStateAction<emailSendData[]>>;
   items: InquiryItem[];
   vesselInfo: VesselList | null;
   pdfHeader: string;
-  language: string;
   setPdfFileData: Dispatch<SetStateAction<File[]>>;
 }
 
@@ -36,7 +36,6 @@ const generateMailData = (
   selectedSupplierTag: PDFGeneratorProps["selectedSupplierTag"],
   formValues: FormValues,
   vesselInfo: VesselList | null,
-  language: string,
   setMailDataList: Dispatch<SetStateAction<emailSendData[]>>
 ) => {
   const mailDataList: emailSendData[] = [];
@@ -46,11 +45,11 @@ const generateMailData = (
       supplierId: supplierTag.id,
       toRecipient: supplierTag.email,
       subject:
-        language === "ENG"
+        supplierTag.communicationLanguage === "ENG"
           ? `BASKOREA REQUEST FOR QUOTATION  ${formValues.docNumber}  ${formValues.vesselName}`
           : `BASKOREA 견적의뢰서  ${formValues.docNumber}  ${formValues.vesselName}`,
       content:
-        language === "ENG"
+        supplierTag.communicationLanguage === "ENG"
           ? `Dear Sir or Madam\nGood day,\nThanks for your cooperation.\nPlease give us your best price and delivery time.\nYour kind reply will be much appreciated.\n\nThanks & Best Regards\n\n\n${
               vesselInfo?.vesselName?.trim().toUpperCase() !== "UNKNOWN"
                 ? `<VESSEL INFO>\nVessel name: ${vesselInfo?.vesselName}${
@@ -96,7 +95,10 @@ const generateMailData = (
                 : ""
             }\n\n\nD.Y.KIM\nBAS KOREA CO.\n부산 해운대구 APEC로 17 3106호 / 48060\nTel. 070-7600-5067\nFax. 051-793-0635\nMobile. 010-3321-2688\nE-mail. info@bas-korea.com\n\n`,
       ccRecipient: "",
-      supplierName: language === "ENG" ? supplierTag.name : supplierTag.korName,
+      supplierName:
+        supplierTag.communicationLanguage === "ENG"
+          ? supplierTag.name
+          : supplierTag.korName,
     };
 
     mailDataList.push(mailData);
@@ -111,7 +113,6 @@ export const generatePDFs = async (
   items: InquiryItem[],
   vesselInfo: VesselList | null,
   pdfHeader: string,
-  language: string,
   setPdfFileData: Dispatch<SetStateAction<File[]>>,
   selectedSupplierIndex: number // 추가된 파라미터
 ): Promise<File[]> => {
@@ -123,12 +124,9 @@ export const generatePDFs = async (
   if (supplierTag) {
     const doc = (
       <PDFDocument
-        language={language}
         formValues={formValues}
         items={items}
-        supplierName={
-          language === "ENG" ? supplierTag.name : supplierTag.korName
-        }
+        supplier={supplierTag}
         vesselInfo={vesselInfo}
         pdfHeader={pdfHeader}
         viewMode={false}
@@ -137,7 +135,7 @@ export const generatePDFs = async (
     const pdfBlob = await pdf(doc).toBlob();
 
     const fileName =
-      language === "ENG"
+      supplierTag.communicationLanguage === "ENG"
         ? `${supplierTag.name} REQUEST FOR QUOTATION ${formValues.docNumber}.pdf`
         : `${supplierTag.korName} 견적의뢰서 ${formValues.docNumber}.pdf`;
     const newFile = new File([pdfBlob], fileName, {
@@ -155,7 +153,6 @@ const PDFGenerator = ({
   formValues,
   vesselInfo,
   setMailDataList,
-  language,
 }: PDFGeneratorProps) => {
   // 메일 데이터 생성 로직을 useEffect에서 실행
   useEffect(() => {
@@ -163,10 +160,9 @@ const PDFGenerator = ({
       selectedSupplierTag,
       formValues,
       vesselInfo,
-      language,
       setMailDataList
     );
-  }, [selectedSupplierTag, formValues, vesselInfo, language, setMailDataList]);
+  }, [selectedSupplierTag, formValues, vesselInfo, setMailDataList]);
 
   return null;
 };

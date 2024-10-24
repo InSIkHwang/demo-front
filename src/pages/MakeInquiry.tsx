@@ -105,10 +105,18 @@ const getSupplierMap = (
   korName: string;
   code: string;
   email: string;
+  communicationLanguage: string;
 }[] => {
   const supplierMap = new Map<
     number,
-    { id: number; name: string; korName: string; code: string; email: string }
+    {
+      id: number;
+      name: string;
+      korName: string;
+      code: string;
+      email: string;
+      communicationLanguage: string;
+    }
   >();
   itemDetails.forEach((item) =>
     item.suppliers?.forEach((supplier: InquiryListSupplier) =>
@@ -118,6 +126,7 @@ const getSupplierMap = (
         korName: supplier.korCompanyName || supplier.companyName,
         code: supplier.code,
         email: supplier.email,
+        communicationLanguage: supplier.communicationLanguage || "KOR",
       })
     )
   );
@@ -161,14 +170,33 @@ const MakeInquiry = () => {
     { value: string; id: number; itemId: number; code: string; email: string }[]
   >([]);
   const [selectedSuppliers, setSelectedSuppliers] = useState<
-    { id: number; name: string; korName: string; code: string; email: string }[]
+    {
+      id: number;
+      name: string;
+      korName: string;
+      code: string;
+      email: string;
+      communicationLanguage: string;
+    }[]
   >([]);
   const [selectedSupplierTag, setSelectedSupplierTag] = useState<
-    { id: number; name: string; korName: string; code: string; email: string }[]
+    {
+      id: number;
+      name: string;
+      korName: string;
+      code: string;
+      email: string;
+      communicationLanguage: string;
+    }[]
   >([]);
   const [showPDFPreview, setShowPDFPreview] = useState(false);
   const [pdfSupplierTag, setPdfSupplierTag] = useState<
-    { id: number; name: string; korName: string }[]
+    {
+      id: number;
+      name: string;
+      korName: string;
+      communicationLanguage: string;
+    }[]
   >([]);
   const [pdfHeader, setPdfHeader] = useState<string>("");
   const [formValues, setFormValues] = useState(INITIAL_FORM_VALUES);
@@ -698,6 +726,7 @@ const MakeInquiry = () => {
           korName: supplier.korCompanyName || supplier.companyName,
           code: supplier.code,
           email: supplier.email,
+          communicationLanguage: supplier.communicationLanguage,
         }))
       );
 
@@ -723,8 +752,22 @@ const MakeInquiry = () => {
     setShowPDFPreview((prevState) => !prevState);
   };
 
-  const handleLanguageChange = (value: string) => {
-    setLanguage(value);
+  const handleLanguageChange = (value: string, id: number) => {
+    // pdfSupplierTag 업데이트
+    setPdfSupplierTag((prevTags) => {
+      const updatedTags = prevTags.map((tag) =>
+        tag.id === id ? { ...tag, communicationLanguage: value } : tag
+      );
+      return updatedTags;
+    });
+
+    // selectedSupplierTag 업데이트
+    setSelectedSupplierTag((prevTags) => {
+      const updatedSelectedTags = prevTags.map((tag) =>
+        tag.id === id ? { ...tag, communicationLanguage: value } : tag
+      );
+      return updatedSelectedTags;
+    });
   };
 
   const fetchInquirySearchResults = async () => {
@@ -854,6 +897,7 @@ const MakeInquiry = () => {
           pdfHeader={pdfHeader}
           language={language}
           setPdfFileData={setPdfFileData}
+          handleLanguageChange={handleLanguageChange}
         />
       </Modal>
       <div
@@ -898,8 +942,10 @@ const MakeInquiry = () => {
         <span style={{ marginLeft: 20 }}>LANGUAGE: </span>
         <Select
           style={{ width: 100, float: "left", marginLeft: 10 }}
-          value={language}
-          onChange={handleLanguageChange}
+          value={pdfSupplierTag[0]?.communicationLanguage}
+          onChange={(value) =>
+            handleLanguageChange(value, pdfSupplierTag[0]?.id)
+          }
         >
           <Select.Option value="KOR">KOR</Select.Option>
           <Select.Option value="ENG">ENG</Select.Option>
@@ -919,7 +965,6 @@ const MakeInquiry = () => {
           items={items}
           vesselInfo={selectedVessel}
           pdfHeader={pdfHeader}
-          language={language}
           setPdfFileData={setPdfFileData}
         />
       )}
@@ -928,17 +973,10 @@ const MakeInquiry = () => {
         <PDFDocument
           formValues={formValues}
           items={items}
-          supplierName={
-            pdfSupplierTag.length > 0
-              ? language === "ENG"
-                ? pdfSupplierTag[0].name
-                : pdfSupplierTag[0].korName
-              : ""
-          }
+          supplier={pdfSupplierTag[0]}
           vesselInfo={selectedVessel}
           pdfHeader={pdfHeader}
           viewMode={true}
-          language={language}
         />
       )}
       <BtnGroup>

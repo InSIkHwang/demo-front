@@ -89,6 +89,7 @@ interface InquiryFormProps {
     name: string;
     code: string;
     email: string;
+    communicationLanguage: string;
   }[];
   handleFormChange: <K extends keyof FormValues>(
     key: K,
@@ -102,6 +103,7 @@ interface InquiryFormProps {
         korName: string;
         code: string;
         email: string;
+        communicationLanguage: string;
       }[]
     >
   >;

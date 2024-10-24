@@ -100,6 +100,7 @@ export interface InquiryListSupplier {
   korCompanyName?: string;
   representative: string;
   email: string;
+  communicationLanguage?: string;
 }
 
 export interface Inquiry {
@@ -382,6 +383,7 @@ export interface InquirySearchMakerSupplier {
   code: string;
   companyName: string;
   korCompanyName: string;
+  communicationLanguage: string;
   representative: string;
   email: string;
   count?: number;

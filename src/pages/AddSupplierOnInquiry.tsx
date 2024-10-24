@@ -64,14 +64,33 @@ const AddSupplierOnInquiry = () => {
   const [items, setItems] = useState<InquiryItem[]>([]);
   const [selectedVessel, setSelectedVessel] = useState<VesselList | null>(null);
   const [selectedSuppliers, setSelectedSuppliers] = useState<
-    { id: number; name: string; korName: string; code: string; email: string }[]
+    {
+      id: number;
+      name: string;
+      korName: string;
+      code: string;
+      email: string;
+      communicationLanguage: string;
+    }[]
   >([]);
   const [selectedSupplierTag, setSelectedSupplierTag] = useState<
-    { id: number; name: string; korName: string; code: string; email: string }[]
+    {
+      id: number;
+      name: string;
+      korName: string;
+      code: string;
+      email: string;
+      communicationLanguage: string;
+    }[]
   >([]);
   const [showPDFPreview, setShowPDFPreview] = useState(false);
   const [pdfSupplierTag, setPdfSupplierTag] = useState<
-    { id: number; name: string; korName: string }[]
+    {
+      id: number;
+      name: string;
+      korName: string;
+      communicationLanguage: string;
+    }[]
   >([]);
   const [pdfHeader, setPdfHeader] = useState<string>("");
   const [formValues, setFormValues] = useState(INITIAL_FORM_VALUES);
@@ -283,6 +302,7 @@ const AddSupplierOnInquiry = () => {
           pdfHeader={pdfHeader}
           language={language}
           setPdfFileData={setPdfFileData}
+          handleLanguageChange={handleLanguageChange}
         />
       </Modal>
       <div
@@ -345,7 +365,6 @@ const AddSupplierOnInquiry = () => {
           items={items}
           vesselInfo={selectedVessel}
           pdfHeader={pdfHeader}
-          language={language}
           setPdfFileData={setPdfFileData}
         />
       )}
@@ -354,17 +373,10 @@ const AddSupplierOnInquiry = () => {
         <PDFDocument
           formValues={formValues}
           items={items}
-          supplierName={
-            pdfSupplierTag.length > 0
-              ? language === "ENG"
-                ? pdfSupplierTag[0].name
-                : pdfSupplierTag[0].korName
-              : ""
-          }
+          supplier={pdfSupplierTag[0]}
           vesselInfo={selectedVessel}
           pdfHeader={pdfHeader}
           viewMode={true}
-          language={language}
         />
       )}
       <BtnGroup>

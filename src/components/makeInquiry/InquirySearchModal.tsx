@@ -23,6 +23,7 @@ interface InquirySearchModalProps {
     name: string;
     code: string;
     email: string;
+    communicationLanguage: string;
   }[];
   handleTagClick: (id: number) => void;
   inquirySearchMakerNameResult: InquirySearchMakerInquirySearchResult | null;
@@ -36,6 +37,7 @@ interface InquirySearchModalProps {
         korName: string;
         code: string;
         email: string;
+        communicationLanguage: string;
       }[]
     >
   >;
@@ -88,6 +90,8 @@ const InquirySearchModal = ({
                       korName: supplier.korCompanyName || supplier.companyName,
                       code: supplier.code || "",
                       email: supplier.email || "",
+                      communicationLanguage:
+                        supplier.communicationLanguage || "",
                     };
 
                     // 새로운 공급업체 추가
@@ -131,6 +135,7 @@ const InquirySearchModal = ({
                   korName: record.korCompanyName || record.companyName,
                   code: record.code || "",
                   email: record.email || "",
+                  communicationLanguage: record.communicationLanguage || "",
                 };
 
                 // 새로운 공급업체 추가
