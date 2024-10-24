@@ -256,6 +256,7 @@ const FormComponent = ({
           id: supplier.id,
           code: supplier.code,
           email: supplier.email,
+          communicationLanguage: supplier.communicationLanguage || "KOR",
         }));
         setSupplierList(options);
 
@@ -291,6 +292,7 @@ const FormComponent = ({
             id: supplier.supplierId,
             code: supplier.code,
             email: supplier.email,
+            communicationLanguage: supplier.communicationLanguage || "KOR",
           })),
         }));
 

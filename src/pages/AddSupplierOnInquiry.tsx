@@ -202,8 +202,22 @@ const AddSupplierOnInquiry = () => {
     setShowPDFPreview((prevState) => !prevState);
   };
 
-  const handleLanguageChange = (value: string) => {
-    setLanguage(value);
+  const handleLanguageChange = (value: string, id: number) => {
+    // pdfSupplierTag 업데이트
+    setPdfSupplierTag((prevTags) => {
+      const updatedTags = prevTags.map((tag) =>
+        tag.id === id ? { ...tag, communicationLanguage: value } : tag
+      );
+      return updatedTags;
+    });
+
+    // selectedSupplierTag 업데이트
+    setSelectedSupplierTag((prevTags) => {
+      const updatedSelectedTags = prevTags.map((tag) =>
+        tag.id === id ? { ...tag, communicationLanguage: value } : tag
+      );
+      return updatedSelectedTags;
+    });
   };
 
   const fetchInquirySearchResults = async () => {
@@ -252,6 +266,7 @@ const AddSupplierOnInquiry = () => {
     return Promise.resolve(); // 빈 Promise를 반환
   };
 
+  console.log(selectedSupplierTag);
   return (
     <FormContainer>
       <Title>매입처 추가(ADD SUPPLIER)</Title>
@@ -344,8 +359,10 @@ const AddSupplierOnInquiry = () => {
         <span style={{ marginLeft: 20 }}>LANGUAGE: </span>
         <Select
           style={{ width: 100, float: "left", marginLeft: 10 }}
-          value={language}
-          onChange={handleLanguageChange}
+          value={pdfSupplierTag[0]?.communicationLanguage}
+          onChange={(value) =>
+            handleLanguageChange(value, pdfSupplierTag[0]?.id)
+          }
         >
           <Select.Option value="KOR">KOR</Select.Option>
           <Select.Option value="ENG">ENG</Select.Option>
