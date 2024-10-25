@@ -78,31 +78,22 @@ const InquirySearchModal = ({
             <Tag
               key={supplier.id}
               onClick={() => {
-                Modal.confirm({
-                  title: "Add Supplier",
-                  content: `Do you want to add ${supplier.companyName} as a supplier?`,
-                  okText: "Yes",
-                  cancelText: "No",
-                  onOk: () => {
-                    const selectedSupplier = {
-                      id: supplier.id,
-                      name: supplier.companyName,
-                      korName: supplier.korCompanyName || supplier.companyName,
-                      code: supplier.code || "",
-                      email: supplier.email || "",
-                      communicationLanguage:
-                        supplier.communicationLanguage || "",
-                    };
+                const selectedSupplier = {
+                  id: supplier.id,
+                  name: supplier.companyName,
+                  korName: supplier.korCompanyName || supplier.companyName,
+                  code: supplier.code || "",
+                  email: supplier.email || "",
+                  communicationLanguage: supplier.communicationLanguage || "",
+                };
 
-                    // 새로운 공급업체 추가
-                    setSelectedSuppliers((prevSuppliers) => {
-                      const newSuppliers = [...prevSuppliers, selectedSupplier];
+                // 새로운 공급업체 추가
+                setSelectedSuppliers((prevSuppliers) => {
+                  const newSuppliers = [...prevSuppliers, selectedSupplier];
 
-                      setIsFromInquirySearchModal(true);
+                  setIsFromInquirySearchModal(true);
 
-                      return newSuppliers; // 업데이트된 공급업체 리스트 반환
-                    });
-                  },
+                  return newSuppliers; // 업데이트된 공급업체 리스트 반환
                 });
               }}
               style={{ cursor: "pointer" }}
@@ -178,18 +169,27 @@ const InquirySearchModal = ({
         <Button key="cancel" onClick={onClose}>
           Close
         </Button>,
-        <Button key="search" type="primary" onClick={handleInquirySearch}>
-          Search
-        </Button>,
       ]}
       width={1000}
     >
-      <Input
-        placeholder="Enter maker name: ex) MITUBUSHI"
-        value={inquirySearchMakerName}
-        onChange={(e) => setInquirySearchMakerName(e.target.value)}
-        onPressEnter={handleInquirySearch}
-      />
+      <div style={{ display: "flex" }}>
+        <Input
+          style={{ flex: 8 }}
+          placeholder="Enter maker name: ex) MITUBUSHI"
+          value={inquirySearchMakerName}
+          onChange={(e) => setInquirySearchMakerName(e.target.value)}
+          onPressEnter={handleInquirySearch}
+        />
+        <Button
+          style={{ flex: 2, marginLeft: 5 }}
+          key="search"
+          type="primary"
+          onClick={handleInquirySearch}
+        >
+          Search
+        </Button>
+      </div>
+
       {selectedSuppliers.length > 0 && (
         <div style={{ marginTop: 10 }}>
           <span>Suppliers: </span>

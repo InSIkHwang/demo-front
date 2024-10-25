@@ -48,6 +48,7 @@ const FormComponent = ({
   setCusVesIdList,
   cusVesIdList,
 }: FormComponentProps) => {
+  const [form] = Form.useForm();
   const [companyNameList, setCompanyNameList] = useState<
     { companyName: string; code: string }[]
   >([]);
@@ -189,7 +190,7 @@ const FormComponent = ({
 
   return (
     <>
-      <Form layout="vertical" initialValues={formValues}>
+      <Form form={form} layout="vertical" initialValues={formValues}>
         <Row>
           <FormItem
             label="문서번호(Document No.)"
@@ -240,7 +241,22 @@ const FormComponent = ({
           >
             <Select
               value={formValues.currencyType}
-              onChange={(value) => handleFormChange("currencyType", value)}
+              onChange={(value) => {
+                handleFormChange("currencyType", value);
+                let currency = 0;
+                if (value === "USD") {
+                  currency = 1050;
+                } else if (value === "EUR") {
+                  currency = 1150;
+                } else if (value === "INR") {
+                  currency = 14;
+                }
+
+                handleFormChange("currency", currency);
+
+                // form 필드 동기화
+                form.setFieldsValue({ currency: currency });
+              }}
               disabled={readOnly}
             >
               {["USD", "EUR", "INR"].map((currencyType) => (

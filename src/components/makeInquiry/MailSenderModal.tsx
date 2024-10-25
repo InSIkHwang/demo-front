@@ -257,12 +257,7 @@ const MailSenderModal = ({
   };
 
   const handleFileUpload = (file: any) => {
-    const fileDataItem = file;
-
-    // `fileData` 배열에 파일 추가
-    setUploadFile((prevFileData: any) => [...prevFileData, fileDataItem]);
-
-    return false;
+    setUploadFile((prevFileData: any) => [...prevFileData, file]);
   };
 
   const handleFileRemove = (fileIndex: number) => {
@@ -421,12 +416,18 @@ const MailSenderModal = ({
               (PDF files are automatically attached)
             </span>
           </Title>
-          <Upload
+          <Upload.Dragger
             customRequest={({ file }) => handleFileUpload(file)}
             showUploadList={false}
+            multiple={true} // 여러 파일 업로드 가능
           >
-            <Button icon={<UploadOutlined />}>Upload File</Button>
-          </Upload>
+            <p className="ant-upload-drag-icon">
+              <UploadOutlined />
+            </p>
+            <p className="ant-upload-text">
+              Drag and drop files here or click to upload
+            </p>
+          </Upload.Dragger>
           {uploadFile.length > 0 && (
             <div style={{ marginTop: "16px" }}>
               {uploadFile.map((file, fileIndex) => (

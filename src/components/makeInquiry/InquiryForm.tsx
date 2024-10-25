@@ -172,6 +172,7 @@ const InquiryForm = ({
   isVesselModalOpen,
   isSupplierModalOpen,
 }: InquiryFormProps) => {
+  const [form] = Form.useForm();
   const [supplierSearch, setSupplierSearch] = useState("");
   const [categoryList, setCategoryList] = useState<string[]>([]);
   const [makerSearch, setMakerSearch] = useState("");
@@ -445,7 +446,7 @@ const InquiryForm = ({
 
   return (
     <>
-      <Form layout="vertical" initialValues={formValues}>
+      <Form form={form} layout="vertical" initialValues={formValues}>
         <FormRow>
           <InquiryItemForm
             label="문서번호(Document No.)"
@@ -482,10 +483,20 @@ const InquiryForm = ({
             label="Ref No."
             name="refNumber"
             rules={[{ required: true, message: "Please enter ref number" }]}
-            validateStatus={isRefNumDuplicate ? "error" : undefined} // 중복 여부에 따라 상태 설정
+            validateStatus={
+              !formValues.refNumber
+                ? "error"
+                : isRefNumDuplicate
+                ? "error"
+                : undefined
+            } // 비어있거나 중복일 때 오류 상태 설정
             help={
-              isRefNumDuplicate ? "The Ref number is duplicated." : undefined
-            } // 중복 메시지 설정
+              !formValues.refNumber
+                ? "Please enter ref number"
+                : isRefNumDuplicate
+                ? "The Ref number is duplicated."
+                : undefined
+            }
           >
             <Input
               value={formValues.refNumber}
@@ -519,11 +530,25 @@ const InquiryForm = ({
           >
             <Select
               value={formValues.currencyType}
-              onChange={(value) => handleFormChange("currencyType", value)}
+              onChange={(value) => {
+                handleFormChange("currencyType", value);
+                let currency = 0;
+                if (value === "USD") {
+                  currency = 1050;
+                } else if (value === "EUR") {
+                  currency = 1150;
+                } else if (value === "INR") {
+                  currency = 14;
+                }
+
+                handleFormChange("currency", currency);
+                // form 필드 동기화
+                form.setFieldsValue({ currency: currency });
+              }}
             >
-              {["USD", "EUR", "INR"].map((currency) => (
-                <Option key={currency} value={currency}>
-                  {currency}
+              {["USD", "EUR", "INR"].map((currencyType) => (
+                <Option key={currencyType} value={currencyType}>
+                  {currencyType}
                 </Option>
               ))}
             </Select>

@@ -192,7 +192,7 @@ const MergedTableComponent = ({
       key: "no",
       width: 0,
       render: (_: any, record: any, index: number) => {
-        const filteredIndex = dataSource
+        const filteredIndex = sortedData
           .filter((item: any) => item.itemType === "ITEM")
           .indexOf(record);
 
@@ -385,6 +385,7 @@ const MergedTableComponent = ({
       width: 60,
     },
   ];
+  console.log(dataSource);
 
   return (
     <>

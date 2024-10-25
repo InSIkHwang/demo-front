@@ -857,7 +857,9 @@ const MakeInquiry = () => {
         type="primary"
         onClick={handleSubmit}
         style={{ margin: "20px 0 0 15px", float: "right" }}
-        disabled={isDocNumDuplicate}
+        disabled={
+          isDocNumDuplicate || !formValues.docNumber || !formValues.refNumber
+        }
       >
         Save
       </Button>
