@@ -153,8 +153,7 @@ const CustomerInquiryList = () => {
   const [totalCount, setTotalCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [searchText, setSearchText] = useState<string>("");
-  const [searchCategory, setSearchCategory] =
-    useState<string>("documentNumber");
+  const [searchCategory, setSearchCategory] = useState<string>("ALL");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage, setItemsPerPage] = useState<number>(30);
   const [selectedInquiryId, setSelectedInquiryId] = useState<number | null>(
@@ -213,6 +212,8 @@ const CustomerInquiryList = () => {
         searchCategory === "documentNumber" ? searchText : "",
         searchCategory === "refNumber" ? searchText : "",
         searchCategory === "customerName" ? searchText : "",
+        searchCategory === "vesselName" ? searchText : "",
+        searchCategory === "ALL" ? searchText : "",
         currentPage,
         itemsPerPage,
         viewMyInquiryOnly,
@@ -268,18 +269,21 @@ const CustomerInquiryList = () => {
         <TableHeader>
           <SearchBar>
             <Select
-              defaultValue="documentNumber"
+              defaultValue="ALL"
               style={{ width: 140, marginRight: 10 }}
               onChange={(value) => setSearchCategory(value)}
             >
+              <Select.Option value="ALL">ALL</Select.Option>
               <Select.Option value="documentNumber">Document No.</Select.Option>
               <Select.Option value="refNumber">REF No.</Select.Option>
               <Select.Option value="customerName">Costomer Name</Select.Option>
+              <Select.Option value="vesselName">Vessel Name</Select.Option>
             </Select>
             <Input
               placeholder="Search..."
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
+              onPressEnter={() => handleSearch()}
               style={{ width: 300, marginRight: 10 }}
             />
             <DatePicker

@@ -507,6 +507,7 @@ const OfferList = () => {
               placeholder="Search..."
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
+              onPressEnter={() => handleSearch()}
               style={{ width: 300, marginRight: 10 }}
             />
             <DatePicker

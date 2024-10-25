@@ -380,6 +380,8 @@ export const searchInquiryList = async (
   documentNumber: string = "",
   refNumber: string = "",
   customerName: string = "",
+  vesselName: string = "",
+  query: string = "",
   page: number,
   pageSize: number,
   viewMyInquiryOnly: boolean,
@@ -395,6 +397,8 @@ export const searchInquiryList = async (
     documentNumber,
     refNumber,
     customerName,
+    vesselName,
+    query,
     page: (page - 1).toString(), // 페이지는 0부터 시작
     pageSize: pageSize.toString(), // 페이지당 아이템 수,
     writer: viewMyInquiryOnly ? "MY" : "ALL",
