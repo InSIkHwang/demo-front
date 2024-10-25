@@ -602,6 +602,7 @@ const MakeOffer = () => {
           handleFormChange={handleFormChange}
           setCusVesIdList={setCusVesIdList}
           cusVesIdList={cusVesIdList}
+          offerId={idList.offerId}
         />
       )}
       <ChargeInputPopover
@@ -649,6 +650,7 @@ const MakeOffer = () => {
             htmlType="submit"
             style={{ float: "right", width: 100, marginTop: 20 }}
             onClick={handleSave}
+            disabled={!formValues.refNumber}
           >
             Save
           </Button>{" "}

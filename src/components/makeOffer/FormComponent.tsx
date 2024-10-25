@@ -10,7 +10,7 @@ import {
 } from "antd";
 import styled from "styled-components";
 import { FormValuesType, VesselList } from "../../types/types";
-import { fetchCompanyNames } from "../../api/api";
+import { chkDuplicateRefNum, fetchCompanyNames } from "../../api/api";
 import CreateCompanyModal from "../company/CreateCompanyModal";
 import { debounce } from "lodash";
 import CreateVesselModal from "../vessel/CreateVesselModal";
@@ -39,6 +39,7 @@ interface FormComponentProps {
     SetStateAction<{ customerId: number | null; vesselId: number | null }>
   >;
   cusVesIdList: { customerId: number | null; vesselId: number | null };
+  offerId: number;
 }
 
 const FormComponent = ({
@@ -47,6 +48,7 @@ const FormComponent = ({
   handleFormChange,
   setCusVesIdList,
   cusVesIdList,
+  offerId,
 }: FormComponentProps) => {
   const [form] = Form.useForm();
   const [companyNameList, setCompanyNameList] = useState<
@@ -65,6 +67,7 @@ const FormComponent = ({
   const [autoCompleteOptions, setAutoCompleteOptions] = useState<
     { value: string }[]
   >([]);
+  const [isRefNumDuplicate, setIsRefNumDuplicate] = useState<boolean>(false);
 
   useEffect(() => {
     if (selectedCustomerId && selectedVessel) {
@@ -213,9 +216,35 @@ const FormComponent = ({
             label="Ref No."
             name="refNumber"
             rules={[{ required: true, message: "Please enter ref number" }]}
+            validateStatus={
+              !formValues.refNumber
+                ? "error"
+                : isRefNumDuplicate
+                ? "error"
+                : undefined
+            } // 비어있거나 중복일 때 오류 상태 설정
+            help={
+              !formValues.refNumber
+                ? "Please enter ref number"
+                : isRefNumDuplicate
+                ? "The Ref number is duplicated."
+                : undefined
+            }
             style={{ maxWidth: 350 }}
           >
-            <Input disabled={readOnly} />
+            <Input
+              value={formValues.refNumber}
+              onChange={(e) => handleFormChange("refNumber", e.target.value)}
+              onBlur={async (e) => {
+                const refNumber = e.target.value.trim();
+                const isDuplicate = await chkDuplicateRefNum(
+                  refNumber,
+                  offerId
+                );
+                setIsRefNumDuplicate(isDuplicate); // 중복 여부 설정
+              }}
+              disabled={readOnly}
+            />
           </FormItem>
           <FormItem label="문서상태" name="documentStatus">
             <Input disabled />
