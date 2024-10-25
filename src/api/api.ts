@@ -113,10 +113,14 @@ export const fetchItemData = async (itemCode: string) => {
 };
 
 //Supplier 상세 정보 조회
-export const fetchSupplierDetail = async (suppliersId: number) => {
-  const response = await axios.get(`/api/suppliers/${suppliersId}`);
-
-  return response.data;
+export const fetchSupplierDetail = async (id: number, category: string) => {
+  if (category === "supplier") {
+    const response = await axios.get(`/api/suppliers/${id}`);
+    return response.data;
+  } else if (category === "customer") {
+    const response = await axios.get(`/api/customers/${id}`);
+    return response.data;
+  }
 };
 
 //Supplier add Maker

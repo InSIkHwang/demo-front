@@ -61,7 +61,10 @@ const HeaderEditModal = ({
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await fetchSupplierDetail(pdfCompanyTag[0].id);
+      const response = await fetchSupplierDetail(
+        pdfCompanyTag[0].id,
+        "supplier"
+      );
       setSelectedSupplier(response);
       setText(response.headerMessage || "");
     } catch (error) {

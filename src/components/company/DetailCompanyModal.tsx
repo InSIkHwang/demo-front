@@ -146,7 +146,7 @@ const DetailCompanyModal = ({
   const getCompanyDetails = async () => {
     setIsLoading(true);
     try {
-      const supplierDetail = await fetchSupplierDetail(company.id);
+      const supplierDetail = await fetchSupplierDetail(company.id, category);
       setFormData(supplierDetail);
       setLoadData(supplierDetail);
       setMakerCategoryList(supplierDetail.makerCategoryList);
