@@ -481,50 +481,24 @@ const OfferPDFDocument = ({
           >
             <Text wrap>T O T A L ({info.currencyType})</Text>
             <Text style={{ fontFamily: "NotoSansRegular" }} wrap>
-              {(() => {
-                switch (info.currencyType) {
-                  case "USD":
-                    return `$${totalSalesAmountGlobal?.toLocaleString("en-US", {
-                      minimumFractionDigits: 2,
-                    })}`;
-                  case "EUR":
-                    return `€${totalSalesAmountGlobal?.toLocaleString("en-US", {
-                      minimumFractionDigits: 2,
-                    })}`;
-                  case "INR":
-                    return `₹${totalSalesAmountGlobal?.toLocaleString("en-US", {
-                      minimumFractionDigits: 2,
-                    })}`;
-                  case "JPY":
-                    return `¥${totalSalesAmountGlobal?.toLocaleString("en-US", {
-                      minimumFractionDigits: 2,
-                    })}`;
-                  default:
-                    return `${totalSalesAmountGlobal?.toLocaleString("en-US", {
-                      minimumFractionDigits: 2,
-                    })}`;
-                }
-              })()}
+              {totalSalesAmountGlobal?.toLocaleString(undefined, {
+                style: "currency",
+                currency: info.currencyType,
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </Text>
           </View>
           {dcInfo.dcPercent && dcInfo.dcPercent !== 0 && (
             <View style={styles.tableDCAmount}>
               <Text wrap>DC AMT({dcInfo.dcPercent}%)</Text>
               <Text style={styles.tableTotalAmount} wrap>
-                {(() => {
-                  switch (info.currencyType) {
-                    case "USD":
-                      return `-$${dcAmountGlobal?.toFixed(2).toLocaleString()}`;
-                    case "EUR":
-                      return `-€${dcAmountGlobal?.toFixed(2).toLocaleString()}`;
-                    case "INR":
-                      return `-₹${dcAmountGlobal?.toFixed(2).toLocaleString()}`;
-                    case "JPY":
-                      return `-¥${dcAmountGlobal?.toFixed(2).toLocaleString()}`;
-                    default:
-                      return `-${dcAmountGlobal?.toFixed(2).toLocaleString()}`;
-                  }
-                })()}
+                {dcAmountGlobal?.toLocaleString(undefined, {
+                  style: "currency",
+                  currency: info.currencyType,
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
               </Text>
             </View>
           )}
@@ -532,37 +506,23 @@ const OfferPDFDocument = ({
             <View>
               {invChargeList.map((charge) => (
                 <View key={charge.invChargeId} style={styles.tableDCAmount}>
-                  <Text wrap>{charge.customCharge?.split("")}</Text>
+                  <Text wrap>{charge.customCharge}</Text>
                   <Text style={styles.tableTotalAmount} wrap>
-                    {(() => {
-                      switch (info.currencyType) {
-                        case "USD":
-                          return `$${charge.chargePriceGlobal
-                            ?.toFixed(2)
-                            .toLocaleString()}`;
-                        case "EUR":
-                          return `€${charge.chargePriceGlobal
-                            ?.toFixed(2)
-                            .toLocaleString()}`;
-                        case "INR":
-                          return `₹${charge.chargePriceGlobal
-                            ?.toFixed(2)
-                            .toLocaleString()}`;
-                        case "JPY":
-                          return `¥${charge.chargePriceGlobal
-                            ?.toFixed(2)
-                            .toLocaleString()}`;
-                        default:
-                          return `${charge.chargePriceGlobal
-                            ?.toFixed(2)
-                            .toLocaleString()}`;
+                    {Number(charge.chargePriceGlobal)?.toLocaleString(
+                      undefined,
+                      {
+                        style: "currency",
+                        currency: info.currencyType,
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
                       }
-                    })()}
+                    )}
                   </Text>
                 </View>
               ))}
             </View>
           )}
+
           {(dcInfo.dcPercent ||
             (invChargeList && invChargeList.length > 0)) && (
             <View
@@ -583,30 +543,12 @@ const OfferPDFDocument = ({
                 }}
                 wrap
               >
-                {(() => {
-                  switch (info.currencyType) {
-                    case "USD":
-                      return `$${finalTotals.totalSalesAmountGlobal
-                        ?.toFixed(2)
-                        .toLocaleString()}`;
-                    case "EUR":
-                      return `€${finalTotals.totalSalesAmountGlobal
-                        ?.toFixed(2)
-                        .toLocaleString()}`;
-                    case "INR":
-                      return `₹${finalTotals.totalSalesAmountGlobal
-                        ?.toFixed(2)
-                        .toLocaleString()}`;
-                    case "JPY":
-                      return `¥${finalTotals.totalSalesAmountGlobal
-                        ?.toFixed(2)
-                        .toLocaleString()}`;
-                    default:
-                      return `${finalTotals.totalSalesAmountGlobal
-                        ?.toFixed(2)
-                        .toLocaleString()}`;
-                  }
-                })()}
+                {finalTotals.totalSalesAmountGlobal?.toLocaleString(undefined, {
+                  style: "currency",
+                  currency: info.currencyType,
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
               </Text>
             </View>
           )}
