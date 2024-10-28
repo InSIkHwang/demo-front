@@ -211,8 +211,7 @@ const OfferList = () => {
   const [totalCount, setTotalCount] = useState<number>();
   const [loading, setLoading] = useState<boolean>(true);
   const [searchText, setSearchText] = useState<string>("");
-  const [searchCategory, setSearchCategory] =
-    useState<string>("documentNumber");
+  const [searchCategory, setSearchCategory] = useState<string>("query");
   const [registerStartDate, setRegisterStartDate] = useState<string>("");
   const [registerEndDate, setRegisterEndDate] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -253,6 +252,7 @@ const OfferList = () => {
     setLoading(true);
     try {
       // searchCategory에 해당하는 필드만 searchText를 할당
+      const query = searchCategory === "query" ? searchText : "";
       const documentNumber =
         searchCategory === "documentNumber" ? searchText : "";
       const refNumber = searchCategory === "refNumber" ? searchText : "";
@@ -261,6 +261,7 @@ const OfferList = () => {
       const response = await searchOfferList(
         registerStartDate,
         registerEndDate,
+        query,
         documentNumber,
         refNumber,
         customerName,
@@ -495,10 +496,11 @@ const OfferList = () => {
         <TableHeader>
           <SearchBar>
             <Select
-              defaultValue="documentNumber"
+              defaultValue="ALL"
               style={{ width: 150, marginRight: 10 }}
               onChange={(value) => setSearchCategory(value)}
             >
+              <Select.Option value="query">ALL</Select.Option>
               <Select.Option value="documentNumber">Document No.</Select.Option>
               <Select.Option value="refNumber">REF No.</Select.Option>
               <Select.Option value="customerName">Costomer Name</Select.Option>

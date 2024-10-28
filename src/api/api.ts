@@ -461,6 +461,7 @@ export const fetchOfferDetail = async (
 export const searchOfferList = async (
   registerStartDate: string = "",
   registerEndDate: string = "",
+  query: string = "",
   documentNumber: string = "",
   refNumber: string = "",
   customerName: string = "",
@@ -475,6 +476,7 @@ export const searchOfferList = async (
   const queryParams: { [key: string]: string } = {
     registerStartDate,
     registerEndDate,
+    query,
     documentNumber,
     refNumber,
     customerName,
