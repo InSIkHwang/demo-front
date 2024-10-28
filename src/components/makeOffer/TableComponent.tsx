@@ -838,32 +838,112 @@ const TableComponent = ({
       dataIndex: "salesPriceKRW",
       key: "salesPriceKRW",
       width: 115,
-      render: (text: number, record: any) =>
-        record.itemType === "ITEM" && !record.itemRemark ? (
+      render: (text: number, record: any, index: number) => {
+        if (record.itemType !== "ITEM" || record.itemRemark) {
+          handleInputChange(index, "salesPriceKRW", 0); // 값을 0으로 설정
+          handleInputChange(index, "salesAmountKRW", 0);
+          return (
+            <Input
+              value={0}
+              ref={(el) => {
+                if (!inputRefs.current[index]) {
+                  inputRefs.current[index] = [];
+                }
+                inputRefs.current[index][5] = el;
+              }}
+              onKeyDown={(e) => handleNextRowKeyDown(e, index, 5)}
+            />
+          );
+        }
+        return (
           <Input
-            type="text"
-            value={text?.toLocaleString()}
-            readOnly
+            type="text" // Change to "text" to handle formatted input
+            value={text?.toLocaleString()} // Display formatted value
+            ref={(el) => {
+              if (!inputRefs.current[index]) {
+                inputRefs.current[index] = [];
+              }
+              inputRefs.current[index][5] = el;
+            }}
+            onKeyDown={(e) => handleNextRowKeyDown(e, index, 5)}
+            onChange={(e) =>
+              handleInputChange(index, "salesPriceKRW", e.target.value)
+            }
+            onBlur={(e) => {
+              const value = e.target.value;
+              const unformattedValue = value.replace(/,/g, "");
+              const updatedValue = isNaN(Number(unformattedValue))
+                ? 0
+                : Number(unformattedValue);
+              handlePriceInputChange(
+                index,
+                "salesPriceKRW",
+                roundToTwoDecimalPlaces(updatedValue),
+                currency
+              );
+            }}
             style={{ width: "100%" }}
             addonBefore="₩"
+            className="custom-input"
           />
-        ) : null,
+        );
+      },
     },
     {
       title: "Sales Price(F)",
       dataIndex: "salesPriceGlobal",
       key: "salesPriceGlobal",
       width: 115,
-      render: (text: number, record: any) =>
-        record.itemType === "ITEM" && !record.itemRemark ? (
+      render: (text: number, record: any, index: number) => {
+        if (record.itemType !== "ITEM" || record.itemRemark) {
+          handleInputChange(index, "salesPriceGlobal", 0); // 값을 0으로 설정
+          handleInputChange(index, "salesAmountGlobal", 0);
+          return (
+            <Input
+              value={0}
+              ref={(el) => {
+                if (!inputRefs.current[index]) {
+                  inputRefs.current[index] = [];
+                }
+                inputRefs.current[index][6] = el;
+              }}
+              onKeyDown={(e) => handleNextRowKeyDown(e, index, 6)}
+            />
+          );
+        }
+        return (
           <Input
-            type="text"
-            value={text?.toLocaleString()}
-            readOnly
+            type="text" // Change to "text" to handle formatted input
+            value={text?.toLocaleString()} // Display formatted value
+            ref={(el) => {
+              if (!inputRefs.current[index]) {
+                inputRefs.current[index] = [];
+              }
+              inputRefs.current[index][6] = el;
+            }}
+            onKeyDown={(e) => handleNextRowKeyDown(e, index, 6)}
+            onChange={(e) =>
+              handleInputChange(index, "salesPriceGlobal", e.target.value)
+            }
+            onBlur={(e) => {
+              const value = e.target.value;
+              const unformattedValue = value.replace(/,/g, "");
+              const updatedValue = isNaN(Number(unformattedValue))
+                ? 0
+                : Number(unformattedValue);
+              handlePriceInputChange(
+                index,
+                "salesPriceGlobal",
+                roundToTwoDecimalPlaces(updatedValue),
+                currency
+              );
+            }}
             style={{ width: "100%" }}
-            addonBefore="F"
+            addonBefore="₩"
+            className="custom-input"
           />
-        ) : null,
+        );
+      },
     },
     {
       title: "Sales Amount(KRW)",

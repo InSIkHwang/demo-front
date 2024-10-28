@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
     fontFamily: "NotoSerifKR",
   },
   desctypeCell: {
-    marginLeft: 155,
+    marginLeft: 40,
     fontSize: 9,
   },
 });

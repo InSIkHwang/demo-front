@@ -192,8 +192,8 @@ const styles = StyleSheet.create({
     color: "grey",
   },
   desctypeCell: {
-    marginLeft: 125,
-    fontSize: 9,
+    marginLeft: 40,
+    fontSize: 8,
   },
 });
 

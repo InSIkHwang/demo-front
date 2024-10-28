@@ -54,6 +54,8 @@ const ExcelUploadModal = ({
     "qty",
     "unit",
     "itemRemark",
+    "salesPriceKRW",
+    "salesPriceGlobal",
     "purchasePriceKRW",
     "purchasePriceGlobal",
     "margin",
@@ -101,7 +103,7 @@ const ExcelUploadModal = ({
     const purchasePriceKRW = parseFloat(mappedRow.purchasePriceKRW) || 0;
     const purchasePriceGlobal = parseFloat(mappedRow.purchasePriceGlobal) || 0;
     const qty = mappedRow.qty;
-    const marginPercent = parseFloat(mappedRow.margin) || 0;
+    let marginPercent = parseFloat(mappedRow.margin) || 0;
 
     // 가격 계산 처리
     if (type === "offer") {
@@ -114,7 +116,7 @@ const ExcelUploadModal = ({
       }
 
       mappedRow.purchaseAmountKRW =
-        parseFloat((mappedRow.purchasePriceKRW * qty).toFixed(2)) || 0;
+        Math.round(mappedRow.purchasePriceKRW * qty) || 0; // 소수점 제거
       mappedRow.purchaseAmountGlobal =
         parseFloat((mappedRow.purchasePriceGlobal * qty).toFixed(2)) || 0;
 
@@ -124,7 +126,7 @@ const ExcelUploadModal = ({
 
         if (purchasePriceKRW) {
           mappedRow.salesPriceKRW =
-            parseFloat((purchasePriceKRW + marginValueKRW).toFixed(2)) || 0;
+            Math.round(purchasePriceKRW + marginValueKRW) || 0; // 소수점 제거
           mappedRow.salesPriceGlobal =
             parseFloat((mappedRow.salesPriceKRW / currency).toFixed(2)) || 0;
         } else {
@@ -132,14 +134,47 @@ const ExcelUploadModal = ({
             parseFloat((purchasePriceGlobal + marginValueGlobal).toFixed(2)) ||
             0;
           mappedRow.salesPriceKRW =
-            Math.round(mappedRow.salesPriceGlobal * currency) || 0;
+            Math.round(mappedRow.salesPriceGlobal * currency) || 0; // 소수점 제거
         }
 
         mappedRow.salesAmountKRW =
-          parseFloat((mappedRow.salesPriceKRW * qty).toFixed(2)) || 0;
+          Math.round(mappedRow.salesPriceKRW * qty) || 0; // 소수점 제거
         mappedRow.salesAmountGlobal =
           parseFloat((mappedRow.salesPriceGlobal * qty).toFixed(2)) || 0;
       }
+
+      // salesPriceGlobal 또는 salesPriceKRW 값이 주어졌을 때
+      if (mappedRow.salesPriceGlobal && !mappedRow.salesPriceKRW) {
+        mappedRow.salesPriceKRW =
+          Math.round(mappedRow.salesPriceGlobal * currency) || 0; // 소수점 제거
+
+        // 마진 계산 (소수점 둘째 자리까지)
+        marginPercent = parseFloat(
+          (
+            ((mappedRow.salesPriceGlobal - purchasePriceGlobal) /
+              (purchasePriceGlobal || 1)) *
+            100
+          ).toFixed(2)
+        );
+        mappedRow.margin = marginPercent;
+      } else if (mappedRow.salesPriceKRW && !mappedRow.salesPriceGlobal) {
+        mappedRow.salesPriceGlobal =
+          parseFloat((mappedRow.salesPriceKRW / currency).toFixed(2)) || 0;
+
+        // 마진 계산 (소수점 둘째 자리까지)
+        marginPercent = parseFloat(
+          (
+            ((mappedRow.salesPriceKRW - purchasePriceKRW) /
+              (purchasePriceKRW || 1)) *
+            100
+          ).toFixed(2)
+        );
+        mappedRow.margin = marginPercent;
+      }
+
+      mappedRow.salesAmountKRW = Math.round(mappedRow.salesPriceKRW * qty) || 0; // 소수점 제거
+      mappedRow.salesAmountGlobal =
+        parseFloat((mappedRow.salesPriceGlobal * qty).toFixed(2)) || 0;
     }
 
     // 가격 관련 필드 기본값 설정
@@ -164,6 +199,8 @@ const ExcelUploadModal = ({
               mappedKey === "qty" ||
               mappedKey === "purchasePriceKRW" ||
               mappedKey === "purchasePriceGlobal" ||
+              mappedKey === "salesPriceKRW" ||
+              mappedKey === "salesPriceGlobal" ||
               mappedKey === "margin"
             ) {
               mappedRow[mappedKey] = parseFloat(row[index]) || 0;
@@ -202,6 +239,8 @@ const ExcelUploadModal = ({
               mappedKey === "qty" ||
               mappedKey === "purchasePriceKRW" ||
               mappedKey === "purchasePriceGlobal" ||
+              mappedKey === "salesPriceKRW" ||
+              mappedKey === "salesPriceGlobal" ||
               mappedKey === "margin"
             ) {
               mappedRow[mappedKey] = parseFloat(row[index]) || 0;

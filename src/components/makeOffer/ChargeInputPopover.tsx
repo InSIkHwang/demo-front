@@ -48,7 +48,7 @@ const ChargeInputPopover = ({
   finalTotals,
 }: ChargeComponentProps) => {
   const calculateDcKrw = (totalSalesAmountKRW: number, value: number) => {
-    return Number((totalSalesAmountKRW * (value / 100)).toFixed(2));
+    return Math.round(totalSalesAmountKRW * (value / 100));
   };
 
   const calculateDcPercentFromKrw = (

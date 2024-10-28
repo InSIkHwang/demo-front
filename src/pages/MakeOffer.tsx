@@ -240,33 +240,59 @@ const MakeOffer = () => {
     const currentItem = updatedDataSource[index];
     let updatedItem = { ...currentItem, [key]: value };
 
-    // Check if the key is 'salesPriceGlobal'
     if (key === "purchasePriceGlobal") {
-      // Update salesPriceKRW based on the new value and currency
-      const updatedKRWPrice = convertCurrency(value, currency, "KRW");
+      const updatedKRWPrice = Math.round(
+        convertCurrency(value, currency, "KRW")
+      );
       updatedItem = { ...updatedItem, purchasePriceKRW: updatedKRWPrice };
+      handleMarginChange(index, currentItem.margin || 0);
     }
 
-    // Check if the key is 'salesPriceKRW'
     if (key === "purchasePriceKRW") {
-      // Update salesPriceGlobal based on the new value and currency
       const updatedGlobalPrice = convertCurrency(value, currency, "USD");
       updatedItem = {
         ...updatedItem,
         purchasePriceGlobal: updatedGlobalPrice,
       };
+      handleMarginChange(index, currentItem.margin || 0);
     }
 
-    handleMarginChange(index, currentItem.margin || 0);
+    if (key === "salesPriceGlobal") {
+      const updatedKRWPrice = Math.round(
+        convertCurrency(value, currency, "KRW")
+      );
+      updatedItem = { ...updatedItem, salesPriceKRW: updatedKRWPrice };
+
+      // 마진 계산 추가 (소수점 둘째 자리까지)
+      const margin = parseFloat(
+        (
+          ((value - (currentItem.purchasePriceGlobal || 1)) /
+            (currentItem.purchasePriceGlobal || 1)) *
+          100
+        ).toFixed(2)
+      );
+      updatedItem = { ...updatedItem, margin };
+    }
+
+    if (key === "salesPriceKRW") {
+      const updatedGlobalPrice = convertCurrency(value, currency, "USD");
+      updatedItem = { ...updatedItem, salesPriceGlobal: updatedGlobalPrice };
+
+      // 마진 계산 추가 (소수점 둘째 자리까지)
+      const margin = parseFloat(
+        (
+          ((value - (currentItem.purchasePriceKRW || 1)) /
+            (currentItem.purchasePriceKRW || 1)) *
+          100
+        ).toFixed(2)
+      );
+      updatedItem = { ...updatedItem, margin };
+    }
 
     // Update the data source immediately
     updatedDataSource[index] = updatedItem;
     if (JSON.stringify(dataSource) !== JSON.stringify(updatedDataSource)) {
       setDataSource(updatedDataSource);
-    }
-
-    // Call the debounced calculations if needed
-    if (key === "purchasePriceKRW" || key === "purchasePriceGlobal") {
       handleCalculations(index, updatedItem);
     }
   };
@@ -319,7 +345,7 @@ const MakeOffer = () => {
     const qty = currentItem.qty || 0;
 
     // 매출단가 계산 (매입단가 * (1 + 마진/100))
-    const salesPriceKRW = roundToTwoDecimalPlaces(
+    const salesPriceKRW = Math.round(
       purchasePriceKRW * (1 + marginValue / 100)
     );
     const salesAmountKRW = calculateTotalAmount(salesPriceKRW, qty);
@@ -500,9 +526,7 @@ const MakeOffer = () => {
     const updatedDataSource = dataSource.map((currentItem) => {
       const { purchasePriceKRW = 0, qty = 0, margin = 0 } = currentItem;
 
-      const salesPriceKRW = roundToTwoDecimalPlaces(
-        purchasePriceKRW * (1 + margin / 100)
-      );
+      const salesPriceKRW = Math.round(purchasePriceKRW * (1 + margin / 100));
       const salesAmountKRW = calculateTotalAmount(salesPriceKRW, qty);
 
       const exchangeRate = formValues.currency;
@@ -573,15 +597,15 @@ const MakeOffer = () => {
     // 최종 가격 설정
     setFinalTotals({
       ...finalTotals,
-      totalSalesAmountKRW: updatedTotalSalesAmountKRW,
+      totalSalesAmountKRW: Math.round(updatedTotalSalesAmountKRW),
       totalSalesAmountGlobal: updatedTotalSalesAmountGlobal,
       totalPurchaseAmountKRW,
       totalPurchaseAmountGlobal,
-      totalSalesAmountUnDcKRW: totalSalesAmountKRW,
+      totalSalesAmountUnDcKRW: Math.round(totalSalesAmountKRW),
       totalSalesAmountUnDcGlobal: totalSalesAmountGlobal,
-      totalPurchaseAmountUnDcKRW: totalPurchaseAmountKRW,
+      totalPurchaseAmountUnDcKRW: Math.round(totalPurchaseAmountKRW),
       totalPurchaseAmountUnDcGlobal: totalPurchaseAmountGlobal,
-      totalProfit: updatedTotalProfit,
+      totalProfit: Math.round(updatedTotalProfit),
       totalProfitPercent: updatedTotalProfitPercent,
     });
   };
