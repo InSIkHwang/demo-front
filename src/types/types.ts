@@ -217,6 +217,7 @@ export interface FormValuesType {
 
 export interface ItemDataType {
   position?: number;
+  indexNo?: string;
   itemCode: string;
   itemType: string;
   itemName: string;

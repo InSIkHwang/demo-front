@@ -188,16 +188,18 @@ const MergedTableComponent = ({
   const columns: ColumnsType<any> = [
     {
       title: "No.",
-      dataIndex: "no",
-      key: "no",
+      dataIndex: "indexNo",
+      key: "indexNo",
       width: 0,
-      render: (_: any, record: any, index: number) => {
+      render: (text: any, record: any, index: number) => {
         const filteredIndex = sortedData
           .filter((item: any) => item.itemType === "ITEM")
           .indexOf(record);
 
         return record.itemType === "ITEM" ? (
           <span>{filteredIndex + 1}</span>
+        ) : record.itemType === "DASH" ? (
+          <span>{text}</span>
         ) : null;
       },
     },
@@ -206,7 +208,7 @@ const MergedTableComponent = ({
       dataIndex: "itemCode",
       key: "itemCode",
       render: (text: string, record: ItemDataType) =>
-        record.itemType === "ITEM" ? (
+        record.itemType === "ITEM" || record.itemType === "DASH" ? (
           <span>{text}</span>
         ) : (
           <span>{record.itemType}</span>
@@ -238,7 +240,9 @@ const MergedTableComponent = ({
       dataIndex: "qty",
       key: "qty",
       render: (text: number, record: ItemDataType) =>
-        record.itemType === "ITEM" ? <span>{text}</span> : null,
+        record.itemType === "ITEM" || record.itemType === "DASH" ? (
+          <span>{text}</span>
+        ) : null,
       width: 60,
     },
     {
@@ -246,7 +250,7 @@ const MergedTableComponent = ({
       dataIndex: "salesPriceKRW",
       key: "salesPriceKRW",
       render: (text: number, record: ItemDataType) =>
-        record.itemType === "ITEM" ? (
+        record.itemType === "ITEM" || record.itemType === "DASH" ? (
           <span>{`₩ ${text?.toLocaleString()}`}</span>
         ) : null,
     },
@@ -255,7 +259,7 @@ const MergedTableComponent = ({
       dataIndex: "salesPriceGlobal",
       key: "salesPriceGlobal",
       render: (text: number, record: ItemDataType) =>
-        record.itemType === "ITEM" ? (
+        record.itemType === "ITEM" || record.itemType === "DASH" ? (
           <span>
             {(() => {
               switch (currencyType) {
@@ -279,7 +283,7 @@ const MergedTableComponent = ({
       dataIndex: "salesAmountKRW",
       key: "salesAmountKRW",
       render: (text: number, record: ItemDataType) =>
-        record.itemType === "ITEM" ? (
+        record.itemType === "ITEM" || record.itemType === "DASH" ? (
           <HighlightedCell>{`₩ ${text?.toLocaleString()}`}</HighlightedCell>
         ) : null,
     },
@@ -288,7 +292,7 @@ const MergedTableComponent = ({
       dataIndex: "salesAmountGlobal",
       key: "salesAmountGlobal",
       render: (text: number, record: ItemDataType) =>
-        record.itemType === "ITEM" ? (
+        record.itemType === "ITEM" || record.itemType === "DASH" ? (
           <HighlightedCell>
             {(() => {
               switch (currencyType) {
@@ -312,7 +316,7 @@ const MergedTableComponent = ({
       dataIndex: "purchasePriceKRW",
       key: "purchasePriceKRW",
       render: (text: number, record: ItemDataType) =>
-        record.itemType === "ITEM" ? (
+        record.itemType === "ITEM" || record.itemType === "DASH" ? (
           <span>{`₩ ${(text ?? 0)?.toLocaleString()}`}</span>
         ) : null,
     },
@@ -321,7 +325,7 @@ const MergedTableComponent = ({
       dataIndex: "purchasePriceGlobal",
       key: "purchasePriceGlobal",
       render: (text: number, record: ItemDataType) =>
-        record.itemType === "ITEM" ? (
+        record.itemType === "ITEM" || record.itemType === "DASH" ? (
           <span>
             {(() => {
               const value = text ?? 0; // null 또는 undefined일 때 0으로 처리
@@ -346,7 +350,7 @@ const MergedTableComponent = ({
       dataIndex: "purchaseAmountKRW",
       key: "purchaseAmountKRW",
       render: (text: number, record: ItemDataType) =>
-        record.itemType === "ITEM" ? (
+        record.itemType === "ITEM" || record.itemType === "DASH" ? (
           <HighlightedCell className="custom-span">{`₩ ${(
             text ?? 0
           )?.toLocaleString()}`}</HighlightedCell>
@@ -357,7 +361,7 @@ const MergedTableComponent = ({
       dataIndex: "purchaseAmountGlobal",
       key: "purchaseAmountGlobal",
       render: (text: number, record: ItemDataType) =>
-        record.itemType === "ITEM" ? (
+        record.itemType === "ITEM" || record.itemType === "DASH" ? (
           <HighlightedCell>
             {(() => {
               const value = text ?? 0; // null 또는 undefined일 때 0으로 처리
@@ -385,7 +389,6 @@ const MergedTableComponent = ({
       width: 60,
     },
   ];
-  console.log(dataSource);
 
   return (
     <>

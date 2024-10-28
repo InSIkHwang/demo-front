@@ -198,11 +198,12 @@ const styles = StyleSheet.create({
 });
 
 // 번호를 결정하는 함수
-const getDisplayNo = (itemType: string, itemIndex: number) => {
-  if (itemType === "ITEM") {
-    return (itemIndex + 1).toString(); // 1-based index for ITEM type
-  }
+const getDisplayNo = (itemType: string, itemIndex: number, indexNo: string) => {
   switch (itemType) {
+    case "ITEM":
+      return (itemIndex + 1).toString(); // 1-based index for ITEM type
+    case "DASH":
+      return indexNo;
     case "MAKER":
       return "MAKER";
     case "TYPE":
@@ -219,6 +220,7 @@ const renderTableRows = (items: ItemDataType[]) => {
   let itemIndex = 0;
   return items.map((item) => {
     const isItemType = item.itemType === "ITEM";
+    const isDashType = item.itemType === "DASH";
     const isDescType = item.itemType === "DESC";
     if (isItemType) {
       itemIndex += 1; // "ITEM" 타입일 때만 인덱스 증가
@@ -226,16 +228,16 @@ const renderTableRows = (items: ItemDataType[]) => {
 
     return (
       <View style={[styles.tableRow]} key={item.position} wrap={false}>
-        {isItemType && (
+        {(isItemType || isDashType) && (
           <View
             style={[styles.tableSmallCol, { borderLeft: "0.5px solid #000" }]}
           >
             <Text style={styles.tableCell}>
-              {getDisplayNo(item.itemType, itemIndex - 1)}
+              {getDisplayNo(item.itemType, itemIndex - 1, item.indexNo + "")}
             </Text>
           </View>
         )}
-        {isItemType ? (
+        {isItemType || isDashType ? (
           <>
             <View style={styles.tableMedCol}>
               <Text style={styles.tableCell}>{item.itemCode?.split("")}</Text>

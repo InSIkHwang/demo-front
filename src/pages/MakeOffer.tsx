@@ -181,244 +181,240 @@ const MakeOffer = () => {
     }
     return roundToTwoDecimalPlaces(value / currency);
   };
+console.log(dataSource);
 
-  const handleCalculations = (index: number, updatedItem: ItemDataType) => {
-    const updatedSalesAmountKRW = calculateTotalAmount(
-      updatedItem.salesPriceKRW,
-      updatedItem.qty
-    );
-    const updatedSalesAmountGlobal = calculateTotalAmount(
-      updatedItem.salesPriceGlobal,
-      updatedItem.qty
-    );
-    const updatedPurchaseAmountKRW = calculateTotalAmount(
-      updatedItem.purchasePriceKRW,
-      updatedItem.qty
-    );
-    const updatedPurchaseAmountGlobal = calculateTotalAmount(
-      updatedItem.purchasePriceGlobal,
-      updatedItem.qty
-    );
-
-    const updatedDataSource = [...dataSource];
-    updatedDataSource[index] = {
-      ...updatedItem,
-      salesAmountKRW: updatedSalesAmountKRW,
-      salesAmountGlobal: updatedSalesAmountGlobal,
-      purchaseAmountKRW: updatedPurchaseAmountKRW,
-      purchaseAmountGlobal: updatedPurchaseAmountGlobal,
-    };
-
-    // Update state if there are changes
-    if (JSON.stringify(dataSource) !== JSON.stringify(updatedDataSource)) {
-      setDataSource(updatedDataSource);
-    }
-  };
-
-  // Handle input change
-  const handleInputChange = useCallback(
-    (index: number, key: keyof ItemDataType, value: any) => {
-      const updatedDataSource = [...dataSource];
-      const currentItem = updatedDataSource[index];
-      let updatedItem = { ...currentItem, [key]: value };
-      // Update the data source immediately
-      updatedDataSource[index] = updatedItem;
-      if (JSON.stringify(dataSource) !== JSON.stringify(updatedDataSource)) {
-        setDataSource(updatedDataSource);
-      }
-    },
-    [dataSource]
+const handleCalculations = (index: number, updatedItem: ItemDataType) => {
+  const updatedSalesAmountKRW = calculateTotalAmount(
+    updatedItem.salesPriceKRW,
+    updatedItem.qty
+  );
+  const updatedSalesAmountGlobal = calculateTotalAmount(
+    updatedItem.salesPriceGlobal,
+    updatedItem.qty
+  );
+  const updatedPurchaseAmountKRW = calculateTotalAmount(
+    updatedItem.purchasePriceKRW,
+    updatedItem.qty
+  );
+  const updatedPurchaseAmountGlobal = calculateTotalAmount(
+    updatedItem.purchasePriceGlobal,
+    updatedItem.qty
   );
 
-  const handlePriceInputChange = (
-    index: number,
-    key: keyof ItemDataType,
-    value: any,
-    currency: number
-  ) => {
+  const updatedDataSource = [...dataSource];
+  updatedDataSource[index] = {
+    ...updatedItem,
+    salesAmountKRW: updatedSalesAmountKRW,
+    salesAmountGlobal: updatedSalesAmountGlobal,
+    purchaseAmountKRW: updatedPurchaseAmountKRW,
+    purchaseAmountGlobal: updatedPurchaseAmountGlobal,
+  };
+
+  // Update state if there are changes
+  if (JSON.stringify(dataSource) !== JSON.stringify(updatedDataSource)) {
+    setDataSource(updatedDataSource);
+  }
+};
+
+// Handle input change
+const handleInputChange = useCallback(
+  (index: number, key: keyof ItemDataType, value: any) => {
     const updatedDataSource = [...dataSource];
     const currentItem = updatedDataSource[index];
     let updatedItem = { ...currentItem, [key]: value };
-
-    if (key === "purchasePriceGlobal") {
-      const updatedKRWPrice = Math.round(
-        convertCurrency(value, currency, "KRW")
-      );
-      updatedItem = { ...updatedItem, purchasePriceKRW: updatedKRWPrice };
-      handleMarginChange(index, currentItem.margin || 0);
-    }
-
-    if (key === "purchasePriceKRW") {
-      const updatedGlobalPrice = convertCurrency(value, currency, "USD");
-      updatedItem = {
-        ...updatedItem,
-        purchasePriceGlobal: updatedGlobalPrice,
-      };
-      handleMarginChange(index, currentItem.margin || 0);
-    }
-
-    if (key === "salesPriceGlobal") {
-      const updatedKRWPrice = Math.round(
-        convertCurrency(value, currency, "KRW")
-      );
-      updatedItem = { ...updatedItem, salesPriceKRW: updatedKRWPrice };
-
-      // 마진 계산 추가 (소수점 둘째 자리까지)
-      const margin = parseFloat(
-        (
-          ((value - (currentItem.purchasePriceGlobal || 1)) /
-            (currentItem.purchasePriceGlobal || 1)) *
-          100
-        ).toFixed(2)
-      );
-      updatedItem = { ...updatedItem, margin };
-    }
-
-    if (key === "salesPriceKRW") {
-      const updatedGlobalPrice = convertCurrency(value, currency, "USD");
-      updatedItem = { ...updatedItem, salesPriceGlobal: updatedGlobalPrice };
-
-      // 마진 계산 추가 (소수점 둘째 자리까지)
-      const margin = parseFloat(
-        (
-          ((value - (currentItem.purchasePriceKRW || 1)) /
-            (currentItem.purchasePriceKRW || 1)) *
-          100
-        ).toFixed(2)
-      );
-      updatedItem = { ...updatedItem, margin };
-    }
-
     // Update the data source immediately
     updatedDataSource[index] = updatedItem;
     if (JSON.stringify(dataSource) !== JSON.stringify(updatedDataSource)) {
       setDataSource(updatedDataSource);
-      handleCalculations(index, updatedItem);
     }
-  };
+  },
+  [dataSource]
+);
 
-  const handleFormChange = <K extends keyof typeof formValues>(
-    key: K,
-    value: (typeof formValues)[K]
-  ) => {
-    if (!isReadOnly) {
-      setFormValues((prev) => ({ ...prev, [key]: value }));
-    }
-  };
+const handlePriceInputChange = (
+  index: number,
+  key: keyof ItemDataType,
+  value: any,
+  currency: number
+) => {
+  const updatedDataSource = [...dataSource];
+  const currentItem = updatedDataSource[index];
+  let updatedItem = { ...currentItem, [key]: value };
 
-  // 소수점 둘째자리까지 반올림하는 함수
-  const roundToTwoDecimalPlaces = (value: number) => {
-    return Math.round(value * 100) / 100;
-  };
+  if (key === "purchasePriceGlobal") {
+    const updatedKRWPrice = Math.round(convertCurrency(value, currency, "KRW"));
+    updatedItem = { ...updatedItem, purchasePriceKRW: updatedKRWPrice };
+    handleMarginChange(index, currentItem.margin || 0);
+  }
 
-  const updateGlobalPrices = () => {
-    dataSource.forEach((record: any, index: number) => {
-      if (record.itemType === "ITEM") {
-        const updatedSalesPriceGlobal = convertCurrency(
-          record.salesPriceKRW,
-          formValues.currency,
-          "USD"
-        );
-        const updatedPurchasePriceGlobal = convertCurrency(
-          record.purchasePriceKRW,
-          formValues.currency,
-          "USD"
-        );
-
-        handleInputChange(index, "salesPriceGlobal", updatedSalesPriceGlobal);
-        handleInputChange(
-          index,
-          "purchasePriceGlobal",
-          updatedPurchasePriceGlobal
-        );
-      }
-    });
-  };
-
-  const handleMarginChange = (index: number, marginValue: number) => {
-    const updatedDataSource = [...dataSource];
-    const currentItem = updatedDataSource[index];
-
-    // 매입단가
-    const purchasePriceKRW = currentItem.purchasePriceKRW || 0;
-
-    const qty = currentItem.qty || 0;
-
-    // 매출단가 계산 (매입단가 * (1 + 마진/100))
-    const salesPriceKRW = Math.round(
-      purchasePriceKRW * (1 + marginValue / 100)
-    );
-    const salesAmountKRW = calculateTotalAmount(salesPriceKRW, qty);
-
-    // Global 가격 계산 (환율 적용)
-    const exchangeRate = formValues.currency; // currency에 해당하는 환율 값을 사용
-    const salesPriceGlobal = roundToTwoDecimalPlaces(
-      salesPriceKRW / exchangeRate
-    );
-    const salesAmountGlobal = calculateTotalAmount(salesPriceGlobal, qty);
-
-    // 매출단가와 매출총액 업데이트
-    updatedDataSource[index] = {
-      ...currentItem,
-      salesPriceKRW,
-      salesAmountKRW,
-      salesPriceGlobal,
-      salesAmountGlobal,
-      margin: marginValue,
+  if (key === "purchasePriceKRW") {
+    const updatedGlobalPrice = convertCurrency(value, currency, "USD");
+    updatedItem = {
+      ...updatedItem,
+      purchasePriceGlobal: updatedGlobalPrice,
     };
+    handleMarginChange(index, currentItem.margin || 0);
+  }
 
+  if (key === "salesPriceGlobal") {
+    const updatedKRWPrice = Math.round(convertCurrency(value, currency, "KRW"));
+    updatedItem = { ...updatedItem, salesPriceKRW: updatedKRWPrice };
+
+    // 마진 계산 추가 (소수점 둘째 자리까지)
+    const margin = parseFloat(
+      (
+        ((value - (currentItem.purchasePriceGlobal || 1)) /
+          (currentItem.purchasePriceGlobal || 1)) *
+        100
+      ).toFixed(2)
+    );
+    updatedItem = { ...updatedItem, margin };
+  }
+
+  if (key === "salesPriceKRW") {
+    const updatedGlobalPrice = convertCurrency(value, currency, "USD");
+    updatedItem = { ...updatedItem, salesPriceGlobal: updatedGlobalPrice };
+
+    // 마진 계산 추가 (소수점 둘째 자리까지)
+    const margin = parseFloat(
+      (
+        ((value - (currentItem.purchasePriceKRW || 1)) /
+          (currentItem.purchasePriceKRW || 1)) *
+        100
+      ).toFixed(2)
+    );
+    updatedItem = { ...updatedItem, margin };
+  }
+
+  // Update the data source immediately
+  updatedDataSource[index] = updatedItem;
+  if (JSON.stringify(dataSource) !== JSON.stringify(updatedDataSource)) {
     setDataSource(updatedDataSource);
+    handleCalculations(index, updatedItem);
+  }
+};
+
+const handleFormChange = <K extends keyof typeof formValues>(
+  key: K,
+  value: (typeof formValues)[K]
+) => {
+  if (!isReadOnly) {
+    setFormValues((prev) => ({ ...prev, [key]: value }));
+  }
+};
+
+// 소수점 둘째자리까지 반올림하는 함수
+const roundToTwoDecimalPlaces = (value: number) => {
+  return Math.round(value * 100) / 100;
+};
+
+const updateGlobalPrices = () => {
+  dataSource.forEach((record: any, index: number) => {
+    if (record.itemType === "ITEM") {
+      const updatedSalesPriceGlobal = convertCurrency(
+        record.salesPriceKRW,
+        formValues.currency,
+        "USD"
+      );
+      const updatedPurchasePriceGlobal = convertCurrency(
+        record.purchasePriceKRW,
+        formValues.currency,
+        "USD"
+      );
+
+      handleInputChange(index, "salesPriceGlobal", updatedSalesPriceGlobal);
+      handleInputChange(
+        index,
+        "purchasePriceGlobal",
+        updatedPurchasePriceGlobal
+      );
+    }
+  });
+};
+
+const handleMarginChange = (index: number, marginValue: number) => {
+  const updatedDataSource = [...dataSource];
+  const currentItem = updatedDataSource[index];
+
+  // 매입단가
+  const purchasePriceKRW = currentItem.purchasePriceKRW || 0;
+
+  const qty = currentItem.qty || 0;
+
+  // 매출단가 계산 (매입단가 * (1 + 마진/100))
+  const salesPriceKRW = Math.round(purchasePriceKRW * (1 + marginValue / 100));
+  const salesAmountKRW = calculateTotalAmount(salesPriceKRW, qty);
+
+  // Global 가격 계산 (환율 적용)
+  const exchangeRate = formValues.currency; // currency에 해당하는 환율 값을 사용
+  const salesPriceGlobal = roundToTwoDecimalPlaces(
+    salesPriceKRW / exchangeRate
+  );
+  const salesAmountGlobal = calculateTotalAmount(salesPriceGlobal, qty);
+
+  // 매출단가와 매출총액 업데이트
+  updatedDataSource[index] = {
+    ...currentItem,
+    salesPriceKRW,
+    salesAmountKRW,
+    salesPriceGlobal,
+    salesAmountGlobal,
+    margin: marginValue,
   };
 
-  const handleSave = async () => {
-    if (dataSource.length === 0) {
-      message.error("Please add an item");
-      return;
-    }
+  setDataSource(updatedDataSource);
+};
 
-    const formattedData = dataSource.map((item: ItemDataType) => ({
-      position: item.position,
-      itemDetailId: item.itemDetailId,
-      itemName: item.itemName,
-      itemCode: item.itemCode,
-      itemRemark: item.itemRemark || "",
-      itemType: item.itemType,
-      qty: item.qty,
-      unit: item.unit || "",
-      itemId: item.itemId,
-      salesPriceKRW: item.salesPriceKRW,
-      salesPriceGlobal: item.salesPriceGlobal,
-      salesAmountKRW: item.salesAmountKRW,
-      salesAmountGlobal: item.salesAmountGlobal,
-      margin: item.margin,
-      purchasePriceKRW: item.purchasePriceKRW,
-      purchasePriceGlobal: item.purchasePriceGlobal,
-      purchaseAmountKRW: item.purchaseAmountKRW,
-      purchaseAmountGlobal: item.purchaseAmountGlobal,
-    }));
+const handleSave = async () => {
+  if (dataSource.length === 0) {
+    message.error("Please add an item");
+    return;
+  }
 
-    try {
-      if (isDuplicate) {
-        // 중복된 품목이 있을 경우 사용자에게 확인 메시지 표시
-        Modal.confirm({
-          title: "Duplicate items found.",
-          content: "Do you want to save it?",
-          okText: "OK",
-          cancelText: "Cancel",
-          onOk: async () => {
-            // 확인 버튼을 눌렀을 때 저장 로직 실행
-            await saveData(formattedData);
-          },
-        });
-      } else {
-        // 중복이 없을 경우 바로 저장
-        await saveData(formattedData);
-        loadOfferDetail();
-      }
-    } catch (error) {
-      message.error("An error occurred while saving data.");
+  const formattedData = dataSource.map((item: ItemDataType) => ({
+    position: item.position,
+    itemDetailId: item.itemDetailId,
+    indexNo: item.indexNo || "",
+    itemName: item.itemName,
+    itemCode: item.itemCode,
+    itemRemark: item.itemRemark || "",
+    itemType: item.itemType,
+    qty: item.qty,
+    unit: item.unit || "",
+    itemId: item.itemId,
+    salesPriceKRW: item.salesPriceKRW,
+    salesPriceGlobal: item.salesPriceGlobal,
+    salesAmountKRW: item.salesAmountKRW,
+    salesAmountGlobal: item.salesAmountGlobal,
+    margin: item.margin,
+    purchasePriceKRW: item.purchasePriceKRW,
+    purchasePriceGlobal: item.purchasePriceGlobal,
+    purchaseAmountKRW: item.purchaseAmountKRW,
+    purchaseAmountGlobal: item.purchaseAmountGlobal,
+  }));
+
+  try {
+    if (isDuplicate) {
+      // 중복된 품목이 있을 경우 사용자에게 확인 메시지 표시
+      Modal.confirm({
+        title: "Duplicate items found.",
+        content: "Do you want to save it?",
+        okText: "OK",
+        cancelText: "Cancel",
+        onOk: async () => {
+          // 확인 버튼을 눌렀을 때 저장 로직 실행
+          await saveData(formattedData);
+        },
+      });
+    } else {
+      // 중복이 없을 경우 바로 저장
+      await saveData(formattedData);
+      loadOfferDetail();
     }
-  };
+  } catch (error) {
+    message.error("An error occurred while saving data.");
+  }
+};
 
   // 저장 로직을 함수로 분리
   const saveData = async (formattedData: any) => {

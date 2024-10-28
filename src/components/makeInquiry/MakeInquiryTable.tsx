@@ -325,6 +325,8 @@ const MakeInquiryTable = ({
     [setItems]
   );
 
+  console.log(items);
+
   const columns: ColumnsType<any> = useMemo(
     () => [
       {

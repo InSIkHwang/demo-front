@@ -277,6 +277,7 @@ const TableComponent = ({
   const handleItemCodeChange = async (index: number, value: string) => {
     if ((value + "").trim() === "") {
       updateItemId(index, null);
+      handleInputChange(index, "itemCode", value);
       return;
     }
 
@@ -582,10 +583,28 @@ const TableComponent = ({
     },
     {
       title: "No.",
-      dataIndex: "no",
-      key: "no",
-      width: 30,
-      render: (_: any, record: any, index: number) => {
+      dataIndex: "indexNo",
+      key: "indexNo",
+      width: 80,
+      render: (text: string, record: any, index: number) => {
+        if (record.itemType === "DASH") {
+          return (
+            <Input
+              value={text}
+              ref={(el) => {
+                if (!inputRefs.current[index]) {
+                  inputRefs.current[index] = [];
+                }
+                inputRefs.current[index][0] = el;
+              }}
+              onChange={(e) => {
+                handleInputChange(index, "indexNo", e.target.value);
+              }}
+              onKeyDown={(e) => handleNextRowKeyDown(e, index, 0)}
+            ></Input>
+          );
+        }
+
         const filteredIndex = dataSource
           .filter((item: any) => item.itemType === "ITEM")
           .indexOf(record);
@@ -601,7 +620,7 @@ const TableComponent = ({
       key: "itemCode",
       width: 115,
       render: (text: string, record: any, index: number) => {
-        if (record.itemType !== "ITEM") {
+        if (record.itemType !== "ITEM" && record.itemType !== "DASH") {
           // handleInputChange를 호출하여 값을 0으로 설정
           handleInputChange(index, "itemCode", "");
           return (
@@ -669,7 +688,7 @@ const TableComponent = ({
           onChange={(value) => handleInputChange(index, "itemType", value)}
           style={{ width: "100%" }}
         >
-          {["MAKER", "TYPE", "DESC", "ITEM"].map((opt) => (
+          {["MAKER", "TYPE", "DESC", "ITEM", "DASH"].map((opt) => (
             <Select.Option key={opt} value={opt}>
               {opt}
             </Select.Option>
@@ -721,7 +740,7 @@ const TableComponent = ({
       width: 60,
       render: (text: number, record: any, index: number) => {
         // itemType이 ITEM이 아닐 경우 qty 값을 0으로 설정
-        if (record.itemType !== "ITEM") {
+        if (record.itemType !== "ITEM" && record.itemType !== "DASH") {
           // handleInputChange를 호출하여 값을 0으로 설정
           handleInputChange(index, "qty", 0);
           return (
@@ -783,7 +802,7 @@ const TableComponent = ({
       key: "unit",
       width: 75,
       render: (text: string, record: any, index: number) =>
-        record.itemType === "ITEM" ? (
+        record.itemType === "ITEM" || record.itemType === "DASH" ? (
           <Input
             value={text}
             ref={(el) => {
@@ -839,7 +858,10 @@ const TableComponent = ({
       key: "salesPriceKRW",
       width: 115,
       render: (text: number, record: any, index: number) => {
-        if (record.itemType !== "ITEM" || record.itemRemark) {
+        if (
+          (record.itemType !== "ITEM" && record.itemType !== "DASH") ||
+          record.itemRemark
+        ) {
           handleInputChange(index, "salesPriceKRW", 0); // 값을 0으로 설정
           handleInputChange(index, "salesAmountKRW", 0);
           return (
@@ -895,7 +917,10 @@ const TableComponent = ({
       key: "salesPriceGlobal",
       width: 115,
       render: (text: number, record: any, index: number) => {
-        if (record.itemType !== "ITEM" || record.itemRemark) {
+        if (
+          (record.itemType !== "ITEM" && record.itemType !== "DASH") ||
+          record.itemRemark
+        ) {
           handleInputChange(index, "salesPriceGlobal", 0); // 값을 0으로 설정
           handleInputChange(index, "salesAmountGlobal", 0);
           return (
@@ -952,7 +977,8 @@ const TableComponent = ({
       width: 115,
       className: "highlight-cell",
       render: (text: number, record: any) =>
-        record.itemType === "ITEM" && !record.itemRemark ? (
+        (record.itemType === "ITEM" || record.itemType === "DASH") &&
+        !record.itemRemark ? (
           <Input
             type="text"
             value={calculateTotalAmount(
@@ -972,7 +998,8 @@ const TableComponent = ({
       width: 115,
       className: "highlight-cell",
       render: (text: number, record: any) =>
-        record.itemType === "ITEM" && !record.itemRemark ? (
+        (record.itemType === "ITEM" || record.itemType === "DASH") &&
+        !record.itemRemark ? (
           <Input
             type="text"
             value={calculateTotalAmount(
@@ -991,7 +1018,10 @@ const TableComponent = ({
       key: "purchasePriceKRW",
       width: 115,
       render: (text: number, record: any, index: number) => {
-        if (record.itemType !== "ITEM" || record.itemRemark) {
+        if (
+          (record.itemType !== "ITEM" && record.itemType !== "DASH") ||
+          record.itemRemark
+        ) {
           handleInputChange(index, "purchasePriceKRW", 0); // 값을 0으로 설정
           handleInputChange(index, "purchaseAmountKRW", 0);
           return (
@@ -1047,7 +1077,10 @@ const TableComponent = ({
       key: "purchasePriceGlobal",
       width: 115,
       render: (text: number, record: any, index: number) => {
-        if (record.itemType !== "ITEM" || record.itemRemark) {
+        if (
+          (record.itemType !== "ITEM" && record.itemType !== "DASH") ||
+          record.itemRemark
+        ) {
           handleInputChange(index, "purchasePriceGlobal", 0); // 값을 0으로 설정
           handleInputChange(index, "purchaseAmountGlobal", 0);
           return (
@@ -1104,7 +1137,8 @@ const TableComponent = ({
       width: 115,
       className: "highlight-cell",
       render: (text: number, record: any, index: number) =>
-        record.itemType === "ITEM" && !record.itemRemark ? (
+        (record.itemType === "ITEM" || record.itemType === "DASH") &&
+        !record.itemRemark ? (
           <Input
             type="text" // Change to "text" to handle formatted input
             value={calculateTotalAmount(
@@ -1127,7 +1161,8 @@ const TableComponent = ({
       width: 115,
       className: "highlight-cell",
       render: (text: number, record: any, index: number) =>
-        record.itemType === "ITEM" && !record.itemRemark ? (
+        (record.itemType === "ITEM" || record.itemType === "DASH") &&
+        !record.itemRemark ? (
           <Input
             type="text" // Change to "text" to handle formatted input
             value={calculateTotalAmount(
@@ -1167,7 +1202,10 @@ const TableComponent = ({
       className: "highlight-cell",
 
       render: (text: number, record: any, index: number) => {
-        if (record.itemType !== "ITEM" || record.itemRemark) {
+        if (
+          (record.itemType !== "ITEM" && record.itemType !== "DASH") ||
+          record.itemRemark
+        ) {
           handleInputChange(index, "margin", 0); // 값을 0으로 설정
           return (
             <Input
