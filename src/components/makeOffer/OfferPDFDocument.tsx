@@ -483,7 +483,7 @@ const OfferPDFDocument = ({
           >
             <Text wrap>T O T A L ({info.currencyType})</Text>
             <Text style={{ fontFamily: "NotoSansRegular" }} wrap>
-              {totalSalesAmountGlobal?.toLocaleString(undefined, {
+              {totalSalesAmountGlobal?.toLocaleString("en-US", {
                 style: "currency",
                 currency: info.currencyType,
                 minimumFractionDigits: 2,
@@ -495,7 +495,7 @@ const OfferPDFDocument = ({
             <View style={styles.tableDCAmount}>
               <Text wrap>DC AMT({dcInfo.dcPercent}%)</Text>
               <Text style={styles.tableTotalAmount} wrap>
-                {dcAmountGlobal?.toLocaleString(undefined, {
+                {dcAmountGlobal?.toLocaleString("en-US", {
                   style: "currency",
                   currency: info.currencyType,
                   minimumFractionDigits: 2,
@@ -510,15 +510,12 @@ const OfferPDFDocument = ({
                 <View key={charge.invChargeId} style={styles.tableDCAmount}>
                   <Text wrap>{charge.customCharge}</Text>
                   <Text style={styles.tableTotalAmount} wrap>
-                    {Number(charge.chargePriceGlobal)?.toLocaleString(
-                      undefined,
-                      {
-                        style: "currency",
-                        currency: info.currencyType,
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      }
-                    )}
+                    {Number(charge.chargePriceGlobal)?.toLocaleString("en-US", {
+                      style: "currency",
+                      currency: info.currencyType,
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
                   </Text>
                 </View>
               ))}
@@ -545,7 +542,7 @@ const OfferPDFDocument = ({
                 }}
                 wrap
               >
-                {finalTotals.totalSalesAmountGlobal?.toLocaleString(undefined, {
+                {finalTotals.totalSalesAmountGlobal?.toLocaleString("en-US", {
                   style: "currency",
                   currency: info.currencyType,
                   minimumFractionDigits: 2,
