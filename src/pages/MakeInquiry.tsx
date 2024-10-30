@@ -713,36 +713,6 @@ const MakeInquiry = () => {
     setItemIdMap(newItemIdMap);
   };
 
-  const updateSupplierOptions = async (value: string) => {
-    try {
-      const itemArray = await fetchAndProcessItemData(value);
-
-      const newSupplierOptions = itemArray.flatMap((item) =>
-        item.supplierList.map((supplier) => ({
-          id: supplier.id,
-          name: supplier.companyName,
-          korName: supplier.korCompanyName || supplier.companyName,
-          code: supplier.code,
-          email: supplier.email,
-          communicationLanguage: supplier.communicationLanguage,
-          supplierRemark: supplier.supplierRemark || "",
-        }))
-      );
-
-      setSelectedSuppliers((prevSuppliers) => [
-        ...prevSuppliers.filter(
-          (existingSupplier) =>
-            !newSupplierOptions.some(
-              (newSupplier) => existingSupplier.id === newSupplier.id
-            )
-        ),
-        ...newSupplierOptions,
-      ]);
-    } catch (error) {
-      console.error("Error fetching item codes and suppliers:", error);
-    }
-  };
-
   const handleHeaderSave = (text: string) => {
     setPdfHeader(text);
   };
@@ -849,7 +819,6 @@ const MakeInquiry = () => {
         updateItemId={updateItemId}
         customerInquiryId={Number(customerInquiryId)}
         setItemCodeOptions={setItemCodeOptions}
-        updateSupplierOptions={updateSupplierOptions}
       />
       <Button
         type="primary"

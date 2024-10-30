@@ -97,7 +97,6 @@ interface MakeInquiryTableProps {
       }[]
     >
   >;
-  updateSupplierOptions: (value: string) => Promise<void>;
 }
 
 const MakeInquiryTable = ({
@@ -110,7 +109,6 @@ const MakeInquiryTable = ({
   setIsDuplicate,
   setItems,
   updateItemId,
-  updateSupplierOptions,
   customerInquiryId,
 }: MakeInquiryTableProps) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -370,7 +368,6 @@ const MakeInquiryTable = ({
                     updateItemId(index, selectedOption.itemId);
                     handleInputChange(index, "itemCode", selectedOption.value);
                     handleInputChange(index, "itemName", selectedOption.name);
-                    updateSupplierOptions(selectedOption.value);
                   }
                 }}
                 dropdownStyle={{ width: 400 }}
@@ -616,7 +613,6 @@ const MakeInquiryTable = ({
       setItemCodeOptions,
       updateItemId,
       handleInputChange,
-      updateSupplierOptions,
       handleKeyDown,
       handleUnitBlur,
       handleAddItem,
