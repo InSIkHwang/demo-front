@@ -106,6 +106,7 @@ const getSupplierMap = (
   code: string;
   email: string;
   communicationLanguage: string;
+  supplierRemark: string;
 }[] => {
   const supplierMap = new Map<
     number,
@@ -116,6 +117,7 @@ const getSupplierMap = (
       code: string;
       email: string;
       communicationLanguage: string;
+      supplierRemark: string;
     }
   >();
   itemDetails.forEach((item) =>
@@ -127,6 +129,7 @@ const getSupplierMap = (
         code: supplier.code,
         email: supplier.email,
         communicationLanguage: supplier.communicationLanguage || "KOR",
+        supplierRemark: supplier.supplierRemark || "",
       })
     )
   );
@@ -137,7 +140,7 @@ const MakeInquiry = () => {
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
   const { customerInquiryId } = useParams<{ customerInquiryId?: string }>();
   const navigate = useNavigate();
-  const [inquiryDetail, setInquiryDetail] = useState<Inquiry>();
+  const [inquiryDetail, setInquiryDetail] = useState<Inquiry | null>();
   const [docDataloading, setDocDataLoading] = useState(true);
   const [items, setItems] = useState<InquiryItem[]>([]);
   const [vesselList, setVesselList] = useState<VesselList[]>([]);
@@ -177,6 +180,7 @@ const MakeInquiry = () => {
       code: string;
       email: string;
       communicationLanguage: string;
+      supplierRemark: string;
     }[]
   >([]);
   const [selectedSupplierTag, setSelectedSupplierTag] = useState<
@@ -258,15 +262,6 @@ const MakeInquiry = () => {
   };
 
   useEffect(() => {
-    if (customerInquiryId) {
-      fetchDetail();
-    } else {
-      setFormValues(INITIAL_FORM_VALUES);
-      setItems([]);
-    }
-  }, []);
-
-  useEffect(() => {
     if (isFromInquirySearchModal && selectedSuppliers.length > 0) {
       const lastSupplier = selectedSuppliers[selectedSuppliers.length - 1];
       handleTagClick(lastSupplier.id);
@@ -301,26 +296,27 @@ const MakeInquiry = () => {
   }, []);
 
   useEffect(() => {
+    // 데이터 초기화
+    setFormValues(INITIAL_FORM_VALUES);
+    setItems(INITIAL_TABLE_VALUES);
+    setSelectedSuppliers([]);
+    setSelectedSupplierTag([]);
+    setPdfSupplierTag([]);
+    setVesselList([]);
+    setVesselNameList([]);
+    setAutoCompleteOptions([]);
+    setItemCodeOptions([]);
+    setItemNameMap({});
+    setItemIdMap({});
+    setSupplierOptions([]);
+    setInquiryDetail(null);
     if (!customerInquiryId) {
       setIsEditMode(false);
-      // 데이터 초기화
-      setFormValues(INITIAL_FORM_VALUES);
-      setItems(INITIAL_TABLE_VALUES);
-      setSelectedSuppliers([]);
-      setSelectedSupplierTag([]);
-      setPdfSupplierTag([]);
-      setVesselList([]);
-      setVesselNameList([]);
-      setAutoCompleteOptions([]);
-      setItemCodeOptions([]);
-      setItemNameMap({});
-      setItemIdMap({});
-      setSupplierOptions([]);
       setDocDataLoading(true); // 데이터 로딩 상태를 true로 설정
       loadDocData(); // 초기 데이터 로딩 호출
     } else {
+      fetchDetail();
       setDocDataLoading(false); // 데이터 로딩이 완료되면 false로 설정
-      setIsLoading(false);
     }
   }, [customerInquiryId, loadDocData]);
 
@@ -328,8 +324,10 @@ const MakeInquiry = () => {
     try {
       const data = await fetchInquiryDetail(Number(customerInquiryId));
       setInquiryDetail(data);
+      setIsLoading(false);
     } catch (error) {
       console.error("An error occurred while retrieving details:", error);
+      setIsLoading(false);
     }
   };
 
@@ -727,6 +725,7 @@ const MakeInquiry = () => {
           code: supplier.code,
           email: supplier.email,
           communicationLanguage: supplier.communicationLanguage,
+          supplierRemark: supplier.supplierRemark || "",
         }))
       );
 
@@ -820,7 +819,6 @@ const MakeInquiry = () => {
           formValues={formValues}
           autoCompleteOptions={autoCompleteOptions}
           vesselNameList={vesselNameList}
-          supplierOptions={supplierOptions}
           selectedSuppliers={selectedSuppliers}
           handleFormChange={handleFormChange}
           customerUnreg={!selectedCustomerId}

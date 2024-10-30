@@ -82,6 +82,7 @@ interface Payload {
   address: string;
   communicationLanguage: string;
   makerCategoryList?: { category: string; makers: string[] }[]; // supplier일 때만 전송
+  supplierRemark?: string; // supplier일 때만 전송
 }
 
 interface ModalProps {
@@ -101,6 +102,7 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
     address: "",
     language: "",
     headerMessage: "",
+    supplierRemark: "",
   });
 
   const [isCodeUnique, setIsCodeUnique] = useState(true);
@@ -274,6 +276,7 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
     email: string;
     address: string;
     language: string;
+    supplierRemark: string;
   }) => {
     try {
       setLoading(true);
@@ -288,6 +291,7 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
         email: values.email,
         address: values.address,
         communicationLanguage: values.language,
+        supplierRemark: values.supplierRemark,
       };
 
       // category가 supplier인 경우 makerCategoryList 추가
@@ -433,6 +437,16 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
             placeholder="We wish your company continued success."
           />
         </StyledFormItem>
+        {category === "supplier" && (
+          <StyledFormItem label="remark:" name="supplierRemark">
+            <Input.TextArea
+              name="supplierRemark"
+              value={formData.supplierRemark}
+              onChange={handleChange}
+              placeholder="TEST item is no longer handled by our purchaser."
+            />
+          </StyledFormItem>
+        )}
         {category === "supplier" && (
           <>
             <Divider />

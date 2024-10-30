@@ -71,6 +71,7 @@ const AddSupplierOnInquiry = () => {
       code: string;
       email: string;
       communicationLanguage: string;
+      supplierRemark: string;
     }[]
   >([]);
   const [selectedSupplierTag, setSelectedSupplierTag] = useState<
@@ -266,7 +267,6 @@ const AddSupplierOnInquiry = () => {
     return Promise.resolve(); // 빈 Promise를 반환
   };
 
-  console.log(selectedSupplierTag);
   return (
     <FormContainer>
       <Title>매입처 추가(ADD SUPPLIER)</Title>

@@ -90,6 +90,7 @@ interface InquiryFormProps {
     code: string;
     email: string;
     communicationLanguage: string;
+    supplierRemark: string;
   }[];
   handleFormChange: <K extends keyof FormValues>(
     key: K,
@@ -104,6 +105,7 @@ interface InquiryFormProps {
         code: string;
         email: string;
         communicationLanguage: string;
+        supplierRemark: string;
       }[]
     >
   >;
@@ -233,7 +235,7 @@ const FormComponent = ({
   };
 
   const removeDuplicates = (
-    arr: { id: number; name: string; code: string }[]
+    arr: { id: number; name: string; code: string; supplierRemark: string }[]
   ) => {
     const uniqueIds = new Set<number>();
     return arr.filter((item) => {
@@ -257,6 +259,7 @@ const FormComponent = ({
           code: supplier.code,
           email: supplier.email,
           communicationLanguage: supplier.communicationLanguage || "KOR",
+          supplierRemark: supplier.supplierRemark || "",
         }));
         setSupplierList(options);
 
@@ -514,9 +517,11 @@ const FormComponent = ({
             {uniqueSuppliers.map((supplier) => (
               <Tag
                 key={supplier.id}
+                color={supplier.supplierRemark ? "#f5222d" : "default"}
                 style={{
                   borderColor: tagColors[supplier.id] || "default",
                   cursor: "pointer",
+                  borderWidth: 2,
                 }}
                 onClick={() => handleTagClick(supplier.id)}
                 onClose={() => handleTagClick(supplier.id)}

@@ -424,6 +424,7 @@ const handleSave = async () => {
           registerDate: formValues.registerDate.format("YYYY-MM-DD"),
           shippingDate: formValues.shippingDate.format("YYYY-MM-DD"),
           currencyType: formValues.currencyType,
+          refNumber: formValues.refNumber,
           currency: formValues.currency,
           vesselId: cusVesIdList.vesselId,
           veeselHullNo: formValues.veeselHullNo,

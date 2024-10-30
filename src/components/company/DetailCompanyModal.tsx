@@ -38,6 +38,7 @@ interface Company {
   communicationLanguage: string;
   modifiedAt: string;
   headerMessage: string;
+  supplierRemark?: string;
   makerCategoryList?: { category: string; makers: string[] }[];
 }
 
@@ -461,6 +462,11 @@ const DetailCompanyModal = ({
         <StyledFormItem label="Header Message" name="headerMessage">
           <Input.TextArea readOnly={!isEditing} />
         </StyledFormItem>
+        {category === "supplier" && (
+          <StyledFormItem label="remark:" name="supplierRemark">
+            <Input.TextArea readOnly={!isEditing} />
+          </StyledFormItem>
+        )}
 
         {category === "supplier" && (
           <>

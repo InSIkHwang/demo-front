@@ -1,5 +1,5 @@
 import React, { Dispatch, SetStateAction } from "react";
-import { Modal, Button, Input, Tag, Table, Empty } from "antd";
+import { Modal, Button, Input, Tag, Table, Empty, Tooltip } from "antd";
 import {
   InquirySearchMakerInquirySearchResult,
   InquirySearchMakerSupplier,
@@ -24,6 +24,7 @@ interface InquirySearchModalProps {
     code: string;
     email: string;
     communicationLanguage: string;
+    supplierRemark: string;
   }[];
   handleTagClick: (id: number) => void;
   inquirySearchMakerNameResult: InquirySearchMakerInquirySearchResult | null;
@@ -38,6 +39,7 @@ interface InquirySearchModalProps {
         code: string;
         email: string;
         communicationLanguage: string;
+        supplierRemark: string;
       }[]
     >
   >;
@@ -85,6 +87,7 @@ const InquirySearchModal = ({
                   code: supplier.code || "",
                   email: supplier.email || "",
                   communicationLanguage: supplier.communicationLanguage || "",
+                  supplierRemark: supplier.supplierRemark || "",
                 };
 
                 // 새로운 공급업체 추가
@@ -127,6 +130,7 @@ const InquirySearchModal = ({
                   code: record.code || "",
                   email: record.email || "",
                   communicationLanguage: record.communicationLanguage || "",
+                  supplierRemark: record.communicationLanguage || "",
                 };
 
                 // 새로운 공급업체 추가
@@ -194,17 +198,26 @@ const InquirySearchModal = ({
         <div style={{ marginTop: 10 }}>
           <span>Suppliers: </span>
           {selectedSuppliers.map((supplier) => (
-            <Tag
-              key={supplier.id}
-              style={{
-                borderColor: tagColors[supplier.id] || "default",
-                cursor: "pointer",
-              }}
-              onClick={() => handleTagClick(supplier.id)}
-              onClose={() => handleTagClick(supplier.id)}
+            <Tooltip
+              placement="bottomLeft"
+              title={supplier.supplierRemark || null}
+              overlayInnerStyle={{ fontSize: 12 }}
+              color="red"
             >
-              {supplier.code}
-            </Tag>
+              <Tag
+                key={supplier.id}
+                color={supplier.supplierRemark ? "#f5222d" : "default"}
+                style={{
+                  borderColor: tagColors[supplier.id] || "default",
+                  cursor: "pointer",
+                  borderWidth: 2,
+                }}
+                onClick={() => handleTagClick(supplier.id)}
+                onClose={() => handleTagClick(supplier.id)}
+              >
+                {supplier.code}
+              </Tag>
+            </Tooltip>
           ))}
         </div>
       )}

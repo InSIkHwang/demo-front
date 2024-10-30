@@ -520,6 +520,7 @@ export const editOffer = async (
     registerDate: string | dayjs.Dayjs;
     shippingDate: string | dayjs.Dayjs;
     currencyType: string;
+    refNumber: string;
     currency: number;
     vesselId: number;
     customerId: number;

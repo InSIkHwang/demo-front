@@ -40,6 +40,7 @@ export interface Supplier {
   communicationLanguage: string;
   modifiedAt: string;
   headerMessage: string;
+  supplierRemark?: string;
 }
 
 export interface Vessel {
@@ -88,6 +89,7 @@ export interface Item {
     representative: string;
     email: string;
     communicationLanguage: string;
+    supplierRemark?: string;
   }[];
 }
 
@@ -101,6 +103,7 @@ export interface InquiryListSupplier {
   representative: string;
   email: string;
   communicationLanguage?: string;
+  supplierRemark?: string;
 }
 
 export interface Inquiry {
@@ -385,6 +388,7 @@ export interface InquirySearchMakerSupplier {
   companyName: string;
   korCompanyName: string;
   communicationLanguage: string;
+  supplierRemark: string;
   representative: string;
   email: string;
   count?: number;
