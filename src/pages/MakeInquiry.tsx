@@ -22,6 +22,7 @@ import {
   VesselList,
   Item,
   InquirySearchMakerInquirySearchResult,
+  InquiryResponse,
 } from "../types/types";
 import { useNavigate, useParams } from "react-router-dom";
 import HeaderEditModal from "../components/makeInquiry/HeaderEditModal";
@@ -76,6 +77,7 @@ const INITIAL_TABLE_VALUES: InquiryItem[] = [
     qty: 0,
     itemRemark: "",
     position: 1,
+    tableNo: 1,
   },
   {
     itemCode: "",
@@ -85,6 +87,7 @@ const INITIAL_TABLE_VALUES: InquiryItem[] = [
     qty: 0,
     itemRemark: "",
     position: 2,
+    tableNo: 1,
   },
   {
     itemCode: "",
@@ -94,6 +97,7 @@ const INITIAL_TABLE_VALUES: InquiryItem[] = [
     qty: 0,
     itemRemark: "",
     position: 3,
+    tableNo: 1,
   },
 ];
 
@@ -140,7 +144,9 @@ const MakeInquiry = () => {
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
   const { customerInquiryId } = useParams<{ customerInquiryId?: string }>();
   const navigate = useNavigate();
-  const [inquiryDetail, setInquiryDetail] = useState<Inquiry | null>();
+  const [inquiryDetail, setInquiryDetail] = useState<InquiryResponse | null>(
+    null
+  );
   const [docDataloading, setDocDataLoading] = useState(true);
   const [items, setItems] = useState<InquiryItem[]>([]);
   const [vesselList, setVesselList] = useState<VesselList[]>([]);
@@ -340,7 +346,6 @@ const MakeInquiry = () => {
     if (customerInquiryId) {
       setIsEditMode(true);
 
-      // Edit 모드에서의 로직
       if (inquiryDetail) {
         const {
           documentNumber,
@@ -352,8 +357,8 @@ const MakeInquiry = () => {
           currency,
           vesselName,
           docRemark,
-          inquiryItemDetails,
-        } = inquiryDetail;
+        } = inquiryDetail.documentInfo;
+
         setFormValues({
           docNumber: documentNumber,
           registerDate: dayjs(registerDate),
@@ -367,21 +372,40 @@ const MakeInquiry = () => {
           supplierName: "",
         });
 
+        // 모든 테이블의 itemDetails를 하나의 배열로 합침
+        const allItemDetails = inquiryDetail.table.reduce<InquiryItem[]>(
+          (acc, table) => [...acc, ...table.itemDetails],
+          []
+        );
+
+        // position 기준으로 정렬
+        const sortedItems = allItemDetails.sort(
+          (a, b) => a.position - b.position
+        );
+
         setItems(
-          inquiryItemDetails.map((item, index) => ({
+          sortedItems.map((item) => ({
             itemDetailId: item.itemDetailId,
             itemId: item.itemId,
             position: item.position,
-            itemType: item.itemType,
+            itemType: item.itemType as "ITEM" | "MAKER" | "TYPE",
             itemCode: item.itemCode,
             itemName: item.itemName,
             itemRemark: item.itemRemark,
             qty: item.qty,
             unit: item.unit,
+            tableNo: item.tableNo,
           }))
         );
 
-        const suppliers = getSupplierMap(inquiryItemDetails);
+        // suppliers 정보가 필요한 경우
+        const suppliers = getSupplierMap(
+          inquiryDetail.table.reduce<InquiryItem[]>(
+            (acc, table) => [...acc, ...table.itemDetails],
+            []
+          )
+        );
+        console.log(suppliers);
 
         setSelectedSupplierTag(suppliers);
         setSelectedSuppliers(suppliers);
@@ -468,22 +492,13 @@ const MakeInquiry = () => {
     setAutoCompleteOptions(filteredOptions);
   }, [companyNameList, formValues.customer]);
 
-  const handleDelete = (index: number) => {
-    const updatedItems = items
-      .filter((_, i) => i !== index)
-      .map((item, idx) => ({ ...item, position: idx + 1 }));
-    setItems(updatedItems);
-  };
-
   const handleInputChange = useCallback(
-    (index: number, field: string, value: string | number) => {
+    (index: number, field: keyof InquiryItem, value: string | number) => {
       setItems((prevItems) => {
         const updatedItems = [...prevItems];
         const itemToUpdate = updatedItems[index];
 
-        if (itemToUpdate[field] === value) return updatedItems;
-
-        itemToUpdate[field] = value;
+        itemToUpdate[field] = value as never; // 타입 단언 추가
         return updatedItems;
       });
     },
@@ -642,7 +657,7 @@ const MakeInquiry = () => {
     return response;
   };
 
-  // itemId 업데이트를 별도의 함수로 분리
+  // itemId 업데이트를 별도 수로 분리
   const updateItemId = (index: number, itemId: number | null) => {
     setItems((prevItems) => {
       const updatedItems = [...prevItems];
@@ -808,18 +823,20 @@ const MakeInquiry = () => {
           isSupplierModalOpen={isSupplierModalOpen}
         />
       )}
+
       <MakeInquiryTable
         items={items}
+        inquiryDetail={inquiryDetail}
         handleInputChange={handleInputChange}
         handleItemCodeChange={handleItemCodeChange}
         itemCodeOptions={itemCodeOptions}
-        handleDelete={handleDelete}
         setIsDuplicate={setIsDuplicate}
         setItems={setItems}
         updateItemId={updateItemId}
         customerInquiryId={Number(customerInquiryId)}
         setItemCodeOptions={setItemCodeOptions}
       />
+
       <Button
         type="primary"
         onClick={handleSubmit}

@@ -14,7 +14,7 @@ import {
   ExportOutlined,
   PlusCircleOutlined,
 } from "@ant-design/icons";
-import { InquiryItem } from "../../types/types";
+import { InquiryItem, InquiryResponse } from "../../types/types";
 import ExcelUploadModal from "../ExcelUploadModal";
 import { ColumnsType } from "antd/es/table";
 import { handleExport } from "../../api/api";
@@ -62,6 +62,11 @@ const CustomTable = styled(Table)`
       background-color: #f0f0f0 !important;
     }
   }
+  .item-row {
+    &:hover {
+      background-color: #fafafa !important;
+    }
+  }
 `;
 
 interface DuplicateState {
@@ -72,7 +77,12 @@ interface DuplicateState {
 
 interface MakeInquiryTableProps {
   items: InquiryItem[];
-  handleInputChange: (index: number, key: string, value: any) => void;
+  inquiryDetail?: InquiryResponse | null;
+  handleInputChange: (
+    index: number,
+    field: keyof InquiryItem,
+    value: string | number
+  ) => void;
   handleItemCodeChange: (index: number, value: string) => void;
   itemCodeOptions: {
     itemId: number;
@@ -81,7 +91,6 @@ interface MakeInquiryTableProps {
     key: string;
     label: string;
   }[];
-  handleDelete: (index: number) => void;
   setIsDuplicate: Dispatch<SetStateAction<boolean>>;
   setItems: React.Dispatch<React.SetStateAction<InquiryItem[]>>;
   updateItemId: (index: number, itemId: number | null) => void;
@@ -99,24 +108,199 @@ interface MakeInquiryTableProps {
   >;
 }
 
-const MakeInquiryTable = ({
+interface TableSectionProps extends MakeInquiryTableProps {
+  tableIndex: number;
+  onDeleteTable: (index: number) => void;
+  columns: ColumnsType<any>;
+  tables: InquiryTable[];
+  setTables: React.Dispatch<React.SetStateAction<InquiryTable[]>>;
+  handleAddItem: (tableIndex: number, position: number) => void;
+}
+
+// InquiryTable 인터페이스 추가
+interface InquiryTable {
+  itemDetails: InquiryItem[];
+}
+
+// 개별 테이블 컴포넌트
+function TableSection({
   items,
+  tableIndex,
+  onDeleteTable,
+  columns,
+  handleAddItem,
+}: TableSectionProps) {
+  return (
+    <div
+      style={{
+        marginBottom: "20px",
+        position: "relative",
+        border: "1px solid #f0f0f0",
+        borderRadius: "8px",
+        padding: "16px",
+        backgroundColor: "#fff",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "16px",
+          borderBottom: "1px solid #f0f0f0",
+          paddingBottom: "12px",
+        }}
+      >
+        <h3 style={{ margin: 0 }}>Table {tableIndex + 1}</h3>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <Button
+            type="primary"
+            icon={<PlusCircleOutlined />}
+            size="middle"
+            onClick={() => handleAddItem(tableIndex, items.length)}
+          >
+            Add Item
+          </Button>
+          {tableIndex > 0 && (
+            <Button
+              danger
+              icon={<DeleteOutlined />}
+              onClick={() => onDeleteTable(tableIndex)}
+              size="middle"
+            >
+              Delete Table
+            </Button>
+          )}
+        </div>
+      </div>
+      <CustomTable
+        rowClassName={(record: any) => {
+          if (record.itemType === "MAKER") {
+            return "maker-row";
+          } else if (record.itemType === "TYPE") {
+            return "type-row";
+          } else if (record.itemType === "DESC") {
+            return "desc-row";
+          } else {
+            return "item-row";
+          }
+        }}
+        columns={columns}
+        dataSource={items}
+        pagination={false}
+        rowKey="position"
+        scroll={{ y: 500 }}
+        virtual
+        size="small"
+      />
+    </div>
+  );
+}
+
+function MakeInquiryTable({
+  items,
+  inquiryDetail,
   handleInputChange,
   handleItemCodeChange,
   itemCodeOptions,
   setItemCodeOptions,
-  handleDelete,
   setIsDuplicate,
   setItems,
   updateItemId,
   customerInquiryId,
-}: MakeInquiryTableProps) => {
+}: MakeInquiryTableProps) {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [tables, setTables] = useState<InquiryTable[]>([]);
+  const [isDataReady, setIsDataReady] = useState(false);
+
+  // 초기 데이터를 테이블별로 분리
+  useEffect(() => {
+    if (!inquiryDetail?.table) return;
+
+    // 서버 응답의 table 구조를 직접 사용
+    setTables(inquiryDetail.table);
+
+    // items 상태도 모든 테이블의 itemDetails를 하나의 배열로 합쳐서 업데이트
+    const allItems = inquiryDetail.table.flatMap((table) => table.itemDetails);
+    setItems(allItems);
+    // 데이터가 준비되었음을 표시
+    setIsDataReady(true);
+  }, [inquiryDetail]);
+
+  // 새로운 useEffect 추가 (items가 없을 때의 초기 상태 처리)
+  useEffect(() => {
+    if (!inquiryDetail && items.length === 0) {
+      setTables([{ itemDetails: [] }]);
+      setIsDataReady(true);
+    } else if (!inquiryDetail && items.length > 0) {
+      setTables([{ itemDetails: items }]);
+      setIsDataReady(true);
+    }
+  }, []);
+
+  // 새 테이블 추가
+  const handleAddTable = () => {
+    const newTableIndex = tables.length; // 현재 테이블의 개수를 사용하여 새로운 테이블의 인덱스를 설정
+
+    const newTableItems: InquiryItem[] = [
+      {
+        position: 1,
+        tableNo: newTableIndex + 1, // tableIndex를 tableNo로 설정
+        itemType: "MAKER",
+        itemCode: "",
+        itemName: "[MAKER]",
+        itemRemark: "",
+        qty: 0,
+        unit: "",
+      },
+      {
+        position: 2,
+        tableNo: newTableIndex + 1, // tableIndex를 tableNo로 설정
+        itemType: "TYPE",
+        itemCode: "",
+        itemName: "[TYPE]",
+        itemRemark: "",
+        qty: 0,
+        unit: "",
+      },
+      {
+        position: 3,
+        tableNo: newTableIndex + 1, // tableIndex를 tableNo로 설정
+        itemType: "ITEM",
+        itemCode: "",
+        itemName: "",
+        itemRemark: "",
+        qty: 0,
+        unit: "",
+      },
+    ];
+
+    const newTable = { itemDetails: newTableItems };
+
+    setTables((prevTables) => [...prevTables, newTable]);
+    setItems((prevItems) => [...prevItems, ...newTableItems]);
+  };
+
+  // 테이블 삭제
+  const handleDeleteTable = (tableIndex: number) => {
+    setTables((prevTables) =>
+      prevTables.filter((_, index) => index !== tableIndex)
+    );
+
+    const updatedItems = items.filter(
+      (item) =>
+        !tables[tableIndex].itemDetails.some(
+          (tableItem) => tableItem.position === item.position
+        )
+    );
+
+    setItems(updatedItems);
+  };
+
   const [unitOptions, setUnitOptions] = useState<string[]>(["PCS", "SET"]);
   const [duplicateStates, setDuplicateStates] = useState<{
     [key: string]: DuplicateState;
   }>({});
-  const dataSource = useMemo(() => items, [items]);
   const inputRefs = useRef<(TextAreaRef | null)[][]>([]);
 
   // 공통 데이터 처리 함수
@@ -142,7 +326,7 @@ const MakeInquiryTable = ({
           ...prevItems,
           ...mappedItems.map((item, idx) => ({
             ...item,
-            position: prevItems.length + idx + 1, // 기존 데이터에 추가
+            position: prevItems.length + idx + 1, // 기존 데터에 추가
           })),
         ];
       }
@@ -153,7 +337,7 @@ const MakeInquiryTable = ({
 
   // 데이터를 추가하는 함수
   const handleApplyExcelData = (mappedItems: InquiryItem[]) => {
-    updateItems(mappedItems, false); // false는 추가 모드를 의미
+    updateItems(mappedItems, false); // false는 추 모드를 의미
   };
 
   // 데이터를 덮어쓰는 함수
@@ -178,7 +362,7 @@ const MakeInquiryTable = ({
 
   const checkDuplicates = useCallback(
     (key: string, value: string, index: number, items: any[]) => {
-      // 빈 값인 경우 false 반환
+      // 빈 값인 경우 false 반
       if (!(value + "")?.trim()) {
         return false;
       }
@@ -255,7 +439,7 @@ const MakeInquiryTable = ({
       // 선택한 파일들의 이름을 서버로 전송
       const response = await handleExport(customerInquiryId);
 
-      // 사용자가 경로를 설정하여 파일을 다운로드할 수 있도록 설정
+      // 사용자가 로를 설정하여 파일 다운로드할 수 있도록 설정
       const link = document.createElement("a");
       link.href = response; // 서버에서 받은 파일 경로
       link.download = "exported_file.xlsx"; // 사용자에게 보여질 파일 이름
@@ -291,113 +475,213 @@ const MakeInquiryTable = ({
         e.key === "ArrowUp" &&
         inputRefs.current[rowIndex - 1]?.[columnIndex]
       ) {
-        inputRefs.current[rowIndex - 1][columnIndex]?.focus(); // 이전 행의 Input으로 포커스 이동
+        inputRefs.current[rowIndex - 1][columnIndex]?.focus(); // 이 행의 Input으로 포커스 이동
       }
     }
   };
+  console.log(tables);
 
-  const handleAddItem = useCallback(
-    (index: number) => {
+  const handleAddItem = useCallback((tableIndex: number, position: number) => {
+    setTables((prevTables) => {
+      const updatedTables = [...prevTables];
+      const targetTable = { ...updatedTables[tableIndex] };
+      const currentTableItems = targetTable.itemDetails;
+
+      // 현재 테이블에서 선택한 아이템의 실제 인덱스 찾기
+      const itemIndexInTable = currentTableItems.findIndex(
+        (item) => item.position === position
+      );
+
+      // 현재 테이블의 최대 position 찾기
+      const maxPosition = Math.max(
+        ...currentTableItems.map((item) => item.position)
+      );
+
       const newItem: InquiryItem = {
-        itemCode: "",
+        position: maxPosition + 1, // 현재 테이블의 최대 position + 1
+        tableNo: tableIndex + 1,
         itemType: "ITEM",
-        unit: "",
+        itemCode: "",
         itemName: "",
-        qty: 0,
         itemRemark: "",
-        position: index + 2,
+        qty: 0,
+        unit: "",
       };
 
-      setItems((prevItems) => {
-        const newItems = [
-          ...prevItems.slice(0, index + 1),
-          newItem,
-          ...prevItems.slice(index + 1).map((item, idx) => ({
+      // 현재 테이블의 아이템들 업데이트
+      targetTable.itemDetails = [
+        ...currentTableItems.slice(0, itemIndexInTable + 1), // 현재 아이템까지
+        newItem, // 새 아이템
+        ...currentTableItems.slice(itemIndexInTable + 1), // 나머지 아이템들
+      ];
+
+      // position 재정렬
+      targetTable.itemDetails = targetTable.itemDetails.map((item, idx) => ({
+        ...item,
+        position: idx + 1,
+      }));
+
+      updatedTables[tableIndex] = targetTable;
+      return updatedTables;
+    });
+
+    setItems((prevItems) => {
+      // 현재 테이블의 아이템들만 필터링
+      const currentTableItems = prevItems.filter(
+        (item) => item.tableNo === tableIndex + 1
+      );
+      const otherTableItems = prevItems.filter(
+        (item) => item.tableNo !== tableIndex + 1
+      );
+
+      // 현재 테이블에서 선택한 아이템의 인덱스 찾기
+      const itemIndex = currentTableItems.findIndex(
+        (item) => item.position === position
+      );
+
+      // 새 아이템 생성
+      const newItem: InquiryItem = {
+        position: itemIndex + 2, // 선택한 아이템 다음 위치
+        tableNo: tableIndex + 1,
+        itemType: "ITEM",
+        itemCode: "",
+        itemName: "",
+        itemRemark: "",
+        qty: 0,
+        unit: "",
+      };
+
+      // 현재 테이블의 아이템들 업데이트
+      const updatedTableItems = [
+        ...currentTableItems.slice(0, itemIndex + 1),
+        newItem,
+        ...currentTableItems.slice(itemIndex + 1),
+      ].map((item, idx) => ({
+        ...item,
+        position: idx + 1, // position을 1부터 순차적으로 재할당
+      }));
+
+      // 모든 테이블의 아이템들 합치기
+      return [...otherTableItems, ...updatedTableItems].sort((a, b) => {
+        // tableNo로 먼저 정렬하고, 같은 테이블 내에서는 position으로 정렬
+        if (a.tableNo !== b.tableNo) {
+          return a.tableNo - b.tableNo;
+        }
+        return a.position - b.position;
+      });
+    });
+  }, []);
+
+  const handleDeleteItem = useCallback(
+    (tableIndex: number, position: number) => {
+      setTables((prevTables) => {
+        const updatedTables = [...prevTables];
+        const targetTable = { ...updatedTables[tableIndex] };
+
+        // 현재 테이블에서 해당 position의 아이템 제거
+        targetTable.itemDetails = targetTable.itemDetails
+          .filter((item) => item.position !== position)
+          // position 재정렬
+          .map((item, idx) => ({
             ...item,
-            position: index + 3 + idx,
-          })),
-        ];
-        return newItems;
+            position: idx + 1,
+          }));
+
+        updatedTables[tableIndex] = targetTable;
+        return updatedTables;
+      });
+
+      setItems((prevItems) => {
+        // 현재 테이블의 아이템들만 필터링
+        const currentTableItems = prevItems.filter(
+          (item) => item.tableNo === tableIndex + 1
+        );
+        const otherTableItems = prevItems.filter(
+          (item) => item.tableNo !== tableIndex + 1
+        );
+
+        // 현재 테이블의 아이템들 업데이트
+        const updatedTableItems = currentTableItems
+          .filter((item) => item.position !== position)
+          .map((item, idx) => ({
+            ...item,
+            position: idx + 1, // position을 1부터 순차적으로 재할당
+          }));
+
+        // 모든 테이블의 아이템들 합치기
+        return [...otherTableItems, ...updatedTableItems].sort((a, b) => {
+          // tableNo로 먼저 정렬하고, 같은 테이블 내에서는 position으로 정렬
+          if (a.tableNo !== b.tableNo) {
+            return a.tableNo - b.tableNo;
+          }
+          return a.position - b.position;
+        });
       });
     },
-    [setItems]
+    []
   );
 
-  const columns: ColumnsType<any> = useMemo(
-    () => [
-      {
-        title: "No.",
-        dataIndex: "no",
-        key: "no",
-        width: 40,
-        render: (_: any, record: any, index: number) => {
-          const filteredIndex = dataSource
-            .filter((item: any) => item.itemType === "ITEM")
-            .indexOf(record);
+  const columns: ColumnsType<any> = [
+    {
+      title: "No.",
+      dataIndex: "no",
+      key: "no",
+      width: 40,
+      render: (_: any, record: any) => {
+        if (!items || items.length === 0) {
+          return null;
+        }
 
-          return record.itemType === "ITEM" ? (
-            <span>{filteredIndex + 1}</span>
-          ) : null;
-        },
+        if (record.itemType === "ITEM") {
+          // 현재 테이블의 ITEM 타입 아이템들만 필터링
+          const currentTableItems = items.filter(
+            (item: any) =>
+              item.itemType === "ITEM" && item.tableNo === record.tableNo
+          );
+
+          // 현재 아이템의 인덱스 찾기
+          const itemIndex = currentTableItems.findIndex(
+            (item) => item.position === record.position
+          );
+
+          // 1부터 시작하는 번호 반환
+          return itemIndex !== -1 ? <span>{itemIndex + 1}</span> : null;
+        }
+        return null;
       },
-      {
-        title: "PartNo",
-        dataIndex: "itemCode",
-        key: "itemCode",
-        render: (text: string, record: InquiryItem, index: number) =>
-          record.itemType === "ITEM" ? (
-            <div>
-              <AutoComplete
-                value={record.itemCode}
-                onChange={(value) => handleItemCodeChange(index, value)}
-                options={itemCodeOptions.map((option) => ({
-                  value: option.key,
-                  label: option.label,
-                  name: option.name,
-                  itemId: option.itemId,
-                }))}
-                onFocus={() => {
-                  setItemCodeOptions([]);
-                }}
-                onSelect={(key: string, option: any) => {
-                  const selectedOption = itemCodeOptions.find(
-                    (opt) => opt.key === key
-                  );
+    },
+    {
+      title: "PartNo",
+      dataIndex: "itemCode",
+      key: "itemCode",
+      render: (text: string, record: InquiryItem, index: number) =>
+        record.itemType === "ITEM" ? (
+          <div>
+            <AutoComplete
+              value={record.itemCode}
+              onChange={(value) => handleItemCodeChange(index, value)}
+              options={itemCodeOptions.map((option) => ({
+                value: option.key,
+                label: option.label,
+                name: option.name,
+                itemId: option.itemId,
+              }))}
+              onFocus={() => {
+                setItemCodeOptions([]);
+              }}
+              onSelect={(key: string, option: any) => {
+                const selectedOption = itemCodeOptions.find(
+                  (opt) => opt.key === key
+                );
 
-                  if (selectedOption) {
-                    updateItemId(index, selectedOption.itemId);
-                    handleInputChange(index, "itemCode", selectedOption.value);
-                    handleInputChange(index, "itemName", selectedOption.name);
-                  }
-                }}
-                dropdownStyle={{ width: 400 }}
-                style={{ width: "100%" }}
-                ref={(el) => {
-                  if (!inputRefs.current[index]) {
-                    inputRefs.current[index] = [];
-                  }
-                  inputRefs.current[index][1] = el;
-                }}
-                onKeyDown={(e) => handleNextRowKeyDown(e, index, 1)}
-              >
-                <Input.TextArea
-                  autoSize={{ minRows: 1, maxRows: 10 }}
-                  style={{
-                    borderColor: duplicateStates[record.position]?.code
-                      ? "#faad14"
-                      : "#d9d9d9",
-                  }}
-                />
-              </AutoComplete>
-              {duplicateStates[record.position]?.code && (
-                <div style={{ color: "#faad14", marginTop: "5px" }}>
-                  duplicate code.
-                </div>
-              )}
-            </div>
-          ) : (
-            <Input
-              readOnly
+                if (selectedOption) {
+                  updateItemId(index, selectedOption.itemId);
+                  handleInputChange(index, "itemCode", selectedOption.value);
+                  handleInputChange(index, "itemName", selectedOption.name);
+                }
+              }}
+              dropdownStyle={{ width: 400 }}
+              style={{ width: "100%" }}
               ref={(el) => {
                 if (!inputRefs.current[index]) {
                   inputRefs.current[index] = [];
@@ -405,271 +689,287 @@ const MakeInquiryTable = ({
                 inputRefs.current[index][1] = el;
               }}
               onKeyDown={(e) => handleNextRowKeyDown(e, index, 1)}
-            ></Input>
-          ),
-        width: 300,
-      },
-      {
-        title: "OPT",
-        dataIndex: "itemType",
-        key: "itemType",
-        render: (text: string, record: InquiryItem, index: number) => (
-          <Select
-            value={text}
-            onChange={(value) => handleInputChange(index, "itemType", value)}
-            style={{ width: "100%" }}
-            onKeyDown={(e) =>
-              handleKeyDown(e as React.KeyboardEvent<HTMLInputElement>, index)
-            }
-          >
-            {["MAKER", "TYPE", "DESC", "ITEM"].map((opt) => (
-              <Option key={opt} value={opt}>
-                {opt}
-              </Option>
-            ))}
-          </Select>
-        ),
-        width: 120,
-      },
-      {
-        title: "Name",
-        dataIndex: "itemName",
-        key: "itemName",
-        render: (text: string, record: InquiryItem, index: number) => (
-          <div
-            style={{
-              whiteSpace: "normal",
-              wordWrap: "break-word",
-              wordBreak: "break-all",
-            }}
-          >
-            <Input.TextArea
-              ref={(el) => {
-                if (!inputRefs.current[index]) {
-                  inputRefs.current[index] = [];
-                }
-                inputRefs.current[index][3] = el;
-              }}
-              value={text}
-              onKeyDown={(e) => handleNextRowKeyDown(e, index, 3)}
-              onChange={(e) => {
-                handleInputChange(index, "itemName", e.target.value);
-                updateItemId(index, null);
-              }}
-              style={{
-                borderColor: duplicateStates[record.position]?.name
-                  ? "#faad14"
-                  : "#d9d9d9",
-              }}
-              autoSize={{ minRows: 1, maxRows: 10 }} // 최소 1행, 최대 4행으로 설정
-            />
-            {duplicateStates[record.position]?.name && (
+            >
+              <Input.TextArea
+                autoSize={{ minRows: 1, maxRows: 10 }}
+                style={{
+                  borderColor: duplicateStates[record.position]?.code
+                    ? "#faad14"
+                    : "#d9d9d9",
+                }}
+              />
+            </AutoComplete>
+            {duplicateStates[record.position]?.code && (
               <div style={{ color: "#faad14", marginTop: "5px" }}>
-                duplicate name.
+                duplicate code.
               </div>
             )}
           </div>
+        ) : (
+          <Input
+            readOnly
+            ref={(el) => {
+              if (!inputRefs.current[index]) {
+                inputRefs.current[index] = [];
+              }
+              inputRefs.current[index][1] = el;
+            }}
+            onKeyDown={(e) => handleNextRowKeyDown(e, index, 1)}
+          ></Input>
         ),
-        width: 450,
-      },
-      {
-        title: "QTY",
-        dataIndex: "qty",
-        key: "qty",
-        render: (text: number, record: InquiryItem, index: number) =>
-          record.itemType === "ITEM" ? (
-            <Input
-              type="number"
-              value={text}
-              ref={(el) => {
-                if (!inputRefs.current[index]) {
-                  inputRefs.current[index] = [];
-                }
-                inputRefs.current[index][4] = el;
-              }}
-              onKeyDown={(e) => handleNextRowKeyDown(e, index, 4)}
-              onChange={(e) => {
-                const value = parseInt(e.target.value, 10);
-                handleInputChange(index, "qty", isNaN(value) ? 0 : value);
-              }}
-            />
-          ) : (
-            <Input
-              readOnly
-              ref={(el) => {
-                if (!inputRefs.current[index]) {
-                  inputRefs.current[index] = [];
-                }
-                inputRefs.current[index][4] = el;
-              }}
-              onKeyDown={(e) => handleNextRowKeyDown(e, index, 4)}
-            ></Input>
-          ),
-        width: 80,
-      },
-      {
-        title: (
-          <div>
-            <Select
-              placeholder="Unit"
-              onChange={applyUnitToAllRows}
-              style={{ width: "100%" }}
-            >
-              {unitOptions.map((unit) => (
-                <Option key={unit} value={unit}>
-                  {unit}
-                </Option>
-              ))}
-            </Select>
-          </div>
-        ),
-        dataIndex: "unit",
-        key: "unit",
-        render: (text: string, record: InquiryItem, index: number) =>
-          record.itemType === "ITEM" ? (
-            <Input
-              ref={(el) => {
-                if (!inputRefs.current[index]) {
-                  inputRefs.current[index] = [];
-                }
-                inputRefs.current[index][2] = el;
-              }}
-              onKeyDown={(e) => handleNextRowKeyDown(e, index, 2)}
-              value={text}
-              onBlur={(e) => handleUnitBlur(index, e.target.value)}
-              onChange={(e) => handleInputChange(index, "unit", e.target.value)}
-            />
-          ) : (
-            <Input
-              readOnly
-              ref={(el) => {
-                if (!inputRefs.current[index]) {
-                  inputRefs.current[index] = [];
-                }
-                inputRefs.current[index][2] = el;
-              }}
-              onKeyDown={(e) => handleNextRowKeyDown(e, index, 2)}
-            ></Input>
-          ),
-        width: 110,
-      },
-      {
-        title: "Remark",
-        dataIndex: "itemRemark",
-        key: "itemRemark",
-        render: (text: string, record: InquiryItem, index: number) => (
+      width: 300,
+    },
+    {
+      title: "OPT",
+      dataIndex: "itemType",
+      key: "itemType",
+      render: (text: string, record: InquiryItem, index: number) => (
+        <Select
+          value={text}
+          onChange={(value) => handleInputChange(index, "itemType", value)}
+          style={{ width: "100%" }}
+          onKeyDown={(e) =>
+            handleKeyDown(e as React.KeyboardEvent<HTMLInputElement>, index)
+          }
+        >
+          {["MAKER", "TYPE", "DESC", "ITEM"].map((opt) => (
+            <Option key={opt} value={opt}>
+              {opt}
+            </Option>
+          ))}
+        </Select>
+      ),
+      width: 120,
+    },
+    {
+      title: "Name",
+      dataIndex: "itemName",
+      key: "itemName",
+      render: (text: string, record: InquiryItem, index: number) => (
+        <div
+          style={{
+            whiteSpace: "normal",
+            wordWrap: "break-word",
+            wordBreak: "break-all",
+          }}
+        >
           <Input.TextArea
-            autoSize={{ minRows: 1, maxRows: 10 }}
+            ref={(el) => {
+              if (!inputRefs.current[index]) {
+                inputRefs.current[index] = [];
+              }
+              inputRefs.current[index][3] = el;
+            }}
+            value={text}
+            onKeyDown={(e) => handleNextRowKeyDown(e, index, 3)}
+            onChange={(e) => {
+              handleInputChange(index, "itemName", e.target.value);
+              updateItemId(index, null);
+            }}
+            style={{
+              borderColor: duplicateStates[record.position]?.name
+                ? "#faad14"
+                : "#d9d9d9",
+            }}
+            autoSize={{ minRows: 1, maxRows: 10 }} // 최소 1행, 최대 4행으로 정
+          />
+          {duplicateStates[record.position]?.name && (
+            <div style={{ color: "#faad14", marginTop: "5px" }}>
+              duplicate name.
+            </div>
+          )}
+        </div>
+      ),
+      width: 450,
+    },
+    {
+      title: "QTY",
+      dataIndex: "qty",
+      key: "qty",
+      render: (text: number, record: InquiryItem, index: number) =>
+        record.itemType === "ITEM" ? (
+          <Input
+            type="number"
             value={text}
             ref={(el) => {
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
               }
-              inputRefs.current[index][5] = el;
+              inputRefs.current[index][4] = el;
             }}
-            onKeyDown={(e) => handleNextRowKeyDown(e, index, 5)}
-            onChange={(e) =>
-              handleInputChange(index, "itemRemark", e.target.value)
+            onKeyDown={(e) => handleNextRowKeyDown(e, index, 4)}
+            onChange={(e) => {
+              const value = parseInt(e.target.value, 10);
+              handleInputChange(index, "qty", isNaN(value) ? 0 : value);
+            }}
+          />
+        ) : (
+          <Input
+            readOnly
+            ref={(el) => {
+              if (!inputRefs.current[index]) {
+                inputRefs.current[index] = [];
+              }
+              inputRefs.current[index][4] = el;
+            }}
+            onKeyDown={(e) => handleNextRowKeyDown(e, index, 4)}
+          ></Input>
+        ),
+      width: 80,
+    },
+    {
+      title: (
+        <div>
+          <Select
+            placeholder="Unit"
+            onChange={applyUnitToAllRows}
+            style={{ width: "100%" }}
+          >
+            {unitOptions.map((unit) => (
+              <Option key={unit} value={unit}>
+                {unit}
+              </Option>
+            ))}
+          </Select>
+        </div>
+      ),
+      dataIndex: "unit",
+      key: "unit",
+      render: (text: string, record: InquiryItem, index: number) =>
+        record.itemType === "ITEM" ? (
+          <Input
+            ref={(el) => {
+              if (!inputRefs.current[index]) {
+                inputRefs.current[index] = [];
+              }
+              inputRefs.current[index][2] = el;
+            }}
+            onKeyDown={(e) => handleNextRowKeyDown(e, index, 2)}
+            value={text}
+            onBlur={(e) => handleUnitBlur(index, e.target.value)}
+            onChange={(e) => handleInputChange(index, "unit", e.target.value)}
+          />
+        ) : (
+          <Input
+            readOnly
+            ref={(el) => {
+              if (!inputRefs.current[index]) {
+                inputRefs.current[index] = [];
+              }
+              inputRefs.current[index][2] = el;
+            }}
+            onKeyDown={(e) => handleNextRowKeyDown(e, index, 2)}
+          ></Input>
+        ),
+      width: 110,
+    },
+    {
+      title: "Remark",
+      dataIndex: "itemRemark",
+      key: "itemRemark",
+      render: (text: string, record: InquiryItem, index: number) => (
+        <Input.TextArea
+          autoSize={{ minRows: 1, maxRows: 10 }}
+          value={text}
+          ref={(el) => {
+            if (!inputRefs.current[index]) {
+              inputRefs.current[index] = [];
+            }
+            inputRefs.current[index][5] = el;
+          }}
+          onKeyDown={(e) => handleNextRowKeyDown(e, index, 5)}
+          onChange={(e) =>
+            handleInputChange(index, "itemRemark", e.target.value)
+          }
+        />
+      ),
+    },
+    {
+      title: "Action",
+      key: "action",
+      render: (_: any, record: any) => (
+        <div>
+          <Button
+            icon={<PlusCircleOutlined />}
+            type="default"
+            style={{ marginRight: 10 }}
+            onClick={() => handleAddItem(record.tableNo - 1, record.position)}
+          />
+          <Button
+            icon={<DeleteOutlined />}
+            type="default"
+            onClick={() =>
+              handleDeleteItem(record.tableNo - 1, record.position)
             }
           />
-        ),
-      },
-      {
-        title: "Action",
-        key: "action",
-        render: (_: any, __: any, index: number) => (
-          <div>
-            <Button
-              icon={<PlusCircleOutlined />}
-              type="default"
-              style={{ marginRight: 10 }}
-              onClick={() => handleAddItem(index)}
-            />
-
-            <Button
-              icon={<DeleteOutlined />}
-              type="default"
-              onClick={() => {
-                handleDelete(index);
-                const newDuplicateStates = getDuplicateStates(items);
-                setDuplicateStates(newDuplicateStates);
-                setIsDuplicate(
-                  Object.values(newDuplicateStates).includes(true)
-                );
-              }}
-            />
-          </div>
-        ),
-        width: 120, // 버튼 크기에 맞춰 조정
-      },
-    ],
-    [
-      applyUnitToAllRows,
-      unitOptions,
-      dataSource,
-      itemCodeOptions,
-      duplicateStates,
-      handleItemCodeChange,
-      setItemCodeOptions,
-      updateItemId,
-      handleInputChange,
-      handleKeyDown,
-      handleUnitBlur,
-      handleAddItem,
-      handleDelete,
-      getDuplicateStates,
-      items,
-      setIsDuplicate,
-    ]
-  );
+        </div>
+      ),
+      width: 120,
+    },
+  ];
 
   return (
-    <>
-      <div>
+    <div style={{ padding: "20px" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "20px",
+          padding: "16px",
+          backgroundColor: "#fafafa",
+          borderRadius: "8px",
+          boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
+        }}
+      >
+        <div style={{ display: "flex", gap: "12px" }}>
+          <Button
+            type="default"
+            onClick={() => setIsModalVisible(true)}
+            icon={<FileExcelOutlined />}
+          >
+            Load Excel
+          </Button>
+          <Button
+            type="default"
+            icon={<ExportOutlined />}
+            onClick={handleExportButtonClick}
+          >
+            Export Excel
+          </Button>
+        </div>
         <Button
-          type="dashed"
-          style={{ margin: "20px 5px" }}
-          onClick={() => setIsModalVisible(true)}
-          icon={<FileExcelOutlined />}
+          type="primary"
+          onClick={handleAddTable}
+          icon={<PlusCircleOutlined />}
         >
-          Load Excel File
-        </Button>
-        <Button
-          type="dashed"
-          style={{ margin: "20px 5px" }}
-          icon={<ExportOutlined />}
-          onClick={handleExportButtonClick}
-        >
-          Export Excel
+          Add New Table
         </Button>
       </div>
-      <CustomTable
-        rowClassName={(record: any, index) => {
-          if (record.itemType === "MAKER") {
-            return "maker-row";
-          } else if (record.itemType === "TYPE") {
-            return "type-row";
-          } else if (record.itemType === "DESC") {
-            return "desc-row";
-          } else {
-            return index % 2 === 0 ? "even-row" : "odd-row"; // 기본 행 스타일
-          }
-        }}
-        columns={columns}
-        dataSource={dataSource}
-        pagination={false}
-        rowKey="position"
-        scroll={{ y: 500 }}
-        virtual
-        size="small"
-      />
-      <Button
-        type="primary"
-        style={{ margin: "20px 5px" }}
-        onClick={() => handleAddItem(items.length - 1)} // 마지막 인덱스에 새 품목 추가
-      >
-        Add item
-      </Button>
+
+      {isDataReady &&
+        tables.map((table, index) => (
+          <TableSection
+            key={index}
+            tableIndex={index}
+            items={table.itemDetails}
+            onDeleteTable={handleDeleteTable}
+            inquiryDetail={inquiryDetail}
+            handleInputChange={handleInputChange}
+            handleItemCodeChange={handleItemCodeChange}
+            itemCodeOptions={itemCodeOptions}
+            setItemCodeOptions={setItemCodeOptions}
+            setIsDuplicate={setIsDuplicate}
+            setItems={setItems}
+            updateItemId={updateItemId}
+            customerInquiryId={customerInquiryId}
+            columns={columns}
+            tables={tables}
+            setTables={setTables}
+            handleAddItem={handleAddItem}
+          />
+        ))}
+
       <ExcelUploadModal
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
@@ -678,8 +978,8 @@ const MakeInquiryTable = ({
         currency={1}
         type={"inquiry"}
       />
-    </>
+    </div>
   );
-};
+}
 
 export default MakeInquiryTable;
