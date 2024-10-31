@@ -10,6 +10,7 @@ import {
   emailSendData,
   VesselList,
   InquirySearchMakerInquirySearchResult,
+  InquiryTable,
 } from "../types/types";
 import { useLocation, useNavigate } from "react-router-dom";
 import HeaderEditModal from "../components/makeInquiry/HeaderEditModal";
@@ -113,6 +114,8 @@ const AddSupplierOnInquiry = () => {
   const [isMailSenderVisible, setIsMailSenderVisible] = useState(false);
   const [isInquirySearchModalVisible, setIsInquirySearchModalVisible] =
     useState(false);
+  const [tables, setTables] = useState<InquiryTable[]>([]);
+  const [currentTableNo, setCurrentTableNo] = useState<number>(1);
 
   const setModalVisibility = (
     modalType: "header" | "mail" | "inquirySearch",
@@ -279,7 +282,21 @@ const AddSupplierOnInquiry = () => {
           selectedSupplierTag={selectedSupplierTag}
           setFileData={setFileData}
           setIsSendMail={setIsSendMail}
-          items={items}
+          getItemsForSupplier={(supplierId) => {
+            // 새로운 prop 추가
+            const selectedTables = tables.filter((table) =>
+              table.supplierList?.some(
+                (supplier) => supplier.supplierId === supplierId
+              )
+            );
+            const allItems = selectedTables.reduce<InquiryItem[]>(
+              (acc, table) => {
+                return [...acc, ...table.itemDetails];
+              },
+              []
+            );
+            return allItems.sort((a, b) => a.position - b.position);
+          }}
           vesselInfo={selectedVessel}
           pdfHeader={pdfHeader}
           setPdfFileData={setPdfFileData}

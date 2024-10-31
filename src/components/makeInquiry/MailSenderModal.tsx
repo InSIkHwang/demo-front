@@ -79,20 +79,7 @@ interface FormValue {
   supplierName: string;
 }
 
-const MailSenderModal = ({
-  mode,
-  mailDataList,
-  inquiryFormValues,
-  handleSubmit,
-  selectedSupplierTag,
-  setFileData,
-  setIsSendMail,
-  items,
-  vesselInfo,
-  pdfHeader,
-  setPdfFileData,
-  handleLanguageChange,
-}: {
+interface MailSenderModalProps {
   mode: string;
   mailDataList: emailSendData[];
   inquiryFormValues: FormValue;
@@ -107,12 +94,27 @@ const MailSenderModal = ({
   }[];
   setFileData: Dispatch<SetStateAction<File[]>>;
   setIsSendMail: Dispatch<SetStateAction<boolean>>;
-  items: InquiryItem[];
+  getItemsForSupplier: (supplierId: number) => InquiryItem[];
   vesselInfo: VesselList | null;
   pdfHeader: string;
   setPdfFileData: Dispatch<SetStateAction<File[]>>;
   handleLanguageChange: (value: string, id: number) => void;
-}) => {
+}
+
+const MailSenderModal = ({
+  mode,
+  mailDataList,
+  inquiryFormValues,
+  handleSubmit,
+  selectedSupplierTag,
+  setFileData,
+  setIsSendMail,
+  getItemsForSupplier,
+  vesselInfo,
+  pdfHeader,
+  setPdfFileData,
+  handleLanguageChange,
+}: MailSenderModalProps) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [currentMailDataList, setCurrentMailDataList] = useState(mailDataList);
@@ -129,18 +131,30 @@ const MailSenderModal = ({
   );
 
   useEffect(() => {
+    // mailDataList가 변경될 때마다 폼 데이터 설정
     form.setFieldsValue({
       docNumber: inquiryFormValues.docNumber,
-      mails: mailDataList.map((mail) => ({
-        toRecipient: mail.toRecipient || "",
-        subject: mail.subject || "",
-        content: mail.content || "",
-        ccRecipient: mail.ccRecipient || "",
-        bccRecipient: mail.bccRecipient || "",
+      mails: currentMailDataList.map((mail, index) => ({
+        toRecipient:
+          form.getFieldValue(["mails", index, "toRecipient"]) ||
+          mail.toRecipient ||
+          "",
+        subject:
+          form.getFieldValue(["mails", index, "subject"]) || mail.subject || "",
+        content:
+          form.getFieldValue(["mails", index, "content"]) || mail.content || "",
+        ccRecipient:
+          form.getFieldValue(["mails", index, "ccRecipient"]) ||
+          mail.ccRecipient ||
+          "",
+        bccRecipient:
+          form.getFieldValue(["mails", index, "bccRecipient"]) ||
+          mail.bccRecipient ||
+          "",
       })),
     });
     setCurrentMailDataList(mailDataList);
-  }, [mailDataList, form, inquiryFormValues.docNumber]);
+  }, [mailDataList]);
 
   const handleTabChange = (key: string) => {
     setActiveTabIndex(key);
@@ -191,8 +205,9 @@ const MailSenderModal = ({
     });
 
     try {
-      const savedInquiryId = await handleSubmit(); // inquiryId 반환받기
-      const inquiryId: number | null = savedInquiryId as number | null;
+      // const savedInquiryId = await handleSubmit(); // inquiryId 반환받기
+      // const inquiryId: number | null = savedInquiryId as number | null;
+      const inquiryId: number | null = 1;
 
       if (inquiryId || mode === "addSupplier") {
         for (const index of Array.from(selectedMailIndexes)) {
@@ -202,7 +217,7 @@ const MailSenderModal = ({
           const pdfFiles = await generatePDFs(
             filteredSupplierTags,
             inquiryFormValues,
-            items,
+            getItemsForSupplier,
             vesselInfo,
             pdfHeader,
             setPdfFileData,
@@ -213,6 +228,17 @@ const MailSenderModal = ({
             throw new Error("Failed to generate PDF files");
           }
 
+          const currentFormData = {
+            toRecipient: values.mails[index].toRecipient,
+            subject: values.mails[index].subject,
+            content: values.mails[index].content,
+            ccRecipient: values.mails[index].ccRecipient,
+            bccRecipient: values.mails[index].bccRecipient,
+            supplierName: selectedSupplierTag[index]?.name || "",
+            supplierId: selectedSupplierTag[index]?.id,
+          };
+          console.log(currentFormData);
+
           const finalFileData = [...updatedFileData, ...pdfFiles];
           setFileData(finalFileData);
 
@@ -221,12 +247,7 @@ const MailSenderModal = ({
             values.docNumber,
             inquiryId,
             finalFileData,
-            [
-              {
-                ...currentMailDataList[index],
-                ...values.mails[index],
-              },
-            ]
+            [currentFormData]
           );
         }
         message.success("The selected email has been sent successfully!");
@@ -298,7 +319,7 @@ const MailSenderModal = ({
             <Select
               value={selectedSupplierTag[index]?.communicationLanguage}
               onChange={(value) =>
-                handleLanguageChange(value, selectedSupplierTag[0]?.id)
+                handleLanguageChange(value, selectedSupplierTag[index]?.id)
               }
             >
               <Select.Option value="KOR">KOR</Select.Option>

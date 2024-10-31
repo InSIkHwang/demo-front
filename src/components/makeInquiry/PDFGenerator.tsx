@@ -110,22 +110,22 @@ const generateMailData = (
 export const generatePDFs = async (
   selectedSupplierTag: PDFGeneratorProps["selectedSupplierTag"],
   formValues: FormValues,
-  items: InquiryItem[],
+  getItemsForSupplier: (supplierId: number) => InquiryItem[],
   vesselInfo: VesselList | null,
   pdfHeader: string,
   setPdfFileData: Dispatch<SetStateAction<File[]>>,
-  selectedSupplierIndex: number // 추가된 파라미터
+  selectedSupplierIndex: number
 ): Promise<File[]> => {
   const updatedFiles: File[] = [];
-
-  // 특정 인덱스의 supplierTag만 사용
   const supplierTag = selectedSupplierTag[selectedSupplierIndex];
 
   if (supplierTag) {
+    const supplierItems = getItemsForSupplier(supplierTag.id);
+
     const doc = (
       <PDFDocument
         formValues={formValues}
-        items={items}
+        items={supplierItems}
         supplier={supplierTag}
         vesselInfo={vesselInfo}
         pdfHeader={pdfHeader}

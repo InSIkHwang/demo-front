@@ -174,6 +174,7 @@ export const vesselCheckImoAndHullUnique = async (
 //MakeInquiry시 문서번호, 날짜 등 생성
 export const fetchDocData = async () => {
   const response = await axios.post<{
+    documentId: number;
     docNumber: string;
     registerDate: string;
     shippingDate: string;
@@ -214,8 +215,8 @@ export const chkDuplicateRefNum = async (
 
 //Inquiry 저장
 export const submitInquiry = async (
-  docNumber: string | null,
   inquiryId: number | null,
+  documentId: number | null,
   data: any,
   isEditMode: boolean
 ) => {
@@ -234,7 +235,7 @@ export const submitInquiry = async (
     } else {
       // 생성 모드일 때 POST 요청 사용
       response = await axios.post(
-        `/api/customer-inquiries/mixed/inquiry?docNumber=${docNumber}`,
+        `/api/customer-inquiries/mixed/inquiry/${documentId}`,
         data
       );
 

@@ -287,6 +287,7 @@ const MakeInquiry = () => {
   const loadDocData = useCallback(async () => {
     try {
       const {
+        documentId,
         docNumber,
         registerDate,
         shippingDate,
@@ -295,7 +296,7 @@ const MakeInquiry = () => {
       } = await fetchDocData();
       setFormValues((prev) => ({
         ...prev,
-
+        documentId,
         docNumber,
         registerDate: dayjs(registerDate),
         shippingDate: dayjs(shippingDate),
@@ -641,7 +642,7 @@ const MakeInquiry = () => {
 
     // documentInfo 구성
     const documentInfo = {
-      documentId: formValues.documentId || null,
+      docNumber: formValues.docNumber,
       vesselId: selectedVessel.id,
       customerId: selectedCustomerId,
       refNumber: formValues.refNumber,
@@ -677,13 +678,9 @@ const MakeInquiry = () => {
       customerInquiryTables,
     };
 
-    if (isEditMode) {
-      requestData.documentInfo.documentId = formValues.documentId;
-    }
-
     // Submit the inquiry and get the response
     const response = await submitInquiry(
-      formValues.docNumber,
+      formValues.documentId,
       Number(customerInquiryId),
       requestData,
       isEditMode
@@ -858,11 +855,36 @@ const MakeInquiry = () => {
     return allItems.sort((a, b) => a.position - b.position);
   }, [tables, pdfSupplierTag]);
 
+  const getAllTableSuppliers = useCallback(() => {
+    // 모든 테이블의 supplierList를 하나의 배열로 합침
+    const allSuppliers = tables.reduce<InquiryListSupplier[]>((acc, table) => {
+      if (table.supplierList) {
+        acc.push(...table.supplierList);
+      }
+      return acc;
+    }, []);
+
+    // 중복 제거를 위해 Map 사용
+    const supplierMap = new Map();
+    allSuppliers.forEach((supplier) => {
+      if (!supplierMap.has(supplier.supplierId)) {
+        supplierMap.set(supplier.supplierId, {
+          id: supplier.supplierId,
+          name: supplier.companyName,
+          korName: supplier.korCompanyName || supplier.companyName, // fallback to companyName if korCompanyName is undefined
+          code: supplier.code,
+          email: supplier.email || "", // fallback to empty string if email is undefined
+          communicationLanguage: supplier.communicationLanguage || "KOR", // fallback to "KOR" if undefined
+        });
+      }
+    });
+
+    return Array.from(supplierMap.values());
+  }, [tables]);
+
   if (docDataloading || isLoading) {
     return <LoadingSpinner />;
   }
-
-  console.log(tables);
 
   return (
     <FormContainer>
@@ -945,10 +967,23 @@ const MakeInquiry = () => {
           mailDataList={mailDataList}
           inquiryFormValues={formValues}
           handleSubmit={handleSubmit}
-          selectedSupplierTag={selectedSupplierTag}
+          selectedSupplierTag={getAllTableSuppliers()}
           setFileData={setFileData}
           setIsSendMail={setIsSendMail}
-          items={items}
+          getItemsForSupplier={(supplierId) => {
+            const selectedTables = tables.filter((table) =>
+              table.supplierList?.some(
+                (supplier) => supplier.supplierId === supplierId
+              )
+            );
+            const allItems = selectedTables.reduce<InquiryItem[]>(
+              (acc, table) => {
+                return [...acc, ...table.itemDetails];
+              },
+              []
+            );
+            return allItems.sort((a, b) => a.position - b.position);
+          }}
           vesselInfo={selectedVessel}
           pdfHeader={pdfHeader}
           setPdfFileData={setPdfFileData}
@@ -1031,7 +1066,7 @@ const MakeInquiry = () => {
       </div>
       {isMailSenderVisible && (
         <PDFGenerator
-          selectedSupplierTag={selectedSupplierTag}
+          selectedSupplierTag={getAllTableSuppliers()}
           formValues={formValues}
           setMailDataList={setMailDataList}
           items={getSelectedTableItems()} // 선택된 테이블의 아이템들만 전달
