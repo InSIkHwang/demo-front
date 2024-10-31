@@ -294,7 +294,6 @@ export const sendInquiryMail = async (
         },
       }
     );
-    console.log(response);
 
     return response.data;
   } else if (mode === "addSupplier") {
@@ -357,9 +356,7 @@ export const fetchInquiryList = async (
 
 //Inquiry 상세 정보 조회
 export const fetchInquiryDetail = async (inquiryId: number) => {
-  const response = await axios.get(
-    `/api/customer-inquiries/mixed/${inquiryId}`
-  );
+  const response = await axios.get(`/api/customer-inquiries/${inquiryId}`);
 
   return response.data;
 };

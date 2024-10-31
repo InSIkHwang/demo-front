@@ -72,7 +72,7 @@ export interface InquiryItem {
   qty: number;
   unit: string;
   suppliers?: InquiryListSupplier[];
-  tableNo: number;
+  [key: string]: any;
 }
 
 export interface Item {
@@ -404,35 +404,4 @@ export interface InquirySearchMakerInquiryItem {
 export interface InquirySearchMakerInquirySearchResult {
   bestSupplierList: InquirySearchMakerSupplier[];
   searchList: InquirySearchMakerInquiryItem[];
-}
-
-export interface InquiryResponse {
-  documentInfo: DocumentInfo;
-  table: TableData[];
-}
-
-export interface DocumentInfo {
-  customerInquiryId: number;
-  vesselId: number;
-  customerId: number;
-  documentNumber: string;
-  registerDate: string;
-  shippingDate: string;
-  companyName: string;
-  refNumber: string;
-  currencyType: string;
-  currency: number;
-  vesselName: string;
-  vesselHullNo: string;
-  shipYard: string;
-  countryOfManufacture: string;
-  docRemark: string;
-  docManager: string;
-  representative: string;
-  documentStatus: string;
-  inquiryType: string;
-}
-
-export interface TableData {
-  itemDetails: InquiryItem[];
 }
