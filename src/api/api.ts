@@ -224,14 +224,17 @@ export const submitInquiry = async (
 
     if (isEditMode) {
       // 수정 모드일 때 PUT 요청 사용
-      response = await axios.put(`/api/customer-inquiries/${inquiryId}`, data);
+      response = await axios.put(
+        `/api/customer-inquiries/mixed/inquiry/${inquiryId}`,
+        data
+      );
 
       // 응답을 반환
       return inquiryId;
     } else {
       // 생성 모드일 때 POST 요청 사용
       response = await axios.post(
-        `/api/customer-inquiries?docNumber=${docNumber}`,
+        `/api/customer-inquiries/mixed/inquiry?docNumber=${docNumber}`,
         data
       );
 

@@ -7,14 +7,28 @@ import React, {
   useRef,
   useMemo,
 } from "react";
-import { Table, AutoComplete, Input, Select, Button, notification } from "antd";
+import {
+  Table,
+  AutoComplete,
+  Input,
+  Select,
+  Button,
+  notification,
+  Tooltip,
+  Tag,
+} from "antd";
 import {
   DeleteOutlined,
   FileExcelOutlined,
   ExportOutlined,
   PlusCircleOutlined,
 } from "@ant-design/icons";
-import { InquiryItem, InquiryResponse } from "../../types/types";
+import {
+  InquiryItem,
+  InquiryResponse,
+  InquiryListSupplier,
+  InquiryTable,
+} from "../../types/types";
 import ExcelUploadModal from "../ExcelUploadModal";
 import { ColumnsType } from "antd/es/table";
 import { handleExport } from "../../api/api";
@@ -106,6 +120,20 @@ interface MakeInquiryTableProps {
       }[]
     >
   >;
+  uniqueSuppliers?:
+    | {
+        code: string;
+        communicationLanguage: string;
+        email: string | null;
+        id: number;
+        korName: string;
+        name: string;
+        supplierRemark: string;
+      }[]
+    | undefined;
+  tables: InquiryTable[];
+  setTables: React.Dispatch<React.SetStateAction<InquiryTable[]>>;
+  setCurrentTableNo: React.Dispatch<React.SetStateAction<number>>;
 }
 
 interface TableSectionProps extends MakeInquiryTableProps {
@@ -115,11 +143,7 @@ interface TableSectionProps extends MakeInquiryTableProps {
   tables: InquiryTable[];
   setTables: React.Dispatch<React.SetStateAction<InquiryTable[]>>;
   handleAddItem: (tableIndex: number, position: number) => void;
-}
-
-// InquiryTable 인터페이스 추가
-interface InquiryTable {
-  itemDetails: InquiryItem[];
+  setCurrentTableNo: Dispatch<SetStateAction<number>>;
 }
 
 // 개별 테이블 컴포넌트
@@ -129,7 +153,59 @@ function TableSection({
   onDeleteTable,
   columns,
   handleAddItem,
+  tables,
+  setTables,
+  uniqueSuppliers,
+  setCurrentTableNo,
 }: TableSectionProps) {
+  const currentTable = tables[tableIndex];
+
+  const handleSupplierSelect = (supplierId: number) => {
+    const selectedSupplier = uniqueSuppliers?.find(
+      (supplier) => supplier.id === supplierId
+    );
+
+    if (selectedSupplier) {
+      setTables((prevTables) => {
+        const updatedTables = [...prevTables];
+        const targetTable = { ...updatedTables[tableIndex] };
+
+        // 이미 존재하는 supplier인지 확인
+        const isExisting = targetTable.supplierList?.some(
+          (supplier) => supplier.supplierId === supplierId
+        );
+
+        if (!isExisting) {
+          // supplierList가 없으면 새로 생성
+          if (!targetTable.supplierList) {
+            targetTable.supplierList = [];
+          }
+
+          // 새로운 supplier 추가
+          targetTable.supplierList.push({
+            inquiryItemDetailId: undefined,
+            supplierId: selectedSupplier.id,
+            code: selectedSupplier.code,
+            companyName: selectedSupplier.name,
+            korCompanyName: selectedSupplier.korName,
+            representative: "",
+            email: selectedSupplier.email || "",
+            communicationLanguage: selectedSupplier.communicationLanguage,
+            supplierRemark: selectedSupplier.supplierRemark,
+          });
+
+          updatedTables[tableIndex] = targetTable;
+        }
+        return updatedTables;
+      });
+    }
+  };
+
+  // 컴포넌트가 마운트되거나 tableIndex가 변경될 때 현재 테이블 번호 설정
+  useEffect(() => {
+    setCurrentTableNo(tableIndex + 1);
+  }, [tableIndex, setCurrentTableNo]);
+
   return (
     <div
       style={{
@@ -151,7 +227,34 @@ function TableSection({
           paddingBottom: "12px",
         }}
       >
-        <h3 style={{ margin: 0 }}>Table {tableIndex + 1}</h3>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <h3 style={{ margin: "0 10px 0 0" }}>Table {tableIndex + 1}</h3>
+          <Select
+            style={{ width: 200, marginRight: 8 }}
+            placeholder="Select a supplier to add"
+            onChange={handleSupplierSelect}
+            options={uniqueSuppliers?.map((supplier) => ({
+              value: supplier.id,
+              label: `${supplier.code}`,
+            }))}
+          />
+          {currentTable?.supplierList?.map((supplier) => (
+            <Tooltip
+              key={supplier.supplierId}
+              title={`${
+                supplier.supplierRemark ? ` ${supplier.supplierRemark}` : ""
+              }`}
+              color={"red"}
+            >
+              <Tag
+                color={supplier.supplierRemark ? "red" : "default"}
+                style={{ cursor: "pointer", marginLeft: 4 }}
+              >
+                {supplier.code}
+              </Tag>
+            </Tooltip>
+          ))}
+        </div>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <Button
             type="primary"
@@ -186,12 +289,15 @@ function TableSection({
           }
         }}
         columns={columns}
-        dataSource={items}
+        dataSource={currentTable.itemDetails}
         pagination={false}
         rowKey="position"
         scroll={{ y: 500 }}
         virtual
         size="small"
+        onRow={() => ({
+          onClick: () => setCurrentTableNo(tableIndex + 1),
+        })}
       />
     </div>
   );
@@ -208,17 +314,27 @@ function MakeInquiryTable({
   setItems,
   updateItemId,
   customerInquiryId,
+  tables,
+  setTables,
+  setCurrentTableNo,
+  uniqueSuppliers,
 }: MakeInquiryTableProps) {
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [tables, setTables] = useState<InquiryTable[]>([]);
   const [isDataReady, setIsDataReady] = useState(false);
 
   // 초기 데이터를 테이블별로 분리
   useEffect(() => {
     if (!inquiryDetail?.table) return;
 
-    // 서버 응답의 table 구조를 직접 사용
-    setTables(inquiryDetail.table);
+    // 서버 응답의 table 구조를 변환하여 사용
+    const formattedTables: InquiryTable[] = inquiryDetail.table.map(
+      (table) => ({
+        itemDetails: table.itemDetails,
+        supplierList: table.supplierList || [],
+      })
+    );
+
+    setTables(formattedTables);
 
     // items 상태도 모든 테이블의 itemDetails를 하나의 배열로 합쳐서 업데이트
     const allItems = inquiryDetail.table.flatMap((table) => table.itemDetails);
@@ -230,10 +346,10 @@ function MakeInquiryTable({
   // 새로운 useEffect 추가 (items가 없을 때의 초기 상태 처리)
   useEffect(() => {
     if (!inquiryDetail && items.length === 0) {
-      setTables([{ itemDetails: [] }]);
+      setTables([{ itemDetails: [], supplierList: [] }]);
       setIsDataReady(true);
     } else if (!inquiryDetail && items.length > 0) {
-      setTables([{ itemDetails: items }]);
+      setTables([{ itemDetails: items, supplierList: [] }]);
       setIsDataReady(true);
     }
   }, []);
@@ -275,7 +391,7 @@ function MakeInquiryTable({
       },
     ];
 
-    const newTable = { itemDetails: newTableItems };
+    const newTable = { itemDetails: newTableItems, supplierList: [] };
 
     setTables((prevTables) => [...prevTables, newTable]);
     setItems((prevItems) => [...prevItems, ...newTableItems]);
@@ -479,7 +595,6 @@ function MakeInquiryTable({
       }
     }
   };
-  console.log(tables);
 
   const handleAddItem = useCallback((tableIndex: number, position: number) => {
     setTables((prevTables) => {
@@ -967,6 +1082,8 @@ function MakeInquiryTable({
             tables={tables}
             setTables={setTables}
             handleAddItem={handleAddItem}
+            setCurrentTableNo={setCurrentTableNo}
+            uniqueSuppliers={uniqueSuppliers}
           />
         ))}
 

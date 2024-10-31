@@ -26,10 +26,8 @@ interface InquirySearchModalProps {
     communicationLanguage: string;
     supplierRemark: string;
   }[];
-  handleTagClick: (id: number) => void;
   inquirySearchMakerNameResult: InquirySearchMakerInquirySearchResult | null;
   handleInquirySearch: () => void;
-  tagColors: { [id: number]: string };
   setSelectedSuppliers: Dispatch<
     SetStateAction<
       {
@@ -52,10 +50,8 @@ const InquirySearchModal = ({
   inquirySearchMakerName,
   setInquirySearchMakerName,
   selectedSuppliers,
-  handleTagClick,
   inquirySearchMakerNameResult,
   handleInquirySearch,
-  tagColors,
   setSelectedSuppliers,
   setIsFromInquirySearchModal,
 }: InquirySearchModalProps) => {
@@ -117,31 +113,23 @@ const InquirySearchModal = ({
       render: (code, record) => (
         <Tag
           onClick={() => {
-            Modal.confirm({
-              title: "Add Supplier",
-              content: `Do you want to add ${record.companyName} as a supplier?`,
-              okText: "Yes",
-              cancelText: "No",
-              onOk: () => {
-                const selectedSupplier = {
-                  id: record.id,
-                  name: record.companyName,
-                  korName: record.korCompanyName || record.companyName,
-                  code: record.code || "",
-                  email: record.email || "",
-                  communicationLanguage: record.communicationLanguage || "",
-                  supplierRemark: record.communicationLanguage || "",
-                };
+            const selectedSupplier = {
+              id: record.id,
+              name: record.companyName,
+              korName: record.korCompanyName || record.companyName,
+              code: record.code || "",
+              email: record.email || "",
+              communicationLanguage: record.communicationLanguage || "",
+              supplierRemark: record.communicationLanguage || "",
+            };
 
-                // 새로운 공급업체 추가
-                setSelectedSuppliers((prevSuppliers) => {
-                  const newSuppliers = [...prevSuppliers, selectedSupplier];
+            // 새로운 공급업체 추가
+            setSelectedSuppliers((prevSuppliers) => {
+              const newSuppliers = [...prevSuppliers, selectedSupplier];
 
-                  setIsFromInquirySearchModal(true);
+              setIsFromInquirySearchModal(true);
 
-                  return newSuppliers; // 업데이트된 공급업체 리스트 반환
-                });
-              },
+              return newSuppliers; // 업데이트된 공급업체 리스트 반환
             });
           }}
           style={{ cursor: "pointer" }}
@@ -206,14 +194,10 @@ const InquirySearchModal = ({
             >
               <Tag
                 key={supplier.id}
-                color={supplier.supplierRemark ? "#f5222d" : "default"}
+                color={supplier.supplierRemark ? "red" : "default"}
                 style={{
-                  borderColor: tagColors[supplier.id] || "default",
                   cursor: "pointer",
-                  borderWidth: 2,
                 }}
-                onClick={() => handleTagClick(supplier.id)}
-                onClose={() => handleTagClick(supplier.id)}
               >
                 {supplier.code}
               </Tag>

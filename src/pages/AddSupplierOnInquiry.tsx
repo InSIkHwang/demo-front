@@ -180,14 +180,6 @@ const AddSupplierOnInquiry = () => {
   const closeInquirySearchMakerModal = () =>
     setModalVisibility("inquirySearch", false);
 
-  useEffect(() => {
-    if (isFromInquirySearchModal && selectedSuppliers.length > 0) {
-      const lastSupplier = selectedSuppliers[selectedSuppliers.length - 1];
-      handleTagClick(lastSupplier.id);
-      setIsFromInquirySearchModal(false); // 플래그를 초기화하여 다른 곳에서는 실행되지 않도록 함
-    }
-  }, [selectedSuppliers, isFromInquirySearchModal]);
-
   const handleFormChange = <K extends keyof typeof formValues>(
     key: K,
     value: (typeof formValues)[K]
@@ -235,30 +227,6 @@ const AddSupplierOnInquiry = () => {
     fetchInquirySearchResults(); // 검색 수행
   };
 
-  const handleTagClick = (id: number) => {
-    setSelectedSupplierTag((prevTags) => {
-      const isAlreadySelected = prevTags.some((tag) => tag.id === id);
-      const currentTags = [...prevTags];
-
-      if (isAlreadySelected) {
-        setTagColors((prevColors) => ({ ...prevColors, [id]: "#d9d9d9" }));
-        return currentTags.filter((tag) => tag.id !== id);
-      } else {
-        const newTag = selectedSuppliers.find((supplier) => supplier.id === id);
-
-        if (newTag) {
-          if (currentTags.length >= 5) {
-            message.error("Only up to 5 supplier can be registered.");
-            return currentTags;
-          }
-          setTagColors((prevColors) => ({ ...prevColors, [id]: "#007bff" }));
-          return [...currentTags, newTag];
-        }
-        return currentTags;
-      }
-    });
-  };
-
   if (isLoading) {
     return <LoadingSpinner />;
   }
@@ -278,7 +246,6 @@ const AddSupplierOnInquiry = () => {
           setSelectedSuppliers={setSelectedSuppliers}
           tagColors={tagColors}
           setTagColors={setTagColors}
-          handleTagClick={handleTagClick}
         />
       )}
       <TableComponent items={items} />
@@ -315,7 +282,6 @@ const AddSupplierOnInquiry = () => {
           items={items}
           vesselInfo={selectedVessel}
           pdfHeader={pdfHeader}
-          language={language}
           setPdfFileData={setPdfFileData}
           handleLanguageChange={handleLanguageChange}
         />
@@ -409,10 +375,8 @@ const AddSupplierOnInquiry = () => {
           inquirySearchMakerName={inquirySearchMakerName}
           setInquirySearchMakerName={setInquirySearchMakerName}
           selectedSuppliers={selectedSuppliers}
-          handleTagClick={handleTagClick}
           inquirySearchMakerNameResult={inquirySearchMakerNameResult}
           handleInquirySearch={handleInquirySearch}
-          tagColors={tagColors}
           setSelectedSuppliers={setSelectedSuppliers}
           setIsFromInquirySearchModal={setIsFromInquirySearchModal}
         />

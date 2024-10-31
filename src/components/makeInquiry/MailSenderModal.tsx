@@ -90,7 +90,6 @@ const MailSenderModal = ({
   items,
   vesselInfo,
   pdfHeader,
-  language,
   setPdfFileData,
   handleLanguageChange,
 }: {
@@ -111,7 +110,6 @@ const MailSenderModal = ({
   items: InquiryItem[];
   vesselInfo: VesselList | null;
   pdfHeader: string;
-  language: string;
   setPdfFileData: Dispatch<SetStateAction<File[]>>;
   handleLanguageChange: (value: string, id: number) => void;
 }) => {

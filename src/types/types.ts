@@ -95,7 +95,7 @@ export interface Item {
 
 //InquiryList
 export interface InquiryListSupplier {
-  inquiryItemDetailId: number;
+  inquiryItemDetailId?: number;
   supplierId: number;
   code: string;
   companyName: string;
@@ -408,12 +408,13 @@ export interface InquirySearchMakerInquirySearchResult {
 
 export interface InquiryResponse {
   documentInfo: DocumentInfo;
-  table: TableData[];
+  table: InquiryTable[];
 }
 
 export interface DocumentInfo {
   customerInquiryId: number;
   vesselId: number;
+  documentId: number;
   customerId: number;
   documentNumber: string;
   registerDate: string;
@@ -433,6 +434,7 @@ export interface DocumentInfo {
   inquiryType: string;
 }
 
-export interface TableData {
+export interface InquiryTable {
   itemDetails: InquiryItem[];
+  supplierList: InquiryListSupplier[];
 }

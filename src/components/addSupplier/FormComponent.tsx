@@ -111,7 +111,6 @@ interface InquiryFormProps {
   >;
   tagColors: { [id: number]: string };
   setTagColors: Dispatch<SetStateAction<{ [id: number]: string }>>;
-  handleTagClick: (id: number) => void;
 }
 
 const FormComponent = ({
@@ -120,7 +119,6 @@ const FormComponent = ({
   setSelectedSuppliers,
   tagColors,
   setTagColors,
-  handleTagClick,
 }: InquiryFormProps) => {
   const [supplierSearch, setSupplierSearch] = useState("");
   const [categoryList, setCategoryList] = useState<string[]>([]);
@@ -165,18 +163,6 @@ const FormComponent = ({
 
     fetchCategoryList();
   }, []);
-
-  useEffect(() => {
-    if (isFromAutoComplete && checkedSuppliers.length > 0) {
-      checkedSuppliers.forEach((supplier) => handleTagClick(supplier.id));
-      setIsFromAutoComplete(false); // 플래그를 초기화하여 다른 곳에서는 실행되지 않도록 함
-      setCheckedSuppliers([]);
-    } else if (isFromAutoComplete && selectedSuppliers.length > 0) {
-      const lastSupplier = selectedSuppliers[selectedSuppliers.length - 1];
-      handleTagClick(lastSupplier.id);
-      setIsFromAutoComplete(false);
-    }
-  }, [selectedSuppliers, isFromAutoComplete, checkedSuppliers, handleTagClick]);
 
   useEffect(() => {
     if (selectedSuppliers.length > 0) {
@@ -521,10 +507,7 @@ const FormComponent = ({
                 style={{
                   borderColor: tagColors[supplier.id] || "default",
                   cursor: "pointer",
-                  borderWidth: 2,
                 }}
-                onClick={() => handleTagClick(supplier.id)}
-                onClose={() => handleTagClick(supplier.id)}
               >
                 {supplier.code}
               </Tag>

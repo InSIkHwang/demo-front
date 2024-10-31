@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import { Button, FloatButton, message, Modal, Select } from "antd";
 import { FileSearchOutlined } from "@ant-design/icons";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import {
   fetchDocData,
   fetchCompanyNames,
@@ -23,6 +23,7 @@ import {
   Item,
   InquirySearchMakerInquirySearchResult,
   InquiryResponse,
+  InquiryTable,
 } from "../types/types";
 import { useNavigate, useParams } from "react-router-dom";
 import HeaderEditModal from "../components/makeInquiry/HeaderEditModal";
@@ -55,7 +56,22 @@ const BtnGroup = styled(FloatButton.Group)`
 `;
 
 // Constants
-const INITIAL_FORM_VALUES = {
+interface FormValues {
+  documentId: number | null;
+  docNumber: string;
+  registerDate: Dayjs;
+  shippingDate: Dayjs;
+  customer: string;
+  vesselName: string;
+  refNumber: string;
+  currencyType: string;
+  currency: number;
+  remark: string;
+  supplierName: string;
+}
+
+const INITIAL_FORM_VALUES: FormValues = {
+  documentId: null,
   docNumber: "",
   registerDate: dayjs(),
   shippingDate: dayjs(),
@@ -222,8 +238,6 @@ const MakeInquiry = () => {
   const [inquirySearchMakerName, setInquirySearchMakerName] = useState("");
   const [inquirySearchMakerNameResult, setInquirySearchMakerNameResult] =
     useState<InquirySearchMakerInquirySearchResult | null>(null);
-
-  const [tagColors, setTagColors] = useState<{ [id: number]: string }>({});
   const [isFromInquirySearchModal, setIsFromInquirySearchModal] =
     useState(false);
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
@@ -234,6 +248,8 @@ const MakeInquiry = () => {
   const [isMailSenderVisible, setIsMailSenderVisible] = useState(false);
   const [isInquirySearchModalVisible, setIsInquirySearchModalVisible] =
     useState(false);
+  const [tables, setTables] = useState<InquiryTable[]>([]);
+  const [currentTableNo, setCurrentTableNo] = useState<number>(1);
 
   const modalActions = {
     header: [setHeaderEditModalVisible, () => {}],
@@ -267,14 +283,6 @@ const MakeInquiry = () => {
     setModalVisibility(modalType, isVisible);
   };
 
-  useEffect(() => {
-    if (isFromInquirySearchModal && selectedSuppliers.length > 0) {
-      const lastSupplier = selectedSuppliers[selectedSuppliers.length - 1];
-      handleTagClick(lastSupplier.id);
-      setIsFromInquirySearchModal(false); // 플래그를 초기화하여 다른 곳에서는 실행되지 않도록 함
-    }
-  }, [selectedSuppliers, isFromInquirySearchModal]);
-
   // Load document data
   const loadDocData = useCallback(async () => {
     try {
@@ -287,6 +295,7 @@ const MakeInquiry = () => {
       } = await fetchDocData();
       setFormValues((prev) => ({
         ...prev,
+
         docNumber,
         registerDate: dayjs(registerDate),
         shippingDate: dayjs(shippingDate),
@@ -348,6 +357,7 @@ const MakeInquiry = () => {
 
       if (inquiryDetail) {
         const {
+          documentId,
           documentNumber,
           registerDate,
           shippingDate,
@@ -360,6 +370,7 @@ const MakeInquiry = () => {
         } = inquiryDetail.documentInfo;
 
         setFormValues({
+          documentId: documentId,
           docNumber: documentNumber,
           registerDate: dayjs(registerDate),
           shippingDate: dayjs(shippingDate),
@@ -405,7 +416,6 @@ const MakeInquiry = () => {
             []
           )
         );
-        console.log(suppliers);
 
         setSelectedSupplierTag(suppliers);
         setSelectedSuppliers(suppliers);
@@ -496,13 +506,39 @@ const MakeInquiry = () => {
     (index: number, field: keyof InquiryItem, value: string | number) => {
       setItems((prevItems) => {
         const updatedItems = [...prevItems];
-        const itemToUpdate = updatedItems[index];
+        const itemToUpdate = updatedItems.find(
+          (item) => item.tableNo === currentTableNo
+        );
 
-        itemToUpdate[field] = value as never; // 타입 단언 추가
+        if (itemToUpdate) {
+          updatedItems[index] = {
+            ...updatedItems[index],
+            [field]: value,
+          };
+        }
         return updatedItems;
       });
+
+      setTables((prevTables) => {
+        return prevTables.map((table, tableIndex) => {
+          if (tableIndex + 1 === currentTableNo) {
+            const updatedItemDetails = [...table.itemDetails];
+            if (index < updatedItemDetails.length) {
+              updatedItemDetails[index] = {
+                ...updatedItemDetails[index],
+                [field]: value,
+              };
+            }
+            return {
+              ...table,
+              itemDetails: updatedItemDetails,
+            };
+          }
+          return table;
+        });
+      });
     },
-    []
+    [currentTableNo]
   );
 
   const handleFormChange = <K extends keyof typeof formValues>(
@@ -582,7 +618,7 @@ const MakeInquiry = () => {
     } catch (error) {
       console.error("An error occurred while saving inquiry:", error);
       message.error("Retry Please");
-      return null; // 저장 실패 시 null 반환
+      return null; // 저장 실패 시 null 환
     }
   };
 
@@ -603,23 +639,10 @@ const MakeInquiry = () => {
       return null;
     }
 
-    const inquiryItemDetails = items.map((item) => {
-      return {
-        position: item.position,
-        itemDetailId: item.itemDetailId,
-        itemId: item.itemId || null,
-        itemCode: item.itemCode,
-        itemName: item.itemName,
-        itemRemark: item.itemRemark,
-        qty: item.qty,
-        unit: item.unit,
-        itemType: item.itemType,
-        supplierIdList: selectedSupplierTag.map((supplier) => supplier.id),
-      };
-    });
-    const requestData = {
-      documentNumber: formValues.docNumber,
-      vesselId: selectedVessel ? selectedVessel.id : null,
+    // documentInfo 구성
+    const documentInfo = {
+      documentId: formValues.documentId || null,
+      vesselId: selectedVessel.id,
       customerId: selectedCustomerId,
       refNumber: formValues.refNumber,
       registerDate: formValues.registerDate.format("YYYY-MM-DD"),
@@ -627,11 +650,35 @@ const MakeInquiry = () => {
       remark: formValues.remark,
       currencyType: formValues.currencyType,
       currency: parseFloat(formValues.currency as any),
-      inquiryItemDetails,
+    };
+
+    // customerInquiryTables 구성
+    const customerInquiryTables = tables.map((table, index) => {
+      const tableNo = index + 1;
+      return {
+        supplierIdList:
+          table.supplierList?.map((supplier) => supplier.supplierId) || [],
+        inquiryItemDetails: table.itemDetails.map((item) => ({
+          itemId: item.itemId || null,
+          itemCode: item.itemCode,
+          itemName: item.itemName,
+          itemRemark: item.itemRemark,
+          qty: item.qty,
+          unit: item.unit,
+          itemType: item.itemType,
+          position: item.position,
+          tableNo: tableNo,
+        })),
+      };
+    });
+
+    const requestData = {
+      documentInfo,
+      customerInquiryTables,
     };
 
     if (isEditMode) {
-      requestData.documentNumber = formValues.docNumber;
+      requestData.documentInfo.documentId = formValues.documentId;
     }
 
     // Submit the inquiry and get the response
@@ -768,33 +815,54 @@ const MakeInquiry = () => {
     fetchInquirySearchResults(); // 검색 수행
   };
 
-  const handleTagClick = (id: number) => {
-    setSelectedSupplierTag((prevTags) => {
-      const isAlreadySelected = prevTags.some((tag) => tag.id === id);
-      const currentTags = [...prevTags];
-
-      if (isAlreadySelected) {
-        setTagColors((prevColors) => ({ ...prevColors, [id]: "#d9d9d9" }));
-        return currentTags.filter((tag) => tag.id !== id);
-      } else {
-        const newTag = selectedSuppliers.find((supplier) => supplier.id === id);
-
-        if (newTag) {
-          if (currentTags.length >= 5) {
-            message.error("Only up to 5 supplier can be registered.");
-            return currentTags;
-          }
-          setTagColors((prevColors) => ({ ...prevColors, [id]: "#007bff" }));
-          return [...currentTags, newTag];
-        }
-        return currentTags;
+  const removeDuplicates = (
+    arr: {
+      code: string;
+      communicationLanguage: string;
+      email: string | null;
+      id: number;
+      korName: string;
+      name: string;
+      supplierRemark: string;
+    }[]
+  ) => {
+    const uniqueIds = new Set<number>();
+    return arr.filter((item) => {
+      if (uniqueIds.has(item.id)) {
+        return false;
       }
+      uniqueIds.add(item.id);
+      return true;
     });
   };
+
+  const uniqueSuppliers = removeDuplicates(selectedSuppliers);
+
+  // 선택된 supplier의 테이블 아이템들을 찾는 함수 추가
+  const getSelectedTableItems = useCallback(() => {
+    if (!pdfSupplierTag[0]) return [];
+
+    // 선택된 supplier가 포함된 모든 테이블 찾기
+    const selectedTables = tables.filter((table) =>
+      table.supplierList?.some(
+        (supplier) => supplier.supplierId === pdfSupplierTag[0].id
+      )
+    );
+
+    // 모든 테이블의 itemDetails를 하나의 배열로 합치기
+    const allItems = selectedTables.reduce<InquiryItem[]>((acc, table) => {
+      return [...acc, ...table.itemDetails];
+    }, []);
+
+    // position 순서대로 정렬
+    return allItems.sort((a, b) => a.position - b.position);
+  }, [tables, pdfSupplierTag]);
 
   if (docDataloading || isLoading) {
     return <LoadingSpinner />;
   }
+
+  console.log(tables);
 
   return (
     <FormContainer>
@@ -814,13 +882,11 @@ const MakeInquiry = () => {
           isDocNumDuplicate={isDocNumDuplicate}
           setIsDocNumDuplicate={setIsDocNumDuplicate}
           customerInquiryId={Number(customerInquiryId)}
-          tagColors={tagColors}
-          setTagColors={setTagColors}
-          handleTagClick={handleTagClick}
           toggleModal={toggleModal}
           isCustomerModalOpen={isCustomerModalOpen}
           isVesselModalOpen={isVesselModalOpen}
           isSupplierModalOpen={isSupplierModalOpen}
+          uniqueSuppliers={uniqueSuppliers}
         />
       )}
 
@@ -835,6 +901,10 @@ const MakeInquiry = () => {
         updateItemId={updateItemId}
         customerInquiryId={Number(customerInquiryId)}
         setItemCodeOptions={setItemCodeOptions}
+        tables={tables}
+        setTables={setTables}
+        setCurrentTableNo={setCurrentTableNo}
+        uniqueSuppliers={uniqueSuppliers}
       />
 
       <Button
@@ -881,7 +951,6 @@ const MakeInquiry = () => {
           items={items}
           vesselInfo={selectedVessel}
           pdfHeader={pdfHeader}
-          language={language}
           setPdfFileData={setPdfFileData}
           handleLanguageChange={handleLanguageChange}
         />
@@ -898,19 +967,36 @@ const MakeInquiry = () => {
         <Select
           style={{ width: 200, float: "left", marginLeft: 10 }}
           onChange={(value) => {
-            const selected = selectedSupplierTag.find(
-              (tag) => tag.name === value
+            const [tableIndex, supplierId] = value.split(":");
+            const selectedTable = tables[parseInt(tableIndex)];
+            const selectedSupplier = selectedTable?.supplierList?.find(
+              (supplier) => supplier.supplierId.toString() === supplierId
             );
-            if (selected) {
-              setPdfSupplierTag([selected]);
+            if (selectedSupplier) {
+              setPdfSupplierTag([
+                {
+                  id: selectedSupplier.supplierId,
+                  name: selectedSupplier.companyName,
+                  communicationLanguage:
+                    selectedSupplier.communicationLanguage || "KOR",
+                  korName:
+                    selectedSupplier.korCompanyName ||
+                    selectedSupplier.companyName,
+                },
+              ]);
             }
           }}
         >
-          {selectedSupplierTag.map((tag) => (
-            <Select.Option key={tag.id} value={tag.name}>
-              {tag.name}
-            </Select.Option>
-          ))}
+          {tables.map((table, tableIndex) =>
+            table.supplierList?.map((supplier) => (
+              <Select.Option
+                key={`${tableIndex}:${supplier.supplierId}`}
+                value={`${tableIndex}:${supplier.supplierId}`}
+              >
+                {`Table ${tableIndex + 1}: ${supplier.code}`}
+              </Select.Option>
+            ))
+          )}
         </Select>
         <Button
           onClick={() => toggleModal("header", true)}
@@ -948,7 +1034,7 @@ const MakeInquiry = () => {
           selectedSupplierTag={selectedSupplierTag}
           formValues={formValues}
           setMailDataList={setMailDataList}
-          items={items}
+          items={getSelectedTableItems()} // 선택된 테이블의 아이템들만 전달
           vesselInfo={selectedVessel}
           pdfHeader={pdfHeader}
           setPdfFileData={setPdfFileData}
@@ -958,7 +1044,7 @@ const MakeInquiry = () => {
       {showPDFPreview && (
         <PDFDocument
           formValues={formValues}
-          items={items}
+          items={getSelectedTableItems()} // 선택된 테이블의 아이템들만 전달
           supplier={pdfSupplierTag[0]}
           vesselInfo={selectedVessel}
           pdfHeader={pdfHeader}
@@ -978,10 +1064,8 @@ const MakeInquiry = () => {
           inquirySearchMakerName={inquirySearchMakerName}
           setInquirySearchMakerName={setInquirySearchMakerName}
           selectedSuppliers={selectedSuppliers}
-          handleTagClick={handleTagClick}
           inquirySearchMakerNameResult={inquirySearchMakerNameResult}
           handleInquirySearch={handleInquirySearch}
-          tagColors={tagColors}
           setSelectedSuppliers={setSelectedSuppliers}
           setIsFromInquirySearchModal={setIsFromInquirySearchModal}
         />

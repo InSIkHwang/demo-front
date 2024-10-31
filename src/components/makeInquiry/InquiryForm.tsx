@@ -77,6 +77,7 @@ const StyledCheckbox = styled(Checkbox)`
 `;
 
 interface FormValues {
+  documentId: number | null;
   docNumber: string;
   registerDate: any;
   shippingDate: any;
@@ -136,9 +137,6 @@ interface InquiryFormProps {
   isDocNumDuplicate: boolean;
   setIsDocNumDuplicate: Dispatch<SetStateAction<boolean>>;
   customerInquiryId: number;
-  tagColors: { [id: number]: string };
-  setTagColors: Dispatch<SetStateAction<{ [id: number]: string }>>;
-  handleTagClick: (id: number) => void;
   toggleModal: (
     modalType:
       | "header"
@@ -152,6 +150,14 @@ interface InquiryFormProps {
   isCustomerModalOpen: boolean;
   isVesselModalOpen: boolean;
   isSupplierModalOpen: boolean;
+  uniqueSuppliers:
+    | {
+        id: number;
+        name: string;
+        code: string;
+        supplierRemark: string;
+      }[]
+    | undefined;
 }
 
 const InquiryForm = ({
@@ -166,13 +172,11 @@ const InquiryForm = ({
   isDocNumDuplicate,
   setIsDocNumDuplicate,
   customerInquiryId,
-  tagColors,
-  setTagColors,
-  handleTagClick,
   toggleModal,
   isCustomerModalOpen,
   isVesselModalOpen,
   isSupplierModalOpen,
+  uniqueSuppliers,
 }: InquiryFormProps) => {
   const [form] = Form.useForm();
   const [supplierSearch, setSupplierSearch] = useState("");
@@ -221,18 +225,6 @@ const InquiryForm = ({
   }, []);
 
   useEffect(() => {
-    if (isFromAutoComplete && checkedSuppliers.length > 0) {
-      checkedSuppliers.forEach((supplier) => handleTagClick(supplier.id));
-      setIsFromAutoComplete(false); // 플래그를 초기화하여 다른 곳에서는 실행되지 않도록 함
-      setCheckedSuppliers([]);
-    } else if (isFromAutoComplete && selectedSuppliers.length > 0) {
-      const lastSupplier = selectedSuppliers[selectedSuppliers.length - 1];
-      handleTagClick(lastSupplier.id);
-      setIsFromAutoComplete(false);
-    }
-  }, [selectedSuppliers, isFromAutoComplete, checkedSuppliers, handleTagClick]);
-
-  useEffect(() => {
     const checkDuplicateOnMount = async () => {
       if (formValues.docNumber) {
         const isDuplicate = await chkDuplicateDocNum(
@@ -245,17 +237,6 @@ const InquiryForm = ({
 
     checkDuplicateOnMount();
   }, [formValues.docNumber, customerInquiryId, setIsDocNumDuplicate]);
-
-  useEffect(() => {
-    if (selectedSuppliers.length > 0) {
-      const initialColors = selectedSuppliers.reduce((colors, supplier) => {
-        colors[supplier.id] = "#007bff";
-        return colors;
-      }, {} as { [id: number]: string });
-
-      setTagColors(initialColors);
-    }
-  }, []);
 
   const showModal = (type: string) => {
     setSelectedType(type);
@@ -326,19 +307,6 @@ const InquiryForm = ({
       };
     }
     return { status: undefined, message: undefined };
-  };
-
-  const removeDuplicates = (
-    arr: { id: number; name: string; code: string; supplierRemark: string }[]
-  ) => {
-    const uniqueIds = new Set<number>();
-    return arr.filter((item) => {
-      if (uniqueIds.has(item.id)) {
-        return false;
-      }
-      uniqueIds.add(item.id);
-      return true;
-    });
   };
 
   const handleSupplierSearch = async (value: string) => {
@@ -415,8 +383,6 @@ const InquiryForm = ({
       handleMakerSearch(value, categoryType);
     }
   };
-
-  const uniqueSuppliers = removeDuplicates(selectedSuppliers);
 
   const removeListDuplicates = (list: any[]) => {
     const uniqueItems: any[] = [];
@@ -789,7 +755,7 @@ const InquiryForm = ({
               </Modal>
             )}
             <span style={{ marginRight: 10 }}>Searched Suppliers: </span>
-            {uniqueSuppliers.map((supplier) => (
+            {uniqueSuppliers?.map((supplier) => (
               <Tooltip
                 placement="bottomLeft"
                 title={supplier.supplierRemark || null}
@@ -798,14 +764,10 @@ const InquiryForm = ({
               >
                 <Tag
                   key={supplier.id}
-                  color={supplier.supplierRemark ? "#f5222d" : "default"}
+                  color={supplier.supplierRemark ? "red" : "default"}
                   style={{
-                    borderColor: tagColors[supplier.id] || "default",
                     cursor: "pointer",
-                    borderWidth: 2,
                   }}
-                  onClick={() => handleTagClick(supplier.id)}
-                  onClose={() => handleTagClick(supplier.id)}
                 >
                   {supplier.code}
                 </Tag>
