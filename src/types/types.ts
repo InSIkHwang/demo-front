@@ -146,6 +146,7 @@ export interface offerEmailSendData {
 
 export interface SupplierInquiryListIF {
   supplierInquiryId: number;
+  documentId: number;
   documentNumber: string;
   registerDate: string;
   shippingDate: string;

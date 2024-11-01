@@ -8,8 +8,13 @@ import {
   Divider,
   message,
   Input,
+  Typography,
 } from "antd";
-import { Inquiry, InquiryListSupplier } from "../../types/types";
+import {
+  Inquiry,
+  InquiryListSupplier,
+  InquiryResponse,
+} from "../../types/types";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import {
@@ -76,7 +81,9 @@ const DetailInquiryModal = ({
   inquiryId,
   fetchData,
 }: DetailInquiryModalProps) => {
-  const [inquiryDetail, setInquiryDetail] = useState<Inquiry | null>(null);
+  const [inquiryDetail, setInquiryDetail] = useState<InquiryResponse | null>(
+    null
+  );
   const [loading, setLoading] = useState<boolean>(true);
   const navigate = useNavigate();
   const [newDocumentNumber, setNewDocumentNumber] = useState("");
@@ -87,8 +94,9 @@ const DetailInquiryModal = ({
       if (open) {
         try {
           setInquiryDetail(null);
-          const data = await fetchInquiryDetail(inquiryId);
-          setInquiryDetail(data);
+          const response: InquiryResponse = await fetchInquiryDetail(inquiryId);
+
+          setInquiryDetail(response);
         } catch (error) {
           message.error("Error fetching details:");
         } finally {
@@ -108,7 +116,7 @@ const DetailInquiryModal = ({
   };
 
   const handleCopyClick = () => {
-    setNewDocumentNumber(inquiryDetail!.documentNumber);
+    setNewDocumentNumber(inquiryDetail!.documentInfo.documentNumber);
     setIsModalVisible(true);
   };
 
@@ -126,7 +134,7 @@ const DetailInquiryModal = ({
       }
 
       const { inquiryId: newInquiryId } = await copyInquiry(
-        inquiryDetail!.documentNumber,
+        inquiryDetail!.documentInfo.documentNumber,
         newDocumentNumber
       );
       message.success("Copied successfully");
@@ -168,7 +176,7 @@ const DetailInquiryModal = ({
       title: "Item Code",
       dataIndex: "itemCode",
       key: "itemCode",
-      width: 150,
+      width: 250,
       render: (text: string, record: any) => {
         if (isSpecialItemType(record.itemType)) {
           return record.itemType;
@@ -223,30 +231,37 @@ const DetailInquiryModal = ({
         return text;
       },
     },
-    {
-      title: "Suppliers",
-      dataIndex: "suppliers",
-      key: "suppliers",
-      width: 200,
-      render: (suppliers: InquiryListSupplier[], record: any) => {
-        if (isSpecialItemType(record.itemType)) {
-          return null;
-        }
-
-        if (!suppliers) {
-          return <div>No suppliers available</div>;
-        }
-
-        return (
-          <>
-            {suppliers.map((supplier) => (
-              <div key={supplier.supplierId}>{supplier.code},</div>
-            ))}
-          </>
-        );
-      },
-    },
   ];
+
+  const TableSection = ({
+    tableData,
+    index,
+  }: {
+    tableData: any;
+    index: number;
+  }) => (
+    <>
+      <Divider orientation="left">Table {index + 1}</Divider>
+      <div style={{ marginBottom: 20 }}>
+        <Typography.Text type="secondary">Suppliers: </Typography.Text>
+        {tableData.supplierList.map((supplier: any, idx: number) => (
+          <Tag key={supplier.supplierId} color="blue">
+            {supplier.code}
+            {idx < tableData.supplierList.length - 1 ? "," : ""}
+          </Tag>
+        ))}
+      </div>
+      <Table
+        columns={columns}
+        dataSource={tableData.itemDetails}
+        pagination={false}
+        rowKey="position"
+        scroll={{ y: 200 }}
+        bordered
+        size="small"
+      />
+    </>
+  );
 
   return (
     <>
@@ -258,16 +273,17 @@ const DetailInquiryModal = ({
           <Button type="dashed" key="copy" onClick={handleCopyClick}>
             Copy to new document
           </Button>,
-          inquiryDetail && inquiryDetail.documentStatus !== "INQUIRY_SENT" && (
-            <>
-              <Button type="primary" key="edit" onClick={handleEditClick}>
-                Edit
-              </Button>
-              <Button key="delete" danger onClick={handleDeleteClick}>
-                Delete
-              </Button>
-            </>
-          ),
+          inquiryDetail &&
+            inquiryDetail.documentInfo.documentStatus !== "INQUIRY_SENT" && (
+              <>
+                <Button type="primary" key="edit" onClick={handleEditClick}>
+                  Edit
+                </Button>
+                <Button key="delete" danger onClick={handleDeleteClick}>
+                  Delete
+                </Button>
+              </>
+            ),
           <Button key="close" onClick={onClose}>
             Close
           </Button>,
@@ -281,71 +297,66 @@ const DetailInquiryModal = ({
             <>
               <Descriptions bordered column={2} size="small">
                 <Descriptions.Item label="Document Number">
-                  {inquiryDetail.documentNumber}
+                  {inquiryDetail.documentInfo.documentNumber}
                 </Descriptions.Item>
                 <Descriptions.Item label="Registration Date">
-                  {inquiryDetail.registerDate}
+                  {inquiryDetail.documentInfo.registerDate}
                 </Descriptions.Item>
                 <Descriptions.Item label="Company Name">
-                  {inquiryDetail.companyName}
+                  {inquiryDetail.documentInfo.companyName}
                 </Descriptions.Item>
                 <Descriptions.Item label="REF NO.">
-                  {inquiryDetail.refNumber}
+                  {inquiryDetail.documentInfo.refNumber}
                 </Descriptions.Item>
                 <Descriptions.Item label="Currency">
-                  {inquiryDetail.currencyType}
+                  {inquiryDetail.documentInfo.currencyType}
                 </Descriptions.Item>
                 <Descriptions.Item label="Exchange Rate">
-                  {`$${inquiryDetail.currency?.toFixed(0)}`}
+                  {`$${inquiryDetail.documentInfo.currency?.toFixed(0)}`}
                 </Descriptions.Item>
                 <Descriptions.Item label="Vessel Name">
-                  {inquiryDetail.vesselName}
+                  {inquiryDetail.documentInfo.vesselName}
                 </Descriptions.Item>
                 <Descriptions.Item label="Vessel Hull Number">
-                  {inquiryDetail.veeselHullNo}
+                  {inquiryDetail.documentInfo.vesselHullNo}
                 </Descriptions.Item>
                 <Descriptions.Item label="Remark">
-                  {inquiryDetail.docRemark}
+                  {inquiryDetail.documentInfo.docRemark}
                 </Descriptions.Item>
                 <Descriptions.Item label="Document Manager">
-                  {inquiryDetail.docManager}
+                  {inquiryDetail.documentInfo.docManager}
                 </Descriptions.Item>
                 <Descriptions.Item label="Company Representative">
-                  {inquiryDetail.representative}
+                  {inquiryDetail.documentInfo.representative}
                 </Descriptions.Item>
                 <Descriptions.Item label="Document Status">
                   <TagStyled
                     color={
-                      inquiryDetail.documentStatus === "WRITING_INQUIRY"
+                      inquiryDetail.documentInfo.documentStatus ===
+                      "WRITING_INQUIRY"
                         ? "orange"
-                        : inquiryDetail.documentStatus ===
+                        : inquiryDetail.documentInfo.documentStatus ===
                           "WAITING_TO_SEND_INQUIRY"
                         ? "blue"
                         : "steelblue"
                     }
                   >
-                    {inquiryDetail.documentStatus}
+                    {inquiryDetail.documentInfo.documentStatus}
                   </TagStyled>
                 </Descriptions.Item>
 
                 <Descriptions.Item label="Inquiry Type">
                   <TagStyled color="green">
-                    {inquiryDetail.inquiryType}
+                    {inquiryDetail.documentInfo.inquiryType}
                   </TagStyled>
                 </Descriptions.Item>
               </Descriptions>
               <Divider variant="dashed" style={{ borderColor: "#007bff" }}>
                 Item List
               </Divider>
-              <Table
-                columns={columns}
-                dataSource={inquiryDetail.inquiryItemDetails}
-                pagination={false}
-                rowKey="position"
-                scroll={{ y: 300 }}
-                bordered
-                size="small"
-              />
+              {inquiryDetail.table.map((tableData, index) => (
+                <TableSection key={index} tableData={tableData} index={index} />
+              ))}
             </>
           )
         )}

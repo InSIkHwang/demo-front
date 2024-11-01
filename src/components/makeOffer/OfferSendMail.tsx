@@ -67,7 +67,7 @@ const OfferMailSender = ({
   pdfFileData,
   mailData,
   pdfHeader,
-  idList,
+  loadDocumentId,
 }: {
   inquiryFormValues: FormValue;
   handleSubmit: () => Promise<unknown>;
@@ -77,7 +77,7 @@ const OfferMailSender = ({
   pdfFileData: File | null;
   mailData: offerEmailSendData | null;
   pdfHeader: string;
-  idList: { offerId: any; supplierId: any };
+  loadDocumentId: { documentId: any };
 }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -133,7 +133,7 @@ const OfferMailSender = ({
           bccRecipient: updateMailData.bccRecipient,
         },
         quotationHeader: pdfHeader,
-        supplierInquiryIds: idList.offerId,
+        supplierInquiryIds: loadDocumentId.documentId, //추후 offerId로 변경
       };
 
       // 메일 전송 로직

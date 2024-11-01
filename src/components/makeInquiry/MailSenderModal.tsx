@@ -205,9 +205,8 @@ const MailSenderModal = ({
     });
 
     try {
-      // const savedInquiryId = await handleSubmit(); // inquiryId 반환받기
-      // const inquiryId: number | null = savedInquiryId as number | null;
-      const inquiryId: number | null = 1;
+      const savedInquiryId = await handleSubmit(); // inquiryId 반환받기
+      const inquiryId: number | null = savedInquiryId as number | null;
 
       if (inquiryId || mode === "addSupplier") {
         for (const index of Array.from(selectedMailIndexes)) {
@@ -237,7 +236,6 @@ const MailSenderModal = ({
             supplierName: selectedSupplierTag[index]?.name || "",
             supplierId: selectedSupplierTag[index]?.id,
           };
-          console.log(currentFormData);
 
           const finalFileData = [...updatedFileData, ...pdfFiles];
           setFileData(finalFileData);

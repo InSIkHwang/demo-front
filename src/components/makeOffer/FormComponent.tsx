@@ -30,7 +30,6 @@ const FormItem = styled(Form.Item)`
 
 interface FormComponentProps {
   formValues: any;
-  readOnly?: boolean; // readOnly prop 추가
   handleFormChange: <K extends keyof FormValuesType>(
     key: K,
     value: FormValuesType[K]
@@ -44,7 +43,6 @@ interface FormComponentProps {
 
 const FormComponent = ({
   formValues,
-  readOnly,
   handleFormChange,
   setCusVesIdList,
   cusVesIdList,
@@ -243,7 +241,6 @@ const FormComponent = ({
                 );
                 setIsRefNumDuplicate(isDuplicate); // 중복 여부 설정
               }}
-              disabled={readOnly}
             />
           </FormItem>
           <FormItem label="문서상태" name="documentStatus">
@@ -259,7 +256,6 @@ const FormComponent = ({
               value={formValues.registerDate}
               onChange={(date) => handleFormChange("registerDate", date!)}
               format="YYYY-MM-DD"
-              disabled={readOnly}
               style={{ width: "100%" }}
             />
           </FormItem>
@@ -286,7 +282,6 @@ const FormComponent = ({
                 // form 필드 동기화
                 form.setFieldsValue({ currency: currency });
               }}
-              disabled={readOnly}
             >
               {["USD", "EUR", "INR"].map((currencyType) => (
                 <Option key={currencyType} value={currencyType}>
@@ -312,7 +307,6 @@ const FormComponent = ({
               }
               min={0}
               style={{ width: "100%" }}
-              disabled={readOnly}
             />
           </FormItem>
         </Row>
@@ -337,7 +331,6 @@ const FormComponent = ({
               type="primary"
               style={{ position: "absolute", top: "-35px", right: "0" }}
               onClick={() => setIsCustomerModalOpen(true)}
-              disabled={readOnly}
             >
               Register
             </Button>
@@ -346,9 +339,8 @@ const FormComponent = ({
               onChange={(value) => handleFormChange("customerName", value)}
               options={autoCompleteOptions}
               style={{ width: "100%" }}
-              disabled={readOnly}
             >
-              <Input readOnly={readOnly} />
+              <Input />
             </AutoComplete>
           </FormItem>
           <FormItem
@@ -370,7 +362,6 @@ const FormComponent = ({
               type="primary"
               style={{ position: "absolute", top: "-35px", right: "0" }}
               onClick={() => setIsVesselModalOpen(true)}
-              disabled={readOnly}
             >
               Register
             </Button>
@@ -390,16 +381,14 @@ const FormComponent = ({
               filterOption={(inputValue, option) =>
                 option!.value.toLowerCase().includes(inputValue.toLowerCase())
               }
-              disabled={readOnly}
             >
-              <Input readOnly={readOnly} />
+              <Input />
             </AutoComplete>
           </FormItem>
           <FormItem label="HULL NO." name="veeselHullNo">
             <Input
               value={formValues.veeselHullNo}
               onChange={(e) => handleFormChange("veeselHullNo", e.target.value)}
-              disabled={readOnly}
             />
           </FormItem>
         </Row>
@@ -422,7 +411,6 @@ const FormComponent = ({
               value={formValues.docRemark}
               onChange={(e) => handleFormChange("docRemark", e.target.value)}
               rows={1}
-              disabled={readOnly}
             />
           </FormItem>
         </Row>

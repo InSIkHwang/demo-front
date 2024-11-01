@@ -34,7 +34,6 @@ interface ChargeComponentProps {
   invChargeList: InvCharge[] | null;
   setInvChargeList: Dispatch<SetStateAction<InvCharge[] | null>>;
   applyDcAndCharge: () => void;
-  isReadOnly: boolean;
 }
 
 const ChargeInputPopover = ({
@@ -44,7 +43,6 @@ const ChargeInputPopover = ({
   invChargeList,
   setInvChargeList,
   applyDcAndCharge,
-  isReadOnly,
   finalTotals,
 }: ChargeComponentProps) => {
   const calculateDcKrw = (totalSalesAmountKRW: number, value: number) => {
@@ -160,7 +158,6 @@ const ChargeInputPopover = ({
             }
             placeholder="Enter D/C %"
             addonAfter="%"
-            readOnly={isReadOnly}
             onWheel={(e) => e.currentTarget.blur()}
           />
           <Input
@@ -170,7 +167,6 @@ const ChargeInputPopover = ({
             onChange={(e) => handleDcChange("dcKrw", Number(e.target.value))}
             placeholder="Enter D/C ₩"
             addonAfter="₩"
-            readOnly={isReadOnly}
             onWheel={(e) => e.currentTarget.blur()}
           />
           <Input
@@ -180,7 +176,6 @@ const ChargeInputPopover = ({
             onChange={(e) => handleDcChange("dcGlobal", Number(e.target.value))}
             placeholder="Enter D/C Global"
             addonAfter="F"
-            readOnly={isReadOnly}
             onWheel={(e) => e.currentTarget.blur()}
           />
         </InputGroup>
@@ -190,7 +185,6 @@ const ChargeInputPopover = ({
           type="default"
           style={{ margin: "10px 0" }}
           onClick={addNewCharge}
-          disabled={isReadOnly}
         >
           Add Charge
         </Button>
@@ -204,7 +198,6 @@ const ChargeInputPopover = ({
                     handleChargeChange(index, "customCharge", e.target.value)
                   }
                   placeholder="Enter charge name"
-                  readOnly={isReadOnly}
                 />
                 <Input
                   type="number" // type을 number로 설정
@@ -219,7 +212,6 @@ const ChargeInputPopover = ({
                   }
                   placeholder="Enter charge value (₩)"
                   addonAfter="₩"
-                  readOnly={isReadOnly}
                 />
                 <Input
                   type="number" // type을 number로 설정
@@ -234,13 +226,11 @@ const ChargeInputPopover = ({
                   }
                   placeholder="Enter charge value (Global)"
                   addonAfter="F"
-                  readOnly={isReadOnly}
                 />
                 <Button
                   type="default"
                   onClick={() => removeCharge(index)}
                   style={{ marginLeft: 8 }}
-                  disabled={isReadOnly}
                 >
                   Delete
                 </Button>
@@ -254,7 +244,6 @@ const ChargeInputPopover = ({
         type="primary"
         style={{ marginTop: 10, width: "100%" }}
         onClick={applyDcAndCharge}
-        disabled={isReadOnly}
       >
         Apply D/C & Charge
       </Button>

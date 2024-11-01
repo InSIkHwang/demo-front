@@ -226,7 +226,7 @@ export const submitInquiry = async (
     if (isEditMode) {
       // 수정 모드일 때 PUT 요청 사용
       response = await axios.put(
-        `/api/customer-inquiries/mixed/inquiry/${inquiryId}`,
+        `/api/customer-inquiries/mixed/${inquiryId}`,
         data
       );
 
@@ -234,6 +234,7 @@ export const submitInquiry = async (
       return inquiryId;
     } else {
       // 생성 모드일 때 POST 요청 사용
+
       response = await axios.post(
         `/api/customer-inquiries/mixed/inquiry/${documentId}`,
         data
@@ -279,7 +280,6 @@ export const sendInquiryMail = async (
   });
 
   files.forEach((file) => {
-    // console.log(file.name); // 파일 이름 출력
     formData.append("file", file); // 동일한 이름으로 여러 파일 추가
   });
 
@@ -453,13 +453,8 @@ export const fetchOfferList = async (
 };
 
 //OFFER(Supplier Inquiry) 상세조회
-export const fetchOfferDetail = async (
-  supplierInquiryId: number,
-  supplierId: number
-) => {
-  const response = await axios.get(
-    `/api/supplier-inquiries/${supplierInquiryId}?supplierId=${supplierId}`
-  );
+export const fetchOfferDetail = async (documentId: number) => {
+  const response = await axios.get(`/api/supplier-inquiries/new/${documentId}`);
 
   return response.data;
 };

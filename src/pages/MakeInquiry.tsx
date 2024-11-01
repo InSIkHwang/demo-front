@@ -642,31 +642,33 @@ const MakeInquiry = () => {
 
     // documentInfo 구성
     const documentInfo = {
-      docNumber: formValues.docNumber,
       vesselId: selectedVessel.id,
       customerId: selectedCustomerId,
-      refNumber: formValues.refNumber,
+      documentId: formValues.documentId,
+      docNumber: formValues.docNumber,
       registerDate: formValues.registerDate.format("YYYY-MM-DD"),
       shippingDate: formValues.shippingDate.format("YYYY-MM-DD"),
+      refNumber: formValues.refNumber,
       remark: formValues.remark,
       currencyType: formValues.currencyType,
       currency: parseFloat(formValues.currency as any),
     };
 
     // customerInquiryTables 구성
-    const customerInquiryTables = tables.map((table, index) => {
+    const table = tables.map((table, index) => {
       const tableNo = index + 1;
       return {
         supplierIdList:
           table.supplierList?.map((supplier) => supplier.supplierId) || [],
-        inquiryItemDetails: table.itemDetails.map((item) => ({
+        itemDetails: table.itemDetails.map((item) => ({
+          itemDetailId: item.itemDetailId || null,
           itemId: item.itemId || null,
+          itemType: item.itemType,
           itemCode: item.itemCode,
           itemName: item.itemName,
           itemRemark: item.itemRemark,
           qty: item.qty,
           unit: item.unit,
-          itemType: item.itemType,
           position: item.position,
           tableNo: tableNo,
         })),
@@ -675,13 +677,13 @@ const MakeInquiry = () => {
 
     const requestData = {
       documentInfo,
-      customerInquiryTables,
+      table,
     };
 
     // Submit the inquiry and get the response
     const response = await submitInquiry(
-      formValues.documentId,
       Number(customerInquiryId),
+      Number(formValues.documentId),
       requestData,
       isEditMode
     );

@@ -22,6 +22,7 @@ import {
   FileExcelOutlined,
   ExportOutlined,
   PlusCircleOutlined,
+  CloseCircleOutlined,
 } from "@ant-design/icons";
 import {
   InquiryItem,
@@ -157,7 +158,9 @@ function TableSection({
   setTables,
   uniqueSuppliers,
   setCurrentTableNo,
+  setItems,
 }: TableSectionProps) {
+  const [isModalVisible, setIsModalVisible] = useState(false);
   const currentTable = tables[tableIndex];
 
   const handleSupplierSelect = (supplierId: number) => {
@@ -206,6 +209,110 @@ function TableSection({
     setCurrentTableNo(tableIndex + 1);
   }, [tableIndex, setCurrentTableNo]);
 
+  const handleSupplierRemove = (supplierId: number) => {
+    setTables((prevTables) => {
+      const updatedTables = [...prevTables];
+      const targetTable = { ...updatedTables[tableIndex] };
+
+      // supplierList에서 해당 supplier 제거
+      targetTable.supplierList = targetTable.supplierList?.filter(
+        (supplier) => supplier.supplierId !== supplierId
+      );
+
+      updatedTables[tableIndex] = targetTable;
+      return updatedTables;
+    });
+  };
+
+  // 공통 데이터 처리 함수
+  const updateItems = (
+    mappedItems: InquiryItem[],
+    shouldOverwrite: boolean
+  ) => {
+    if (!Array.isArray(mappedItems)) {
+      console.error("mappedItems is not an array");
+      return;
+    }
+
+    // tables 상태 업데이트
+    setTables((prevTables) => {
+      const updatedTables = [...prevTables];
+      const targetTable = { ...updatedTables[tableIndex] };
+
+      if (shouldOverwrite) {
+        // 덮어쓰기 모드
+        targetTable.itemDetails = mappedItems.map((item, idx) => ({
+          ...item,
+          position: idx + 1,
+          tableNo: tableIndex + 1,
+        }));
+      } else {
+        // 추가 모드
+        const currentMaxPosition = Math.max(
+          ...targetTable.itemDetails.map((item) => item.position),
+          0
+        );
+
+        targetTable.itemDetails = [
+          ...targetTable.itemDetails,
+          ...mappedItems.map((item, idx) => ({
+            ...item,
+            position: currentMaxPosition + idx + 1,
+            tableNo: tableIndex + 1,
+          })),
+        ];
+      }
+
+      updatedTables[tableIndex] = targetTable;
+      return updatedTables;
+    });
+
+    // items 상태도 함께 업데이트
+    setItems((prevItems) => {
+      const otherTableItems = prevItems.filter(
+        (item) => item.tableNo !== tableIndex + 1
+      );
+
+      const updatedTableItems = shouldOverwrite
+        ? mappedItems.map((item, idx) => ({
+            ...item,
+            position: idx + 1,
+            tableNo: tableIndex + 1,
+          }))
+        : [
+            ...prevItems.filter((item) => item.tableNo === tableIndex + 1),
+            ...mappedItems.map((item, idx) => ({
+              ...item,
+              position:
+                prevItems.filter((item) => item.tableNo === tableIndex + 1)
+                  .length +
+                idx +
+                1,
+              tableNo: tableIndex + 1,
+            })),
+          ];
+
+      return [...otherTableItems, ...updatedTableItems].sort((a, b) => {
+        if (a.tableNo !== b.tableNo) {
+          return a.tableNo - b.tableNo;
+        }
+        return a.position - b.position;
+      });
+    });
+
+    setIsModalVisible(false);
+  };
+
+  // 데이터를 추가하는 함수
+  const handleApplyExcelData = (mappedItems: InquiryItem[]) => {
+    updateItems(mappedItems, false); // false는 추 모드를 의미
+  };
+
+  // 데이터를 덮어쓰는 함수
+  const handleOverwriteExcelData = (mappedItems: InquiryItem[]) => {
+    updateItems(mappedItems, true); // true는 덮어쓰기 모드를 의미
+  };
+
   return (
     <div
       style={{
@@ -228,7 +335,15 @@ function TableSection({
         }}
       >
         <div style={{ display: "flex", alignItems: "center" }}>
-          <h3 style={{ margin: "0 10px 0 0" }}>Table {tableIndex + 1}</h3>
+          <h3 style={{ margin: "0 10px 0 0" }}>Table {tableIndex + 1}</h3>{" "}
+          <Button
+            type="default"
+            onClick={() => setIsModalVisible(true)}
+            icon={<FileExcelOutlined />}
+            style={{ marginRight: 10 }}
+          >
+            Load Excel
+          </Button>
           <Select
             style={{ width: 200, marginRight: 8 }}
             placeholder="Select a supplier to add"
@@ -247,8 +362,14 @@ function TableSection({
               color={"red"}
             >
               <Tag
+                closable
+                onClose={(e) => {
+                  e.preventDefault();
+                  handleSupplierRemove(supplier.supplierId);
+                }}
+                closeIcon={<CloseCircleOutlined />}
                 color={supplier.supplierRemark ? "red" : "default"}
-                style={{ cursor: "pointer", marginLeft: 4 }}
+                style={{ marginLeft: 4 }}
               >
                 {supplier.code}
               </Tag>
@@ -298,6 +419,14 @@ function TableSection({
         onRow={() => ({
           onClick: () => setCurrentTableNo(tableIndex + 1),
         })}
+      />{" "}
+      <ExcelUploadModal
+        open={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        onApply={handleApplyExcelData}
+        onOverWrite={handleOverwriteExcelData}
+        currency={1}
+        type={"inquiry"}
       />
     </div>
   );
@@ -319,7 +448,6 @@ function MakeInquiryTable({
   setCurrentTableNo,
   uniqueSuppliers,
 }: MakeInquiryTableProps) {
-  const [isModalVisible, setIsModalVisible] = useState(false);
   const [isDataReady, setIsDataReady] = useState(false);
 
   // 초기 데이터를 테이블별로 분리
@@ -418,48 +546,6 @@ function MakeInquiryTable({
     [key: string]: DuplicateState;
   }>({});
   const inputRefs = useRef<(TextAreaRef | null)[][]>([]);
-
-  // 공통 데이터 처리 함수
-  const updateItems = (
-    mappedItems: InquiryItem[],
-    shouldOverwrite: boolean
-  ) => {
-    if (!Array.isArray(mappedItems)) {
-      console.error("mappedItems is not an array");
-      return;
-    }
-
-    setItems((prevItems) => {
-      if (shouldOverwrite) {
-        // 덮어쓰기 모드
-        return mappedItems.map((item, idx) => ({
-          ...item,
-          position: idx + 1, // 덮어쓰기일 경우 새롭게 인덱스 지정
-        }));
-      } else {
-        // 추가 모드
-        return [
-          ...prevItems,
-          ...mappedItems.map((item, idx) => ({
-            ...item,
-            position: prevItems.length + idx + 1, // 기존 데터에 추가
-          })),
-        ];
-      }
-    });
-
-    setIsModalVisible(false); // 모달 닫기
-  };
-
-  // 데이터를 추가하는 함수
-  const handleApplyExcelData = (mappedItems: InquiryItem[]) => {
-    updateItems(mappedItems, false); // false는 추 모드를 의미
-  };
-
-  // 데이터를 덮어쓰는 함수
-  const handleOverwriteExcelData = (mappedItems: InquiryItem[]) => {
-    updateItems(mappedItems, true); // true는 덮어쓰기 모드를 의미
-  };
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
@@ -1040,13 +1126,6 @@ function MakeInquiryTable({
         <div style={{ display: "flex", gap: "12px" }}>
           <Button
             type="default"
-            onClick={() => setIsModalVisible(true)}
-            icon={<FileExcelOutlined />}
-          >
-            Load Excel
-          </Button>
-          <Button
-            type="default"
             icon={<ExportOutlined />}
             onClick={handleExportButtonClick}
           >
@@ -1065,7 +1144,7 @@ function MakeInquiryTable({
       {isDataReady &&
         tables.map((table, index) => (
           <TableSection
-            key={index}
+            key={`table-${index}`}
             tableIndex={index}
             items={table.itemDetails}
             onDeleteTable={handleDeleteTable}
@@ -1086,15 +1165,6 @@ function MakeInquiryTable({
             uniqueSuppliers={uniqueSuppliers}
           />
         ))}
-
-      <ExcelUploadModal
-        open={isModalVisible}
-        onCancel={() => setIsModalVisible(false)}
-        onApply={handleApplyExcelData}
-        onOverWrite={handleOverwriteExcelData}
-        currency={1}
-        type={"inquiry"}
-      />
     </div>
   );
 }
