@@ -1,17 +1,18 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Button, message, Modal, Select } from "antd";
+import { Button, message, Modal, Select, Tabs } from "antd";
 import styled from "styled-components";
 import dayjs from "dayjs";
 import FormComponent from "../components/makeOffer/FormComponent";
 import TableComponent from "../components/makeOffer/TableComponent";
-import { editMurgedOffer, editOffer, fetchOfferDetail } from "../api/api";
+import { editOffer, fetchOfferDetail } from "../api/api";
 import {
   FormValuesType,
-  ItemDataType,
+  ItemDetailType,
   offerEmailSendData,
+  OfferResponse,
+  SupplierInfo,
 } from "../types/types";
-import MergedTableComponent from "../components/makeOffer/MergedTableComponent";
 import OfferHeaderEditModal from "../components/makeOffer/OfferHeaderEditModal";
 import OfferPDFDocument from "../components/makeOffer/OfferPDFDocument";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -44,21 +45,31 @@ const MakeOffer = () => {
     documentId: state?.info.documentId || [],
   };
   const [info, setInfo] = useState<any>(null);
-  const [dataSource, setDataSource] = useState<ItemDataType[]>([]);
+  const [dataSource, setDataSource] = useState<OfferResponse | null>(null);
+  const [currentInquiryId, setCurrentInquiryId] = useState<number | null>(null);
+  const [currentSupplierInfo, setCurrentSupplierInfo] =
+    useState<SupplierInfo | null>(null);
+  const [currentDetailItems, setCurrentDetailItems] = useState<
+    ItemDetailType[]
+  >([]);
   const [formValues, setFormValues] = useState<FormValuesType>({
-    supplierInquiryId: 0,
-    supplierName: "",
+    documentId: 0,
     documentNumber: "",
     registerDate: dayjs(),
     shippingDate: dayjs(),
+    refNumber: "",
     currencyType: "",
     currency: 0,
-    customerName: "",
-    vesselName: "",
-    refNumber: "",
     docRemark: "",
+    docManager: "",
     documentStatus: "",
-    veeselHullNo: "",
+    customerId: 0,
+    companyName: "",
+    vesselId: 0,
+    vesselName: "",
+    vesselHullNo: "",
+    imoNo: 0,
+    discount: 0,
   });
   const [isDuplicate, setIsDuplicate] = useState<boolean>(false);
   const [showPDFPreview, setShowPDFPreview] = useState(false);
@@ -117,44 +128,55 @@ const MakeOffer = () => {
     setIsLoading(true);
     if (loadDocumentId) {
       try {
-        const response = await fetchOfferDetail(loadDocumentId.documentId);
+        const response: OfferResponse = await fetchOfferDetail(
+          loadDocumentId.documentId
+        );
 
-        console.log(response);
-
-        // 공통 작업 처리
         setInfo(response);
-        setDataSource(response.inquiryItemDetails || []);
+        setDataSource({
+          documentInfo: response.documentInfo,
+          response: response.response,
+        });
+
+        setCurrentDetailItems(response.response[0].itemDetail);
+        setCurrentSupplierInfo(response.response[0].supplierInfo);
+        setCurrentInquiryId(response.response[0].inquiryId);
+
         setFormValues({
-          supplierInquiryId: response.supplierInquiryId,
-          supplierName: response.supplierName,
-          documentNumber: response.documentNumber,
-          registerDate: dayjs(response.registerDate),
-          shippingDate: dayjs(response.shippingDate),
-          currencyType: response.currencyType,
-          currency: response.currency,
-          customerName: response.customerName,
-          vesselName: response.vesselName,
-          refNumber: response.refNumber,
-          docRemark: response.docRemark,
-          documentStatus: response.documentStatus,
-          veeselHullNo: response.veeselHullNo,
+          documentId: response.documentInfo.documentId,
+          documentNumber: response.documentInfo.documentNumber,
+          registerDate: dayjs(response.documentInfo.registerDate),
+          shippingDate: dayjs(response.documentInfo.shippingDate),
+          currencyType: response.documentInfo.currencyType,
+          currency: response.documentInfo.currency,
+          companyName: response.documentInfo.companyName,
+          vesselName: response.documentInfo.vesselName,
+          refNumber: response.documentInfo.refNumber,
+          docRemark: response.documentInfo.docRemark,
+          docManager: response.documentInfo.docManager,
+          documentStatus: response.documentInfo.documentStatus,
+          customerId: response.documentInfo.customerId,
+          vesselId: response.documentInfo.vesselId,
+          vesselHullNo: response.documentInfo.vesselHullNo,
+          imoNo: response.documentInfo.imoNo || 0,
+          discount: response.documentInfo.discount || 0,
         });
         setPdfCustomerTag({
-          id: response.customerId,
-          name: response.customerName,
+          id: response.documentInfo.customerId,
+          name: response.documentInfo.companyName,
         });
         setCusVesIdList({
-          customerId: response.customerId,
-          vesselId: response.vesselId,
+          customerId: response.documentInfo.customerId,
+          vesselId: response.documentInfo.vesselId,
         });
 
-        if (response.inquiryItemDetails) {
+        if (response.documentInfo.discount) {
           setDcInfo({
-            dcPercent: response.discount || 0,
+            dcPercent: response.documentInfo.discount || 0,
             dcKrw: 0,
             dcGlobal: 0,
           });
-          setInvChargeList(response.invChargeList || []);
+          setInvChargeList(response.documentInfo.invChargeList || []);
         }
       } catch (error) {
         message.error("An error occurred while importing data.");
@@ -180,62 +202,38 @@ const MakeOffer = () => {
     return roundToTwoDecimalPlaces(value / currency);
   };
 
-  const handleCalculations = (index: number, updatedItem: ItemDataType) => {
-    const updatedSalesAmountKRW = calculateTotalAmount(
-      updatedItem.salesPriceKRW,
-      updatedItem.qty
-    );
-    const updatedSalesAmountGlobal = calculateTotalAmount(
-      updatedItem.salesPriceGlobal,
-      updatedItem.qty
-    );
-    const updatedPurchaseAmountKRW = calculateTotalAmount(
-      updatedItem.purchasePriceKRW,
-      updatedItem.qty
-    );
-    const updatedPurchaseAmountGlobal = calculateTotalAmount(
-      updatedItem.purchasePriceGlobal,
-      updatedItem.qty
-    );
+  const handleInputChange = (
+    index: number,
+    key: keyof ItemDetailType,
+    value: any
+  ) => {
+    const updatedItems = [...currentDetailItems];
+    const currentItem = updatedItems[index];
 
-    const updatedDataSource = [...dataSource];
-    updatedDataSource[index] = {
-      ...updatedItem,
-      salesAmountKRW: updatedSalesAmountKRW,
-      salesAmountGlobal: updatedSalesAmountGlobal,
-      purchaseAmountKRW: updatedPurchaseAmountKRW,
-      purchaseAmountGlobal: updatedPurchaseAmountGlobal,
-    };
-
-    // Update state if there are changes
-    if (JSON.stringify(dataSource) !== JSON.stringify(updatedDataSource)) {
-      setDataSource(updatedDataSource);
+    if ((key === "itemName" || key === "itemCode") && currentItem.itemId) {
+      updatedItems[index] = {
+        ...currentItem,
+        [key]: value,
+        itemId: null,
+      };
+    } else {
+      updatedItems[index] = {
+        ...currentItem,
+        [key]: value,
+      };
     }
-  };
 
-  // Handle input change
-  const handleInputChange = useCallback(
-    (index: number, key: keyof ItemDataType, value: any) => {
-      const updatedDataSource = [...dataSource];
-      const currentItem = updatedDataSource[index];
-      let updatedItem = { ...currentItem, [key]: value };
-      // Update the data source immediately
-      updatedDataSource[index] = updatedItem;
-      if (JSON.stringify(dataSource) !== JSON.stringify(updatedDataSource)) {
-        setDataSource(updatedDataSource);
-      }
-    },
-    [dataSource]
-  );
+    setCurrentDetailItems(updatedItems);
+  };
 
   const handlePriceInputChange = (
     index: number,
-    key: keyof ItemDataType,
+    key: keyof ItemDetailType,
     value: any,
     currency: number
   ) => {
-    const updatedDataSource = [...dataSource];
-    const currentItem = updatedDataSource[index];
+    const updatedItems = [...currentDetailItems];
+    const currentItem = updatedItems[index];
     let updatedItem = { ...currentItem, [key]: value };
 
     if (key === "purchasePriceGlobal") {
@@ -248,10 +246,7 @@ const MakeOffer = () => {
 
     if (key === "purchasePriceKRW") {
       const updatedGlobalPrice = convertCurrency(value, currency, "USD");
-      updatedItem = {
-        ...updatedItem,
-        purchasePriceGlobal: updatedGlobalPrice,
-      };
+      updatedItem = { ...updatedItem, purchasePriceGlobal: updatedGlobalPrice };
       handleMarginChange(index, currentItem.margin || 0);
     }
 
@@ -261,11 +256,10 @@ const MakeOffer = () => {
       );
       updatedItem = { ...updatedItem, salesPriceKRW: updatedKRWPrice };
 
-      // 마진 계산 추가 (소수점 둘째 자리까지)
       const margin = parseFloat(
         (
-          ((value - (currentItem.purchasePriceGlobal || 1)) /
-            (currentItem.purchasePriceGlobal || 1)) *
+          ((value - currentItem.purchasePriceGlobal) /
+            currentItem.purchasePriceGlobal) *
           100
         ).toFixed(2)
       );
@@ -276,23 +270,44 @@ const MakeOffer = () => {
       const updatedGlobalPrice = convertCurrency(value, currency, "USD");
       updatedItem = { ...updatedItem, salesPriceGlobal: updatedGlobalPrice };
 
-      // 마진 계산 추가 (소수점 둘째 자리까지)
       const margin = parseFloat(
         (
-          ((value - (currentItem.purchasePriceKRW || 1)) /
-            (currentItem.purchasePriceKRW || 1)) *
+          ((value - currentItem.purchasePriceKRW) /
+            currentItem.purchasePriceKRW) *
           100
         ).toFixed(2)
       );
       updatedItem = { ...updatedItem, margin };
     }
 
-    // Update the data source immediately
-    updatedDataSource[index] = updatedItem;
-    if (JSON.stringify(dataSource) !== JSON.stringify(updatedDataSource)) {
-      setDataSource(updatedDataSource);
-      handleCalculations(index, updatedItem);
-    }
+    // Calculate amounts
+    const salesAmountKRW = calculateTotalAmount(
+      updatedItem.salesPriceKRW,
+      updatedItem.qty
+    );
+    const salesAmountGlobal = calculateTotalAmount(
+      updatedItem.salesPriceGlobal,
+      updatedItem.qty
+    );
+    const purchaseAmountKRW = calculateTotalAmount(
+      updatedItem.purchasePriceKRW,
+      updatedItem.qty
+    );
+    const purchaseAmountGlobal = calculateTotalAmount(
+      updatedItem.purchasePriceGlobal,
+      updatedItem.qty
+    );
+
+    updatedItem = {
+      ...updatedItem,
+      salesAmountKRW,
+      salesAmountGlobal,
+      purchaseAmountKRW,
+      purchaseAmountGlobal,
+    };
+
+    updatedItems[index] = updatedItem;
+    setCurrentDetailItems(updatedItems);
   };
 
   const handleFormChange = <K extends keyof typeof formValues>(
@@ -308,7 +323,9 @@ const MakeOffer = () => {
   };
 
   const updateGlobalPrices = () => {
-    dataSource.forEach((record: any, index: number) => {
+    if (!currentDetailItems || !currentSupplierInfo) return;
+
+    currentDetailItems.forEach((record, index) => {
       if (record.itemType === "ITEM") {
         const updatedSalesPriceGlobal = convertCurrency(
           record.salesPriceKRW,
@@ -332,29 +349,24 @@ const MakeOffer = () => {
   };
 
   const handleMarginChange = (index: number, marginValue: number) => {
-    const updatedDataSource = [...dataSource];
-    const currentItem = updatedDataSource[index];
+    const updatedItems = [...currentDetailItems];
+    const currentItem = updatedItems[index];
 
-    // 매입단가
     const purchasePriceKRW = currentItem.purchasePriceKRW || 0;
-
     const qty = currentItem.qty || 0;
 
-    // 매출단가 계산 (매입단가 * (1 + 마진/100))
     const salesPriceKRW = Math.round(
       purchasePriceKRW * (1 + marginValue / 100)
     );
     const salesAmountKRW = calculateTotalAmount(salesPriceKRW, qty);
 
-    // Global 가격 계산 (환율 적용)
-    const exchangeRate = formValues.currency; // currency에 해당하는 환율 값을 사용
+    const exchangeRate = formValues.currency;
     const salesPriceGlobal = roundToTwoDecimalPlaces(
       salesPriceKRW / exchangeRate
     );
     const salesAmountGlobal = calculateTotalAmount(salesPriceGlobal, qty);
 
-    // 매출단가와 매출총액 업데이트
-    updatedDataSource[index] = {
+    updatedItems[index] = {
       ...currentItem,
       salesPriceKRW,
       salesAmountKRW,
@@ -363,16 +375,16 @@ const MakeOffer = () => {
       margin: marginValue,
     };
 
-    setDataSource(updatedDataSource);
+    setCurrentDetailItems(updatedItems);
   };
 
   const handleSave = async () => {
-    if (dataSource.length === 0) {
+    if (!currentDetailItems || currentDetailItems.length === 0) {
       message.error("Please add an item");
       return;
     }
 
-    const formattedData = dataSource.map((item: ItemDataType) => ({
+    const formattedData = currentDetailItems.map((item: ItemDetailType) => ({
       position: item.position,
       itemDetailId: item.itemDetailId,
       indexNo: item.indexNo || "",
@@ -419,7 +431,12 @@ const MakeOffer = () => {
 
   // 저장 로직을 함수로 분리
   const saveData = async (formattedData: any) => {
-    if (cusVesIdList.customerId && cusVesIdList.vesselId) {
+    if (
+      cusVesIdList.customerId &&
+      cusVesIdList.vesselId &&
+      currentSupplierInfo &&
+      currentInquiryId
+    ) {
       try {
         const formData = {
           registerDate: formValues.registerDate.format("YYYY-MM-DD"),
@@ -428,14 +445,14 @@ const MakeOffer = () => {
           refNumber: formValues.refNumber,
           currency: formValues.currency,
           vesselId: cusVesIdList.vesselId,
-          veeselHullNo: formValues.veeselHullNo,
+          veeselHullNo: formValues.vesselHullNo,
           docRemark: formValues.docRemark,
           customerId: cusVesIdList.customerId,
         };
 
         await editOffer(
-          info.supplierInquiryId,
-          info.supplierInfo.supplierId,
+          currentInquiryId,
+          currentSupplierInfo.supplierId,
           formData,
           formattedData,
           dcInfo.dcPercent,
@@ -447,10 +464,16 @@ const MakeOffer = () => {
         // 저장 후 최신 데이터로 업데이트
         const response = await fetchOfferDetail(loadDocumentId.documentId);
         setInfo(response);
-        setDataSource(response.inquiryItemDetails || []);
+        setDataSource({
+          documentInfo: response.documentInfo,
+          response: response.response,
+        });
+        setCurrentDetailItems(response.response[0].itemDetail);
+        setCurrentSupplierInfo(response.response[0].supplierInfo);
+        setCurrentInquiryId(response.response[0].inquiryId);
         setPdfCustomerTag({
-          id: response.customerId,
-          name: response.customerName,
+          id: response.documentInfo.customerId,
+          name: response.documentInfo.companyName,
         });
       } catch (error) {
         console.error("Error saving data:", error);
@@ -494,7 +517,7 @@ const MakeOffer = () => {
     setIsMailSenderVisible(false);
   };
   /*******************************최종가격 적용*******************************/
-  // 공통 함수: reduce를 사용한 합계 계산
+  // 공 함수: reduce를 사용한 합계 계산
   const calculateTotal = (
     data: Array<any>,
     key: string,
@@ -502,7 +525,7 @@ const MakeOffer = () => {
   ) => {
     return data.reduce((acc: number, record: any) => {
       const price = record[key] || 0; // chargePriceKRW
-      // data가 invChargeList인 경우에만 qty를 1로 설정
+      // data가 invChargeList인 경우에만 qty를 1로 정
       const qty =
         data === invChargeList ? record[qtyKey] || 1 : record[qtyKey] || 0;
       return acc + calculateTotalAmount(price, qty);
@@ -518,7 +541,9 @@ const MakeOffer = () => {
     roundToTwoDecimalPlaces(amount / exchangeRate);
 
   const applyDcAndCharge = () => {
-    const updatedDataSource = dataSource.map((currentItem) => {
+    if (!currentDetailItems) return;
+
+    const updatedItems = currentDetailItems.map((currentItem) => {
       const { purchasePriceKRW = 0, qty = 0, margin = 0 } = currentItem;
 
       const salesPriceKRW = Math.round(purchasePriceKRW * (1 + margin / 100));
@@ -537,24 +562,24 @@ const MakeOffer = () => {
       };
     });
 
-    setDataSource(updatedDataSource);
+    setCurrentDetailItems(updatedItems);
 
     // 공통 계산
-    const totalSalesAmountKRW = calculateTotal(
-      updatedDataSource,
-      "salesPriceKRW"
+    const totalSalesAmountKRW = updatedItems.reduce(
+      (sum, item) => sum + (item.salesPriceKRW || 0) * (item.qty || 0),
+      0
     );
-    const totalSalesAmountGlobal = calculateTotal(
-      updatedDataSource,
-      "salesPriceGlobal"
+    const totalSalesAmountGlobal = updatedItems.reduce(
+      (sum, item) => sum + (item.salesPriceGlobal || 0) * (item.qty || 0),
+      0
     );
-    const totalPurchaseAmountKRW = calculateTotal(
-      updatedDataSource,
-      "purchasePriceKRW"
+    const totalPurchaseAmountKRW = updatedItems.reduce(
+      (sum, item) => sum + (item.purchasePriceKRW || 0) * (item.qty || 0),
+      0
     );
-    const totalPurchaseAmountGlobal = calculateTotal(
-      updatedDataSource,
-      "purchasePriceGlobal"
+    const totalPurchaseAmountGlobal = updatedItems.reduce(
+      (sum, item) => sum + (item.purchasePriceGlobal || 0) * (item.qty || 0),
+      0
     );
 
     // 할인 적용된 총액 계산
@@ -572,7 +597,6 @@ const MakeOffer = () => {
       invChargeList || [],
       "chargePriceKRW"
     );
-
     const chargePriceGlobalTotal = calculateTotal(
       invChargeList || [],
       "chargePriceGlobal"
@@ -589,9 +613,7 @@ const MakeOffer = () => {
       ((updatedTotalProfit / totalPurchaseAmountKRW) * 100).toFixed(2)
     );
 
-    // 최종 가격 설정
     setFinalTotals({
-      ...finalTotals,
       totalSalesAmountKRW: Math.round(updatedTotalSalesAmountKRW),
       totalSalesAmountGlobal: updatedTotalSalesAmountGlobal,
       totalPurchaseAmountKRW,
@@ -607,13 +629,67 @@ const MakeOffer = () => {
 
   /**********************************************************************/
 
+  const handleTabChange = (activeKey: string) => {
+    if (!dataSource?.response) return;
+
+    const selectedSupplier = dataSource.response.find(
+      (supplier) => supplier.inquiryId.toString() === activeKey
+    );
+
+    if (selectedSupplier) {
+      setCurrentDetailItems(selectedSupplier.itemDetail);
+      setCurrentSupplierInfo(selectedSupplier.supplierInfo);
+      setCurrentInquiryId(selectedSupplier.inquiryId);
+    }
+  };
+
+  const renderSupplierTabs = () => {
+    if (!dataSource?.response || !currentDetailItems || !currentSupplierInfo)
+      return null;
+
+    const items = dataSource.response.map((supplier) => ({
+      key: supplier.inquiryId.toString(),
+      label: supplier.supplierInfo.supplierName,
+      children: (
+        <>
+          <TableComponent
+            supplierId={currentSupplierInfo.supplierId}
+            itemDetails={currentDetailItems}
+            setItemDetails={setCurrentDetailItems}
+            handleInputChange={handleInputChange}
+            currency={formValues.currency}
+            setIsDuplicate={setIsDuplicate}
+            roundToTwoDecimalPlaces={roundToTwoDecimalPlaces}
+            calculateTotalAmount={calculateTotalAmount}
+            handleMarginChange={handleMarginChange}
+            handlePriceInputChange={handlePriceInputChange}
+            finalTotals={finalTotals}
+            applyDcAndCharge={applyDcAndCharge}
+            offerId={loadDocumentId.documentId}
+          />
+          <Button
+            type="primary"
+            htmlType="submit"
+            style={{ float: "right", width: 100, margin: "20px 15px 0 0 " }}
+            onClick={handleSave}
+            disabled={!formValues.refNumber}
+          >
+            Save
+          </Button>
+        </>
+      ),
+    }));
+
+    return <Tabs items={items} type="card" onChange={handleTabChange} />;
+  };
+
   if (isLoading) {
     return <LoadingSpinner />; // 로딩 중 화면
   }
 
   return (
     <FormContainer>
-      <Title>견적 제안 - Offers</Title>
+      <Title>견적서 작성(MAKE OFFER)</Title>
       {formValues && (
         <FormComponent
           formValues={formValues}
@@ -632,20 +708,7 @@ const MakeOffer = () => {
         applyDcAndCharge={applyDcAndCharge}
         finalTotals={finalTotals}
       />
-      <TableComponent
-        dataSource={dataSource}
-        setDataSource={setDataSource}
-        handleInputChange={handleInputChange}
-        currency={formValues.currency}
-        setIsDuplicate={setIsDuplicate}
-        roundToTwoDecimalPlaces={roundToTwoDecimalPlaces}
-        calculateTotalAmount={calculateTotalAmount}
-        handleMarginChange={handleMarginChange}
-        handlePriceInputChange={handlePriceInputChange}
-        finalTotals={finalTotals}
-        applyDcAndCharge={applyDcAndCharge}
-        offerId={loadDocumentId.documentId}
-      />{" "}
+      {dataSource?.response && renderSupplierTabs()}
       <Button
         type="primary"
         onClick={showMailSenderModal}
@@ -653,15 +716,6 @@ const MakeOffer = () => {
         disabled={!formValues.refNumber}
       >
         Send Email
-      </Button>{" "}
-      <Button
-        type="primary"
-        htmlType="submit"
-        style={{ float: "right", width: 100, margin: "20px 15px 0 0 " }}
-        onClick={handleSave}
-        disabled={!formValues.refNumber}
-      >
-        Save
       </Button>{" "}
       <Button
         type="default"

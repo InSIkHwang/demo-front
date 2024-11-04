@@ -77,7 +77,7 @@ const FormComponent = ({
   }, [selectedCustomerId, selectedVessel, setCusVesIdList]);
 
   useEffect(() => {
-    const searchTerm = formValues.customerName?.toLowerCase();
+    const searchTerm = formValues.companyName?.toLowerCase();
 
     const filteredOptions = companyNameList
       .filter(
@@ -91,13 +91,13 @@ const FormComponent = ({
       .map((item) => ({ value: item })); // 객체 형태로 변환
 
     setAutoCompleteOptions(filteredOptions);
-  }, [companyNameList, formValues.customerName]);
+  }, [companyNameList, formValues.companyName]);
 
   useEffect(() => {
-    const searchCompanyName = async (customerName: string) => {
+    const searchCompanyName = async (companyName: string) => {
       try {
         const { isExist, customerDetailResponse } = await fetchCompanyNames(
-          customerName
+          companyName
         );
         if (isExist) {
           setCompanyNameList(
@@ -108,7 +108,7 @@ const FormComponent = ({
           );
 
           const selectedCustomer = customerDetailResponse.find(
-            (c) => c.companyName === customerName || c.code === customerName
+            (c) => c.companyName === companyName || c.code === companyName
           );
           if (selectedCustomer) {
             setSelectedCustomerId(selectedCustomer.id);
@@ -136,9 +136,9 @@ const FormComponent = ({
       }
     };
 
-    const debouncedSearchCompanyName = debounce((customerName: string) => {
-      if ((customerName + "").trim() !== "") {
-        searchCompanyName(customerName);
+    const debouncedSearchCompanyName = debounce((companyName: string) => {
+      if ((companyName + "").trim() !== "") {
+        searchCompanyName(companyName);
       } else {
         setCompanyNameList([]);
         setSelectedCustomerId(null);
@@ -147,12 +147,12 @@ const FormComponent = ({
       }
     }, 500);
 
-    debouncedSearchCompanyName(formValues.customerName);
+    debouncedSearchCompanyName(formValues.companyName);
 
     return () => {
       debouncedSearchCompanyName.cancel();
     };
-  }, [formValues.customerName, isCustomerModalOpen, isVesselModalOpen]);
+  }, [formValues.companyName, isCustomerModalOpen, isVesselModalOpen]);
 
   useEffect(() => {
     const selectedVessel = vesselList.find(
@@ -160,15 +160,14 @@ const FormComponent = ({
     );
 
     setSelectedVessel(selectedVessel ?? null);
-  }, [formValues.vesselName, formValues.customerName, vesselList]);
+  }, [formValues.vesselName, formValues.companyName, vesselList]);
 
   const validateCustomer = () => {
     if (!cusVesIdList.customerId) {
       return {
-        status:
-          (formValues.customerName + "").trim() === "" ? "error" : "error",
+        status: (formValues.companyName + "").trim() === "" ? "error" : "error",
         message:
-          (formValues.customerName + "").trim() === ""
+          (formValues.companyName + "").trim() === ""
             ? "Please enter a customer"
             : "This is an unregistered customer",
       };
@@ -314,7 +313,7 @@ const FormComponent = ({
         <Row>
           <FormItem
             label="매출처(Customer)"
-            name="customerName"
+            name="companyName"
             validateStatus={
               validateCustomer().status as
                 | ""
@@ -335,8 +334,8 @@ const FormComponent = ({
               Register
             </Button>
             <AutoComplete
-              value={formValues.customerName}
-              onChange={(value) => handleFormChange("customerName", value)}
+              value={formValues.companyName}
+              onChange={(value) => handleFormChange("companyName", value)}
               options={autoCompleteOptions}
               style={{ width: "100%" }}
             >
@@ -387,8 +386,8 @@ const FormComponent = ({
           </FormItem>
           <FormItem label="HULL NO." name="veeselHullNo">
             <Input
-              value={formValues.veeselHullNo}
-              onChange={(e) => handleFormChange("veeselHullNo", e.target.value)}
+              value={formValues.vesselHullNo}
+              onChange={(e) => handleFormChange("vesselHullNo", e.target.value)}
             />
           </FormItem>
         </Row>

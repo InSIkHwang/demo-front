@@ -559,7 +559,7 @@ function MakeInquiryTable({
         handleInputChange(index, "itemType", itemTypeMap[e.key]);
       }
     },
-    [handleInputChange] // handleInputChange가 변경되면 handleKeyDown도 변경됨
+    [handleInputChange] // handleInputChange가 변경되면 handleKeyDown도 변경되면 빈 배열로 설정
   );
 
   const checkDuplicates = useCallback(
@@ -572,7 +572,7 @@ function MakeInquiryTable({
       // 값이 같은지 검사하고, 현재 인덱스를 제외한 다른 인덱스와 비교
       return items.some((item, idx) => item[key] === value && idx !== index);
     },
-    [] // 의존성이 필요 없다면 빈 배열로 설정
+    [] // 의존성이 필요 다면 빈 배열로 설정
   );
 
   const getDuplicateStates = useCallback(
@@ -628,6 +628,8 @@ function MakeInquiryTable({
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const applyUnitToAllRows = (selectedUnit: string) => {
+    if (!items) return;
+
     setItems((prevItems) =>
       prevItems.map((item) => ({
         ...item,
@@ -686,12 +688,12 @@ function MakeInquiryTable({
     setTables((prevTables) => {
       const updatedTables = [...prevTables];
       const targetTable = { ...updatedTables[tableIndex] };
-      const currentTableItems = targetTable.itemDetails;
+      const currentTableItems = targetTable?.itemDetails;
 
       // 현재 테이블에서 선택한 아이템의 실제 인덱스 찾기
-      const itemIndexInTable = currentTableItems.findIndex(
-        (item) => item.position === position
-      );
+      const itemIndexInTable =
+        currentTableItems?.findIndex((item) => item?.position === position) ??
+        -1;
 
       // 현재 테이블의 최대 position 찾기
       const maxPosition = Math.max(

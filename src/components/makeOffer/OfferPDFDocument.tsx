@@ -279,11 +279,11 @@ const renderTableRows = (items: ItemDataType[]) => {
           >
             {isDescType ? (
               <Text style={styles.desctypeCell}>
-                {item.itemName?.split("")}
+                {item?.itemName?.split("")}
               </Text>
             ) : (
               <Text style={styles.nonItemtypeCell}>
-                {item.itemName?.split("")}
+                {item?.itemName?.split("")}
               </Text>
             )}
           </View>

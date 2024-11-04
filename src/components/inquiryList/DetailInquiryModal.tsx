@@ -23,6 +23,7 @@ import {
   deleteInquiry,
   fetchInquiryDetail,
 } from "../../api/api";
+import dayjs from "dayjs";
 
 interface DetailInquiryModalProps {
   open: boolean;
@@ -300,7 +301,9 @@ const DetailInquiryModal = ({
                   {inquiryDetail.documentInfo.documentNumber}
                 </Descriptions.Item>
                 <Descriptions.Item label="Registration Date">
-                  {inquiryDetail.documentInfo.registerDate}
+                  {dayjs(inquiryDetail.documentInfo.registerDate).format(
+                    "YYYY-MM-DD"
+                  )}
                 </Descriptions.Item>
                 <Descriptions.Item label="Company Name">
                   {inquiryDetail.documentInfo.companyName}

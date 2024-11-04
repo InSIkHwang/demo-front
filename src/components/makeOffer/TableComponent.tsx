@@ -5,6 +5,7 @@ import React, {
   useEffect,
   useRef,
   useState,
+  useMemo,
 } from "react";
 import {
   Table,
@@ -18,7 +19,7 @@ import {
 } from "antd";
 import { ColumnsType } from "antd/es/table";
 import styled from "styled-components";
-import { ItemDataType } from "../../types/types";
+import { ItemDetailType } from "../../types/types";
 import {
   DeleteOutlined,
   PlusCircleOutlined,
@@ -29,6 +30,7 @@ import {
 import { fetchItemData, handleOfferExport } from "../../api/api";
 import ExcelUploadModal from "../ExcelUploadModal";
 import { TextAreaRef } from "antd/es/input/TextArea";
+import { debounce } from "lodash";
 
 const RefreshBtn = styled(Button)``;
 
@@ -143,11 +145,12 @@ const TotalCard = styled.div<{ $isHighlight?: boolean; $isPositive?: boolean }>`
 `;
 
 interface TableComponentProps {
-  dataSource: ItemDataType[];
-  setDataSource: Dispatch<SetStateAction<ItemDataType[]>>;
+  supplierId: number;
+  itemDetails: ItemDetailType[];
+  setItemDetails: Dispatch<SetStateAction<ItemDetailType[]>>;
   handleInputChange: (
     index: number,
-    key: keyof ItemDataType,
+    key: keyof ItemDetailType,
     value: any
   ) => void;
   currency: number;
@@ -157,7 +160,7 @@ interface TableComponentProps {
   handleMarginChange: (index: number, marginValue: number) => void;
   handlePriceInputChange: (
     index: number,
-    key: keyof ItemDataType,
+    key: keyof ItemDetailType,
     value: any,
     currency: number
   ) => void;
@@ -180,10 +183,11 @@ interface SelectedItemData {
 }
 
 const TableComponent = ({
-  dataSource,
+  supplierId,
+  itemDetails,
   handleInputChange,
   currency,
-  setDataSource,
+  setItemDetails,
   setIsDuplicate,
   roundToTwoDecimalPlaces,
   calculateTotalAmount,
@@ -194,24 +198,22 @@ const TableComponent = ({
   offerId,
 }: TableComponentProps) => {
   const inputRefs = useRef<(TextAreaRef | null)[][]>([]);
-  const [itemCodeOptions, setItemCodeOptions] = useState<{ value: string }[]>(
-    []
-  );
-  const [itemNameMap, setItemNameMap] = useState<{ [key: string]: string }>({});
-  const [itemIdMap, setItemIdMap] = useState<{ [key: string]: number }>({});
-  const [supplierOptions, setSupplierOptions] = useState<
-    { value: string; id: number; itemId: number; code: string; email: string }[]
+  const [itemCodeOptions, setItemCodeOptions] = useState<
+    {
+      value: string;
+      name: string;
+      key: string;
+      label: string;
+      itemId: number;
+    }[]
   >([]);
-
   const [unitOptions, setUnitOptions] = useState<string[]>(["PCS", "SET"]);
   const [updatedIndex, setUpdatedIndex] = useState<number | null>(null);
-  const [selectedItemData, setSelectedItemData] =
-    useState<SelectedItemData | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   // 공통 데이터 처리 함수
   const updateDataSource = (
-    mappedItems: ItemDataType[],
+    mappedItems: ItemDetailType[],
     shouldOverwrite: boolean
   ) => {
     if (!Array.isArray(mappedItems)) {
@@ -219,41 +221,37 @@ const TableComponent = ({
       return;
     }
 
-    setDataSource((prevItems) => {
-      if (shouldOverwrite) {
-        // 기존 데이터를 덮어쓰는 경우
-        return mappedItems.map((item, idx) => ({
-          ...item,
-          position: idx + 1,
-        }));
-      } else {
-        // 기존 데이터에 추가하는 경우
-        return [
-          ...prevItems,
-          ...mappedItems.map((item, idx) => ({
+    setItemDetails(
+      shouldOverwrite
+        ? mappedItems.map((item, idx) => ({
             ...item,
-            position: prevItems.length + idx + 1,
-          })),
-        ];
-      }
-    });
+            position: idx + 1,
+          }))
+        : [
+            ...itemDetails,
+            ...mappedItems.map((item, idx) => ({
+              ...item,
+              position: itemDetails.length + idx + 1,
+            })),
+          ]
+    );
 
-    setIsModalVisible(false); // 모달 닫기
+    setIsModalVisible(false);
   };
 
   // 데이터를 추가하는 함수
-  const handleApplyExcelData = (mappedItems: ItemDataType[]) => {
+  const handleApplyExcelData = (mappedItems: ItemDetailType[]) => {
     updateDataSource(mappedItems, false); // 추가하는 작업, 덮어쓰지 않음
   };
 
   // 데이터를 덮어쓰는 함수
-  const handleOverwriteExcelData = (mappedItems: ItemDataType[]) => {
+  const handleOverwriteExcelData = (mappedItems: ItemDetailType[]) => {
     updateDataSource(mappedItems, true); // 덮어쓰기 작업
   };
 
   const handleExportButtonClick = async () => {
     try {
-      // 선택한 파일들의 이름을 서버로 전송
+      // 선택한 파일들의 름을 서버로 전송
       const response = await handleOfferExport(offerId);
 
       // 사용자가 경로를 설정하여 파일을 다운로드할 수 있도록 설정
@@ -274,131 +272,62 @@ const TableComponent = ({
     }
   };
 
+  const updateItemId = useCallback(
+    (index: number, itemId: number | null) => {
+      const updatedItems = [...itemDetails];
+      updatedItems[index] = {
+        ...updatedItems[index],
+        itemId,
+      };
+      setItemDetails(updatedItems);
+    },
+    [itemDetails, setItemDetails]
+  );
+
+  const debouncedFetchItemData = useMemo(
+    () =>
+      debounce(async (value: string, index: number) => {
+        try {
+          const { items } = await fetchItemData(value);
+          if (!Array.isArray(items)) {
+            console.error("Items data is not an array:", items);
+            return;
+          }
+
+          setItemCodeOptions(
+            items.reduce((acc, item) => {
+              if (!acc?.some((option) => option.itemId === item.itemId)) {
+                acc.push({
+                  value: item.itemCode,
+                  name: item.itemName,
+                  key: item.itemId.toString(),
+                  label: `${item.itemCode}: ${item.itemName}`,
+                  itemId: item.itemId,
+                });
+              }
+              return acc;
+            }, [] as { value: string; name: string; key: string; label: string; itemId: number }[])
+          );
+        } catch (error) {
+          message.error("Error fetching item codes and suppliers:");
+        }
+      }, 300),
+    []
+  );
+
   const handleItemCodeChange = async (index: number, value: string) => {
-    if ((value + "").trim() === "") {
+    const trimmedValue = (value + "").trim();
+
+    if (trimmedValue === "") {
       updateItemId(index, null);
-      handleInputChange(index, "itemCode", value);
       return;
     }
 
-    handleInputChange(index, "itemCode", value?.trim());
+    // 상태 업데이트를 한 번만 수행
+    handleInputChange(index, "itemCode", trimmedValue);
     setUpdatedIndex(index);
-
-    try {
-      const { items } = await fetchItemData(value);
-
-      if (!Array.isArray(items)) {
-        console.error("Items data is not an array:", items);
-        return;
-      }
-
-      const newItemNameMap: { [key: number]: string } = {};
-      const newItemIdMap: { [key: number]: number } = {};
-      const newSupplierOptions: {
-        value: string;
-        id: number;
-        itemId: number;
-        code: string;
-        email: string;
-      }[] = [];
-
-      items.forEach((item) => {
-        newItemNameMap[item.itemId] = item.itemName;
-        newItemIdMap[item.itemId] = item.itemId;
-        newSupplierOptions.push(
-          ...item.supplierList.map((supplier) => ({
-            value: supplier.companyName,
-            id: supplier.id,
-            itemId: supplier.itemId,
-            code: supplier.code,
-            email: supplier.email,
-          }))
-        );
-      });
-
-      setItemCodeOptions(
-        items.reduce(
-          (
-            acc: {
-              value: string;
-              name: string;
-              key: string;
-              label: string;
-              itemId: number;
-            }[],
-            item
-          ) => {
-            // 이미 동일한 itemId가 존재하는지 확인
-            if (!acc.some((option) => option.itemId === item.itemId)) {
-              acc.push({
-                value: item.itemCode,
-                name: item.itemName,
-                key: item.itemId.toString(),
-                label: `${item.itemCode}: ${item.itemName}`,
-                itemId: item.itemId,
-              });
-            }
-            return acc;
-          },
-          []
-        )
-      );
-
-      setItemNameMap((prevMap) => ({ ...prevMap, ...newItemNameMap }));
-      setItemIdMap((prevMap) => ({ ...prevMap, ...newItemIdMap }));
-
-      setSupplierOptions((prevOptions) => [
-        ...prevOptions,
-        ...newSupplierOptions.filter(
-          (newSupplier) =>
-            !prevOptions.some(
-              (existingSupplier) => existingSupplier.id === newSupplier.id
-            )
-        ),
-      ]);
-
-      const selectedItem = items.find((item) => item.itemCode === value);
-      if (selectedItem) {
-        setSelectedItemData({
-          index,
-          itemName: selectedItem.itemName,
-          itemId: selectedItem.itemId,
-        });
-      }
-    } catch (error) {
-      message.error("Error fetching item codes and suppliers:");
-    }
+    debouncedFetchItemData(trimmedValue, index);
   };
-
-  const updateItemId = useCallback(
-    (index: number, itemId: number | null) => {
-      setDataSource((prevItems) => {
-        const updatedItems = [...prevItems];
-        updatedItems[index] = {
-          ...updatedItems[index],
-          itemId,
-        };
-        return updatedItems;
-      });
-    },
-    [setDataSource]
-  );
-
-  useEffect(() => {
-    if (updatedIndex !== null && selectedItemData) {
-      const { index, itemName, itemId } = selectedItemData;
-      handleInputChange(index, "itemName", itemName);
-      updateItemId(index, itemId);
-      setUpdatedIndex(null);
-      setSelectedItemData(null);
-    }
-  }, [
-    dataSource,
-    handleInputChange,
-    selectedItemData,
-    updateItemId,
-    updatedIndex,
-  ]);
 
   const checkDuplicate = useCallback(
     (key: string, value: string, index: number) => {
@@ -406,27 +335,28 @@ const TableComponent = ({
         return false;
       }
 
-      return dataSource.some(
+      return itemDetails?.some(
         (item: any, idx) => item[key] === value && idx !== index
       );
     },
-    [dataSource]
+    [itemDetails]
   );
   // 컴포넌트 최초 렌더링 시 중복 여부를 확인
   useEffect(() => {
     // 중복 여부를 전체적으로 확인합니다.
-    const hasDuplicate = dataSource.some((item: any, index) =>
-      ["itemCode", "itemName"].some((key) =>
+    const hasDuplicate = itemDetails?.some((item: any, index) =>
+      ["itemCode", "itemName"]?.some((key) =>
         checkDuplicate(key, item[key], index)
       )
     );
 
     setIsDuplicate(hasDuplicate);
-  }, [checkDuplicate, dataSource, setIsDuplicate]);
+  }, [checkDuplicate, itemDetails]);
 
   const handleAddItem = (index: number) => {
-    const newItem: ItemDataType = {
+    const newItem: ItemDetailType = {
       position: index + 2,
+      indexNo: null,
       itemDetailId: null,
       itemId: null,
       itemType: "ITEM",
@@ -447,32 +377,32 @@ const TableComponent = ({
     };
 
     const newItems = [
-      ...dataSource.slice(0, index + 1), // 기존 행까지
+      ...itemDetails.slice(0, index + 1), // 기존 행까지
       newItem, // 새 행 추가
-      ...dataSource.slice(index + 1).map((item, idx) => ({
+      ...itemDetails.slice(index + 1).map((item, idx) => ({
         ...item,
         position: index + 3 + idx, // 기존 행의 position 업데이트
       })), // 기존 행 나머지의 position 업데이트
     ];
 
-    setDataSource(newItems);
+    setItemDetails(newItems);
   };
 
   const handleDeleteItem = (itemDetailId: number, position: number) => {
     // 선택한 항목을 삭제한 새로운 데이터 소스를 생성
-    const updatedDataSource = dataSource.filter(
+    const updatedItemDetails = itemDetails.filter(
       (item) =>
         !(item.itemDetailId === itemDetailId && item.position === position)
     );
 
     // 남은 항목들의 position 값을 1부터 다시 정렬
-    const reorderedDataSource = updatedDataSource.map((item, idx) => ({
+    const reorderedItemDetails = updatedItemDetails.map((item, idx) => ({
       ...item,
       position: idx + 1,
     }));
 
     // 새로운 데이터 소스로 업데이트
-    setDataSource(reorderedDataSource);
+    setItemDetails(reorderedItemDetails);
   };
 
   const handleUnitBlur = (index: number, value: string) => {
@@ -483,16 +413,17 @@ const TableComponent = ({
   };
 
   const applyUnitToAllRows = (selectedUnit: string) => {
-    setDataSource((prevItems) =>
-      prevItems.map((item) => ({
-        ...item,
-        unit: selectedUnit,
-      }))
-    );
+    if (!itemDetails) return;
+
+    const updatedItems: ItemDetailType[] = itemDetails.map((item) => ({
+      ...item,
+      unit: selectedUnit,
+    }));
+    setItemDetails(updatedItems);
   };
 
   const applyMarginToAllRows = (marginValue: number) => {
-    const updatedData = dataSource.map((row) => {
+    const updatedData = itemDetails.map((row) => {
       const updatedRow = {
         ...row,
         margin: marginValue,
@@ -511,7 +442,7 @@ const TableComponent = ({
         updatedRow.qty
       );
 
-      // Global 가격 계산 (환율 적용)
+      // Global 가격 계산 (환 적용)
       const exchangeRate = currency; // currency에 해당하는 환율 값
       const salesPriceGlobal = roundToTwoDecimalPlaces(
         salesPriceKRW / exchangeRate
@@ -527,7 +458,7 @@ const TableComponent = ({
       return updatedRow;
     });
 
-    setDataSource(updatedData); // 상태 업데이트
+    setItemDetails(updatedData); // 상태 업데이트
   };
 
   // 마진에 따라 매출가격을 계산하는 함수 예시
@@ -605,7 +536,7 @@ const TableComponent = ({
           );
         }
 
-        const filteredIndex = dataSource
+        const filteredIndex = itemDetails
           .filter((item: any) => item.itemType === "ITEM")
           .indexOf(record);
 
@@ -621,8 +552,6 @@ const TableComponent = ({
       width: 115,
       render: (text: string, record: any, index: number) => {
         if (record.itemType !== "ITEM" && record.itemType !== "DASH") {
-          // handleInputChange를 호출하여 값을 0으로 설정
-          handleInputChange(index, "itemCode", "");
           return (
             <Input
               readOnly
@@ -642,12 +571,32 @@ const TableComponent = ({
               value={text}
               onChange={(value) => {
                 handleItemCodeChange(index, value);
-                updateItemId(index, null);
               }}
-              options={itemCodeOptions}
-              onSelect={(value: string, option: any) => {
-                const itemId = option.itemId; // AutoComplete의 옵션에서 itemId를 가져옴
-                updateItemId(index, itemId); // itemId로 아이템 업데이트
+              options={itemCodeOptions.map((option) => ({
+                ...option,
+                value: option.label,
+              }))}
+              onSelect={(label: string) => {
+                const selectedOption = itemCodeOptions.find(
+                  (item) => item.label === label
+                );
+
+                if (selectedOption) {
+                  const updates = {
+                    itemCode: selectedOption.value,
+                    itemName: selectedOption.name,
+                    itemId: selectedOption.itemId,
+                  };
+
+                  setItemDetails((prev) => {
+                    const updated = [...prev];
+                    updated[index] = {
+                      ...updated[index],
+                      ...updates,
+                    };
+                    return updated;
+                  });
+                }
               }}
               style={{ borderRadius: "4px", width: "100%" }}
               dropdownStyle={{ width: 250 }}
@@ -660,11 +609,11 @@ const TableComponent = ({
               onKeyDown={(e) => handleNextRowKeyDown(e, index, 1)}
             >
               <Input.TextArea
-                autoSize={{ minRows: 1, maxRows: 10 }}
+                autoSize={{ maxRows: 10 }}
                 style={{
                   borderColor: checkDuplicate("itemCode", text, index)
                     ? "#faad14"
-                    : "#d9d9d9", // 중복 시 배경색 빨간색
+                    : "#d9d9d9",
                 }}
               />
             </AutoComplete>
@@ -715,7 +664,6 @@ const TableComponent = ({
             onKeyDown={(e) => handleNextRowKeyDown(e, index, 2)}
             onChange={(e) => {
               handleInputChange(index, "itemName", e.target.value);
-              updateItemId(index, null);
             }}
             style={{
               borderRadius: "4px",
@@ -741,8 +689,6 @@ const TableComponent = ({
       render: (text: number, record: any, index: number) => {
         // itemType이 ITEM이 아닐 경우 qty 값을 0으로 설정
         if (record.itemType !== "ITEM" && record.itemType !== "DASH") {
-          // handleInputChange를 호출하여 값을 0으로 설정
-          handleInputChange(index, "qty", 0);
           return (
             <Input
               readOnly
@@ -858,29 +804,16 @@ const TableComponent = ({
       key: "salesPriceKRW",
       width: 115,
       render: (text: number, record: any, index: number) => {
-        if (
+        const value =
           (record.itemType !== "ITEM" && record.itemType !== "DASH") ||
           record.itemRemark
-        ) {
-          handleInputChange(index, "salesPriceKRW", 0); // 값을 0으로 설정
-          handleInputChange(index, "salesAmountKRW", 0);
-          return (
-            <Input
-              value={0}
-              ref={(el) => {
-                if (!inputRefs.current[index]) {
-                  inputRefs.current[index] = [];
-                }
-                inputRefs.current[index][5] = el;
-              }}
-              onKeyDown={(e) => handleNextRowKeyDown(e, index, 5)}
-            />
-          );
-        }
+            ? 0
+            : text;
+
         return (
           <Input
             type="text" // Change to "text" to handle formatted input
-            value={text?.toLocaleString()} // Display formatted value
+            value={value?.toLocaleString()} // Display formatted value
             ref={(el) => {
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
@@ -917,29 +850,16 @@ const TableComponent = ({
       key: "salesPriceGlobal",
       width: 115,
       render: (text: number, record: any, index: number) => {
-        if (
+        const value =
           (record.itemType !== "ITEM" && record.itemType !== "DASH") ||
           record.itemRemark
-        ) {
-          handleInputChange(index, "salesPriceGlobal", 0); // 값을 0으로 설정
-          handleInputChange(index, "salesAmountGlobal", 0);
-          return (
-            <Input
-              value={0}
-              ref={(el) => {
-                if (!inputRefs.current[index]) {
-                  inputRefs.current[index] = [];
-                }
-                inputRefs.current[index][6] = el;
-              }}
-              onKeyDown={(e) => handleNextRowKeyDown(e, index, 6)}
-            />
-          );
-        }
+            ? 0
+            : text;
+
         return (
           <Input
             type="text" // Change to "text" to handle formatted input
-            value={text?.toLocaleString()} // Display formatted value
+            value={value?.toLocaleString()} // Display formatted value
             ref={(el) => {
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
@@ -1018,29 +938,16 @@ const TableComponent = ({
       key: "purchasePriceKRW",
       width: 115,
       render: (text: number, record: any, index: number) => {
-        if (
+        const value =
           (record.itemType !== "ITEM" && record.itemType !== "DASH") ||
           record.itemRemark
-        ) {
-          handleInputChange(index, "purchasePriceKRW", 0); // 값을 0으로 설정
-          handleInputChange(index, "purchaseAmountKRW", 0);
-          return (
-            <Input
-              value={0}
-              ref={(el) => {
-                if (!inputRefs.current[index]) {
-                  inputRefs.current[index] = [];
-                }
-                inputRefs.current[index][9] = el;
-              }}
-              onKeyDown={(e) => handleNextRowKeyDown(e, index, 9)}
-            />
-          );
-        }
+            ? 0
+            : text;
+
         return (
           <Input
             type="text" // Change to "text" to handle formatted input
-            value={text?.toLocaleString()} // Display formatted value
+            value={value?.toLocaleString()} // Display formatted value
             ref={(el) => {
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
@@ -1077,29 +984,16 @@ const TableComponent = ({
       key: "purchasePriceGlobal",
       width: 115,
       render: (text: number, record: any, index: number) => {
-        if (
+        const value =
           (record.itemType !== "ITEM" && record.itemType !== "DASH") ||
           record.itemRemark
-        ) {
-          handleInputChange(index, "purchasePriceGlobal", 0); // 값을 0으로 설정
-          handleInputChange(index, "purchaseAmountGlobal", 0);
-          return (
-            <Input
-              value={0}
-              ref={(el) => {
-                if (!inputRefs.current[index]) {
-                  inputRefs.current[index] = [];
-                }
-                inputRefs.current[index][10] = el;
-              }}
-              onKeyDown={(e) => handleNextRowKeyDown(e, index, 10)}
-            />
-          );
-        }
+            ? 0
+            : text;
+
         return (
           <Input
             type="text" // Change to "text" to handle formatted input
-            value={text?.toLocaleString()} // Display formatted value
+            value={value?.toLocaleString()} // Display formatted value
             ref={(el) => {
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
@@ -1202,27 +1096,15 @@ const TableComponent = ({
       className: "highlight-cell",
 
       render: (text: number, record: any, index: number) => {
-        if (
+        const value =
           (record.itemType !== "ITEM" && record.itemType !== "DASH") ||
           record.itemRemark
-        ) {
-          handleInputChange(index, "margin", 0); // 값을 0으로 설정
-          return (
-            <Input
-              value={0}
-              ref={(el) => {
-                if (!inputRefs.current[index]) {
-                  inputRefs.current[index] = [];
-                }
-                inputRefs.current[index][13] = el;
-              }}
-              onKeyDown={(e) => handleNextRowKeyDown(e, index, 13)}
-            />
-          );
-        }
+            ? 0
+            : text;
+
         return (
           <Input
-            value={text}
+            value={value}
             ref={(el) => {
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
@@ -1327,9 +1209,9 @@ const TableComponent = ({
             return index % 2 === 0 ? "even-row" : "odd-row"; // 기본 행 스타일
           }
         }}
-        rowKey="position"
+        rowKey="itemDetailId"
         columns={columns}
-        dataSource={dataSource}
+        dataSource={itemDetails}
         pagination={false}
         scroll={{ y: 600 }}
         virtual
@@ -1337,7 +1219,7 @@ const TableComponent = ({
       <Button
         type="primary"
         style={{ margin: "20px 5px" }}
-        onClick={() => handleAddItem(dataSource.length - 1)} // 마지막 인덱스에 새 품목 추가
+        onClick={() => handleAddItem(itemDetails.length - 1)} // 마지막 인덱스에 새 품목 추가
       >
         Add item
       </Button>

@@ -274,11 +274,18 @@ export const sendInquiryMail = async (
   // FormData 객체 생성
   const formData = new FormData();
 
-  // `file` 추가
   files.forEach((file) => {
-    formData.append("file", file); // 동일한 이름으로 여러 파일 추가
+    const url = URL.createObjectURL(file);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = file.name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url); // 메모리 해제
   });
 
+  // `file` 추가
   files.forEach((file) => {
     formData.append("file", file); // 동일한 이름으로 여러 파일 추가
   });
@@ -298,7 +305,6 @@ export const sendInquiryMail = async (
         },
       }
     );
-    console.log(response);
 
     return response.data;
   } else if (mode === "addSupplier") {

@@ -204,19 +204,24 @@ export interface invCharge {
 }
 
 export interface FormValuesType {
-  supplierInquiryId: number;
-  supplierName: string;
+  documentId: number;
   documentNumber: string;
   registerDate: Dayjs;
   shippingDate: Dayjs;
+  refNumber: string;
   currencyType: string;
   currency: number;
-  customerName: string;
-  vesselName: string;
-  refNumber: string;
   docRemark: string;
+  docManager: string;
   documentStatus: string;
-  veeselHullNo: string;
+  customerId: number;
+  companyName: string;
+  vesselId: number;
+  vesselName: string;
+  vesselHullNo: string;
+  imoNo?: number;
+  discount?: number;
+  invChargeList?: invCharge[];
 }
 
 export interface ItemDataType {
@@ -322,8 +327,8 @@ export interface QuotationDetail {
     purchasePriceGlobal: number;
     purchaseAmountKRW: number;
     purchaseAmountGlobal: number;
-    supplierId: number;
-    supplierName: string;
+    supplierId?: number;
+    supplierName?: string;
   }>;
 }
 
@@ -418,8 +423,8 @@ export interface DocumentInfo {
   documentId: number;
   customerId: number;
   documentNumber: string;
-  registerDate: string;
-  shippingDate: string;
+  registerDate: Dayjs;
+  shippingDate: Dayjs;
   companyName: string;
   refNumber: string;
   currencyType: string;
@@ -433,9 +438,47 @@ export interface DocumentInfo {
   representative: string;
   documentStatus: string;
   inquiryType: string;
+  imoNo?: number;
 }
 
 export interface InquiryTable {
   itemDetails: InquiryItem[];
   supplierList: InquiryListSupplier[];
+}
+
+export interface OfferResponse {
+  documentInfo: FormValuesType;
+  response: {
+    inquiryId: number;
+    supplierInfo: SupplierInfo;
+    itemDetail: ItemDetailType[];
+  }[];
+}
+
+export interface SupplierInfo {
+  supplierId: number;
+  supplierName: string;
+  supplierCode: string;
+}
+
+export interface ItemDetailType {
+  itemDetailId: number | null;
+  itemId: number | null;
+  itemType: "MAKER" | "ITEM" | "DESC" | "TYPE" | "DASH";
+  itemCode: string;
+  itemName: string;
+  itemRemark: string;
+  qty: number;
+  position: number;
+  indexNo: string | null;
+  unit: string;
+  salesPriceKRW: number;
+  salesPriceGlobal: number;
+  salesAmountKRW: number;
+  salesAmountGlobal: number;
+  margin: number;
+  purchasePriceKRW: number;
+  purchasePriceGlobal: number;
+  purchaseAmountKRW: number;
+  purchaseAmountGlobal: number;
 }
