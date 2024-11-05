@@ -187,7 +187,6 @@ const FormComponent = ({
     }
     return { status: undefined, message: undefined };
   };
-  console.log(formValues);
 
   return (
     <>

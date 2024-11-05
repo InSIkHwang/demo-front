@@ -20,6 +20,7 @@ import OfferPDFGenerator from "../components/makeOffer/OfferPDFGenerator";
 import OfferMailSender from "../components/makeOffer/OfferSendMail";
 import { InvCharge } from "./../types/types";
 import ChargeInputPopover from "../components/makeOffer/ChargeInputPopover";
+import TotalCardsComponent from "../components/makeOffer/TatalCardsComponent";
 
 const FormContainer = styled.div`
   position: relative;
@@ -88,6 +89,23 @@ const MakeOffer = () => {
   const [pdfFileData, setPdfFileData] = useState<File | null>(null);
   const [fileData, setFileData] = useState<(File | null)[]>([]);
   const [isPdfAutoUploadChecked, setIsPdfAutoUploadChecked] = useState(true);
+  const [selectedSupplierIds, setSelectedSupplierIds] = useState<number[]>([]);
+  const [combinedItemDetails, setCombinedItemDetails] = useState<
+    ItemDetailType[]
+  >([]);
+
+  const [tableTotals, setTableTotals] = useState({
+    totalSalesAmountKRW: 0,
+    totalSalesAmountGlobal: 0,
+    totalPurchaseAmountKRW: 0,
+    totalPurchaseAmountGlobal: 0,
+    totalSalesAmountUnDcKRW: 0,
+    totalSalesAmountUnDcGlobal: 0,
+    totalPurchaseAmountUnDcKRW: 0,
+    totalPurchaseAmountUnDcGlobal: 0,
+    totalProfit: 0,
+    totalProfitPercent: 0,
+  });
   const [finalTotals, setFinalTotals] = useState({
     totalSalesAmountKRW: 0,
     totalSalesAmountGlobal: 0,
@@ -540,29 +558,46 @@ const MakeOffer = () => {
   const convertToGlobal = (amount: number, exchangeRate: number) =>
     roundToTwoDecimalPlaces(amount / exchangeRate);
 
-  const applyDcAndCharge = () => {
-    if (!currentDetailItems) return;
+  const applyDcAndCharge = (mode: string) => {
+    if (mode === "single" && !currentDetailItems) return;
+    if (mode === "multiple" && combinedItemDetails.length === 0) {
+      message.warning("Please select a supplier first");
+      return;
+    }
 
-    const updatedItems = currentDetailItems.map((currentItem) => {
-      const { purchasePriceKRW = 0, qty = 0, margin = 0 } = currentItem;
+    const updatedItems =
+      mode === "single"
+        ? currentDetailItems
+        : combinedItemDetails.map((currentItem) => {
+            const { purchasePriceKRW = 0, qty = 0, margin = 0 } = currentItem;
 
-      const salesPriceKRW = Math.round(purchasePriceKRW * (1 + margin / 100));
-      const salesAmountKRW = calculateTotalAmount(salesPriceKRW, qty);
+            const salesPriceKRW = Math.round(
+              purchasePriceKRW * (1 + margin / 100)
+            );
+            const salesAmountKRW = calculateTotalAmount(salesPriceKRW, qty);
 
-      const exchangeRate = formValues.currency;
-      const salesPriceGlobal = convertToGlobal(salesPriceKRW, exchangeRate);
-      const salesAmountGlobal = calculateTotalAmount(salesPriceGlobal, qty);
+            const exchangeRate = formValues.currency;
+            const salesPriceGlobal = convertToGlobal(
+              salesPriceKRW,
+              exchangeRate
+            );
+            const salesAmountGlobal = calculateTotalAmount(
+              salesPriceGlobal,
+              qty
+            );
 
-      return {
-        ...currentItem,
-        salesPriceKRW,
-        salesAmountKRW,
-        salesPriceGlobal,
-        salesAmountGlobal,
-      };
-    });
+            return {
+              ...currentItem,
+              salesPriceKRW,
+              salesAmountKRW,
+              salesPriceGlobal,
+              salesAmountGlobal,
+            };
+          });
 
-    setCurrentDetailItems(updatedItems);
+    mode === "single"
+      ? setCurrentDetailItems(updatedItems)
+      : setCombinedItemDetails(updatedItems);
 
     // 공통 계산
     const totalSalesAmountKRW = updatedItems.reduce(
@@ -607,24 +642,41 @@ const MakeOffer = () => {
     const updatedTotalSalesAmountGlobal =
       newTotalSalesAmountGlobal + chargePriceGlobalTotal;
 
+    const totalProfit = totalSalesAmountKRW - totalPurchaseAmountKRW;
+    const totalProfitPercent = Number(
+      ((totalProfit / totalPurchaseAmountKRW) * 100).toFixed(2)
+    );
     const updatedTotalProfit =
       updatedTotalSalesAmountKRW - totalPurchaseAmountKRW;
     const updatedTotalProfitPercent = Number(
       ((updatedTotalProfit / totalPurchaseAmountKRW) * 100).toFixed(2)
     );
 
-    setFinalTotals({
-      totalSalesAmountKRW: Math.round(updatedTotalSalesAmountKRW),
-      totalSalesAmountGlobal: updatedTotalSalesAmountGlobal,
-      totalPurchaseAmountKRW,
-      totalPurchaseAmountGlobal,
-      totalSalesAmountUnDcKRW: Math.round(totalSalesAmountKRW),
-      totalSalesAmountUnDcGlobal: totalSalesAmountGlobal,
-      totalPurchaseAmountUnDcKRW: Math.round(totalPurchaseAmountKRW),
-      totalPurchaseAmountUnDcGlobal: totalPurchaseAmountGlobal,
-      totalProfit: Math.round(updatedTotalProfit),
-      totalProfitPercent: updatedTotalProfitPercent,
-    });
+    mode === "multiple"
+      ? setFinalTotals({
+          totalSalesAmountKRW: Math.round(updatedTotalSalesAmountKRW),
+          totalSalesAmountGlobal: updatedTotalSalesAmountGlobal,
+          totalPurchaseAmountKRW,
+          totalPurchaseAmountGlobal,
+          totalSalesAmountUnDcKRW: Math.round(totalSalesAmountKRW),
+          totalSalesAmountUnDcGlobal: totalSalesAmountGlobal,
+          totalPurchaseAmountUnDcKRW: Math.round(totalPurchaseAmountKRW),
+          totalPurchaseAmountUnDcGlobal: totalPurchaseAmountGlobal,
+          totalProfit: Math.round(updatedTotalProfit),
+          totalProfitPercent: updatedTotalProfitPercent,
+        })
+      : setTableTotals({
+          totalSalesAmountKRW: Math.round(totalSalesAmountKRW),
+          totalSalesAmountGlobal: totalSalesAmountGlobal,
+          totalPurchaseAmountKRW,
+          totalPurchaseAmountGlobal,
+          totalSalesAmountUnDcKRW: Math.round(totalSalesAmountKRW),
+          totalSalesAmountUnDcGlobal: totalSalesAmountGlobal,
+          totalPurchaseAmountUnDcKRW: Math.round(totalPurchaseAmountKRW),
+          totalPurchaseAmountUnDcGlobal: totalPurchaseAmountGlobal,
+          totalProfit: Math.round(totalProfit),
+          totalProfitPercent: totalProfitPercent,
+        });
   };
 
   /**********************************************************************/
@@ -640,6 +692,31 @@ const MakeOffer = () => {
       setCurrentDetailItems(selectedSupplier.itemDetail);
       setCurrentSupplierInfo(selectedSupplier.supplierInfo);
       setCurrentInquiryId(selectedSupplier.inquiryId);
+      setTableTotals({
+        totalSalesAmountKRW: 0,
+        totalSalesAmountGlobal: 0,
+        totalPurchaseAmountKRW: 0,
+        totalPurchaseAmountGlobal: 0,
+        totalSalesAmountUnDcKRW: 0,
+        totalSalesAmountUnDcGlobal: 0,
+        totalPurchaseAmountUnDcKRW: 0,
+        totalPurchaseAmountUnDcGlobal: 0,
+        totalProfit: 0,
+        totalProfitPercent: 0,
+      });
+    }
+  };
+
+  const handleSupplierSelect = (values: number[]) => {
+    setSelectedSupplierIds(values);
+
+    if (dataSource?.response) {
+      // 선택된 공급업체들의 아이템 상세 정보 결합
+      const selectedItems = dataSource.response
+        .filter((resp) => values.includes(resp.supplierInfo.supplierId))
+        .reduce<any[]>((acc, curr) => [...acc, ...curr.itemDetail], []);
+
+      setCombinedItemDetails(selectedItems);
     }
   };
 
@@ -662,9 +739,9 @@ const MakeOffer = () => {
             calculateTotalAmount={calculateTotalAmount}
             handleMarginChange={handleMarginChange}
             handlePriceInputChange={handlePriceInputChange}
-            finalTotals={finalTotals}
-            applyDcAndCharge={applyDcAndCharge}
             offerId={loadDocumentId.documentId}
+            tableTotals={tableTotals}
+            applyDcAndCharge={applyDcAndCharge}
           />
           <Button
             type="primary"
@@ -699,15 +776,6 @@ const MakeOffer = () => {
           offerId={loadDocumentId.documentId}
         />
       )}
-      <ChargeInputPopover
-        currency={formValues.currency}
-        dcInfo={dcInfo}
-        setDcInfo={setDcInfo}
-        invChargeList={invChargeList}
-        setInvChargeList={setInvChargeList}
-        applyDcAndCharge={applyDcAndCharge}
-        finalTotals={finalTotals}
-      />
       <Divider variant="dashed" style={{ borderColor: "#ccc" }} />
       {dataSource?.response && renderSupplierTabs()}
       <Button
@@ -750,6 +818,22 @@ const MakeOffer = () => {
         >
           {showPDFPreview ? "Close Preview" : "PDF Preview"}
         </Button>
+        <span style={{ marginLeft: 20 }}>SUPPLIER: </span>
+        <Select
+          mode="multiple"
+          style={{ minWidth: 500, marginLeft: 10 }}
+          onChange={handleSupplierSelect}
+          value={selectedSupplierIds}
+        >
+          {dataSource?.response.map((item) => (
+            <Select.Option
+              key={item.supplierInfo.supplierId}
+              value={item.supplierInfo.supplierId}
+            >
+              {item.supplierInfo.supplierCode}
+            </Select.Option>
+          ))}
+        </Select>
       </div>
       <Modal
         title="Send Mail"
@@ -771,10 +855,34 @@ const MakeOffer = () => {
           loadDocumentId={loadDocumentId}
         />
       </Modal>
-      {pdfCustomerTag && isMailSenderVisible && (
+      <div style={{ marginTop: 50 }}>
+        <div
+          style={{
+            marginBottom: 20,
+            display: "flex",
+            justifyContent: "flex-end",
+          }}
+        >
+          <ChargeInputPopover
+            currency={formValues.currency}
+            dcInfo={dcInfo}
+            setDcInfo={setDcInfo}
+            invChargeList={invChargeList}
+            setInvChargeList={setInvChargeList}
+            applyDcAndCharge={applyDcAndCharge}
+            finalTotals={finalTotals}
+          />
+        </div>
+        <TotalCardsComponent
+          finalTotals={finalTotals}
+          applyDcAndCharge={applyDcAndCharge}
+          mode={"multiple"}
+        />
+      </div>
+      {pdfCustomerTag && isMailSenderVisible && dataSource && (
         <OfferPDFGenerator
-          info={info}
-          items={info.inquiryItemDetails}
+          info={dataSource.documentInfo}
+          items={combinedItemDetails}
           pdfHeader={pdfHeader}
           pdfFooter={pdfFooter}
           language={language}
@@ -786,9 +894,10 @@ const MakeOffer = () => {
           invChargeList={invChargeList}
         />
       )}
-      {showPDFPreview && (
+      {showPDFPreview && dataSource && (
         <OfferPDFDocument
-          info={info}
+          info={dataSource.documentInfo}
+          items={combinedItemDetails}
           pdfHeader={pdfHeader}
           pdfFooter={pdfFooter}
           viewMode={true}

@@ -33,7 +33,7 @@ interface ChargeComponentProps {
   >;
   invChargeList: InvCharge[] | null;
   setInvChargeList: Dispatch<SetStateAction<InvCharge[] | null>>;
-  applyDcAndCharge: () => void;
+  applyDcAndCharge: (mode: string) => void;
 }
 
 const ChargeInputPopover = ({
@@ -243,7 +243,7 @@ const ChargeInputPopover = ({
       <Button
         type="primary"
         style={{ marginTop: 10, width: "100%" }}
-        onClick={applyDcAndCharge}
+        onClick={() => applyDcAndCharge("multiple")}
       >
         Apply D/C & Charge
       </Button>
@@ -251,18 +251,16 @@ const ChargeInputPopover = ({
   );
 
   return (
-    <div style={{ display: "flex", justifyContent: "flex-end" }}>
+    <>
       <Popover
         content={content}
         title="Enter D/C and Charges"
         trigger="click"
         placement="bottom"
       >
-        <Button type="dashed" style={{ marginBottom: 10 }}>
-          Open Charge Input
-        </Button>
+        <Button type="dashed">Open Charge Input</Button>
       </Popover>
-    </div>
+    </>
   );
 };
 

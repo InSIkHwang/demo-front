@@ -2,8 +2,10 @@ import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { pdf } from "@react-pdf/renderer";
 import OfferPDFDocument from "./OfferPDFDocument";
 import {
+  FormValuesType,
   InquiryItem,
   InvCharge,
+  ItemDetailType,
   offerEmailSendData,
   SupplierInquiryDetailIF,
 } from "../../types/types";
@@ -11,8 +13,8 @@ import { fetchCustomerDetail } from "../../api/api";
 import { message } from "antd";
 
 interface PDFGeneratorProps {
-  info: SupplierInquiryDetailIF;
-  items: InquiryItem[];
+  info: FormValuesType;
+  items: ItemDetailType[];
   pdfHeader: string;
   pdfFooter: string;
   setMailData: Dispatch<SetStateAction<offerEmailSendData | null>>;
@@ -73,6 +75,7 @@ const OfferPDFGenerator = ({
       <OfferPDFDocument
         language={language}
         info={info}
+        items={items}
         pdfHeader={pdfHeader}
         pdfFooter={pdfFooter}
         viewMode={false}

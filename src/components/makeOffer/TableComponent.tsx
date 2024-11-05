@@ -23,7 +23,6 @@ import { ItemDetailType } from "../../types/types";
 import {
   DeleteOutlined,
   PlusCircleOutlined,
-  ReloadOutlined,
   FileExcelOutlined,
   ExportOutlined,
 } from "@ant-design/icons";
@@ -31,8 +30,7 @@ import { fetchItemData, handleOfferExport } from "../../api/api";
 import ExcelUploadModal from "../ExcelUploadModal";
 import { TextAreaRef } from "antd/es/input/TextArea";
 import { debounce } from "lodash";
-
-const RefreshBtn = styled(Button)``;
+import TotalCardsComponent from "./TatalCardsComponent";
 
 const CustomTable = styled(Table)`
   .ant-table * {
@@ -58,6 +56,16 @@ const CustomTable = styled(Table)`
   }
   .ant-input-number-group-addon {
     padding: 0 2px !important;
+  }
+
+  .ant-table-row {
+    &:hover {
+      background-color: rgba(240, 240, 240, 0.875) !important;
+    }
+    .ant-table-cell-row-hover {
+      background-color: rgba(240, 240, 240, 0.875) !important;
+    }
+    transition: background-color 0.3s ease;
   }
 
   .maker-row {
@@ -105,45 +113,6 @@ const CustomTable = styled(Table)`
   }
 `;
 
-const TotalCards = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 20px;
-  padding: 10px;
-  border-radius: 6px;
-  background: #f8f8f8;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-`;
-
-const TotalCard = styled.div<{ $isHighlight?: boolean; $isPositive?: boolean }>`
-  flex: 1;
-  text-align: center;
-  padding: 8px;
-  margin: 0 5px;
-  border-radius: 4px;
-  background: ${({ $isHighlight, $isPositive }) =>
-    $isHighlight ? ($isPositive ? "#eaffea" : "#ffe6e6") : "#ffffff"};
-  box-shadow: ${({ $isHighlight }) =>
-    $isHighlight ? "0 1px 2px rgba(0, 0, 0, 0.1)" : "none"};
-  border: ${({ $isHighlight, $isPositive }) =>
-    $isHighlight
-      ? `1px solid ${$isPositive ? "#b3e6b3" : "#f5b3b3"}`
-      : "1px solid #ddd"};
-
-  span {
-    display: block;
-    font-size: 14px;
-    font-weight: 500;
-    color: ${({ $isHighlight, $isPositive }) =>
-      $isHighlight ? ($isPositive ? "#2e8b57" : "#d9534f") : "#666"};
-  }
-
-  span.value {
-    font-size: 18px;
-    font-weight: 600;
-  }
-`;
-
 interface TableComponentProps {
   itemDetails: ItemDetailType[];
   setItemDetails: Dispatch<SetStateAction<ItemDetailType[]>>;
@@ -163,7 +132,8 @@ interface TableComponentProps {
     value: any,
     currency: number
   ) => void;
-  finalTotals: {
+  offerId: number;
+  tableTotals: {
     totalSalesAmountKRW: number;
     totalSalesAmountGlobal: number;
     totalPurchaseAmountKRW: number;
@@ -171,8 +141,7 @@ interface TableComponentProps {
     totalProfit: number;
     totalProfitPercent: number;
   };
-  applyDcAndCharge: () => void;
-  offerId: number;
+  applyDcAndCharge: (mode: string) => void;
 }
 
 const TableComponent = ({
@@ -185,9 +154,9 @@ const TableComponent = ({
   calculateTotalAmount,
   handleMarginChange,
   handlePriceInputChange,
-  finalTotals,
-  applyDcAndCharge,
   offerId,
+  tableTotals,
+  applyDcAndCharge,
 }: TableComponentProps) => {
   const inputRefs = useRef<(TextAreaRef | null)[][]>([]);
   const [itemCodeOptions, setItemCodeOptions] = useState<
@@ -1127,58 +1096,7 @@ const TableComponent = ({
   ];
 
   return (
-    <div style={{ marginTop: 20, overflowX: "auto" }}>
-      <TotalCards>
-        <TotalCard>
-          <span>Sales Amount(KRW)</span>
-          <span className="value">
-            ₩ {finalTotals.totalSalesAmountKRW?.toLocaleString()}
-          </span>
-        </TotalCard>
-        <TotalCard>
-          <span>Sales Amount(F)</span>
-          <span className="value">
-            F {finalTotals.totalSalesAmountGlobal?.toLocaleString()}
-          </span>
-        </TotalCard>
-        <TotalCard>
-          <span>Purchase Amount(KRW)</span>
-          <span className="value">
-            ₩ {finalTotals.totalPurchaseAmountKRW?.toLocaleString()}
-          </span>
-        </TotalCard>
-        <TotalCard>
-          <span>Purchase Amount(F)</span>
-          <span className="value">
-            F {finalTotals.totalPurchaseAmountGlobal?.toLocaleString()}
-          </span>
-        </TotalCard>
-        <TotalCard $isHighlight $isPositive={finalTotals.totalProfit >= 0}>
-          <span>Profit Amount</span>
-          <span className="value">
-            ₩ {finalTotals.totalProfit?.toLocaleString()}
-          </span>
-        </TotalCard>
-        <TotalCard
-          $isHighlight
-          $isPositive={finalTotals.totalProfitPercent >= 0}
-        >
-          <span>Profit Percent</span>
-          <span className="value">
-            {isNaN(finalTotals.totalProfitPercent)
-              ? 0
-              : finalTotals.totalProfitPercent}
-            %
-          </span>
-        </TotalCard>
-        <RefreshBtn
-          icon={<ReloadOutlined />}
-          type="primary"
-          onClick={() => {
-            applyDcAndCharge();
-          }}
-        />
-      </TotalCards>
+    <div style={{ overflowX: "auto" }}>
       <Button
         type="dashed"
         style={{ margin: "20px 5px" }}
@@ -1195,6 +1113,11 @@ const TableComponent = ({
       >
         Export Excel
       </Button>
+      <TotalCardsComponent
+        finalTotals={tableTotals}
+        applyDcAndCharge={applyDcAndCharge}
+        mode={"single"}
+      />
       <CustomTable
         rowClassName={(record: any, index) => {
           if (record.itemType === "MAKER") {
@@ -1205,11 +1128,10 @@ const TableComponent = ({
             return "desc-row";
           } else if (record.itemRemark) {
             return "remark-row";
-          } else {
-            return index % 2 === 0 ? "even-row" : "odd-row"; // 기본 행 스타일
           }
+          return "";
         }}
-        rowKey="position"
+        rowKey="itemDetailId"
         columns={columns}
         dataSource={itemDetails}
         pagination={false}

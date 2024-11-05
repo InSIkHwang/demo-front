@@ -16,8 +16,10 @@ import NotoSerifKR from "../../assets/font/NotoSerifKR-Medium.ttf";
 import NotoSansRegular from "../../assets/font/NotoSansRegular.ttf";
 import logoUrl from "../../assets/logo/baskorea_logo-removebg.png";
 import {
+  FormValuesType,
   InvCharge,
   ItemDataType,
+  ItemDetailType,
   SupplierInquiryDetailIF,
 } from "../../types/types";
 
@@ -41,7 +43,8 @@ Font.register({
 Font.registerHyphenationCallback((word) => ["", word, ""]);
 
 interface PDFDocumentProps {
-  info: SupplierInquiryDetailIF;
+  info: FormValuesType;
+  items: ItemDetailType[];
   pdfHeader: string;
   viewMode: boolean;
   language: string;
@@ -216,7 +219,7 @@ const getDisplayNo = (itemType: string, itemIndex: number, indexNo: string) => {
 };
 
 // 테이블 행을 렌더링하는 함수
-const renderTableRows = (items: ItemDataType[]) => {
+const renderTableRows = (items: ItemDetailType[]) => {
   let itemIndex = 0;
   return items.map((item) => {
     const isItemType = item.itemType === "ITEM";
@@ -356,6 +359,7 @@ const renderHeader = (
 
 const OfferPDFDocument = ({
   info,
+  items,
   pdfHeader,
   viewMode,
   language,
@@ -364,16 +368,11 @@ const OfferPDFDocument = ({
   dcInfo,
   invChargeList,
 }: PDFDocumentProps) => {
-  const items = [...info.inquiryItemDetails].sort(
-    (a, b) => a.position! - b.position!
-  );
   const headerMessage = pdfHeader;
-  const calculateTotalSalesAmount = (items: ItemDataType[]) => {
+  const calculateTotalSalesAmount = (items: ItemDetailType[]) => {
     return items.reduce((total, item) => total + item.salesAmountGlobal, 0);
   };
-  const totalSalesAmountGlobal = calculateTotalSalesAmount(
-    info.inquiryItemDetails
-  );
+  const totalSalesAmountGlobal = calculateTotalSalesAmount(items);
   const dcAmountGlobal = totalSalesAmountGlobal * (dcInfo.dcPercent / 100);
 
   const pdfBody = (
@@ -381,7 +380,7 @@ const OfferPDFDocument = ({
       <Page size="A4" style={styles.page}>
         {renderHeader(
           logoUrl,
-          info.customerName,
+          info.companyName,
           info.vesselName,
           info.documentNumber || "",
           dayjs().format("YYYY-MM-DD"),
