@@ -335,7 +335,7 @@ function TableSection({
         }}
       >
         <div style={{ display: "flex", alignItems: "center" }}>
-          <h3 style={{ margin: "0 10px 0 0" }}>Table {tableIndex + 1}</h3>{" "}
+          <h3 style={{ margin: "0 10px 0 0" }}>Table {tableIndex + 1}</h3>
           <Button
             type="default"
             onClick={() => setIsModalVisible(true)}
@@ -419,7 +419,7 @@ function TableSection({
         onRow={() => ({
           onClick: () => setCurrentTableNo(tableIndex + 1),
         })}
-      />{" "}
+      />
       <ExcelUploadModal
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}

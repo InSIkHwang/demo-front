@@ -279,7 +279,7 @@ const renderHeader = (
     <View style={styles.inquiryInfoWrap}>
       <View style={styles.inquiryInfoColumn}>
         <Text style={styles.inquiryInfoText}>
-          MESSRS:{" "}
+          MESSRS:
           {supplier?.communicationLanguage === "KOR"
             ? supplier?.korName || ""
             : supplier?.name || ""}

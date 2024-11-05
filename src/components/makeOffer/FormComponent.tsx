@@ -420,7 +420,7 @@ const FormComponent = ({
             />
           </FormItem>
         </Row>
-      </Form>{" "}
+      </Form>
       {isCustomerModalOpen && (
         <CreateCompanyModal
           category={"customer"}

@@ -428,7 +428,7 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
           )}
           <Button type="primary" danger onClick={handleDelete} size="middle">
             Delete
-          </Button>{" "}
+          </Button>
           <Button type="default" onClick={onClose} size="middle">
             Close
           </Button>

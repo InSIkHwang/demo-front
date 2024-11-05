@@ -633,7 +633,7 @@ const TableComponent = ({
                 ? "#faad14"
                 : "#d9d9d9", // 중복 시 배경색 빨간색
             }}
-          />{" "}
+          />
           {checkDuplicate("itemName", text, index) && (
             <div style={{ color: "#faad14", marginTop: "5px" }}>
               duplicate name.

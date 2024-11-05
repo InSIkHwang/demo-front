@@ -785,7 +785,7 @@ const MakeOffer = () => {
         disabled={!formValues.refNumber}
       >
         Send Email
-      </Button>{" "}
+      </Button>
       <Button
         type="default"
         onClick={() => navigate(-1)}
