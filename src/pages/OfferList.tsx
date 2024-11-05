@@ -139,7 +139,7 @@ const OfferList = () => {
   const [viewMyOfferOnly, setViewMyOfferOnly] = useState<boolean>(false);
 
   useEffect(() => {
-    if (searchText) {
+    if (searchText || registerStartDate || registerEndDate || viewMyOfferOnly) {
       handleSearch();
     } else {
       fetchData();

@@ -166,7 +166,13 @@ const CustomerInquiryList = () => {
   const [viewOnlySentEmails, setViewOnlySentEmails] = useState<boolean>(false);
 
   useEffect(() => {
-    if (searchText) {
+    if (
+      searchText ||
+      registerStartDate ||
+      registerEndDate ||
+      viewMyInquiryOnly ||
+      viewOnlySentEmails
+    ) {
       handleSearch();
     } else {
       fetchData();
