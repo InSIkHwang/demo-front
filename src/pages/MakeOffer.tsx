@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Button, message, Modal, Select, Tabs } from "antd";
+import { Button, Divider, message, Modal, Select, Tabs } from "antd";
 import styled from "styled-components";
 import dayjs from "dayjs";
 import FormComponent from "../components/makeOffer/FormComponent";
@@ -653,7 +653,6 @@ const MakeOffer = () => {
       children: (
         <>
           <TableComponent
-            supplierId={currentSupplierInfo.supplierId}
             itemDetails={currentDetailItems}
             setItemDetails={setCurrentDetailItems}
             handleInputChange={handleInputChange}
@@ -670,12 +669,13 @@ const MakeOffer = () => {
           <Button
             type="primary"
             htmlType="submit"
-            style={{ float: "right", width: 100, margin: "20px 15px 0 0 " }}
+            style={{ float: "right", width: 100, marginBottom: 20 }}
             onClick={handleSave}
             disabled={!formValues.refNumber}
           >
             Save
           </Button>
+          <Divider variant="dashed" style={{ borderColor: "#ccc" }} />
         </>
       ),
     }));
@@ -708,6 +708,7 @@ const MakeOffer = () => {
         applyDcAndCharge={applyDcAndCharge}
         finalTotals={finalTotals}
       />
+      <Divider variant="dashed" style={{ borderColor: "#ccc" }} />
       {dataSource?.response && renderSupplierTabs()}
       <Button
         type="primary"

@@ -187,6 +187,7 @@ const FormComponent = ({
     }
     return { status: undefined, message: undefined };
   };
+  console.log(formValues);
 
   return (
     <>
@@ -242,9 +243,7 @@ const FormComponent = ({
               }}
             />
           </FormItem>
-          <FormItem label="문서상태" name="documentStatus">
-            <Input disabled />
-          </FormItem>
+
           <FormItem
             label="작성일자(Register Date)"
             name="registerDate"
@@ -384,6 +383,14 @@ const FormComponent = ({
               <Input />
             </AutoComplete>
           </FormItem>
+          <FormItem label="IMO NO." name="imoNo">
+            <Input
+              value={formValues.imoNo}
+              onChange={(e) =>
+                handleFormChange("imoNo", Number(e.target.value))
+              }
+            />
+          </FormItem>
           <FormItem label="HULL NO." name="veeselHullNo">
             <Input
               value={formValues.vesselHullNo}
@@ -393,19 +400,20 @@ const FormComponent = ({
         </Row>
         <Row>
           <FormItem
-            label="의뢰처(Supplier Name)"
-            name="supplierName"
-            rules={[
-              {
-                required: true,
-                message: "Please enter supplier name",
-              },
-            ]}
-            style={{ flex: 3 }}
+            label="담당자(Document Manager)"
+            name="docManager"
+            style={{ flex: 1 }}
           >
             <Input disabled />
           </FormItem>
-          <FormItem label="비고(Remark)" name="docRemark" style={{ flex: 7 }}>
+          <FormItem
+            label="문서상태(Document Status)"
+            name="documentStatus"
+            style={{ flex: 1 }}
+          >
+            <Input disabled />
+          </FormItem>
+          <FormItem label="비고(Remark)" name="docRemark" style={{ flex: 2 }}>
             <Input.TextArea
               value={formValues.docRemark}
               onChange={(e) => handleFormChange("docRemark", e.target.value)}

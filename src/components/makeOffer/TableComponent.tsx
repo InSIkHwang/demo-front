@@ -145,7 +145,6 @@ const TotalCard = styled.div<{ $isHighlight?: boolean; $isPositive?: boolean }>`
 `;
 
 interface TableComponentProps {
-  supplierId: number;
   itemDetails: ItemDetailType[];
   setItemDetails: Dispatch<SetStateAction<ItemDetailType[]>>;
   handleInputChange: (
@@ -176,14 +175,7 @@ interface TableComponentProps {
   offerId: number;
 }
 
-interface SelectedItemData {
-  index: number;
-  itemName: string;
-  itemId: number;
-}
-
 const TableComponent = ({
-  supplierId,
   itemDetails,
   handleInputChange,
   currency,
@@ -1116,10 +1108,18 @@ const TableComponent = ({
             addonAfter={"%"}
             onKeyDown={(e) => handleNextRowKeyDown(e, index, 13)}
             onChange={(e) => {
-              const value = e.target.value.replace(/[^0-9.]/g, "");
-              handleInputChange(index, "margin", value);
+              const inputValue = e.target.value.replace(/[^0-9.-]/g, "");
+              if (
+                inputValue === "" ||
+                inputValue === "-" ||
+                !isNaN(Number(inputValue))
+              ) {
+                handleInputChange(index, "margin", inputValue);
+              }
             }}
-            onBlur={() => handleMarginChange(index, text ?? 0)}
+            onBlur={() => {
+              handleMarginChange(index, value || 0);
+            }}
           />
         );
       },
@@ -1209,7 +1209,7 @@ const TableComponent = ({
             return index % 2 === 0 ? "even-row" : "odd-row"; // 기본 행 스타일
           }
         }}
-        rowKey="itemDetailId"
+        rowKey="position"
         columns={columns}
         dataSource={itemDetails}
         pagination={false}

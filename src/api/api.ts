@@ -274,16 +274,16 @@ export const sendInquiryMail = async (
   // FormData 객체 생성
   const formData = new FormData();
 
-  files.forEach((file) => {
-    const url = URL.createObjectURL(file);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = file.name;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url); // 메모리 해제
-  });
+  // files.forEach((file) => {
+  //   const url = URL.createObjectURL(file);
+  //   const a = document.createElement("a");
+  //   a.href = url;
+  //   a.download = file.name;
+  //   document.body.appendChild(a);
+  //   a.click();
+  //   document.body.removeChild(a);
+  //   URL.revokeObjectURL(url); // 메모리 해제
+  // });
 
   // `file` 추가
   files.forEach((file) => {
