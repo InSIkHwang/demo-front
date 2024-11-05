@@ -88,7 +88,6 @@ const MakeOffer = () => {
   const [mailData, setMailData] = useState<offerEmailSendData | null>(null);
   const [pdfFileData, setPdfFileData] = useState<File | null>(null);
   const [fileData, setFileData] = useState<(File | null)[]>([]);
-  const [isPdfAutoUploadChecked, setIsPdfAutoUploadChecked] = useState(true);
   const [selectedSupplierIds, setSelectedSupplierIds] = useState<number[]>([]);
   const [combinedItemDetails, setCombinedItemDetails] = useState<
     ItemDetailType[]
@@ -739,7 +738,7 @@ const MakeOffer = () => {
             calculateTotalAmount={calculateTotalAmount}
             handleMarginChange={handleMarginChange}
             handlePriceInputChange={handlePriceInputChange}
-            offerId={loadDocumentId.documentId}
+            offerId={supplier.inquiryId}
             tableTotals={tableTotals}
             applyDcAndCharge={applyDcAndCharge}
           />
@@ -844,11 +843,9 @@ const MakeOffer = () => {
         width={1200}
       >
         <OfferMailSender
-          inquiryFormValues={info}
+          inquiryFormValues={info.documentInfo}
           handleSubmit={handleSave}
           setFileData={setFileData}
-          isPdfAutoUploadChecked={isPdfAutoUploadChecked}
-          setIsPdfAutoUploadChecked={setIsPdfAutoUploadChecked}
           pdfFileData={pdfFileData}
           mailData={mailData}
           pdfHeader={pdfHeader}

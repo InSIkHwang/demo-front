@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
-import { Button, FloatButton, message, Modal, Select } from "antd";
+import { Button, Divider, FloatButton, message, Modal, Select } from "antd";
 import { FileSearchOutlined } from "@ant-design/icons";
 import dayjs, { Dayjs } from "dayjs";
 import {
@@ -913,7 +913,7 @@ const MakeInquiry = () => {
           uniqueSuppliers={uniqueSuppliers}
         />
       )}
-
+      <Divider variant="dashed" style={{ borderColor: "#ccc" }} />
       <MakeInquiryTable
         items={items}
         inquiryDetail={inquiryDetail}

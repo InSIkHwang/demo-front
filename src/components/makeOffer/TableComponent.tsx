@@ -16,6 +16,7 @@ import {
   AutoComplete,
   notification,
   message,
+  Tooltip,
 } from "antd";
 import { ColumnsType } from "antd/es/table";
 import styled from "styled-components";
@@ -26,7 +27,7 @@ import {
   FileExcelOutlined,
   ExportOutlined,
 } from "@ant-design/icons";
-import { fetchItemData, handleOfferExport } from "../../api/api";
+import { fetchItemData, handleExport, handleOfferExport } from "../../api/api";
 import ExcelUploadModal from "../ExcelUploadModal";
 import { TextAreaRef } from "antd/es/input/TextArea";
 import { debounce } from "lodash";
@@ -171,6 +172,8 @@ const TableComponent = ({
   const [unitOptions, setUnitOptions] = useState<string[]>(["PCS", "SET"]);
   const [updatedIndex, setUpdatedIndex] = useState<number | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+
+  console.log(itemDetails);
 
   // 공통 데이터 처리 함수
   const updateDataSource = (
@@ -447,6 +450,27 @@ const TableComponent = ({
       ) {
         inputRefs.current[rowIndex - 1][columnIndex]?.focus(); // 이전 행의 Input으로 포커스 이동
       }
+    }
+  };
+
+  const handleDownloadExcel = async () => {
+    try {
+      const response = await handleExport(offerId);
+      // 사용자가 경로를 설정하여 파일을 다운로드할 수 있도록 설정
+      const link = document.createElement("a");
+      link.href = response; // 서버에서 받은 파일 경로
+      link.download = "exported_file.xlsx"; // 사용자에게 보여질 파일 이름
+      link.click(); // 다운로드 트리거
+
+      notification.success({
+        message: "Export Success",
+        description: "Excel file exported successfully.",
+      });
+    } catch (error) {
+      notification.error({
+        message: "Export Failed",
+        description: "Failed to export the Excel file.",
+      });
     }
   };
 
@@ -1097,22 +1121,36 @@ const TableComponent = ({
 
   return (
     <div style={{ overflowX: "auto" }}>
-      <Button
-        type="dashed"
-        style={{ margin: "20px 5px" }}
-        onClick={() => setIsModalVisible(true)}
-        icon={<FileExcelOutlined />}
-      >
-        Load Excel File
-      </Button>
-      <Button
-        type="dashed"
-        style={{ margin: "20px 5px" }}
-        icon={<ExportOutlined />}
-        onClick={handleExportButtonClick}
-      >
-        Export Excel
-      </Button>
+      <Tooltip title="Download excel file before you send">
+        <Button
+          type="dashed"
+          style={{ margin: "20px 5px" }}
+          onClick={handleDownloadExcel}
+          icon={<FileExcelOutlined />}
+        >
+          Download Excel File
+        </Button>
+      </Tooltip>
+      <Tooltip title="Load excel file on your local">
+        <Button
+          type="dashed"
+          style={{ margin: "20px 5px" }}
+          onClick={() => setIsModalVisible(true)}
+          icon={<FileExcelOutlined />}
+        >
+          Load Excel File
+        </Button>
+      </Tooltip>
+      <Tooltip title="Export excel file on your table">
+        <Button
+          type="dashed"
+          style={{ margin: "20px 5px" }}
+          icon={<ExportOutlined />}
+          onClick={handleExportButtonClick}
+        >
+          Export Excel
+        </Button>
+      </Tooltip>
       <TotalCardsComponent
         finalTotals={tableTotals}
         applyDcAndCharge={applyDcAndCharge}

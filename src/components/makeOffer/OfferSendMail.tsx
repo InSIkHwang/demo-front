@@ -62,8 +62,6 @@ const OfferMailSender = ({
   inquiryFormValues,
   handleSubmit,
   setFileData,
-  isPdfAutoUploadChecked,
-  setIsPdfAutoUploadChecked,
   pdfFileData,
   mailData,
   pdfHeader,
@@ -72,8 +70,6 @@ const OfferMailSender = ({
   inquiryFormValues: FormValue;
   handleSubmit: () => Promise<unknown>;
   setFileData: Dispatch<SetStateAction<(File | null)[]>>;
-  isPdfAutoUploadChecked: boolean;
-  setIsPdfAutoUploadChecked: Dispatch<SetStateAction<boolean>>;
   pdfFileData: File | null;
   mailData: offerEmailSendData | null;
   pdfHeader: string;
@@ -90,10 +86,7 @@ const OfferMailSender = ({
     subject: mailData?.subject ?? "",
     content: mailData?.content ?? "",
   };
-
-  const handlePdfAutoUploadChange = (e: CheckboxChangeEvent) => {
-    setIsPdfAutoUploadChecked(e.target.checked);
-  };
+  console.log(inquiryFormValues);
 
   const onFinish = async (values: any) => {
     setLoading(true);
@@ -137,7 +130,7 @@ const OfferMailSender = ({
       };
 
       // 메일 전송 로직
-      if (isPdfAutoUploadChecked && pdfFileData) {
+      if (pdfFileData) {
         const finalFileData = [...updatedFileData, pdfFileData];
         setFileData(finalFileData);
         await sendQuotationMail(finalFileData, mailDataToSend);
@@ -215,13 +208,7 @@ const OfferMailSender = ({
           >
             <Button icon={<UploadOutlined />}>Upload File</Button>
           </Upload>
-          <Checkbox
-            checked={isPdfAutoUploadChecked}
-            onChange={handlePdfAutoUploadChange}
-            style={{ marginLeft: 15 }}
-          >
-            Automatic PDF File Upload
-          </Checkbox>
+
           {uploadFile.length > 0 && (
             <div style={{ marginTop: "16px" }}>
               {uploadFile.map((file, fileIndex) => (

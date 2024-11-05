@@ -1,5 +1,5 @@
 import React, { Dispatch, SetStateAction, useEffect } from "react";
-import { Button, Popover, Input, Form } from "antd";
+import { Button, Popover, Input, Form, Tooltip } from "antd";
 import styled from "styled-components";
 import { InvCharge } from "../../types/types";
 
@@ -258,7 +258,9 @@ const ChargeInputPopover = ({
         trigger="click"
         placement="bottom"
       >
-        <Button type="dashed">Open Charge Input</Button>
+        <Tooltip title="write and apply D/C and charges" placement="left">
+          <Button type="dashed">Open Charge Input</Button>
+        </Tooltip>
       </Popover>
     </>
   );
