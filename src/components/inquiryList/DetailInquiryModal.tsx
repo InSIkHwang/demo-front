@@ -323,9 +323,6 @@ const DetailInquiryModal = ({
                 <Descriptions.Item label="Vessel Hull Number">
                   {inquiryDetail.documentInfo.vesselHullNo}
                 </Descriptions.Item>
-                <Descriptions.Item label="Remark">
-                  {inquiryDetail.documentInfo.docRemark}
-                </Descriptions.Item>
                 <Descriptions.Item label="Document Manager">
                   {inquiryDetail.documentInfo.docManager}
                 </Descriptions.Item>
@@ -352,6 +349,9 @@ const DetailInquiryModal = ({
                   <TagStyled color="green">
                     {inquiryDetail.documentInfo.inquiryType}
                   </TagStyled>
+                </Descriptions.Item>
+                <Descriptions.Item label="Remark">
+                  {inquiryDetail.documentInfo.docRemark}
                 </Descriptions.Item>
               </Descriptions>
               <Divider variant="dashed" style={{ borderColor: "#007bff" }}>

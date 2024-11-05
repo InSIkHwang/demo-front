@@ -344,15 +344,17 @@ function TableSection({
           >
             Load Excel
           </Button>
-          <Select
-            style={{ width: 200, marginRight: 8 }}
-            placeholder="Select a supplier to add"
-            onChange={handleSupplierSelect}
-            options={uniqueSuppliers?.map((supplier) => ({
-              value: supplier.id,
-              label: `${supplier.code}`,
-            }))}
-          />
+          <Tooltip title="Search a supplier before you add">
+            <Select
+              style={{ width: 200, marginRight: 8 }}
+              placeholder="Select a supplier to add"
+              onChange={handleSupplierSelect}
+              options={uniqueSuppliers?.map((supplier) => ({
+                value: supplier.id,
+                label: `${supplier.code}`,
+              }))}
+            />
+          </Tooltip>
           {currentTable?.supplierList?.map((supplier) => (
             <Tooltip
               key={supplier.supplierId}
@@ -545,7 +547,9 @@ function MakeInquiryTable({
   const [duplicateStates, setDuplicateStates] = useState<{
     [key: string]: DuplicateState;
   }>({});
-  const inputRefs = useRef<(TextAreaRef | null)[][]>([]);
+  const inputRefs = useRef<{ [tableIndex: number]: (TextAreaRef | null)[][] }>(
+    {}
+  );
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
@@ -665,21 +669,27 @@ function MakeInquiryTable({
     e: React.KeyboardEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLDivElement
     >,
+    tableIndex: number,
     rowIndex: number,
     columnIndex: number
   ) => {
     if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-      e.preventDefault(); // 방향키 기본 동작을 막음
+      e.preventDefault();
+
+      // 현재 테이블의 inputRefs 가져오기
+      const currentTableRefs = inputRefs.current[tableIndex];
+      if (!currentTableRefs) return;
+
       if (
         e.key === "ArrowDown" &&
-        inputRefs.current[rowIndex + 1]?.[columnIndex]
+        currentTableRefs[rowIndex + 1]?.[columnIndex]
       ) {
-        inputRefs.current[rowIndex + 1][columnIndex]?.focus(); // 다음 행의 Input으로 포커스 이동
+        currentTableRefs[rowIndex + 1][columnIndex]?.focus();
       } else if (
         e.key === "ArrowUp" &&
-        inputRefs.current[rowIndex - 1]?.[columnIndex]
+        currentTableRefs[rowIndex - 1]?.[columnIndex]
       ) {
-        inputRefs.current[rowIndex - 1][columnIndex]?.focus(); // 이 행의 Input으로 포커스 이동
+        currentTableRefs[rowIndex - 1][columnIndex]?.focus();
       }
     }
   };
@@ -857,8 +867,9 @@ function MakeInquiryTable({
       title: "PartNo",
       dataIndex: "itemCode",
       key: "itemCode",
-      render: (text: string, record: InquiryItem, index: number) =>
-        record.itemType === "ITEM" ? (
+      render: (text: string, record: InquiryItem, index: number) => {
+        const tableIndex = record.tableNo - 1;
+        return record.itemType === "ITEM" ? (
           <div>
             <AutoComplete
               value={record.itemCode}
@@ -886,12 +897,15 @@ function MakeInquiryTable({
               dropdownStyle={{ width: 400 }}
               style={{ width: "100%" }}
               ref={(el) => {
-                if (!inputRefs.current[index]) {
-                  inputRefs.current[index] = [];
+                if (!inputRefs.current[tableIndex]) {
+                  inputRefs.current[tableIndex] = [];
                 }
-                inputRefs.current[index][1] = el;
+                if (!inputRefs.current[tableIndex][index]) {
+                  inputRefs.current[tableIndex][index] = [];
+                }
+                inputRefs.current[tableIndex][index][1] = el;
               }}
-              onKeyDown={(e) => handleNextRowKeyDown(e, index, 1)}
+              onKeyDown={(e) => handleNextRowKeyDown(e, tableIndex, index, 1)}
             >
               <Input.TextArea
                 autoSize={{ minRows: 1, maxRows: 10 }}
@@ -912,14 +926,18 @@ function MakeInquiryTable({
           <Input
             readOnly
             ref={(el) => {
-              if (!inputRefs.current[index]) {
-                inputRefs.current[index] = [];
+              if (!inputRefs.current[tableIndex]) {
+                inputRefs.current[tableIndex] = [];
               }
-              inputRefs.current[index][1] = el;
+              if (!inputRefs.current[tableIndex][index]) {
+                inputRefs.current[tableIndex][index] = [];
+              }
+              inputRefs.current[tableIndex][index][1] = el;
             }}
-            onKeyDown={(e) => handleNextRowKeyDown(e, index, 1)}
+            onKeyDown={(e) => handleNextRowKeyDown(e, tableIndex, index, 1)}
           ></Input>
-        ),
+        );
+      },
       width: 300,
     },
     {
@@ -948,59 +966,69 @@ function MakeInquiryTable({
       title: "Name",
       dataIndex: "itemName",
       key: "itemName",
-      render: (text: string, record: InquiryItem, index: number) => (
-        <div
-          style={{
-            whiteSpace: "normal",
-            wordWrap: "break-word",
-            wordBreak: "break-all",
-          }}
-        >
-          <Input.TextArea
-            ref={(el) => {
-              if (!inputRefs.current[index]) {
-                inputRefs.current[index] = [];
-              }
-              inputRefs.current[index][3] = el;
-            }}
-            value={text}
-            onKeyDown={(e) => handleNextRowKeyDown(e, index, 3)}
-            onChange={(e) => {
-              handleInputChange(index, "itemName", e.target.value);
-              updateItemId(index, null);
-            }}
+      render: (text: string, record: InquiryItem, index: number) => {
+        const tableIndex = record.tableNo - 1;
+        return (
+          <div
             style={{
-              borderColor: duplicateStates[record.position]?.name
-                ? "#faad14"
-                : "#d9d9d9",
+              whiteSpace: "normal",
+              wordWrap: "break-word",
+              wordBreak: "break-all",
             }}
-            autoSize={{ minRows: 1, maxRows: 10 }} // 최소 1행, 최대 4행으로 정
-          />
-          {duplicateStates[record.position]?.name && (
-            <div style={{ color: "#faad14", marginTop: "5px" }}>
-              duplicate name.
-            </div>
-          )}
-        </div>
-      ),
+          >
+            <Input.TextArea
+              ref={(el) => {
+                if (!inputRefs.current[tableIndex]) {
+                  inputRefs.current[tableIndex] = [];
+                }
+                if (!inputRefs.current[tableIndex][index]) {
+                  inputRefs.current[tableIndex][index] = [];
+                }
+                inputRefs.current[tableIndex][index][3] = el;
+              }}
+              value={text}
+              onKeyDown={(e) => handleNextRowKeyDown(e, tableIndex, index, 3)}
+              onChange={(e) => {
+                handleInputChange(index, "itemName", e.target.value);
+                updateItemId(index, null);
+              }}
+              style={{
+                borderColor: duplicateStates[record.position]?.name
+                  ? "#faad14"
+                  : "#d9d9d9",
+              }}
+              autoSize={{ minRows: 1, maxRows: 10 }} // 최소 1행, 최대 4행으로 정
+            />
+            {duplicateStates[record.position]?.name && (
+              <div style={{ color: "#faad14", marginTop: "5px" }}>
+                duplicate name.
+              </div>
+            )}
+          </div>
+        );
+      },
       width: 450,
     },
     {
       title: "QTY",
       dataIndex: "qty",
       key: "qty",
-      render: (text: number, record: InquiryItem, index: number) =>
-        record.itemType === "ITEM" ? (
+      render: (text: number, record: InquiryItem, index: number) => {
+        const tableIndex = record.tableNo - 1;
+        return record.itemType === "ITEM" ? (
           <Input
             type="number"
             value={text}
             ref={(el) => {
-              if (!inputRefs.current[index]) {
-                inputRefs.current[index] = [];
+              if (!inputRefs.current[tableIndex]) {
+                inputRefs.current[tableIndex] = [];
               }
-              inputRefs.current[index][4] = el;
+              if (!inputRefs.current[tableIndex][index]) {
+                inputRefs.current[tableIndex][index] = [];
+              }
+              inputRefs.current[tableIndex][index][4] = el;
             }}
-            onKeyDown={(e) => handleNextRowKeyDown(e, index, 4)}
+            onKeyDown={(e) => handleNextRowKeyDown(e, tableIndex, index, 4)}
             onChange={(e) => {
               const value = parseInt(e.target.value, 10);
               handleInputChange(index, "qty", isNaN(value) ? 0 : value);
@@ -1010,14 +1038,18 @@ function MakeInquiryTable({
           <Input
             readOnly
             ref={(el) => {
-              if (!inputRefs.current[index]) {
-                inputRefs.current[index] = [];
+              if (!inputRefs.current[tableIndex]) {
+                inputRefs.current[tableIndex] = [];
               }
-              inputRefs.current[index][4] = el;
+              if (!inputRefs.current[tableIndex][index]) {
+                inputRefs.current[tableIndex][index] = [];
+              }
+              inputRefs.current[tableIndex][index][4] = el;
             }}
-            onKeyDown={(e) => handleNextRowKeyDown(e, index, 4)}
+            onKeyDown={(e) => handleNextRowKeyDown(e, tableIndex, index, 4)}
           ></Input>
-        ),
+        );
+      },
       width: 80,
     },
     {
@@ -1038,16 +1070,20 @@ function MakeInquiryTable({
       ),
       dataIndex: "unit",
       key: "unit",
-      render: (text: string, record: InquiryItem, index: number) =>
-        record.itemType === "ITEM" ? (
+      render: (text: string, record: InquiryItem, index: number) => {
+        const tableIndex = record.tableNo - 1;
+        return record.itemType === "ITEM" ? (
           <Input
             ref={(el) => {
-              if (!inputRefs.current[index]) {
-                inputRefs.current[index] = [];
+              if (!inputRefs.current[tableIndex]) {
+                inputRefs.current[tableIndex] = [];
               }
-              inputRefs.current[index][2] = el;
+              if (!inputRefs.current[tableIndex][index]) {
+                inputRefs.current[tableIndex][index] = [];
+              }
+              inputRefs.current[tableIndex][index][2] = el;
             }}
-            onKeyDown={(e) => handleNextRowKeyDown(e, index, 2)}
+            onKeyDown={(e) => handleNextRowKeyDown(e, tableIndex, index, 2)}
             value={text}
             onBlur={(e) => handleUnitBlur(index, e.target.value)}
             onChange={(e) => handleInputChange(index, "unit", e.target.value)}
@@ -1056,36 +1092,46 @@ function MakeInquiryTable({
           <Input
             readOnly
             ref={(el) => {
-              if (!inputRefs.current[index]) {
-                inputRefs.current[index] = [];
+              if (!inputRefs.current[tableIndex]) {
+                inputRefs.current[tableIndex] = [];
               }
-              inputRefs.current[index][2] = el;
+              if (!inputRefs.current[tableIndex][index]) {
+                inputRefs.current[tableIndex][index] = [];
+              }
+              inputRefs.current[tableIndex][index][2] = el;
             }}
-            onKeyDown={(e) => handleNextRowKeyDown(e, index, 2)}
+            onKeyDown={(e) => handleNextRowKeyDown(e, tableIndex, index, 2)}
           ></Input>
-        ),
+        );
+      },
       width: 110,
     },
     {
       title: "Remark",
       dataIndex: "itemRemark",
       key: "itemRemark",
-      render: (text: string, record: InquiryItem, index: number) => (
-        <Input.TextArea
-          autoSize={{ minRows: 1, maxRows: 10 }}
-          value={text}
-          ref={(el) => {
-            if (!inputRefs.current[index]) {
-              inputRefs.current[index] = [];
+      render: (text: string, record: InquiryItem, index: number) => {
+        const tableIndex = record.tableNo - 1;
+        return (
+          <Input.TextArea
+            autoSize={{ minRows: 1, maxRows: 10 }}
+            value={text}
+            ref={(el) => {
+              if (!inputRefs.current[tableIndex]) {
+                inputRefs.current[tableIndex] = [];
+              }
+              if (!inputRefs.current[tableIndex][index]) {
+                inputRefs.current[tableIndex][index] = [];
+              }
+              inputRefs.current[tableIndex][index][5] = el;
+            }}
+            onKeyDown={(e) => handleNextRowKeyDown(e, tableIndex, index, 5)}
+            onChange={(e) =>
+              handleInputChange(index, "itemRemark", e.target.value)
             }
-            inputRefs.current[index][5] = el;
-          }}
-          onKeyDown={(e) => handleNextRowKeyDown(e, index, 5)}
-          onChange={(e) =>
-            handleInputChange(index, "itemRemark", e.target.value)
-          }
-        />
-      ),
+          />
+        );
+      },
     },
     {
       title: "Action",

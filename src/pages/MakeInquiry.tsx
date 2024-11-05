@@ -283,25 +283,29 @@ const MakeInquiry = () => {
     setModalVisibility(modalType, isVisible);
   };
 
+  const fetchDetail = useCallback(async () => {
+    try {
+      const data = await fetchInquiryDetail(Number(customerInquiryId));
+      setInquiryDetail(data);
+      setIsLoading(false);
+    } catch (error) {
+      console.error("An error occurred while retrieving details:", error);
+      setIsLoading(false);
+    }
+  }, [customerInquiryId]);
+
   // Load document data
   const loadDocData = useCallback(async () => {
     try {
-      const {
-        documentId,
-        docNumber,
-        registerDate,
-        shippingDate,
-        currencyType,
-        currencyValue,
-      } = await fetchDocData();
+      const docData = await fetchDocData();
       setFormValues((prev) => ({
         ...prev,
-        documentId,
-        docNumber,
-        registerDate: dayjs(registerDate),
-        shippingDate: dayjs(shippingDate),
-        currencyType,
-        currency: currencyValue,
+        documentId: docData.documentId,
+        docNumber: docData.docNumber,
+        registerDate: dayjs(docData.registerDate),
+        shippingDate: dayjs(docData.shippingDate),
+        currencyType: docData.currencyType,
+        currency: docData.currencyValue,
       }));
     } catch (error) {
       console.error("Error loading document data:", error);
@@ -311,200 +315,207 @@ const MakeInquiry = () => {
     }
   }, []);
 
-  useEffect(() => {
-    // 데이터 초기화
-    setFormValues(INITIAL_FORM_VALUES);
-    setItems(INITIAL_TABLE_VALUES);
-    setSelectedSuppliers([]);
-    setSelectedSupplierTag([]);
-    setPdfSupplierTag([]);
-    setVesselList([]);
-    setVesselNameList([]);
-    setAutoCompleteOptions([]);
-    setItemCodeOptions([]);
-    setItemNameMap({});
-    setItemIdMap({});
-    setSupplierOptions([]);
-    setInquiryDetail(null);
+  // 데이터 초기화 및 로드
+  const initializeData = useCallback(() => {
+    const resetState = () => {
+      setFormValues(INITIAL_FORM_VALUES);
+      setItems(INITIAL_TABLE_VALUES);
+      setSelectedSuppliers([]);
+      setSelectedSupplierTag([]);
+      setPdfSupplierTag([]);
+      setVesselList([]);
+      setVesselNameList([]);
+      setAutoCompleteOptions([]);
+      setItemCodeOptions([]);
+      setItemNameMap({});
+      setItemIdMap({});
+      setSupplierOptions([]);
+      setInquiryDetail(null);
+    };
+
+    resetState();
+
     if (!customerInquiryId) {
       setIsEditMode(false);
-      setDocDataLoading(true); // 데이터 로딩 상태를 true로 설정
-      loadDocData(); // 초기 데이터 로딩 호출
+      setDocDataLoading(true);
+      loadDocData();
     } else {
       fetchDetail();
-      setDocDataLoading(false); // 데이터 로딩이 완료되면 false로 설정
+      setDocDataLoading(false);
     }
-  }, [customerInquiryId, loadDocData]);
+  }, [customerInquiryId, loadDocData, fetchDetail]);
 
-  const fetchDetail = async () => {
-    try {
-      const data = await fetchInquiryDetail(Number(customerInquiryId));
-      setInquiryDetail(data);
-      setIsLoading(false);
-    } catch (error) {
-      console.error("An error occurred while retrieving details:", error);
-      setIsLoading(false);
-    }
-  };
+  useEffect(() => {
+    initializeData();
+  }, [initializeData]);
 
   // 데이터 로딩 후 상태 업데이트
   useEffect(() => {
-    if (docDataloading) {
+    if (docDataloading || !customerInquiryId || !inquiryDetail) {
       return;
     }
 
-    if (customerInquiryId) {
-      setIsEditMode(true);
+    setIsEditMode(true);
 
-      if (inquiryDetail) {
-        const {
-          documentId,
-          documentNumber,
-          registerDate,
-          shippingDate,
-          companyName,
-          refNumber,
-          currencyType,
-          currency,
-          vesselName,
-          docRemark,
-        } = inquiryDetail.documentInfo;
+    const {
+      documentId,
+      documentNumber: docNumber,
+      registerDate,
+      shippingDate,
+      companyName,
+      refNumber,
+      currencyType,
+      currency,
+      vesselName,
+      docRemark,
+    } = inquiryDetail.documentInfo;
 
-        setFormValues({
-          documentId: documentId,
-          docNumber: documentNumber,
-          registerDate: dayjs(registerDate),
-          shippingDate: dayjs(shippingDate),
-          customer: companyName,
-          vesselName,
-          refNumber,
-          currencyType,
-          currency,
-          remark: docRemark || "",
-          supplierName: "",
-        });
+    // Form 값 업데이트
+    setFormValues({
+      documentId,
+      docNumber,
+      registerDate: dayjs(registerDate),
+      shippingDate: dayjs(shippingDate),
+      customer: companyName,
+      vesselName,
+      refNumber,
+      currencyType,
+      currency,
+      remark: docRemark || "",
+      supplierName: "",
+    });
 
-        // 모든 테이블의 itemDetails를 하나의 배열로 합침
-        const allItemDetails = inquiryDetail.table.reduce<InquiryItem[]>(
-          (acc, table) => [...acc, ...table.itemDetails],
-          []
-        );
+    // 아이템 데이터 처리
+    const processItemDetails = () => {
+      const allItemDetails = inquiryDetail.table.reduce<InquiryItem[]>(
+        (acc, table) => [...acc, ...table.itemDetails],
+        []
+      );
 
-        // position 기준으로 정렬
-        const sortedItems = allItemDetails.sort(
-          (a, b) => a.position - b.position
-        );
+      return allItemDetails
+        .sort((a, b) => a.position - b.position)
+        .map((item) => ({
+          itemDetailId: item.itemDetailId,
+          itemId: item.itemId,
+          position: item.position,
+          itemType: item.itemType as "ITEM" | "MAKER" | "TYPE",
+          itemCode: item.itemCode,
+          itemName: item.itemName,
+          itemRemark: item.itemRemark,
+          qty: item.qty,
+          unit: item.unit,
+          tableNo: item.tableNo,
+        }));
+    };
 
-        setItems(
-          sortedItems.map((item) => ({
-            itemDetailId: item.itemDetailId,
-            itemId: item.itemId,
-            position: item.position,
-            itemType: item.itemType as "ITEM" | "MAKER" | "TYPE",
-            itemCode: item.itemCode,
-            itemName: item.itemName,
-            itemRemark: item.itemRemark,
-            qty: item.qty,
-            unit: item.unit,
-            tableNo: item.tableNo,
-          }))
-        );
+    // 공급자 데이터 처리
+    const processSuppliers = () => {
+      const allItems = inquiryDetail.table.reduce<InquiryItem[]>(
+        (acc, table) => [...acc, ...table.itemDetails],
+        []
+      );
+      const suppliers = getSupplierMap(allItems);
+      setSelectedSupplierTag(suppliers);
+      setSelectedSuppliers(suppliers);
+    };
 
-        // suppliers 정보가 필요한 경우
-        const suppliers = getSupplierMap(
-          inquiryDetail.table.reduce<InquiryItem[]>(
-            (acc, table) => [...acc, ...table.itemDetails],
-            []
-          )
-        );
-
-        setSelectedSupplierTag(suppliers);
-        setSelectedSuppliers(suppliers);
-      }
-      setIsLoading(false);
-    }
+    setItems(processItemDetails());
+    processSuppliers();
+    setIsLoading(false);
   }, [docDataloading, customerInquiryId, inquiryDetail]);
 
   useEffect(() => {
+    const resetCompanyData = () => {
+      setCompanyNameList([]);
+      setSelectedCustomerId(null);
+      setVesselNameList([]);
+      setVesselList([]);
+    };
+
+    const updateVesselData = (selectedCustomer: any) => {
+      setSelectedCustomerId(selectedCustomer.id);
+      setVesselNameList(
+        selectedCustomer.vesselList.map((v: any) => ({
+          id: v.id,
+          name: v.vesselName,
+          imoNumber: v.imoNumber,
+        }))
+      );
+      setVesselList(selectedCustomer.vesselList);
+    };
+
     const searchCompanyName = async (customerName: string) => {
       try {
         const { isExist, customerDetailResponse } = await fetchCompanyNames(
           customerName
         );
-        if (isExist) {
-          // Map the response to include both companyName and code
-          setCompanyNameList(
-            customerDetailResponse.map((c) => ({
-              companyName: c.companyName,
-              code: c.code,
-            }))
-          );
 
-          const selectedCustomer = customerDetailResponse.find(
-            (c) => c.companyName === customerName || c.code === customerName
-          );
-          if (selectedCustomer) {
-            setSelectedCustomerId(selectedCustomer.id);
-            setVesselNameList(
-              selectedCustomer.vesselList.map((v) => ({
-                id: v.id,
-                name: v.vesselName,
-                imoNumber: v.imoNumber,
-              }))
-            );
-            setVesselList(selectedCustomer.vesselList);
-          } else {
-            setSelectedCustomerId(null);
-            setVesselNameList([]);
-            setVesselList([]);
-          }
-        } else {
-          setCompanyNameList([]);
-          setSelectedCustomerId(null);
-          setVesselNameList([]);
-          setVesselList([]);
+        if (!isExist) {
+          resetCompanyData();
+          return;
         }
+
+        setCompanyNameList(
+          customerDetailResponse.map((c) => ({
+            companyName: c.companyName,
+            code: c.code,
+          }))
+        );
+
+        const selectedCustomer = customerDetailResponse.find(
+          (c) => c.companyName === customerName || c.code === customerName
+        );
+
+        selectedCustomer
+          ? updateVesselData(selectedCustomer)
+          : resetCompanyData();
       } catch (error) {
         console.error("Error fetching company name:", error);
+        resetCompanyData();
       }
     };
 
-    if ((formValues.customer + "").trim() !== "") {
-      searchCompanyName(formValues.customer);
-    } else {
-      setCompanyNameList([]);
-      setSelectedCustomerId(null);
-      setVesselNameList([]);
-      setVesselList([]);
-    }
+    const customerName = (formValues.customer + "").trim();
+    customerName ? searchCompanyName(customerName) : resetCompanyData();
   }, [formValues.customer, isCustomerModalOpen, isVesselModalOpen]);
 
   useEffect(() => {
-    const selectedVessel = vesselList.find(
-      (v) => v.vesselName === formValues.vesselName
-    );
-    setSelectedVessel(selectedVessel ?? null);
+    const updateSelectedVessel = () => {
+      const vessel = vesselList.find(
+        (v) => v.vesselName === formValues.vesselName
+      );
+      setSelectedVessel(vessel ?? null);
+    };
+
+    updateSelectedVessel();
   }, [formValues.vesselName, vesselList]);
 
   useEffect(() => {
-    const searchTerm = formValues.customer.toLowerCase();
+    const getFilteredCompanyOptions = () => {
+      const searchTerm = formValues.customer.toLowerCase();
 
-    const filteredOptions = companyNameList
-      .filter(
-        (item) =>
-          item.companyName.toLowerCase().includes(searchTerm) ||
-          item.code.toLowerCase().includes(searchTerm)
-      )
-      .map((item) => item.companyName) // 배열의 값만 가져옴
-      .filter((value, index, self) => self.indexOf(value) === index) // 중복 제거
+      return companyNameList
+        .filter((item) => {
+          const companyName = item.companyName.toLowerCase();
+          const code = item.code.toLowerCase();
+          return companyName.includes(searchTerm) || code.includes(searchTerm);
+        })
+        .map((item) => item.companyName)
+        .filter((value, index, self) => self.indexOf(value) === index)
+        .map((name) => ({ value: name }));
+    };
 
-      .map((item) => ({ value: item })); // 객체 형태로 변환
-
+    const filteredOptions = getFilteredCompanyOptions();
     setAutoCompleteOptions(filteredOptions);
   }, [companyNameList, formValues.customer]);
 
   const handleInputChange = useCallback(
     (index: number, field: keyof InquiryItem, value: string | number) => {
+      const updateItem = (item: InquiryItem) => ({
+        ...item,
+        [field]: value,
+      });
+
       setItems((prevItems) => {
         const updatedItems = [...prevItems];
         const itemToUpdate = updatedItems.find(
@@ -512,32 +523,26 @@ const MakeInquiry = () => {
         );
 
         if (itemToUpdate) {
-          updatedItems[index] = {
-            ...updatedItems[index],
-            [field]: value,
-          };
+          updatedItems[index] = updateItem(updatedItems[index]);
         }
         return updatedItems;
       });
 
-      setTables((prevTables) => {
-        return prevTables.map((table, tableIndex) => {
-          if (tableIndex + 1 === currentTableNo) {
-            const updatedItemDetails = [...table.itemDetails];
-            if (index < updatedItemDetails.length) {
-              updatedItemDetails[index] = {
-                ...updatedItemDetails[index],
-                [field]: value,
-              };
-            }
-            return {
-              ...table,
-              itemDetails: updatedItemDetails,
-            };
+      setTables((prevTables) =>
+        prevTables.map((table, tableIndex) => {
+          if (tableIndex + 1 !== currentTableNo) return table;
+
+          const updatedItemDetails = [...table.itemDetails];
+          if (index < updatedItemDetails.length) {
+            updatedItemDetails[index] = updateItem(updatedItemDetails[index]);
           }
-          return table;
-        });
-      });
+
+          return {
+            ...table,
+            itemDetails: updatedItemDetails,
+          };
+        })
+      );
     },
     [currentTableNo]
   );
@@ -554,110 +559,100 @@ const MakeInquiry = () => {
       (v) => v.vesselName === formValues.vesselName
     );
 
-    try {
-      // imoNumber와 hullNumber 체크
-      if (!selectedVessel?.imoNumber || !selectedVessel?.hullNumber) {
-        const result = await new Promise((resolve) => {
-          Modal.confirm({
-            title: "IMO number or Hull number is missing.",
-            content: (
-              <>
-                <span
-                  style={{ color: selectedVessel?.vesselName ? "" : "red" }}
-                >
-                  Vessel name: {selectedVessel?.vesselName}
-                </span>
-                <br />
-                <span style={{ color: selectedVessel?.imoNumber ? "" : "red" }}>
-                  IMO number: {selectedVessel?.imoNumber}
-                </span>
-                <br />
-                <span
-                  style={{ color: selectedVessel?.hullNumber ? "" : "red" }}
-                >
-                  Hull number: {selectedVessel?.hullNumber}
-                </span>
-                <br />
-                <br />
-                Do you want to proceed with saving?
-              </>
-            ),
-            okText: "Ok",
-            cancelText: "Cancel",
-            onOk: () => resolve(true),
-            onCancel: () => resolve(false),
-          });
-        });
+    // IMO 번호와 Hull 번호 검증
+    const isVesselInfoValid = await validateVesselInfo(selectedVessel);
+    if (!isVesselInfoValid) return null;
 
-        if (!result) {
-          return null; // 저장 취소
-        }
-      }
-
-      if (isDuplicate) {
-        const result = await new Promise((resolve) => {
-          Modal.confirm({
-            title: "There are duplicate items.",
-            content: "Do you want to save?",
-            okText: "Ok",
-            cancelText: "Cancel",
-            onOk: () => resolve(true),
-            onCancel: () => resolve(false),
-          });
-        });
-
-        if (result) {
-          const savedInquiryId = await saveInquiry(); // 저장 후 inquiryId 반환
-          return savedInquiryId;
-        } else {
-          return null; // 저장 취소
-        }
-      } else {
-        const savedInquiryId = await saveInquiry(); // 저장 후 inquiryId 반환
-        return savedInquiryId;
-      }
-    } catch (error) {
-      console.error("An error occurred while saving inquiry:", error);
-      message.error("Retry Please");
-      return null; // 저장 실패 시 null 환
+    // 중복 아이템 검증
+    if (isDuplicate) {
+      const shouldSave = await showDuplicateConfirmModal();
+      if (!shouldSave) return null;
     }
+
+    return await saveInquiry();
   };
 
-  // 저장 로직을 함수로 분리
+  // 선박 정보 검증 모달
+  const validateVesselInfo = async (
+    selectedVessel: VesselList | undefined
+  ): Promise<boolean> => {
+    if (!selectedVessel?.imoNumber || !selectedVessel?.hullNumber) {
+      return await new Promise((resolve) => {
+        Modal.confirm({
+          title: "IMO number or Hull number is missing.",
+          content: (
+            <>
+              <span style={{ color: selectedVessel?.vesselName ? "" : "red" }}>
+                Vessel name: {selectedVessel?.vesselName}
+              </span>
+              <br />
+              <span style={{ color: selectedVessel?.imoNumber ? "" : "red" }}>
+                IMO number: {selectedVessel?.imoNumber}
+              </span>
+              <br />
+              <span style={{ color: selectedVessel?.hullNumber ? "" : "red" }}>
+                Hull number: {selectedVessel?.hullNumber}
+              </span>
+              <br />
+              <br />
+              Do you want to proceed with saving?
+            </>
+          ),
+          okText: "Ok",
+          cancelText: "Cancel",
+          onOk: () => resolve(true),
+          onCancel: () => resolve(false),
+        });
+      });
+    }
+    return true;
+  };
+
+  // 중복 아이템 확인 모달
+  const showDuplicateConfirmModal = async (): Promise<boolean> => {
+    return await new Promise((resolve) => {
+      Modal.confirm({
+        title: "There are duplicate items.",
+        content: "Do you want to save?",
+        okText: "Ok",
+        cancelText: "Cancel",
+        onOk: () => resolve(true),
+        onCancel: () => resolve(false),
+      });
+    });
+  };
+
+  // 저장 로직
   const saveInquiry = async (): Promise<number | null> => {
-    // 선택된 vessel 및 customer 확인
-    const selectedVessel = vesselList.find(
-      (v) => v.vesselName === formValues.vesselName
-    );
+    try {
+      const selectedVessel = vesselList.find(
+        (v) => v.vesselName === formValues.vesselName
+      );
 
-    if (!selectedVessel) {
-      message.error("Please register Vessel!");
-      return null;
-    }
+      if (!selectedVessel) {
+        message.error("Please register Vessel!");
+        return null;
+      }
 
-    if (!selectedCustomerId) {
-      message.error("Please register Customer!");
-      return null;
-    }
+      if (!selectedCustomerId) {
+        message.error("Please register Customer!");
+        return null;
+      }
 
-    // documentInfo 구성
-    const documentInfo = {
-      vesselId: selectedVessel.id,
-      customerId: selectedCustomerId,
-      documentId: formValues.documentId,
-      docNumber: formValues.docNumber,
-      registerDate: formValues.registerDate.format("YYYY-MM-DD"),
-      shippingDate: formValues.shippingDate.format("YYYY-MM-DD"),
-      refNumber: formValues.refNumber,
-      remark: formValues.remark,
-      currencyType: formValues.currencyType,
-      currency: parseFloat(formValues.currency as any),
-    };
+      const documentInfo = {
+        vesselId: selectedVessel.id,
+        customerId: selectedCustomerId,
+        documentId: formValues.documentId,
+        docNumber: formValues.docNumber,
+        registerDate: formValues.registerDate.format("YYYY-MM-DD"),
+        shippingDate: formValues.shippingDate.format("YYYY-MM-DD"),
+        refNumber: formValues.refNumber,
+        remark: formValues.remark,
+        currencyType: formValues.currencyType,
+        currency: parseFloat(formValues.currency as any),
+      };
 
-    // customerInquiryTables 구성
-    const table = tables.map((table, index) => {
-      const tableNo = index + 1;
-      return {
+      const table = tables.map((table, index) => ({
         supplierIdList:
           table.supplierList?.map((supplier) => supplier.supplierId) || [],
         itemDetails: table.itemDetails.map((item) => ({
@@ -670,37 +665,36 @@ const MakeInquiry = () => {
           qty: item.qty,
           unit: item.unit,
           position: item.position,
-          tableNo: tableNo,
+          tableNo: index + 1,
         })),
-      };
-    });
+      }));
 
-    const requestData = {
-      documentInfo,
-      table,
-    };
+      const requestData = { documentInfo, table };
 
-    // Submit the inquiry and get the response
-    const response = await submitInquiry(
-      Number(customerInquiryId),
-      Number(formValues.documentId),
-      requestData,
-      isEditMode
-    );
+      const response = await submitInquiry(
+        Number(customerInquiryId),
+        Number(formValues.documentId),
+        requestData,
+        isEditMode
+      );
 
-    setInquiryId(response);
+      setInquiryId(response);
+      message.success("Saved successfully!");
 
-    message.success("Saved successfully!");
+      const newInquiryDetail = await fetchInquiryDetail(
+        Number(isEditMode ? customerInquiryId : response)
+      );
 
-    const newInquiryDetail = await fetchInquiryDetail(
-      Number(isEditMode ? customerInquiryId : response)
-    );
+      navigate(`/makeinquiry/${response}`, {
+        state: { inquiry: newInquiryDetail },
+      });
 
-    navigate(`/makeinquiry/${response}`, {
-      state: { inquiry: newInquiryDetail },
-    });
-
-    return response;
+      return response;
+    } catch (error) {
+      console.error("An error occurred while saving inquiry:", error);
+      message.error("Retry Please");
+      return null;
+    }
   };
 
   // itemId 업데이트를 별도 수로 분리
@@ -848,7 +842,7 @@ const MakeInquiry = () => {
       )
     );
 
-    // 모든 테이블의 itemDetails를 하나의 배열로 합치기
+    // 모든 테이블의 itemDetails��� 하나의 배��로 합치기
     const allItems = selectedTables.reduce<InquiryItem[]>((acc, table) => {
       return [...acc, ...table.itemDetails];
     }, []);
