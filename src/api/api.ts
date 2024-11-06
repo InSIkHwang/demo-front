@@ -54,6 +54,22 @@ export const postUserLogin = async (email: string, password: string) => {
   }
 };
 
+export const postUserSignUp = async (
+  email: string,
+  password: string,
+  name: string,
+  country: string
+) => {
+  const response = await axios.post("/api/member/signup", {
+    email,
+    password,
+    name,
+    country,
+  });
+
+  return response.data;
+};
+
 export const fetchCustomerDetail = async (customerId: number) => {
   const response = await axios.get(`/api/customers/${customerId}`);
 

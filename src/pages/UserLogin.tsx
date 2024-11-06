@@ -46,16 +46,24 @@ const StyledInput = styled(Input)`
   }
 `;
 
-const StyledButton = styled(Button)`
+const LoginButton = styled(Button)`
   background-color: #1890ff;
   border-color: #1890ff;
   border-radius: 8px;
   padding: 12px;
   font-size: 16px;
+  margin-bottom: 10px;
   &:hover {
     background-color: #40a9ff;
     border-color: #40a9ff;
   }
+`;
+
+const SignUpButton = styled(Button)`
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 16px;
+  margin-bottom: 10px;
 `;
 
 interface UserLoginProps {
@@ -86,7 +94,7 @@ const UserLogin = ({ onLogin }: UserLoginProps) => {
   return (
     <LoginContainer>
       <LoginFormWrapper>
-        <Title>로그인</Title>
+        <Title>Login</Title>
         <StyledForm
           name="login"
           initialValues={{ remember: true }}
@@ -94,22 +102,29 @@ const UserLogin = ({ onLogin }: UserLoginProps) => {
         >
           <Form.Item
             name="email"
-            rules={[{ required: true, message: "이메일을 입력하세요!" }]}
+            rules={[{ required: true, message: "Please enter your email" }]}
           >
-            <StyledInput placeholder="이메일" />
+            <StyledInput placeholder="Email" />
           </Form.Item>
 
           <Form.Item
             name="password"
-            rules={[{ required: true, message: "비밀번호를 입력하세요!" }]}
+            rules={[{ required: true, message: "Please enter your password" }]}
           >
-            <StyledInput.Password placeholder="비밀번호" />
+            <StyledInput.Password placeholder="Password" />
           </Form.Item>
 
           <Form.Item>
-            <StyledButton type="primary" htmlType="submit" block>
-              로그인
-            </StyledButton>
+            <LoginButton type="primary" htmlType="submit" block>
+              Login
+            </LoginButton>
+            <SignUpButton
+              type="default"
+              block
+              onClick={() => navigate("/usersignup")}
+            >
+              Sign Up
+            </SignUpButton>
           </Form.Item>
         </StyledForm>
       </LoginFormWrapper>

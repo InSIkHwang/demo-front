@@ -842,7 +842,7 @@ const MakeInquiry = () => {
       )
     );
 
-    // 모든 테이블의 itemDetails��� 하나의 배��로 합치기
+    // 모든 테이블의 itemDetails 하나의 배열로 합치기
     const allItems = selectedTables.reduce<InquiryItem[]>((acc, table) => {
       return [...acc, ...table.itemDetails];
     }, []);

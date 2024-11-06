@@ -8,7 +8,7 @@ const FooterDiv = styled.div`
   height: 100px;
   font-size: 13px;
   color: #7c7c7c;
-  border-top: 1px solid #7c7c7c;
+  border-top: 1px solid #ccc;
   bottom: 0;
 `;
 

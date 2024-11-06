@@ -19,6 +19,7 @@ import QuotationList from "./pages/QuotationList";
 import TrashList from "./pages/TrashList";
 import OrderList from "./pages/OrderList";
 import AddSupplierOnInquiry from "./pages/AddSupplierOnInquiry";
+import UserSignUp from "./pages/UserSignUp";
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -78,6 +79,7 @@ const App = () => {
             path="/userlogin"
             element={<UserLogin onLogin={handleLogin} />}
           />
+          <Route path="/usersignup" element={<UserSignUp />} />
           <Route
             path="/home"
             element={isAuthenticated ? <Home /> : <Navigate to="/home" />}
