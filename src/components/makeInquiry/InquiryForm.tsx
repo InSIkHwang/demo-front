@@ -224,20 +224,6 @@ const InquiryForm = ({
     fetchCategoryList();
   }, []);
 
-  useEffect(() => {
-    const checkDuplicateOnMount = async () => {
-      if (formValues.docNumber) {
-        const isDuplicate = await chkDuplicateDocNum(
-          formValues.docNumber.trim(),
-          customerInquiryId
-        );
-        setIsDocNumDuplicate(isDuplicate); // 중복 여부 설정
-      }
-    };
-
-    checkDuplicateOnMount();
-  }, [formValues.docNumber, customerInquiryId, setIsDocNumDuplicate]);
-
   const showModal = (type: string) => {
     setSelectedType(type);
     setSupplierSearch("");

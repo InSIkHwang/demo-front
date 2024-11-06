@@ -19,7 +19,7 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import OfferPDFGenerator from "../components/makeOffer/OfferPDFGenerator";
 import OfferMailSender from "../components/makeOffer/OfferSendMail";
 import { InvCharge } from "./../types/types";
-import TotalCardsComponent from "../components/makeOffer/TatalCardsComponent";
+import TotalCardsComponent from "../components/makeOffer/TotalCardsComponent";
 
 const FormContainer = styled.div`
   position: relative;

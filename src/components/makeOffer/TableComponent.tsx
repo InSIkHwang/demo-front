@@ -31,7 +31,7 @@ import { fetchItemData, handleExport, handleOfferExport } from "../../api/api";
 import ExcelUploadModal from "../ExcelUploadModal";
 import { TextAreaRef } from "antd/es/input/TextArea";
 import { debounce } from "lodash";
-import TotalCardsComponent from "./TatalCardsComponent";
+import TotalCardsComponent from "./TotalCardsComponent";
 
 const CustomTable = styled(Table)`
   .ant-table * {

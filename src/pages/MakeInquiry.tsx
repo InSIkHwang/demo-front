@@ -10,6 +10,7 @@ import {
   submitInquiry,
   fetchInquiryDetail,
   searchInquiryWithMaker,
+  chkDuplicateDocNum,
 } from "../api/api";
 import InquiryForm from "../components/makeInquiry/InquiryForm";
 import MakeInquiryTable from "../components/makeInquiry/MakeInquiryTable";
@@ -424,6 +425,20 @@ const MakeInquiry = () => {
     setIsLoading(false);
   }, [docDataloading, customerInquiryId, inquiryDetail]);
 
+  const checkDuplicateOnMount = useCallback(async () => {
+    if (formValues.docNumber) {
+      const isDuplicate = await chkDuplicateDocNum(
+        formValues.docNumber.trim(),
+        Number(customerInquiryId)
+      );
+      setIsDocNumDuplicate(isDuplicate);
+    }
+  }, [formValues.docNumber, customerInquiryId]);
+
+  useEffect(() => {
+    checkDuplicateOnMount();
+  }, [checkDuplicateOnMount]);
+
   useEffect(() => {
     const resetCompanyData = () => {
       setCompanyNameList([]);
@@ -555,6 +570,19 @@ const MakeInquiry = () => {
   };
 
   const handleSubmit = async (): Promise<number | null> => {
+    if (formValues.docNumber) {
+      const isDuplicate = await chkDuplicateDocNum(
+        formValues.docNumber.trim(),
+        Number(customerInquiryId)
+      );
+      setIsDocNumDuplicate(isDuplicate);
+
+      if (isDuplicate) {
+        message.error("Document number is duplicated. please enter another.");
+        return null;
+      }
+    }
+
     const selectedVessel = vesselList.find(
       (v) => v.vesselName === formValues.vesselName
     );
