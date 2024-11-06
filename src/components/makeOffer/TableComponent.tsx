@@ -1111,26 +1111,19 @@ const TableComponent = ({
               }
             }}
             onBlur={() => {
-              handleMarginChange(index, value || 0);
+              // 값이 0으로 시작하고 길이가 1보다 큰 경우 앞의 0 제거
+              const processedValue = String(value).replace(/^0+(?=\d)/, "");
+              handleMarginChange(index, Number(processedValue) || 0);
             }}
           />
         );
       },
     },
   ];
+  console.log(itemDetails);
 
   return (
     <div style={{ overflowX: "auto" }}>
-      <Tooltip title="Download excel file before you send">
-        <Button
-          type="dashed"
-          style={{ margin: "20px 5px" }}
-          onClick={handleDownloadExcel}
-          icon={<FileExcelOutlined />}
-        >
-          Download Excel File
-        </Button>
-      </Tooltip>
       <Tooltip title="Load excel file on your local">
         <Button
           type="dashed"
@@ -1151,6 +1144,18 @@ const TableComponent = ({
           Export Excel
         </Button>
       </Tooltip>
+      <div style={{ float: "right" }}>
+        <Tooltip title="Download excel file before you send">
+          <Button
+            type="dashed"
+            style={{ margin: "20px 5px" }}
+            onClick={handleDownloadExcel}
+            icon={<FileExcelOutlined />}
+          >
+            Download Excel File
+          </Button>
+        </Tooltip>
+      </div>
       <TotalCardsComponent
         finalTotals={tableTotals}
         applyDcAndCharge={applyDcAndCharge}

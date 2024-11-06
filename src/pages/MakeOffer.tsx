@@ -480,18 +480,28 @@ const MakeOffer = () => {
 
         // 저장 후 최신 데이터로 업데이트
         const response = await fetchOfferDetail(loadDocumentId.documentId);
-        setInfo(response);
-        setDataSource({
-          documentInfo: response.documentInfo,
-          response: response.response,
-        });
-        setCurrentDetailItems(response.response[0].itemDetail);
-        setCurrentSupplierInfo(response.response[0].supplierInfo);
-        setCurrentInquiryId(response.response[0].inquiryId);
-        setPdfCustomerTag({
-          id: response.documentInfo.customerId,
-          name: response.documentInfo.companyName,
-        });
+
+        // 현재 선택된 공급업체 찾기
+        const currentSupplier = response.response.find(
+          (supplier: { inquiryId: number }) =>
+            supplier.inquiryId === currentInquiryId
+        );
+
+        if (currentSupplier) {
+          setInfo(response);
+          setDataSource({
+            documentInfo: response.documentInfo,
+            response: response.response,
+          });
+          // 현재 선택된 공급업체의 데이터로 설정
+          setCurrentDetailItems(currentSupplier.itemDetail);
+          setCurrentSupplierInfo(currentSupplier.supplierInfo);
+          setCurrentInquiryId(currentSupplier.inquiryId);
+          setPdfCustomerTag({
+            id: response.documentInfo.customerId,
+            name: response.documentInfo.companyName,
+          });
+        }
       } catch (error) {
         console.error("Error saving data:", error);
         message.error("An error occurred while saving data.");
@@ -718,6 +728,30 @@ const MakeOffer = () => {
       setCombinedItemDetails(selectedItems);
     }
   };
+  // 현재 선택된 공급업체의 최신 itemDetail 정보를 가져옴
+  useEffect(() => {
+    if (dataSource?.response && selectedSupplierIds.length > 0) {
+      const updatedSelectedItems = dataSource.response
+        .filter((resp) =>
+          selectedSupplierIds.includes(resp.supplierInfo.supplierId)
+        )
+        .reduce<any[]>((acc, curr) => {
+          // 현재 선택된 탭의 공급업체인 경우 currentDetailItems 사용
+          if (curr.inquiryId === currentInquiryId) {
+            return [...acc, ...currentDetailItems];
+          }
+          // 다른 공급업체의 경우 원래 itemDetail 사용
+          return [...acc, ...curr.itemDetail];
+        }, []);
+
+      setCombinedItemDetails(updatedSelectedItems);
+    }
+  }, [
+    currentDetailItems,
+    selectedSupplierIds,
+    dataSource?.response,
+    currentInquiryId,
+  ]);
 
   const renderSupplierTabs = () => {
     if (!dataSource?.response || !currentDetailItems || !currentSupplierInfo)
