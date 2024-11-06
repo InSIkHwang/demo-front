@@ -20,7 +20,7 @@ import {
 } from "antd";
 import { ColumnsType } from "antd/es/table";
 import styled from "styled-components";
-import { ItemDetailType } from "../../types/types";
+import { InvCharge, ItemDetailType } from "../../types/types";
 import {
   DeleteOutlined,
   PlusCircleOutlined,
@@ -35,11 +35,11 @@ import TotalCardsComponent from "./TatalCardsComponent";
 
 const CustomTable = styled(Table)`
   .ant-table * {
-    font-size: 12px;
+    font-size: 11px;
   }
 
   .ant-table-cell {
-    padding: 14px 4px !important;
+    padding: 12px 2px !important;
     text-align: center !important;
     align-self: center;
     border: none !important;
@@ -139,10 +139,20 @@ interface TableComponentProps {
     totalSalesAmountGlobal: number;
     totalPurchaseAmountKRW: number;
     totalPurchaseAmountGlobal: number;
+    totalSalesAmountUnDcKRW: number;
+    totalSalesAmountUnDcGlobal: number;
+    totalPurchaseAmountUnDcKRW: number;
+    totalPurchaseAmountUnDcGlobal: number;
     totalProfit: number;
     totalProfitPercent: number;
   };
   applyDcAndCharge: (mode: string) => void;
+  dcInfo: { dcPercent: number; dcKrw: number; dcGlobal: number };
+  setDcInfo: Dispatch<
+    SetStateAction<{ dcPercent: number; dcKrw: number; dcGlobal: number }>
+  >;
+  invChargeList: InvCharge[] | null;
+  setInvChargeList: Dispatch<SetStateAction<InvCharge[] | null>>;
 }
 
 const TableComponent = ({
@@ -158,6 +168,10 @@ const TableComponent = ({
   offerId,
   tableTotals,
   applyDcAndCharge,
+  dcInfo,
+  setDcInfo,
+  invChargeList,
+  setInvChargeList,
 }: TableComponentProps) => {
   const inputRefs = useRef<(TextAreaRef | null)[][]>([]);
   const [itemCodeOptions, setItemCodeOptions] = useState<
@@ -172,8 +186,6 @@ const TableComponent = ({
   const [unitOptions, setUnitOptions] = useState<string[]>(["PCS", "SET"]);
   const [updatedIndex, setUpdatedIndex] = useState<number | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
-
-  console.log(itemDetails);
 
   // 공통 데이터 처리 함수
   const updateDataSource = (
@@ -315,7 +327,7 @@ const TableComponent = ({
     );
 
     setIsDuplicate(hasDuplicate);
-  }, [checkDuplicate, itemDetails]);
+  }, [itemDetails, checkDuplicate]);
 
   const handleAddItem = (index: number) => {
     const newItem: ItemDetailType = {
@@ -501,7 +513,7 @@ const TableComponent = ({
       title: "No.",
       dataIndex: "indexNo",
       key: "indexNo",
-      width: 80,
+      width: 70,
       render: (text: string, record: any, index: number) => {
         if (record.itemType === "DASH") {
           return (
@@ -1077,7 +1089,7 @@ const TableComponent = ({
       ),
       dataIndex: "margin",
       key: "margin",
-      width: 80,
+      width: 60,
       className: "highlight-cell",
 
       render: (text: number, record: any, index: number) => {
@@ -1120,7 +1132,6 @@ const TableComponent = ({
       },
     },
   ];
-  console.log(itemDetails);
 
   return (
     <div style={{ overflowX: "auto" }}>
@@ -1160,6 +1171,11 @@ const TableComponent = ({
         finalTotals={tableTotals}
         applyDcAndCharge={applyDcAndCharge}
         mode={"single"}
+        currency={currency}
+        dcInfo={dcInfo}
+        setDcInfo={setDcInfo}
+        invChargeList={invChargeList}
+        setInvChargeList={setInvChargeList}
       />
       <CustomTable
         rowClassName={(record: any, index) => {

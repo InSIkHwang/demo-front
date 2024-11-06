@@ -1,7 +1,8 @@
-import React, { Dispatch, SetStateAction, useEffect } from "react";
+import React, { Dispatch, SetStateAction, useCallback, useEffect } from "react";
 import { Button, Popover, Input, Form, Tooltip } from "antd";
 import styled from "styled-components";
 import { InvCharge } from "../../types/types";
+import { PercentageOutlined } from "@ant-design/icons";
 
 const InputGroup = styled.div`
   display: flex;
@@ -11,6 +12,16 @@ const InputGroup = styled.div`
 const ChargeBox = styled.div`
   display: flex;
   flex-direction: column;
+`;
+
+const RefreshBtn = styled(Button)`
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s;
 `;
 
 interface ChargeComponentProps {
@@ -60,40 +71,43 @@ const ChargeInputPopover = ({
     return Number((totalSalesAmount * (dcPercent / 100)).toFixed(2));
   };
 
-  const handleDcChange = (key: string, value: number) => {
-    setDcInfo((prevInfo) => {
-      let newDcInfo = { ...prevInfo, [key]: value };
-      const { totalSalesAmountUnDcKRW, totalSalesAmountUnDcGlobal } =
-        finalTotals;
+  const handleDcChange = useCallback(
+    (key: string, value: number) => {
+      setDcInfo((prevInfo) => {
+        let newDcInfo = { ...prevInfo, [key]: value };
+        const { totalSalesAmountUnDcKRW, totalSalesAmountUnDcGlobal } =
+          finalTotals;
 
-      if (key === "dcPercent") {
-        newDcInfo.dcKrw = calculateDcKrw(totalSalesAmountUnDcKRW, value);
-        newDcInfo.dcGlobal = calculateDcGlobal(
-          totalSalesAmountUnDcGlobal,
-          value
-        );
-      } else if (key === "dcKrw") {
-        newDcInfo.dcPercent = calculateDcPercentFromKrw(
-          value,
-          totalSalesAmountUnDcKRW
-        );
-        newDcInfo.dcGlobal = calculateDcGlobal(
-          totalSalesAmountUnDcGlobal,
-          newDcInfo.dcPercent
-        );
-      } else if (key === "dcGlobal") {
-        newDcInfo.dcPercent = Number(
-          ((value / totalSalesAmountUnDcGlobal) * 100).toFixed(2)
-        );
-        newDcInfo.dcKrw = calculateDcKrw(
-          totalSalesAmountUnDcKRW,
-          newDcInfo.dcPercent
-        );
-      }
+        if (key === "dcPercent") {
+          newDcInfo.dcKrw = calculateDcKrw(totalSalesAmountUnDcKRW, value);
+          newDcInfo.dcGlobal = calculateDcGlobal(
+            totalSalesAmountUnDcGlobal,
+            value
+          );
+        } else if (key === "dcKrw") {
+          newDcInfo.dcPercent = calculateDcPercentFromKrw(
+            value,
+            totalSalesAmountUnDcKRW
+          );
+          newDcInfo.dcGlobal = calculateDcGlobal(
+            totalSalesAmountUnDcGlobal,
+            newDcInfo.dcPercent
+          );
+        } else if (key === "dcGlobal") {
+          newDcInfo.dcPercent = Number(
+            ((value / totalSalesAmountUnDcGlobal) * 100).toFixed(2)
+          );
+          newDcInfo.dcKrw = calculateDcKrw(
+            totalSalesAmountUnDcKRW,
+            newDcInfo.dcPercent
+          );
+        }
 
-      return newDcInfo;
-    });
-  };
+        return newDcInfo;
+      });
+    },
+    [finalTotals, setDcInfo]
+  );
 
   const handleChargeChange = (
     index: number,
@@ -140,7 +154,7 @@ const ChargeInputPopover = ({
 
   useEffect(() => {
     handleDcChange("dcPercent", Number(dcInfo.dcPercent));
-  }, [finalTotals]);
+  }, [finalTotals, handleDcChange, dcInfo.dcPercent]);
 
   const content = (
     <Form style={{ maxWidth: 600, paddingBottom: 40 }} layout="horizontal">
@@ -258,8 +272,8 @@ const ChargeInputPopover = ({
         trigger="click"
         placement="bottom"
       >
-        <Tooltip title="write and apply D/C and charges" placement="left">
-          <Button type="dashed">Open Charge Input</Button>
+        <Tooltip title="write and apply D/C and charges" placement="bottomLeft">
+          <RefreshBtn icon={<PercentageOutlined />} />
         </Tooltip>
       </Popover>
     </>

@@ -5,7 +5,6 @@ import {
   Button,
   message,
   Typography,
-  Checkbox,
   Upload,
   Tag,
   Modal,
@@ -16,7 +15,6 @@ import styled from "styled-components";
 import { sendQuotationMail } from "../../api/api";
 import { offerEmailSendData } from "../../types/types";
 import { useNavigate } from "react-router-dom";
-import { CheckboxChangeEvent } from "antd/es/checkbox";
 import LoadingSpinner from "../LoadingSpinner";
 
 const { TextArea } = Input;

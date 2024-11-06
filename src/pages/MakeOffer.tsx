@@ -19,7 +19,6 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import OfferPDFGenerator from "../components/makeOffer/OfferPDFGenerator";
 import OfferMailSender from "../components/makeOffer/OfferSendMail";
 import { InvCharge } from "./../types/types";
-import ChargeInputPopover from "../components/makeOffer/ChargeInputPopover";
 import TotalCardsComponent from "../components/makeOffer/TatalCardsComponent";
 
 const FormContainer = styled.div`
@@ -133,12 +132,88 @@ const MakeOffer = () => {
     loadOfferDetail();
   }, []);
 
+  // 소수점 둘째자리까지 반올림하는 함수
+  const roundToTwoDecimalPlaces = useCallback((value: number) => {
+    return Math.round(value * 100) / 100;
+  }, []);
+
+  // 환율을 적용하여 KRW와 USD를 상호 변환하는 함수
+  const convertCurrency = useCallback(
+    (
+      value: number,
+      currency: number,
+      toCurrency: "KRW" | "USD" | "EUR" | "INR"
+    ) => {
+      if (toCurrency === "KRW") {
+        return roundToTwoDecimalPlaces(value * currency);
+      }
+      return roundToTwoDecimalPlaces(value / currency);
+    },
+    [roundToTwoDecimalPlaces]
+  );
+
+  const handleInputChange = useCallback(
+    (index: number, key: keyof ItemDetailType, value: any) => {
+      setCurrentDetailItems((prevItems) => {
+        if (!prevItems) return []; // prevItems가 undefined인 경우 처리
+
+        const updatedItems = [...prevItems];
+        const currentItem = updatedItems[index];
+
+        if (!currentItem) return prevItems; // 해당 인덱스의 아이템이 없는 경우 처리
+
+        if ((key === "itemName" || key === "itemCode") && currentItem.itemId) {
+          updatedItems[index] = {
+            ...currentItem,
+            [key]: value,
+            itemId: null,
+          };
+        } else {
+          updatedItems[index] = {
+            ...currentItem,
+            [key]: value,
+          };
+        }
+
+        return updatedItems;
+      });
+    },
+    []
+  );
+
+  const updateGlobalPrices = useCallback(() => {
+    setCurrentDetailItems((prevItems) => {
+      if (!prevItems || !currentSupplierInfo) return prevItems; // null/undefined 체크
+
+      return prevItems.map((record) => {
+        if (!record || record.itemType !== "ITEM") return record; // record가 없거나 ITEM이 아닌 경우 처리
+
+        const updatedSalesPriceGlobal = convertCurrency(
+          record.salesPriceKRW,
+          formValues.currency,
+          "USD"
+        );
+        const updatedPurchasePriceGlobal = convertCurrency(
+          record.purchasePriceKRW,
+          formValues.currency,
+          "USD"
+        );
+
+        return {
+          ...record,
+          salesPriceGlobal: updatedSalesPriceGlobal,
+          purchasePriceGlobal: updatedPurchasePriceGlobal,
+        };
+      });
+    });
+  }, [currentSupplierInfo, formValues.currency, convertCurrency]);
+
   // formValues의 currency가 변경될 때 updateGlobalPrices 호출
   useEffect(() => {
     if (formValues?.currency) {
       updateGlobalPrices();
     }
-  }, [formValues?.currency]);
+  }, [formValues?.currency, updateGlobalPrices]);
 
   // 데이터 로드 및 상태 업데이트 함수
   const loadOfferDetail = async () => {
@@ -207,41 +282,6 @@ const MakeOffer = () => {
     (price: number, qty: number) => roundToTwoDecimalPlaces(price * qty),
     []
   );
-  // 환율을 적용하여 KRW와 USD를 상호 변환하는 함수
-  const convertCurrency = (
-    value: number,
-    currency: number,
-    toCurrency: "KRW" | "USD" | "EUR" | "INR"
-  ) => {
-    if (toCurrency === "KRW") {
-      return roundToTwoDecimalPlaces(value * currency);
-    }
-    return roundToTwoDecimalPlaces(value / currency);
-  };
-
-  const handleInputChange = (
-    index: number,
-    key: keyof ItemDetailType,
-    value: any
-  ) => {
-    const updatedItems = [...currentDetailItems];
-    const currentItem = updatedItems[index];
-
-    if ((key === "itemName" || key === "itemCode") && currentItem.itemId) {
-      updatedItems[index] = {
-        ...currentItem,
-        [key]: value,
-        itemId: null,
-      };
-    } else {
-      updatedItems[index] = {
-        ...currentItem,
-        [key]: value,
-      };
-    }
-
-    setCurrentDetailItems(updatedItems);
-  };
 
   const handlePriceInputChange = (
     index: number,
@@ -332,37 +372,6 @@ const MakeOffer = () => {
     value: (typeof formValues)[K]
   ) => {
     setFormValues((prev) => ({ ...prev, [key]: value }));
-  };
-
-  // 소수점 둘째자리까지 반올림하는 함수
-  const roundToTwoDecimalPlaces = (value: number) => {
-    return Math.round(value * 100) / 100;
-  };
-
-  const updateGlobalPrices = () => {
-    if (!currentDetailItems || !currentSupplierInfo) return;
-
-    currentDetailItems.forEach((record, index) => {
-      if (record.itemType === "ITEM") {
-        const updatedSalesPriceGlobal = convertCurrency(
-          record.salesPriceKRW,
-          formValues.currency,
-          "USD"
-        );
-        const updatedPurchasePriceGlobal = convertCurrency(
-          record.purchasePriceKRW,
-          formValues.currency,
-          "USD"
-        );
-
-        handleInputChange(index, "salesPriceGlobal", updatedSalesPriceGlobal);
-        handleInputChange(
-          index,
-          "purchasePriceGlobal",
-          updatedPurchasePriceGlobal
-        );
-      }
-    });
   };
 
   const handleMarginChange = (index: number, marginValue: number) => {
@@ -725,7 +734,23 @@ const MakeOffer = () => {
         .filter((resp) => values.includes(resp.supplierInfo.supplierId))
         .reduce<any[]>((acc, curr) => [...acc, ...curr.itemDetail], []);
 
-      setCombinedItemDetails(selectedItems);
+      // MAKER와 TYPE 아이템의 중복 제거
+      const seenMakerTypes = new Set<string>();
+      const filteredItems = selectedItems.filter((item) => {
+        if (item.itemType === "MAKER" || item.itemType === "TYPE") {
+          // 공백 제거 후 비교
+          const normalizedItemName = item.itemName.replace(/\s+/g, "");
+          const key = `${item.itemType}-${normalizedItemName}`;
+          if (seenMakerTypes.has(key)) {
+            return false; // 중복된 아이템 제거
+          }
+          seenMakerTypes.add(key);
+        }
+        return true;
+      });
+      console.log(filteredItems);
+
+      setCombinedItemDetails(filteredItems);
     }
   };
   // 현재 선택된 공급업체의 최신 itemDetail 정보를 가져옴
@@ -744,7 +769,21 @@ const MakeOffer = () => {
           return [...acc, ...curr.itemDetail];
         }, []);
 
-      setCombinedItemDetails(updatedSelectedItems);
+      // MAKER와 TYPE 아이템의 중복 제거
+      const seenMakerTypes = new Set<string>();
+      const filteredItems = updatedSelectedItems.filter((item) => {
+        if (item.itemType === "MAKER" || item.itemType === "TYPE") {
+          const normalizedItemName = item.itemName.replace(/\s+/g, "");
+          const key = `${item.itemType}-${normalizedItemName}`;
+          if (seenMakerTypes.has(key)) {
+            return false;
+          }
+          seenMakerTypes.add(key);
+        }
+        return true;
+      });
+
+      setCombinedItemDetails(filteredItems);
     }
   }, [
     currentDetailItems,
@@ -775,6 +814,10 @@ const MakeOffer = () => {
             offerId={supplier.inquiryId}
             tableTotals={tableTotals}
             applyDcAndCharge={applyDcAndCharge}
+            dcInfo={dcInfo}
+            setDcInfo={setDcInfo}
+            invChargeList={invChargeList}
+            setInvChargeList={setInvChargeList}
           />
           <Button
             type="primary"
@@ -887,27 +930,15 @@ const MakeOffer = () => {
         />
       </Modal>
       <div style={{ marginTop: 50 }}>
-        <div
-          style={{
-            marginBottom: 20,
-            display: "flex",
-            justifyContent: "flex-end",
-          }}
-        >
-          <ChargeInputPopover
-            currency={formValues.currency}
-            dcInfo={dcInfo}
-            setDcInfo={setDcInfo}
-            invChargeList={invChargeList}
-            setInvChargeList={setInvChargeList}
-            applyDcAndCharge={applyDcAndCharge}
-            finalTotals={finalTotals}
-          />
-        </div>
         <TotalCardsComponent
           finalTotals={finalTotals}
           applyDcAndCharge={applyDcAndCharge}
           mode={"multiple"}
+          currency={formValues.currency}
+          dcInfo={dcInfo}
+          setDcInfo={setDcInfo}
+          invChargeList={invChargeList}
+          setInvChargeList={setInvChargeList}
         />
       </div>
       {pdfCustomerTag && isMailSenderVisible && dataSource && (

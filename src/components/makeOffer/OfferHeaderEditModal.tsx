@@ -57,7 +57,7 @@ PART CONDITION   : `;
     } else {
       setHeaderText("");
     }
-  }, [headerChk]);
+  }, [headerChk, placeholderHeaderText]);
 
   useEffect(() => {
     if (footerChk) {
@@ -65,7 +65,7 @@ PART CONDITION   : `;
     } else {
       setFooterText("");
     }
-  }, [footerChk]);
+  }, [footerChk, placeholderRemarkText]);
 
   const handleSave = () => {
     onSave(headerText, footerText);

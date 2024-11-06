@@ -1,6 +1,9 @@
 import { ReloadOutlined } from "@ant-design/icons";
 import { Button } from "antd";
+import { Dispatch, SetStateAction } from "react";
 import styled from "styled-components";
+import { InvCharge } from "../../types/types";
+import ChargeInputPopover from "./ChargeInputPopover";
 
 interface TotalCardsProps {
   finalTotals: {
@@ -8,14 +11,24 @@ interface TotalCardsProps {
     totalSalesAmountGlobal: number;
     totalPurchaseAmountKRW: number;
     totalPurchaseAmountGlobal: number;
+    totalSalesAmountUnDcKRW: number;
+    totalSalesAmountUnDcGlobal: number;
+    totalPurchaseAmountUnDcKRW: number;
+    totalPurchaseAmountUnDcGlobal: number;
     totalProfit: number;
     totalProfitPercent: number;
   };
   applyDcAndCharge: (mode: string) => void;
   mode: string;
+  currency: number;
+  dcInfo: { dcPercent: number; dcKrw: number; dcGlobal: number };
+  setDcInfo: Dispatch<
+    SetStateAction<{ dcPercent: number; dcKrw: number; dcGlobal: number }>
+  >;
+  invChargeList: InvCharge[] | null;
+  setInvChargeList: Dispatch<SetStateAction<InvCharge[] | null>>;
 }
 const RefreshBtn = styled(Button)`
-  margin-left: 10px;
   width: 32px;
   height: 32px;
   display: flex;
@@ -119,6 +132,11 @@ const TotalCardsComponent = ({
   finalTotals,
   applyDcAndCharge,
   mode,
+  currency,
+  dcInfo,
+  setDcInfo,
+  invChargeList,
+  setInvChargeList,
 }: TotalCardsProps) => {
   return (
     <TotalCardsWrapper>
@@ -176,11 +194,31 @@ const TotalCardsComponent = ({
             %
           </span>
         </TotalCard>
-        <RefreshBtn
-          icon={<ReloadOutlined />}
-          type="primary"
-          onClick={() => applyDcAndCharge(mode)}
-        />
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <RefreshBtn
+            icon={<ReloadOutlined />}
+            type="primary"
+            onClick={() => applyDcAndCharge(mode)}
+          />
+          {mode === "multiple" && (
+            <ChargeInputPopover
+              currency={currency}
+              dcInfo={dcInfo}
+              setDcInfo={setDcInfo}
+              invChargeList={invChargeList}
+              setInvChargeList={setInvChargeList}
+              applyDcAndCharge={applyDcAndCharge}
+              finalTotals={finalTotals}
+            />
+          )}
+        </div>
       </TotalCards>
     </TotalCardsWrapper>
   );

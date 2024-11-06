@@ -1,13 +1,17 @@
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { pdf } from "@react-pdf/renderer";
 import OfferPDFDocument from "./OfferPDFDocument";
 import {
   FormValuesType,
-  InquiryItem,
   InvCharge,
   ItemDetailType,
   offerEmailSendData,
-  SupplierInquiryDetailIF,
 } from "../../types/types";
 import { fetchCustomerDetail } from "../../api/api";
 import { message } from "antd";
@@ -55,7 +59,7 @@ const OfferPDFGenerator = ({
     id: number | null;
   }>({ name: null, id: null, email: null });
 
-  const fetchCustomerInfo = async () => {
+  const fetchCustomerInfo = useCallback(async () => {
     const response = await fetchCustomerDetail(customerTag.id);
     const mappedResponse = {
       name: response.companyName ?? "",
@@ -63,8 +67,9 @@ const OfferPDFGenerator = ({
       id: response.id,
     };
     setCustomerInfo(mappedResponse);
-  };
-  const generateAndSendPDFs = async () => {
+  }, [customerTag.id]);
+
+  const generateAndSendPDFs = useCallback(async () => {
     // Ensure customerInfo is correctly populated
     if (customerInfo === null) {
       message.error("Customer info is incomplete.");
@@ -130,17 +135,29 @@ Thanks & Best Regards`,
     // 최종 파일 및 메일 데이터 상태 업데이트
     setPdfFileData(newFile);
     setMailData(mailData);
-  };
+  }, [
+    customerInfo,
+    language,
+    info,
+    items,
+    pdfHeader,
+    pdfFooter,
+    finalTotals,
+    dcInfo,
+    invChargeList,
+    setMailData,
+    setPdfFileData,
+  ]);
 
   useEffect(() => {
     fetchCustomerInfo();
-  }, [customerTag.id]);
+  }, [fetchCustomerInfo]);
 
   useEffect(() => {
     if (customerInfo.id !== null) {
       generateAndSendPDFs();
     }
-  }, [customerInfo, pdfHeader]);
+  }, [customerInfo, pdfHeader, generateAndSendPDFs]);
 
   return null;
 };

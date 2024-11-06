@@ -197,6 +197,7 @@ const styles = StyleSheet.create({
   desctypeCell: {
     marginLeft: 40,
     fontSize: 8,
+    color: "#34495e",
   },
 });
 
@@ -329,24 +330,24 @@ const renderHeader = (
     <View style={styles.inquiryInfoWrap}>
       <View style={styles.inquiryInfoColumn}>
         <Text style={styles.inquiryInfoText}>
-          MESSERS: {customerName?.split("")}
+          MESSERS : {customerName?.split("")}
         </Text>
         <Text style={[styles.inquiryInfoText]}>
-          VESSEL NAME: {vesselName?.split("")}
+          VESSEL NAME : {vesselName?.split("")}
         </Text>
         <Text style={[styles.inquiryInfoText, { marginBottom: 10 }]}>
-          YOUR REF NO: {refNumber?.split("")}
+          YOUR REF NO. : {refNumber?.split("")}
         </Text>
       </View>
       <View style={[styles.inquiryInfoColumn, { alignItems: "flex-end" }]}>
         <Text style={styles.inquiryInfoText}>
-          REF No: {docNumber?.split("")}
+          REF NO. : {docNumber?.split("")}
         </Text>
         <Text style={styles.inquiryInfoText}>
           {language === "KOR"
-            ? "DATE: " +
+            ? "DATE : " +
               dayjs(registerDate).format("DD MMM, YYYY").toUpperCase()
-            : "DATE: " +
+            : "DATE : " +
               dayjs(registerDate).format("DD MMM, YYYY").toUpperCase()}
         </Text>
       </View>
@@ -401,7 +402,7 @@ const OfferPDFDocument = ({
             <>
               <View>
                 <Text
-                  render={() => `OUR RED NO. : ${info.documentNumber}`}
+                  render={() => `OUR REF NO. : ${info.documentNumber}`}
                   style={{ textAlign: "right" }}
                 />
               </View>
@@ -494,6 +495,7 @@ const OfferPDFDocument = ({
             <View style={styles.tableDCAmount}>
               <Text wrap>DC AMT({dcInfo.dcPercent}%)</Text>
               <Text style={styles.tableTotalAmount} wrap>
+                -
                 {dcAmountGlobal?.toLocaleString("en-US", {
                   style: "currency",
                   currency: info.currencyType,
