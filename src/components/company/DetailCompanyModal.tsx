@@ -84,17 +84,82 @@ const StyledModal = styled(Modal)`
 `;
 
 const StyledFormItem = styled(AntForm.Item)`
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 
   .ant-form-item-label {
     white-space: normal;
     word-wrap: break-word;
     font-weight: 600;
+    color: #2d3748;
+  }
+
+  .ant-input {
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    padding: 8px 12px;
+    transition: all 0.3s ease;
+
+    &:hover,
+    &:focus {
+      border-color: #4299e1;
+      box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.2);
+    }
   }
 
   .ant-input[readonly] {
-    background-color: #f5f5f5;
-    border: 1px solid #d9d9d9;
+    background-color: #f7fafc;
+    border: 1px solid #edf2f7;
+  }
+`;
+
+const StyledCard = styled(Card)`
+  border-radius: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+
+  .ant-card-head {
+    background: #4096ff;
+    border-radius: 16px 16px 0 0;
+    color: white;
+    padding: 16px 24px;
+  }
+
+  .ant-card-body {
+    padding: 24px;
+  }
+`;
+
+const StyledTag = styled(Tag)`
+  border-radius: 20px;
+  padding: 4px 12px;
+  margin: 4px;
+  font-size: 13px;
+  border: none;
+  background: #edf2f7;
+  color: #2d3748;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: #e2e8f0;
+    transform: translateY(-1px);
+  }
+`;
+
+const StyledButton = styled(Button)`
+  border-radius: 10px;
+  height: 38px;
+  padding: 0 20px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  &.ant-btn-primary {
+    background: linear-gradient(135deg, #2c5282 0%, #1a365d 100%);
+    border: none;
   }
 `;
 
@@ -471,7 +536,7 @@ const DetailCompanyModal = ({
         {category === "supplier" && (
           <>
             <Divider />
-            <Card
+            <StyledCard
               title="Category & Maker"
               style={{
                 padding: "16px",
@@ -553,7 +618,7 @@ const DetailCompanyModal = ({
                   </Divider>
                   <Flex gap="4px 0" wrap>
                     {makers.map((maker) => (
-                      <Tag
+                      <StyledTag
                         key={maker}
                         closeIcon={isEditing ? true : null}
                         onClose={
@@ -563,12 +628,12 @@ const DetailCompanyModal = ({
                         }
                       >
                         {maker}
-                      </Tag>
+                      </StyledTag>
                     ))}
                   </Flex>
                 </>
               ))}
-            </Card>
+            </StyledCard>
             <Divider />
           </>
         )}

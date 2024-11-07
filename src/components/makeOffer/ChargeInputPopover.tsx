@@ -14,7 +14,7 @@ const ChargeBox = styled.div`
   flex-direction: column;
 `;
 
-const RefreshBtn = styled(Button)`
+const ChargeBtn = styled(Button)`
   width: 32px;
   height: 32px;
   display: flex;
@@ -273,7 +273,7 @@ const ChargeInputPopover = ({
         placement="bottom"
       >
         <Tooltip title="write and apply D/C and charges" placement="bottomLeft">
-          <RefreshBtn icon={<PercentageOutlined />} />
+          <ChargeBtn icon={<PercentageOutlined />} />
         </Tooltip>
       </Popover>
     </>

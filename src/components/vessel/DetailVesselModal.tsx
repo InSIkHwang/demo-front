@@ -22,18 +22,79 @@ interface ModalProps {
   onUpdate: () => void;
 }
 
+const StyledModal = styled(Modal)`
+  .ant-modal-content {
+    border-radius: 20px;
+    padding: 30px;
+    background: linear-gradient(to bottom right, #ffffff, #f8f9fa);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  }
+
+  .ant-modal-header {
+    border-bottom: none;
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  .ant-modal-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+  }
+
+  .ant-modal-close {
+    top: 24px;
+    right: 24px;
+    transition: transform 0.2s ease;
+
+    &:hover {
+      transform: rotate(90deg);
+    }
+  }
+`;
+
 const StyledFormItem = styled(Form.Item)`
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 
   .ant-form-item-label {
     white-space: normal;
     word-wrap: break-word;
     font-weight: 600;
+    color: #2d3748;
+  }
+
+  .ant-input {
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    padding: 8px 12px;
+    transition: all 0.3s ease;
+
+    &:hover,
+    &:focus {
+      border-color: #4299e1;
+      box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.2);
+    }
   }
 
   .ant-input[readonly] {
-    background-color: #f5f5f5;
-    border: 1px solid #d9d9d9;
+    background-color: #f7fafc;
+    border: 1px solid #edf2f7;
+  }
+`;
+
+const StyledTag = styled(Tag)`
+  border-radius: 20px;
+  padding: 4px 12px;
+  margin: 4px;
+  font-size: 13px;
+  border: none;
+  background: #edf2f7;
+  color: #2d3748;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: #e2e8f0;
+    transform: translateY(-1px);
   }
 `;
 
@@ -206,7 +267,7 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
   const customerCompanyName = form.getFieldsValue().customerCompanyName;
 
   return (
-    <Modal
+    <StyledModal
       open={true}
       onCancel={onClose}
       footer={null}
@@ -376,7 +437,7 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
           {formData.customers.map(
             (customer) =>
               customer.companyName && (
-                <Tag key={customer.id}>{customer.companyName}</Tag>
+                <StyledTag key={customer.id}>{customer.companyName}</StyledTag>
               )
           )}
         </StyledFormItem>
@@ -433,7 +494,7 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
           </Button>
         </ButtonGroup>
       </Form>
-    </Modal>
+    </StyledModal>
   );
 };
 

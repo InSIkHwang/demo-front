@@ -30,8 +30,8 @@ const StyledHeader = styled.header`
 `;
 
 const HeaderTitle = styled.div`
-  font-size: 24px;
-  font-weight: bold;
+  font-size: 26px;
+  font-weight: 800;
   margin-left: 20px;
   flex-grow: 1;
 `;
@@ -64,9 +64,20 @@ const HeaderMenuBtnIcon = styled(FontAwesomeIcon)`
 
 const UserBox = styled.div`
   cursor: pointer;
-  margin-right: 50px;
+  margin-right: 30px;
   display: flex;
   align-items: center;
+  padding: 8px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+  }
 `;
 
 const UserLogin = styled.div`
@@ -85,28 +96,39 @@ const SideMenu = styled(motion.div)`
   left: 0;
   height: calc(100% - 70px);
   width: 300px;
-  background-color: #212529; /* Darker background for contrast */
+  background: rgba(33, 37, 41, 0.95);
+  backdrop-filter: blur(10px);
   color: white;
-  padding: 20px;
+  padding: 24px;
   z-index: 2000;
   overflow: hidden;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
-  border-right: 1px solid #343a40;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
 `;
 
 const MenuItem = styled.div`
-  margin: 10px 0;
-  font-size: 16px;
+  margin: 8px 0;
+  font-size: 15px;
   display: flex;
   align-items: center;
-  padding: 10px 20px;
+  padding: 12px 20px;
   cursor: pointer;
-  border-radius: 8px;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 
   &:hover {
-    background-color: #495057; /* Subtle hover effect */
-    color: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(5px);
+  }
+
+  svg {
+    transition: all 0.3s ease;
+  }
+
+  &:hover svg {
+    transform: scale(1.1);
   }
 `;
 
@@ -115,13 +137,15 @@ interface SubMenuProps {
 }
 
 const SubMenu = styled.div<SubMenuProps>`
-  margin-left: 20px;
+  margin-left: 24px;
   font-size: 14px;
-  display: ${({ $isOpen }) => ($isOpen ? "block" : "none")};
+  max-height: ${({ $isOpen }) => ($isOpen ? "500px" : "0")};
+  opacity: ${({ $isOpen }) => ($isOpen ? "1" : "0")};
+  overflow: hidden;
   padding-left: 20px;
-  border-left: 2px solid #495057;
-  margin-bottom: 10px;
-  transition: max-height 0.3s ease;
+  border-left: 2px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: ${({ $isOpen }) => ($isOpen ? "10px" : "0")};
+  transition: all 0.3s ease;
 `;
 
 const menuVariants = {
@@ -129,13 +153,14 @@ const menuVariants = {
   closed: { x: "-100%", opacity: 0 },
 };
 
-const Backdrop = styled.div`
+const Backdrop = styled(motion.div)`
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); /* Slightly lighter background */
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
   z-index: 1999;
 `;
 

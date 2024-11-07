@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import styled from "styled-components";
 import { Button, Divider, FloatButton, message, Modal, Select } from "antd";
 import { FileSearchOutlined } from "@ant-design/icons";
@@ -600,7 +600,7 @@ const MakeInquiry = () => {
     return await saveInquiry();
   };
 
-  // 선박 정보 검증 모달
+  // 선박 검증 모달
   const validateVesselInfo = async (
     selectedVessel: VesselList | undefined
   ): Promise<boolean> => {
@@ -804,23 +804,26 @@ const MakeInquiry = () => {
     setShowPDFPreview((prevState) => !prevState);
   };
 
-  const handleLanguageChange = (value: string, id: number) => {
-    // pdfSupplierTag 업데이트
-    setPdfSupplierTag((prevTags) => {
-      const updatedTags = prevTags.map((tag) =>
-        tag.id === id ? { ...tag, communicationLanguage: value } : tag
-      );
-      return updatedTags;
-    });
+  const handleLanguageChange = useCallback((value: string, id: number) => {
+    // tables 상태 업데이트를 통해 한 번에 처리
+    setTables((prevTables) =>
+      prevTables.map((table) => ({
+        ...table,
+        supplierList: table.supplierList?.map((supplier) =>
+          supplier.supplierId === id
+            ? { ...supplier, communicationLanguage: value }
+            : supplier
+        ),
+      }))
+    );
 
-    // selectedSupplierTag 업데이트
-    setSelectedSupplierTag((prevTags) => {
-      const updatedSelectedTags = prevTags.map((tag) =>
+    // PDF 생성용 태그만 별도 업데이트
+    setPdfSupplierTag((prevTags) =>
+      prevTags.map((tag) =>
         tag.id === id ? { ...tag, communicationLanguage: value } : tag
-      );
-      return updatedSelectedTags;
-    });
-  };
+      )
+    );
+  }, []);
 
   const fetchInquirySearchResults = async () => {
     if (!inquirySearchMakerName) return;
@@ -905,6 +908,11 @@ const MakeInquiry = () => {
 
     return Array.from(supplierMap.values());
   }, [tables]);
+
+  const memoizedSuppliers = useMemo(
+    () => getAllTableSuppliers(),
+    [getAllTableSuppliers]
+  );
 
   if (docDataloading || isLoading) {
     return <LoadingSpinner />;
@@ -1090,10 +1098,10 @@ const MakeInquiry = () => {
       </div>
       {isMailSenderVisible && (
         <PDFGenerator
-          selectedSupplierTag={getAllTableSuppliers()}
+          selectedSupplierTag={memoizedSuppliers}
           formValues={formValues}
           setMailDataList={setMailDataList}
-          items={getSelectedTableItems()} // 선택된 테이블의 아이템들만 전달
+          items={getSelectedTableItems()}
           vesselInfo={selectedVessel}
           pdfHeader={pdfHeader}
           setPdfFileData={setPdfFileData}
@@ -1103,7 +1111,7 @@ const MakeInquiry = () => {
       {showPDFPreview && (
         <PDFDocument
           formValues={formValues}
-          items={getSelectedTableItems()} // 선택된 테이블의 아이템들만 전달
+          items={getSelectedTableItems()}
           supplier={pdfSupplierTag[0]}
           vesselInfo={selectedVessel}
           pdfHeader={pdfHeader}

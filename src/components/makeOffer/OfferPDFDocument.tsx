@@ -472,6 +472,7 @@ const OfferPDFDocument = ({
           </View>
           {renderTableRows(items)}
           <View
+            wrap={false}
             style={[
               styles.tableTotalAmount,
               {
@@ -492,7 +493,7 @@ const OfferPDFDocument = ({
             </Text>
           </View>
           {dcInfo.dcPercent && dcInfo.dcPercent !== 0 && (
-            <View style={styles.tableDCAmount}>
+            <View style={styles.tableDCAmount} wrap={false}>
               <Text wrap>DC AMT({dcInfo.dcPercent}%)</Text>
               <Text style={styles.tableTotalAmount} wrap>
                 -
@@ -506,7 +507,7 @@ const OfferPDFDocument = ({
             </View>
           )}
           {invChargeList && invChargeList.length > 0 && (
-            <View>
+            <View wrap={false}>
               {invChargeList.map((charge) => (
                 <View key={charge.invChargeId} style={styles.tableDCAmount}>
                   <Text wrap>{charge.customCharge}</Text>
@@ -526,6 +527,7 @@ const OfferPDFDocument = ({
           {(dcInfo.dcPercent ||
             (invChargeList && invChargeList.length > 0)) && (
             <View
+              wrap={false}
               style={[
                 styles.tableTotalAmount,
                 {
