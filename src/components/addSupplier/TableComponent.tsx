@@ -16,6 +16,7 @@ const CustomTable = styled(Table)`
   .ant-table-cell {
     border-inline-end: 1px solid #d1d1d1 !important;
     border-bottom: 1px solid #d1d1d1 !important;
+    text-align: center;
   }
 
   .maker-row {
@@ -65,7 +66,7 @@ const TableComponent = ({ items }: TableComponentProps) => {
       title: "No.",
       dataIndex: "no",
       key: "no",
-      width: 0,
+      width: 80,
       render: (_: any, record: any, index: number) => {
         const filteredIndex = items
           .filter((item: any) => item.itemType === "ITEM")
@@ -80,6 +81,7 @@ const TableComponent = ({ items }: TableComponentProps) => {
       title: "PartNo.",
       dataIndex: "itemCode",
       key: "itemCode",
+      width: 300,
       render: (text: string, record: InquiryItem) =>
         record.itemType === "ITEM" ? (
           <span>{text}</span>
@@ -91,6 +93,7 @@ const TableComponent = ({ items }: TableComponentProps) => {
       title: "OPT.",
       dataIndex: "itemType",
       key: "itemType",
+      width: 120,
       render: (text: string, record: InquiryItem) =>
         record.itemType === "ITEM" ? (
           <span>{text}</span>
@@ -103,12 +106,14 @@ const TableComponent = ({ items }: TableComponentProps) => {
       title: "Name",
       dataIndex: "itemName",
       key: "itemName",
+      width: 600,
       render: (text: string) => <span>{text}</span>,
     },
     {
       title: "Qty",
       dataIndex: "qty",
       key: "qty",
+      width: 80,
       render: (text: number, record: InquiryItem) =>
         record.itemType === "ITEM" ? <span>{text}</span> : null,
     },
@@ -116,6 +121,7 @@ const TableComponent = ({ items }: TableComponentProps) => {
       title: "Unit",
       dataIndex: "unit",
       key: "unit",
+      width: 80,
       render: (text: number, record: InquiryItem) =>
         record.itemType === "ITEM" ? <span>{text}</span> : null,
     },

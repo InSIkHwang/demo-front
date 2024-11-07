@@ -131,30 +131,23 @@ const MailSenderModal = ({
   );
 
   useEffect(() => {
-    // mailDataList가 변경될 때마다 폼 데이터 설정
+    // 기존 폼 데이터 초기화
+    form.resetFields();
+
+    // 새로운 데이터로 폼 설정
     form.setFieldsValue({
       docNumber: inquiryFormValues.docNumber,
-      mails: currentMailDataList.map((mail, index) => ({
-        toRecipient:
-          form.getFieldValue(["mails", index, "toRecipient"]) ||
-          mail.toRecipient ||
-          "",
-        subject:
-          form.getFieldValue(["mails", index, "subject"]) || mail.subject || "",
-        content:
-          form.getFieldValue(["mails", index, "content"]) || mail.content || "",
-        ccRecipient:
-          form.getFieldValue(["mails", index, "ccRecipient"]) ||
-          mail.ccRecipient ||
-          "",
-        bccRecipient:
-          form.getFieldValue(["mails", index, "bccRecipient"]) ||
-          mail.bccRecipient ||
-          "",
+      mails: mailDataList.map((mail) => ({
+        toRecipient: mail.toRecipient || "",
+        subject: mail.subject || "",
+        content: mail.content || "",
+        ccRecipient: mail.ccRecipient || "",
+        bccRecipient: mail.bccRecipient || "",
       })),
     });
+
     setCurrentMailDataList(mailDataList);
-  }, [mailDataList]);
+  }, [mailDataList, form, inquiryFormValues.docNumber]);
 
   const handleTabChange = (key: string) => {
     setActiveTabIndex(key);

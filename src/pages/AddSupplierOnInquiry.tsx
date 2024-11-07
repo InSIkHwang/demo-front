@@ -274,19 +274,7 @@ const AddSupplierOnInquiry = () => {
             setFileData={setFileData}
             setIsSendMail={setIsSendMail}
             getItemsForSupplier={(supplierId) => {
-              // 새로운 prop 추가
-              const selectedTables = tables.filter((table) =>
-                table.supplierList?.some(
-                  (supplier) => supplier.supplierId === supplierId
-                )
-              );
-              const allItems = selectedTables.reduce<InquiryItem[]>(
-                (acc, table) => {
-                  return [...acc, ...table.itemDetails];
-                },
-                []
-              );
-              return allItems.sort((a, b) => a.position - b.position);
+              return items;
             }}
             vesselInfo={selectedVessel}
             pdfHeader={pdfHeader}

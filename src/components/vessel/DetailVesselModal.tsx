@@ -204,7 +204,6 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
   };
 
   const customerCompanyName = form.getFieldsValue().customerCompanyName;
-  console.log(vessel);
 
   return (
     <Modal

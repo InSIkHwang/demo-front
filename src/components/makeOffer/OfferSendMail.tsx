@@ -84,7 +84,6 @@ const OfferMailSender = ({
     subject: mailData?.subject ?? "",
     content: mailData?.content ?? "",
   };
-  console.log(inquiryFormValues);
 
   const onFinish = async (values: any) => {
     setLoading(true);

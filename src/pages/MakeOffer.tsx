@@ -801,8 +801,6 @@ const MakeOffer = () => {
         message.error("Document number is missing.");
         return;
       }
-      console.log(currentDetailItems);
-
       navigate(
         `/addsupplierininquiry/${dataSource.documentInfo.documentNumber}`,
         {
