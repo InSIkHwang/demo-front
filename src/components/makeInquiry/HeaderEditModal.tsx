@@ -86,10 +86,10 @@ const HeaderEditModal = ({
       onCancel={onClose}
       footer={[
         <Button key="cancel" onClick={onClose}>
-          취소
+          Cancel
         </Button>,
         <Button key="save" type="primary" onClick={handleSave}>
-          저장
+          Save
         </Button>,
       ]}
     >

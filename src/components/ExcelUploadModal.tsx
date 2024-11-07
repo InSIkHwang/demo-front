@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Modal, Upload, Table, message, Button, Spin, Select } from "antd";
+import { Modal, Upload, Table, Button, Spin, Select } from "antd";
 import { DeleteOutlined, UploadOutlined } from "@ant-design/icons";
 import * as XLSX from "xlsx";
 import styled from "styled-components";

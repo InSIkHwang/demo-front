@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Table, Typography, Card, message, Divider } from "antd";
+import { Table, Card, message, Divider } from "antd";
 import styled from "styled-components";
 import { fetchHome } from "../api/api";
-
-const { Title } = Typography;
 
 interface CustomerInquiry {
   customInquiryId: number;

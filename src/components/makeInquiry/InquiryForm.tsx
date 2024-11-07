@@ -76,6 +76,14 @@ const StyledCheckbox = styled(Checkbox)`
   margin-right: 8px;
 `;
 
+const StyledTag = styled(Tag)`
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-weight: 500;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+`;
+
 interface FormValues {
   documentId: number | null;
   docNumber: string;
@@ -748,7 +756,7 @@ const InquiryForm = ({
                 overlayInnerStyle={{ fontSize: 12 }}
                 color="red"
               >
-                <Tag
+                <StyledTag
                   key={supplier.id}
                   color={supplier.supplierRemark ? "red" : "default"}
                   style={{
@@ -756,7 +764,7 @@ const InquiryForm = ({
                   }}
                 >
                   {supplier.code}
-                </Tag>
+                </StyledTag>
               </Tooltip>
             ))}
           </SearchBox>

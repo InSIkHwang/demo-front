@@ -1,5 +1,12 @@
 import { useState, useEffect } from "react";
-import { Table, Button as AntButton, Pagination, Tag, Empty } from "antd";
+import {
+  Table,
+  Button as AntButton,
+  Pagination,
+  Tag,
+  Empty,
+  Divider,
+} from "antd";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 import { fetchOrderList } from "../api/api";
@@ -49,6 +56,14 @@ const Button = styled(AntButton)`
 const PaginationWrapper = styled(Pagination)`
   margin-top: 20px;
   justify-content: center;
+`;
+
+const StyledTag = styled(Tag)`
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-weight: 500;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
 `;
 
 const columns: ColumnsType<orderAllResponses> = [
@@ -128,7 +143,7 @@ const columns: ColumnsType<orderAllResponses> = [
         default:
           color = "cornflowerblue";
       }
-      return <Tag color={color}>{status}</Tag>;
+      return <StyledTag color={color}>{status}</StyledTag>;
     },
   },
 ];
@@ -260,6 +275,7 @@ const OrderList = () => {
             </Button>
           </SearchBar> */}
         </TableHeader>
+        <Divider />
         {data.length > 0 ? ( // 데이터가 있을 때만 페이지네이션을 표시
           <>
             <Table

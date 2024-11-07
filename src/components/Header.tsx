@@ -5,7 +5,6 @@ import {
   faBars,
   faCaretDown,
   faCaretUp,
-  faDollarSign,
   faCode,
   faSignOutAlt,
   faSignInAlt,
@@ -31,7 +30,7 @@ const StyledHeader = styled.header`
 
 const HeaderTitle = styled.div`
   font-size: 26px;
-  font-weight: 800;
+  font-weight: 700;
   margin-left: 20px;
   flex-grow: 1;
 `;

@@ -6,18 +6,13 @@ import {
   Select,
   Pagination,
   DatePicker,
-  Card,
   message,
   Tag,
+  Divider,
 } from "antd";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
-import styled, { keyframes } from "styled-components";
-import {
-  addSupplierFetchData,
-  fetchOfferDetail,
-  fetchOfferList,
-  searchOfferList,
-} from "../api/api";
+import styled from "styled-components";
+import { fetchOfferList, searchOfferList } from "../api/api";
 import { useNavigate } from "react-router-dom";
 import type { ColumnsType } from "antd/es/table";
 import type { SupplierInquiryListIF } from "../types/types";
@@ -64,6 +59,14 @@ const Button = styled(AntButton)`
 const PaginationWrapper = styled(Pagination)`
   margin-top: 20px;
   justify-content: center;
+`;
+
+const StyledTag = styled(Tag)`
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-weight: 500;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
 `;
 
 const columns: ColumnsType<SupplierInquiryListIF> = [
@@ -120,7 +123,7 @@ const columns: ColumnsType<SupplierInquiryListIF> = [
         default:
           color = "steelblue";
       }
-      return <Tag color={color}>{status}</Tag>;
+      return <StyledTag color={color}>{status}</StyledTag>;
     },
   },
 ];
@@ -279,6 +282,7 @@ const OfferList = () => {
             </div>
           </SearchBar>
         </TableHeader>
+        <Divider />
         {data.length > 0 && ( // 데이터가 있을 때만 페이지네이션을 표시
           <>
             <Table

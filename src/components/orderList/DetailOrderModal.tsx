@@ -25,7 +25,7 @@ const StyledModal = styled(Modal)`
     display: none;
   }
   .ant-modal-header {
-    background-color: #1890ff;
+    background: #1890ff;
     color: #fff;
     border-bottom: none;
     padding: 5px 0;

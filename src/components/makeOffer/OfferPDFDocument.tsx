@@ -15,13 +15,7 @@ import NotoSerifKRExtraBold from "../../assets/font/NotoSerifKR-ExtraBold.ttf";
 import NotoSerifKR from "../../assets/font/NotoSerifKR-Medium.ttf";
 import NotoSansRegular from "../../assets/font/NotoSansRegular.ttf";
 import logoUrl from "../../assets/logo/baskorea_logo-removebg.png";
-import {
-  FormValuesType,
-  InvCharge,
-  ItemDataType,
-  ItemDetailType,
-  SupplierInquiryDetailIF,
-} from "../../types/types";
+import { FormValuesType, InvCharge, ItemDetailType } from "../../types/types";
 
 // 한글 글꼴 등록
 Font.register({
@@ -398,13 +392,15 @@ const OfferPDFDocument = ({
             margin: "10px 0",
           }}
           fixed
-          render={() => (
+          render={({ pageNumber }) => (
             <>
               <View>
-                <Text
-                  render={() => `OUR REF NO. : ${info.documentNumber}`}
-                  style={{ textAlign: "right" }}
-                />
+                {pageNumber >= 2 && (
+                  <Text
+                    render={() => `OUR REF NO. : ${info.documentNumber}`}
+                    style={{ textAlign: "right" }}
+                  />
+                )}
               </View>
               <View style={{ display: "flex", flexDirection: "row" }}>
                 <Text

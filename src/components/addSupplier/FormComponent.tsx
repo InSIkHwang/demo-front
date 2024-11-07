@@ -14,7 +14,6 @@ import {
 } from "antd";
 import styled from "styled-components";
 import {
-  chkDuplicateDocNum,
   fetchCategory,
   searchSupplier,
   searchSupplierUseMaker,
@@ -68,6 +67,14 @@ const SupplierItem = styled.div`
 
 const StyledCheckbox = styled(Checkbox)`
   margin-right: 8px;
+`;
+
+const StyledTag = styled(Tag)`
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-weight: 500;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
 `;
 
 interface FormValues {
@@ -490,7 +497,7 @@ const FormComponent = ({
             <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
               {selectedSuppliers.map((supplier) => (
                 <Tooltip title={supplier.supplierRemark}>
-                  <Tag
+                  <StyledTag
                     key={supplier.id}
                     closable
                     color={supplier.supplierRemark ? "#f5222d" : "default"}
@@ -505,7 +512,7 @@ const FormComponent = ({
                     }}
                   >
                     {supplier.code}
-                  </Tag>
+                  </StyledTag>
                 </Tooltip>
               ))}
             </div>

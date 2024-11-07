@@ -16,7 +16,6 @@ import InquiryForm from "../components/makeInquiry/InquiryForm";
 import MakeInquiryTable from "../components/makeInquiry/MakeInquiryTable";
 import PDFDocument from "../components/makeInquiry/PDFDocument";
 import {
-  Inquiry,
   InquiryItem,
   InquiryListSupplier,
   emailSendData,

@@ -5,7 +5,6 @@ import React, {
   useEffect,
   useCallback,
   useRef,
-  useMemo,
 } from "react";
 import {
   Table,
@@ -24,12 +23,7 @@ import {
   PlusCircleOutlined,
   CloseCircleOutlined,
 } from "@ant-design/icons";
-import {
-  InquiryItem,
-  InquiryResponse,
-  InquiryListSupplier,
-  InquiryTable,
-} from "../../types/types";
+import { InquiryItem, InquiryResponse, InquiryTable } from "../../types/types";
 import ExcelUploadModal from "../ExcelUploadModal";
 import { ColumnsType } from "antd/es/table";
 import { handleExport } from "../../api/api";

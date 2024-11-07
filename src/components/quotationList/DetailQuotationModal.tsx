@@ -25,47 +25,88 @@ interface DetailQuotationModalProps {
 }
 
 const StyledModal = styled(Modal)`
+  .ant-modal-content {
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  }
+
   .ant-modal-close {
     display: none;
   }
+
   .ant-modal-header {
-    background-color: #1890ff;
+    background: #1890ff;
     color: #fff;
     border-bottom: none;
-    padding: 5px 0;
+    padding: 16px 24px;
+    border-radius: 12px 12px 0 0;
   }
+
   .ant-modal-title {
     color: #fff;
-    font-size: 18px;
-    margin-left: 10px;
+    font-size: 20px;
+    font-weight: 600;
+    margin-left: 0;
   }
+
+  .ant-modal-body {
+    padding: 24px;
+  }
+
   .ant-modal-footer {
-    border-top: none;
+    border-top: 1px solid #f0f0f0;
+    padding: 16px 24px;
+    border-radius: 0 0 12px 12px;
   }
+
+  .ant-descriptions {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    margin-bottom: 16px;
+  }
+
   .ant-descriptions-item-label {
     font-weight: 600;
-    color: #333;
+    color: #1f2937;
+    background-color: #f8fafc;
   }
+
   .descriptions-totals .ant-descriptions-item-label,
   .descriptions-totals .ant-descriptions-item-content {
     text-align: center;
+    background-color: #f8fafc;
   }
+
   .ant-descriptions-item-content {
-    color: #666;
+    color: #4b5563;
   }
-  .item-name-full-width {
-    td {
-      display: block;
-      width: 100%;
-    }
+
+  .ant-table {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   }
-  .ant-table-body {
-    max-height: 250px !important;
+
+  .ant-table-thead > tr > th {
+    background: #f8fafc;
+    color: #1f2937;
+    font-weight: 600;
   }
 `;
 
 const TagStyled = styled(Tag)`
   margin-right: 8px;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-weight: 500;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
 `;
 
 const DividerStyled = styled(Divider)`
@@ -76,9 +117,16 @@ const TableStyled = styled(Table)`
   .ant-table-thead .ant-table-cell {
     font-size: 13px;
     text-align: center;
+    background: #f8fafc;
+    font-weight: 600;
   }
+
   .ant-table-tbody {
     font-size: 13px;
+  }
+
+  .ant-table-tbody > tr:hover > td {
+    background: #f1f5f9;
   }
 `;
 
@@ -86,6 +134,14 @@ const AmountTotal = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-around;
+  padding: 8px;
+  background: #fff;
+  border-radius: 8px;
+
+  span {
+    font-weight: 500;
+    color: #1f2937;
+  }
 `;
 
 // Constants and utility functions
