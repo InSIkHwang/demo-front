@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Button, Divider, message, Modal, Select, Tabs } from "antd";
+import { Button, Divider, message, Modal, Select, Tabs, Tooltip } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 import dayjs from "dayjs";
 import FormComponent from "../components/makeOffer/FormComponent";
@@ -748,7 +749,6 @@ const MakeOffer = () => {
         }
         return true;
       });
-      console.log(filteredItems);
 
       setCombinedItemDetails(filteredItems);
     }
@@ -796,6 +796,25 @@ const MakeOffer = () => {
     if (!dataSource?.response || !currentDetailItems || !currentSupplierInfo)
       return null;
 
+    const handleAddSupplierTab = () => {
+      if (!dataSource?.documentInfo?.documentNumber) {
+        message.error("Document number is missing.");
+        return;
+      }
+      console.log(currentDetailItems);
+
+      navigate(
+        `/addsupplierininquiry/${dataSource.documentInfo.documentNumber}`,
+        {
+          state: {
+            documentInfo: dataSource.documentInfo,
+            itemDetails:
+              currentDetailItems || dataSource.response[0].itemDetail, // 현재 선택된 공급업체의 아이템 데이터
+          },
+        }
+      );
+    };
+
     const items = dataSource.response.map((supplier) => ({
       key: supplier.inquiryId.toString(),
       label: supplier.supplierInfo.supplierName,
@@ -828,12 +847,32 @@ const MakeOffer = () => {
           >
             Save
           </Button>
-          <Divider variant="dashed" style={{ borderColor: "#ccc" }} />
+          <Divider variant="dashed" style={{ borderColor: "#007bff" }}>
+            Integrated data
+          </Divider>
         </>
       ),
     }));
 
-    return <Tabs items={items} type="card" onChange={handleTabChange} />;
+    return (
+      <Tabs
+        items={items}
+        type="card"
+        onChange={handleTabChange}
+        tabBarExtraContent={{
+          right: (
+            <Button
+              type="dashed"
+              icon={<PlusOutlined />}
+              onClick={handleAddSupplierTab}
+              style={{ marginLeft: 8 }}
+            >
+              Add Supplier on Inquiry
+            </Button>
+          ),
+        }}
+      />
+    );
   };
 
   if (isLoading) {
@@ -852,16 +891,20 @@ const MakeOffer = () => {
           offerId={loadDocumentId.documentId}
         />
       )}
-      <Divider variant="dashed" style={{ borderColor: "#ccc" }} />
+      <Divider variant="dashed" style={{ borderColor: "#007bff" }}>
+        Supplier's item data
+      </Divider>
       {dataSource?.response && renderSupplierTabs()}
-      <Button
-        type="primary"
-        onClick={showMailSenderModal}
-        style={{ float: "right", marginTop: 20 }}
-        disabled={!formValues.refNumber}
-      >
-        Send Email
-      </Button>
+      <Tooltip title="Please Save before sending email" placement="topLeft">
+        <Button
+          type="primary"
+          onClick={showMailSenderModal}
+          style={{ float: "right", marginTop: 20 }}
+          disabled={!formValues.refNumber}
+        >
+          Send Email
+        </Button>
+      </Tooltip>
       <Button
         type="default"
         onClick={() => navigate(-1)}
@@ -900,6 +943,7 @@ const MakeOffer = () => {
           style={{ minWidth: 500, marginLeft: 10 }}
           onChange={handleSupplierSelect}
           value={selectedSupplierIds}
+          placeholder="Please select supplier to send email"
         >
           {dataSource?.response.map((item) => (
             <Select.Option
@@ -958,7 +1002,7 @@ const MakeOffer = () => {
       )}
       {showPDFPreview && dataSource && (
         <OfferPDFDocument
-          info={dataSource.documentInfo}
+          info={formValues}
           items={combinedItemDetails}
           pdfHeader={pdfHeader}
           pdfFooter={pdfFooter}

@@ -10,11 +10,7 @@ import {
   Input,
   Typography,
 } from "antd";
-import {
-  Inquiry,
-  InquiryListSupplier,
-  InquiryResponse,
-} from "../../types/types";
+import { InquiryResponse } from "../../types/types";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import {
@@ -242,7 +238,9 @@ const DetailInquiryModal = ({
     index: number;
   }) => (
     <>
-      <Divider orientation="left">Table {index + 1}</Divider>
+      <Divider orientation="left" style={{ borderColor: "#ccc" }}>
+        Table {index + 1}
+      </Divider>
       <div style={{ marginBottom: 20 }}>
         <Typography.Text type="secondary">Suppliers: </Typography.Text>
         {tableData.supplierList.map((supplier: any, idx: number) => (
@@ -271,6 +269,10 @@ const DetailInquiryModal = ({
         open={open}
         onCancel={onClose}
         footer={[
+          <Divider
+            variant="dashed"
+            style={{ borderColor: "#007bff", borderWidth: 1 }}
+          ></Divider>,
           <Button type="dashed" key="copy" onClick={handleCopyClick}>
             Copy to new document
           </Button>,

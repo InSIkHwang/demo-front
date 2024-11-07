@@ -375,6 +375,7 @@ const OfferPDFDocument = ({
   };
   const totalSalesAmountGlobal = calculateTotalSalesAmount(items);
   const dcAmountGlobal = totalSalesAmountGlobal * (dcInfo.dcPercent / 100);
+  console.log(info);
 
   const pdfBody = (
     <Document>

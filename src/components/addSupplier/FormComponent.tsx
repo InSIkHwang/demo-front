@@ -10,6 +10,7 @@ import {
   List,
   Modal,
   Checkbox,
+  Tooltip,
 } from "antd";
 import styled from "styled-components";
 import {
@@ -192,19 +193,11 @@ const FormComponent = ({
 
   const handleAddSelectedSuppliers = () => {
     setSelectedSuppliers((prevSuppliers) => {
-      const updatedSuppliers = [
-        ...prevSuppliers,
-        ...checkedSuppliers.filter(
-          (supplier) =>
-            !prevSuppliers.some(
-              (existingSupplier) => existingSupplier.id === supplier.id
-            )
-        ),
-      ];
-
-      // 플래그 설정 - 자동완성 또는 모달에서 추가된 경우
-      setIsFromAutoComplete(true);
-      return updatedSuppliers;
+      const uniqueIds = new Set(prevSuppliers.map((supplier) => supplier.id));
+      const newSuppliers = checkedSuppliers.filter(
+        (supplier) => !uniqueIds.has(supplier.id)
+      );
+      return [...prevSuppliers, ...newSuppliers];
     });
 
     handleModalClose();
@@ -217,19 +210,6 @@ const FormComponent = ({
       } else {
         return [...prevChecked, supplier];
       }
-    });
-  };
-
-  const removeDuplicates = (
-    arr: { id: number; name: string; code: string; supplierRemark: string }[]
-  ) => {
-    const uniqueIds = new Set<number>();
-    return arr.filter((item) => {
-      if (uniqueIds.has(item.id)) {
-        return false;
-      }
-      uniqueIds.add(item.id);
-      return true;
     });
   };
 
@@ -307,8 +287,6 @@ const FormComponent = ({
     }
   };
 
-  const uniqueSuppliers = removeDuplicates(selectedSuppliers);
-
   const removeListDuplicates = (list: any[]) => {
     const uniqueItems: any[] = [];
     const seenIds = new Set();
@@ -337,6 +315,12 @@ const FormComponent = ({
     } else {
       setCategoryOptions([]);
     }
+  };
+
+  const handleClose = (removedSupplier: any) => {
+    setSelectedSuppliers((prevSuppliers) =>
+      prevSuppliers.filter((supplier) => supplier.id !== removedSupplier.id)
+    );
   };
 
   return (
@@ -416,20 +400,23 @@ const FormComponent = ({
                 onChange={(value) => {
                   handleSearch(value, null);
                 }}
-                onSelect={(value, option: any) => {
-                  const selectedSupplier = option.supplier; // option.supplier를 통해 supplier 객체 접근
-
+                onSelect={(value: string, option: any) => {
+                  const selectedSupplier = option.supplier;
                   if (selectedSupplier) {
-                    setSelectedSuppliers((prevSuppliers) => [
-                      ...prevSuppliers,
-                      selectedSupplier,
-                    ]);
+                    setSelectedSuppliers((prevSuppliers) => {
+                      // 중복 제거를 위한 Set 생성
+                      const uniqueIds = new Set(
+                        prevSuppliers.map((supplier) => supplier.id)
+                      );
 
-                    // 자동완성에서 선택된 경우 플래그 설정
+                      // 이미 존재하는 supplier가 아닌 경우에만 추가
+                      if (!uniqueIds.has(selectedSupplier.id)) {
+                        return [...prevSuppliers, selectedSupplier];
+                      }
+                      return prevSuppliers;
+                    });
                     setIsFromAutoComplete(true);
                   }
-
-                  // 검색창 초기화
                   setSupplierSearch("");
                 }}
                 options={autoSearchSupCompleteOptions} // supplier 객체 포함된 옵션 사용
@@ -500,18 +487,28 @@ const FormComponent = ({
               </Modal>
             )}
             <span style={{ marginRight: 10 }}>Searched Suppliers: </span>
-            {uniqueSuppliers.map((supplier) => (
-              <Tag
-                key={supplier.id}
-                color={supplier.supplierRemark ? "#f5222d" : "default"}
-                style={{
-                  borderColor: tagColors[supplier.id] || "default",
-                  cursor: "pointer",
-                }}
-              >
-                {supplier.code}
-              </Tag>
-            ))}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+              {selectedSuppliers.map((supplier) => (
+                <Tooltip title={supplier.supplierRemark}>
+                  <Tag
+                    key={supplier.id}
+                    closable
+                    color={supplier.supplierRemark ? "#f5222d" : "default"}
+                    style={{
+                      borderColor: tagColors[supplier.id] || "default",
+                      cursor: "pointer",
+                      transition: "all 0.3s",
+                    }}
+                    onClose={(e) => {
+                      e.preventDefault();
+                      handleClose(supplier);
+                    }}
+                  >
+                    {supplier.code}
+                  </Tag>
+                </Tooltip>
+              ))}
+            </div>
           </SearchBox>
         </FormRow>
       </Form>

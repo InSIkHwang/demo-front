@@ -62,7 +62,7 @@ const AddSupplierOnInquiry = () => {
   const location = useLocation();
   const data = location.state;
   const navigate = useNavigate();
-  const [items, setItems] = useState<InquiryItem[]>([]);
+  const [items, setItems] = useState<InquiryItem[]>(data.itemDetails);
   const [selectedVessel, setSelectedVessel] = useState<VesselList | null>(null);
   const [selectedSuppliers, setSelectedSuppliers] = useState<
     {
@@ -73,16 +73,6 @@ const AddSupplierOnInquiry = () => {
       email: string;
       communicationLanguage: string;
       supplierRemark: string;
-    }[]
-  >([]);
-  const [selectedSupplierTag, setSelectedSupplierTag] = useState<
-    {
-      id: number;
-      name: string;
-      korName: string;
-      code: string;
-      email: string;
-      communicationLanguage: string;
     }[]
   >([]);
   const [showPDFPreview, setShowPDFPreview] = useState(false);
@@ -135,26 +125,26 @@ const AddSupplierOnInquiry = () => {
   };
 
   useEffect(() => {
-    if (data) {
+    if (data.documentInfo) {
       // 최초 렌더링 시 data로 formValues 설정
       setFormValues({
-        docNumber: data.documentNumber,
-        registerDate: dayjs(data.registerDate), // 날짜 형식 변환
-        shippingDate: dayjs(data.shippingDate), // 날짜 형식 변환
-        customer: data.companyName, // 회사 이름
-        vesselName: data.vesselName, // 선박 이름
-        refNumber: data.refNumber, // 참조 번호
-        currencyType: data.currencyType, // 통화 유형
-        currency: data.currency, // 통화 금액
-        remark: data.docRemark, // 비고
+        docNumber: data.documentInfo.documentNumber,
+        registerDate: dayjs(data.documentInfo.registerDate), // 날짜 형식 변환
+        shippingDate: dayjs(data.documentInfo.shippingDate), // 날짜 형식 변환
+        customer: data.documentInfo.companyName, // 회사 이름
+        vesselName: data.documentInfo.vesselName, // 선박 이름
+        refNumber: data.documentInfo.refNumber, // 참조 번호
+        currencyType: data.documentInfo.currencyType, // 통화 유형
+        currency: data.documentInfo.currency, // 통화 금액
+        remark: data.documentInfo.remark, // 비고
         supplierName: "", // 공급자 이름은 초기값으로 설정
       });
 
       // inquiryItemDetails를 items로 설정
-      setItems(data.inquiryItemDetails);
+      setItems(data.itemDetails);
       setIsLoading(false);
 
-      fetchVesselInfo(data.vesselId);
+      fetchVesselInfo(data.documentInfo.vesselId);
     }
   }, []);
 
@@ -208,7 +198,7 @@ const AddSupplierOnInquiry = () => {
     });
 
     // selectedSupplierTag 업데이트
-    setSelectedSupplierTag((prevTags) => {
+    setSelectedSuppliers((prevTags) => {
       const updatedSelectedTags = prevTags.map((tag) =>
         tag.id === id ? { ...tag, communicationLanguage: value } : tag
       );
@@ -274,34 +264,36 @@ const AddSupplierOnInquiry = () => {
         footer={null}
         width={1200}
       >
-        <MailSenderModal
-          mode="addSupplier"
-          mailDataList={mailDataList}
-          inquiryFormValues={formValues}
-          handleSubmit={handleSubmit}
-          selectedSupplierTag={selectedSupplierTag}
-          setFileData={setFileData}
-          setIsSendMail={setIsSendMail}
-          getItemsForSupplier={(supplierId) => {
-            // 새로운 prop 추가
-            const selectedTables = tables.filter((table) =>
-              table.supplierList?.some(
-                (supplier) => supplier.supplierId === supplierId
-              )
-            );
-            const allItems = selectedTables.reduce<InquiryItem[]>(
-              (acc, table) => {
-                return [...acc, ...table.itemDetails];
-              },
-              []
-            );
-            return allItems.sort((a, b) => a.position - b.position);
-          }}
-          vesselInfo={selectedVessel}
-          pdfHeader={pdfHeader}
-          setPdfFileData={setPdfFileData}
-          handleLanguageChange={handleLanguageChange}
-        />
+        {mailDataList.length > 0 && (
+          <MailSenderModal
+            mode="addSupplier"
+            mailDataList={mailDataList}
+            inquiryFormValues={formValues}
+            handleSubmit={handleSubmit}
+            selectedSupplierTag={selectedSuppliers}
+            setFileData={setFileData}
+            setIsSendMail={setIsSendMail}
+            getItemsForSupplier={(supplierId) => {
+              // 새로운 prop 추가
+              const selectedTables = tables.filter((table) =>
+                table.supplierList?.some(
+                  (supplier) => supplier.supplierId === supplierId
+                )
+              );
+              const allItems = selectedTables.reduce<InquiryItem[]>(
+                (acc, table) => {
+                  return [...acc, ...table.itemDetails];
+                },
+                []
+              );
+              return allItems.sort((a, b) => a.position - b.position);
+            }}
+            vesselInfo={selectedVessel}
+            pdfHeader={pdfHeader}
+            setPdfFileData={setPdfFileData}
+            handleLanguageChange={handleLanguageChange}
+          />
+        )}
       </Modal>
       <div
         style={{
@@ -315,7 +307,7 @@ const AddSupplierOnInquiry = () => {
         <Select
           style={{ width: 200, float: "left", marginLeft: 10 }}
           onChange={(value) => {
-            const selected = selectedSupplierTag.find(
+            const selected = selectedSuppliers.find(
               (tag) => tag.name === value
             );
             if (selected) {
@@ -323,7 +315,7 @@ const AddSupplierOnInquiry = () => {
             }
           }}
         >
-          {selectedSupplierTag.map((tag) => (
+          {selectedSuppliers.map((tag) => (
             <Select.Option key={tag.id} value={tag.name}>
               {tag.name}
             </Select.Option>
@@ -359,7 +351,7 @@ const AddSupplierOnInquiry = () => {
       </div>
       {isMailSenderVisible && (
         <PDFGenerator
-          selectedSupplierTag={selectedSupplierTag}
+          selectedSupplierTag={selectedSuppliers}
           formValues={formValues}
           setMailDataList={setMailDataList}
           items={items}
