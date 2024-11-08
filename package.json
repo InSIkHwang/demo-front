@@ -34,7 +34,6 @@
     "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.25.1",
-    "react-scripts": "5.0.1",
     "react-transition-group": "^4.4.5",
     "react-virtualized": "^9.22.5",
     "react-window": "^1.8.10",
@@ -76,7 +75,8 @@
     "@types/react-beautiful-dnd": "^13.1.8",
     "@types/react-transition-group": "^4.4.10",
     "@types/react-virtualized": "^9.21.30",
-    "@types/react-window": "^1.8.8"
+    "@types/react-window": "^1.8.8",
+    "react-scripts": "5.0.1"
   },
   "overrides": {
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
