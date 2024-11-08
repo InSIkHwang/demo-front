@@ -1136,11 +1136,14 @@ function MakeInquiryTable({
             icon={<PlusCircleOutlined />}
             type="default"
             style={{ marginRight: 10 }}
+            size="small"
             onClick={() => handleAddItem(record.tableNo - 1, record.position)}
           />
           <Button
             icon={<DeleteOutlined />}
             type="default"
+            danger
+            size="small"
             onClick={() =>
               handleDeleteItem(record.tableNo - 1, record.position)
             }

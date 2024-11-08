@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import styled from "styled-components";
-import { Button, FloatButton, message, Modal, Select } from "antd";
+import { Button, Divider, FloatButton, message, Modal, Select } from "antd";
 import { FileSearchOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { fetchVessel, searchInquiryWithMaker } from "../api/api";
@@ -241,7 +241,10 @@ const AddSupplierOnInquiry = () => {
           setTagColors={setTagColors}
         />
       )}
-      <TableComponent items={items} />
+      <Divider variant="dashed" style={{ borderColor: "#007bff" }}>
+        Item
+      </Divider>
+      <TableComponent items={items} setItems={setItems} />
       <Button
         type="primary"
         onClick={showMailSenderModal}
@@ -251,7 +254,7 @@ const AddSupplierOnInquiry = () => {
       </Button>
       <Button
         type="default"
-        onClick={() => navigate("/makeoffer")}
+        onClick={() => navigate(-1)}
         style={{ margin: "20px 0 0 15px", float: "right" }}
       >
         Back

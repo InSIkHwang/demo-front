@@ -497,10 +497,13 @@ const TableComponent = ({
             icon={<PlusCircleOutlined />}
             type="default"
             style={{ marginRight: 5 }}
+            size="small"
             onClick={() => handleAddItem(index)}
           />
           <Button
             type="default"
+            danger
+            size="small"
             onClick={() =>
               handleDeleteItem(record.itemDetailId, record.position)
             }

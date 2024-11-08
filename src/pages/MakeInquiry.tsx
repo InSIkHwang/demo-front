@@ -228,7 +228,6 @@ const MakeInquiry = () => {
   const [formValues, setFormValues] = useState(INITIAL_FORM_VALUES);
   const [mailDataList, setMailDataList] = useState<emailSendData[]>([]);
   const [isDuplicate, setIsDuplicate] = useState<boolean>(false);
-  const [language, setLanguage] = useState<string>("KOR");
   const [fileData, setFileData] = useState<File[]>([]);
   const [pdfFileData, setPdfFileData] = useState<File[]>([]);
   const [isSendMail, setIsSendMail] = useState<boolean>(false);

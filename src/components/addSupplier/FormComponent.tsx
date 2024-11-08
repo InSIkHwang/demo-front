@@ -496,7 +496,7 @@ const FormComponent = ({
             <span style={{ marginRight: 10 }}>Searched Suppliers: </span>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
               {selectedSuppliers.map((supplier) => (
-                <Tooltip title={supplier.supplierRemark}>
+                <Tooltip title={supplier.supplierRemark} color="red">
                   <StyledTag
                     key={supplier.id}
                     closable
