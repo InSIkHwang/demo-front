@@ -10,7 +10,6 @@ import {
   emailSendData,
   VesselList,
   InquirySearchMakerInquirySearchResult,
-  InquiryTable,
 } from "../types/types";
 import { useLocation, useNavigate } from "react-router-dom";
 import HeaderEditModal from "../components/makeInquiry/HeaderEditModal";
@@ -87,7 +86,6 @@ const AddSupplierOnInquiry = () => {
   const [pdfHeader, setPdfHeader] = useState<string>("");
   const [formValues, setFormValues] = useState(INITIAL_FORM_VALUES);
   const [mailDataList, setMailDataList] = useState<emailSendData[]>([]);
-  const [language, setLanguage] = useState<string>("KOR");
   const [fileData, setFileData] = useState<File[]>([]);
   const [pdfFileData, setPdfFileData] = useState<File[]>([]);
   const [isSendMail, setIsSendMail] = useState<boolean>(false);
@@ -104,8 +102,6 @@ const AddSupplierOnInquiry = () => {
   const [isMailSenderVisible, setIsMailSenderVisible] = useState(false);
   const [isInquirySearchModalVisible, setIsInquirySearchModalVisible] =
     useState(false);
-  const [tables, setTables] = useState<InquiryTable[]>([]);
-  const [currentTableNo, setCurrentTableNo] = useState<number>(1);
 
   const setModalVisibility = (
     modalType: "header" | "mail" | "inquirySearch",
@@ -123,6 +119,32 @@ const AddSupplierOnInquiry = () => {
       }
     }
   };
+
+  useEffect(() => {
+    // selectedSuppliers가 변경될 때마다 체크
+    if (selectedSuppliers.length > 0 && data.sendSupplier) {
+      const alreadySentSuppliers = selectedSuppliers.filter((supplier) =>
+        data.sendSupplier.includes(supplier.id)
+      );
+
+      if (alreadySentSuppliers.length > 0) {
+        // 이미 메일을 보낸 공급업체들 메시지 표시
+        alreadySentSuppliers.forEach((supplier) => {
+          message.error(
+            `${supplier.name} is a supplier that has already been sent an email.`,
+            3
+          );
+        });
+
+        // 이미 메일을 보낸 공급업체들을 제외한 새로운 배열 생성
+        setSelectedSuppliers((prevSuppliers) =>
+          prevSuppliers.filter(
+            (supplier) => !data.sendSupplier.includes(supplier.id)
+          )
+        );
+      }
+    }
+  }, [selectedSuppliers, data.sendSupplier]);
 
   useEffect(() => {
     if (data.documentInfo) {

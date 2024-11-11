@@ -190,7 +190,6 @@ const TableComponent = ({
     }[]
   >([]);
   const [unitOptions, setUnitOptions] = useState<string[]>(["PCS", "SET"]);
-  const [updatedIndex, setUpdatedIndex] = useState<number | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   // 공통 데이터 처리 함수
@@ -307,7 +306,6 @@ const TableComponent = ({
 
     // 상태 업데이트를 한 번만 수행
     handleInputChange(index, "itemCode", trimmedValue);
-    setUpdatedIndex(index);
     debouncedFetchItemData(trimmedValue, index);
   };
 
@@ -476,11 +474,10 @@ const TableComponent = ({
     supplierName: string,
     documentNumber: string
   ) => {
-    // 사용자가 경로를 설정하여 파일을 다운로드할 수 있도록 설정
     if (pdfUrl) {
       const link = document.createElement("a");
       link.href = pdfUrl;
-      link.download = `${supplierName}_REQUEST FOR QUOTATION_${documentNumber}.pdf`; // 다운로드할 파일 이름
+      link.download = `${supplierName}_REQUEST FOR QUOTATION_${documentNumber}.pdf`;
       link.click();
 
       notification.success({
