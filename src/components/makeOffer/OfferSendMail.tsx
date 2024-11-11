@@ -58,12 +58,11 @@ interface FormValue {
 
 const OfferMailSender = ({
   inquiryFormValues,
-  handleSubmit,
   setFileData,
   pdfFileData,
   mailData,
   pdfHeader,
-  loadDocumentId,
+  selectedSupplierIds,
 }: {
   inquiryFormValues: FormValue;
   handleSubmit: () => Promise<unknown>;
@@ -71,7 +70,7 @@ const OfferMailSender = ({
   pdfFileData: File | null;
   mailData: offerEmailSendData | null;
   pdfHeader: string;
-  loadDocumentId: { documentId: any };
+  selectedSupplierIds: number[];
 }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -123,7 +122,7 @@ const OfferMailSender = ({
           bccRecipient: updateMailData.bccRecipient,
         },
         quotationHeader: pdfHeader,
-        supplierInquiryIds: loadDocumentId.documentId, //추후 offerId로 변경
+        supplierInquiryIds: selectedSupplierIds, //추후 offerId로 변경
       };
 
       // 메일 전송 로직

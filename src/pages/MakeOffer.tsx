@@ -88,7 +88,9 @@ const MakeOffer = () => {
   const [mailData, setMailData] = useState<offerEmailSendData | null>(null);
   const [pdfFileData, setPdfFileData] = useState<File | null>(null);
   const [fileData, setFileData] = useState<(File | null)[]>([]);
-  const [selectedSupplierIds, setSelectedSupplierIds] = useState<number[]>([]);
+  const [selectedSupplierIds, setSelectedSupplierIds] = useState<
+    Array<{ supplierId: number; inquiryId: number }>
+  >([]);
   const [combinedItemDetails, setCombinedItemDetails] = useState<
     ItemDetailType[]
   >([]);
@@ -726,24 +728,33 @@ const MakeOffer = () => {
     }
   };
 
-  const handleSupplierSelect = (values: number[]) => {
+  const handleSupplierSelect = (
+    values: Array<{
+      supplierId: number;
+      inquiryId: number;
+    }>
+  ) => {
     setSelectedSupplierIds(values);
 
     if (dataSource?.response) {
-      // 선택된 공급업체들의 아이템 상세 정보 결합
       const selectedItems = dataSource.response
-        .filter((resp) => values.includes(resp.supplierInfo.supplierId))
+        .filter((resp) =>
+          values.some(
+            (v) =>
+              v.supplierId === resp.supplierInfo.supplierId &&
+              v.inquiryId === resp.inquiryId
+          )
+        )
         .reduce<any[]>((acc, curr) => [...acc, ...curr.itemDetail], []);
 
-      // MAKER와 TYPE 아이템의 중복 제거
+      // MAKER와 TYPE 아이템의 중복 제거 로직은 동일하게 유지
       const seenMakerTypes = new Set<string>();
       const filteredItems = selectedItems.filter((item) => {
         if (item.itemType === "MAKER" || item.itemType === "TYPE") {
-          // 공백 제거 후 비교
           const normalizedItemName = item.itemName.replace(/\s+/g, "");
           const key = `${item.itemType}-${normalizedItemName}`;
           if (seenMakerTypes.has(key)) {
-            return false; // 중복된 아이템 제거
+            return false;
           }
           seenMakerTypes.add(key);
         }
@@ -758,7 +769,11 @@ const MakeOffer = () => {
     if (dataSource?.response && selectedSupplierIds.length > 0) {
       const updatedSelectedItems = dataSource.response
         .filter((resp) =>
-          selectedSupplierIds.includes(resp.supplierInfo.supplierId)
+          selectedSupplierIds.some(
+            (v) =>
+              v.supplierId === resp.supplierInfo.supplierId &&
+              v.inquiryId === resp.inquiryId
+          )
         )
         .reduce<any[]>((acc, curr) => {
           // 현재 선택된 탭의 공급업체인 경우 currentDetailItems 사용
@@ -946,14 +961,21 @@ const MakeOffer = () => {
         <Select
           mode="multiple"
           style={{ minWidth: 500, marginLeft: 10 }}
-          onChange={handleSupplierSelect}
-          value={selectedSupplierIds}
+          onChange={(values: string[]) => {
+            // 문자열로 된 값들을 다시 객체로 파싱
+            const selectedIds = values.map((value) => JSON.parse(value));
+            handleSupplierSelect(selectedIds);
+          }}
+          value={selectedSupplierIds.map((item) => JSON.stringify(item))} // 객체를 문자열로 변환
           placeholder="Please select supplier to send email"
         >
           {dataSource?.response.map((item) => (
             <Select.Option
               key={item.supplierInfo.supplierId}
-              value={item.supplierInfo.supplierId}
+              value={JSON.stringify({
+                supplierId: item.supplierInfo.supplierId,
+                inquiryId: item.inquiryId,
+              })}
             >
               {item.supplierInfo.supplierCode}
             </Select.Option>
@@ -975,7 +997,9 @@ const MakeOffer = () => {
           pdfFileData={pdfFileData}
           mailData={mailData}
           pdfHeader={pdfHeader}
-          loadDocumentId={loadDocumentId}
+          selectedSupplierIds={selectedSupplierIds.map(
+            (item) => item.inquiryId
+          )}
         />
       </Modal>
       <div style={{ marginTop: 50 }}>
