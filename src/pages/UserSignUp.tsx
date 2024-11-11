@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "styled-components";
-import { Form, Input, Button, Select } from "antd";
+import { Form, Input, Button, Select, message } from "antd";
 import { postUserSignUp } from "../api/api";
 import { useNavigate } from "react-router-dom";
 
@@ -51,7 +51,6 @@ const StyledSelect = styled(Select)`
   width: 100%;
   .ant-select-selector {
     border-radius: 8px !important;
-    height: 45px !important;
     padding: 7px 12px !important;
   }
 `;
@@ -79,7 +78,7 @@ const UserSignUp = () => {
       await postUserSignUp(email, password, name, country);
       navigate("/userlogin");
     } catch (error) {
-      console.error("Error during signup:", error);
+      message.error("Error during signup");
     }
   };
 
@@ -147,19 +146,20 @@ const UserSignUp = () => {
               <Option value="OTHER">OTHER</Option>
             </StyledSelect>
           </Form.Item>
-
-          <Form.Item>
-            <SignUpButton type="primary" htmlType="submit" block>
-              Sign Up
-            </SignUpButton>
-            <BackToLoginButton
-              type="default"
-              block
-              onClick={() => navigate("/userlogin")}
-            >
-              Back to Login
-            </BackToLoginButton>
-          </Form.Item>
+          <div style={{ marginTop: 50 }}>
+            <Form.Item>
+              <SignUpButton type="primary" htmlType="submit" block>
+                Sign Up
+              </SignUpButton>
+              <BackToLoginButton
+                type="default"
+                block
+                onClick={() => navigate("/userlogin")}
+              >
+                Login
+              </BackToLoginButton>
+            </Form.Item>
+          </div>
         </StyledForm>
       </SignUpFormWrapper>
     </SignUpContainer>

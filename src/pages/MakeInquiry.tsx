@@ -330,6 +330,8 @@ const MakeInquiry = () => {
       setItemIdMap({});
       setSupplierOptions([]);
       setInquiryDetail(null);
+      setTables([]);
+      setShowPDFPreview(false);
     };
 
     resetState();
@@ -1031,12 +1033,23 @@ const MakeInquiry = () => {
         <span>Supplier: </span>
         <Select
           style={{ width: 200, float: "left", marginLeft: 10 }}
+          value={
+            pdfSupplierTag[0]
+              ? `${tables.findIndex((table) =>
+                  table.supplierList?.some(
+                    (supplier) => supplier.supplierId === pdfSupplierTag[0].id
+                  )
+                )}:${pdfSupplierTag[0].id}`
+              : ""
+          }
           onChange={(value) => {
             const [tableIndex, supplierId] = value.split(":");
             const selectedTable = tables[parseInt(tableIndex)];
+
             const selectedSupplier = selectedTable?.supplierList?.find(
               (supplier) => supplier.supplierId.toString() === supplierId
             );
+
             if (selectedSupplier) {
               setPdfSupplierTag([
                 {

@@ -301,6 +301,11 @@ export const sendInquiryMail = async (
   //   URL.revokeObjectURL(url); // 메모리 해제
   // });
 
+  // console.log(
+  //   "Attached files:",
+  //   files.map((file) => file.name)
+  // );
+
   // `file` 추가
   files.forEach((file) => {
     formData.append("file", file); // 동일한 이름으로 여러 파일 추가
