@@ -420,7 +420,7 @@ const DetailOrderModal = ({
               columns={columns}
               dataSource={orderDetail.orderItemDetailResponseList}
               pagination={false}
-              rowKey="itemId"
+              rowKey="position"
               scroll={{ y: 300 }}
               bordered
               size="small"

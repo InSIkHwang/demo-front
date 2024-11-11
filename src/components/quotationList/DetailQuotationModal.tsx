@@ -416,9 +416,6 @@ const DetailQuotationModal = ({
       dataIndex: "supplierCode",
       key: "supplierCode",
       render: (text: string, record: any) => {
-        if (isSpecialItemType(record.itemType)) {
-          return null;
-        }
         return text;
       },
     },
@@ -583,7 +580,7 @@ const DetailQuotationModal = ({
               columns={columns}
               dataSource={quotationDetail.quotationItemDetailResponseList}
               pagination={false}
-              rowKey="itemId"
+              rowKey="position"
               scroll={{ y: 300 }}
               bordered
               size="small"

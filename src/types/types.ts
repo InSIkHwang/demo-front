@@ -483,3 +483,18 @@ export interface ItemDetailType {
   purchaseAmountKRW: number;
   purchaseAmountGlobal: number;
 }
+
+export interface OfferSearchParams {
+  registerStartDate?: string;
+  registerEndDate?: string;
+  query?: string;
+  documentNumber?: string;
+  refNumber?: string;
+  customerName?: string;
+  supplierName?: string;
+  page: number;
+  pageSize: number;
+  writer: "MY" | "ALL";
+  itemName?: string;
+  itemCode?: string;
+}

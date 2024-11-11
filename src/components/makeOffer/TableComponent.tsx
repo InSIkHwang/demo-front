@@ -368,8 +368,6 @@ const TableComponent = ({
     setItemDetails(newItems);
   };
 
-  console.log(itemDetails);
-
   const handleDeleteItem = (itemDetailId: number, position: number) => {
     // 선택한 항목을 삭제한 새로운 데이터 소스를 생성
     const updatedItemDetails = itemDetails.filter(
@@ -1203,7 +1201,7 @@ const TableComponent = ({
           }
           return "";
         }}
-        rowKey="itemDetailId"
+        rowKey="position"
         columns={columns}
         dataSource={itemDetails}
         pagination={false}
