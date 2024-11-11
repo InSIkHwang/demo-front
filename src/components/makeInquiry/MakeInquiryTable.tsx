@@ -1177,13 +1177,13 @@ function MakeInquiryTable({
             Export Excel
           </Button>
         </div>
-        <Button
+        {/* <Button
           type="primary"
           onClick={handleAddTable}
           icon={<PlusCircleOutlined />}
         >
           Add New Table
-        </Button>
+        </Button> */}
       </div>
 
       {isDataReady &&
