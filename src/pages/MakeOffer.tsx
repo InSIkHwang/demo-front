@@ -801,6 +801,7 @@ const MakeOffer = () => {
         message.error("Document number is missing.");
         return;
       }
+
       navigate(
         `/addsupplierininquiry/${dataSource.documentInfo.documentNumber}`,
         {
@@ -808,6 +809,9 @@ const MakeOffer = () => {
             documentInfo: dataSource.documentInfo,
             itemDetails:
               currentDetailItems || dataSource.response[0].itemDetail, // 현재 선택된 공급업체의 아이템 데이터
+            sendSupplier: dataSource.response.map(
+              (item) => item.supplierInfo.supplierId
+            ),
           },
         }
       );
