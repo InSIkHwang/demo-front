@@ -1,47 +1,73 @@
-# Getting Started with Create React App
+# 프로젝트 소개
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+이 프로젝트는 React와 Create React App을 기반으로 한 견적 관리 시스템입니다.
 
-## Available Scripts
+## 주요 기능
 
-In the project directory, you can run:
+### 1. 견적 관리
+- 견적서 작성 및 수정
+- PDF 견적서 생성
+- 견적서 이메일 발송
+- 견적 이력 관리
 
-### `npm start`
+### 2. 공급업체 관리
+- 공급업체 정보 등록/수정
+- 공급업체별 견적 관리
+- 다국어 지원 (한글/영문)
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+### 3. 문서 관리
+- 문서 번호 자동 생성
+- 문서 상태 관리
+- 휴지통 기능
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+### 4. 데이터 관리
+- Excel 데이터 가져오기/내보내기
+- 통화 환율 관리
+- 마진율 계산
 
-### `npm test`
+## 시작하기
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```bash
+# 패키지 설치
+npm install
 
-### `npm run build`
+# 개발 서버 실행
+npm start
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+# 프로덕션 빌드
+npm run build
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## 주요 컴포넌트
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### MakeInquiry
+견적 요청서를 작성하는 메인 컴포넌트입니다.
 
-### `npm run eject`
+### MakeOffer
+견적서를 작성하는 메인 컴포넌트입니다.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+### PDFGenerator
+PDF 문서를 생성하는 컴포넌트입니다.
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+## 기술 스택
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+- React
+- TypeScript
+- Ant Design
+- Axios
+- Day.js
+- React-PDF
 
-## Learn More
+## 환경 설정
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+개발 환경에서는 다음과 같은 설정이 필요합니다:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
-# demo-front
+- Node.js 16.x 이상
+- npm 8.x 이상
+- 모던 웹 브라우저 (Chrome, Firefox, Safari, Edge)
+
+## API 연동
+
+API 호출은 axios를 사용하여 구현되어 있습니다
+
