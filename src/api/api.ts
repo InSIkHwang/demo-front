@@ -7,6 +7,7 @@ import {
   Inquiry,
   Item,
   ItemDataType,
+  OfferSearchParams,
   orderAllResponses,
   Quotation,
   Supplier,
@@ -487,40 +488,44 @@ export const fetchOfferDetail = async (documentId: number) => {
 };
 
 //Offer 검색
-export const searchOfferList = async (
-  registerStartDate: string = "",
-  registerEndDate: string = "",
-  query: string = "",
-  documentNumber: string = "",
-  refNumber: string = "",
-  customerName: string = "",
-  page: number,
-  pageSize: number,
-  viewMyInquiryOnly: boolean
-): Promise<{
+export const searchOfferList = async ({
+  registerStartDate = "",
+  registerEndDate = "",
+  query = "",
+  documentNumber = "",
+  refNumber = "",
+  customerName = "",
+  supplierName = "",
+  page,
+  pageSize,
+  writer,
+  itemName = "",
+  itemCode = "",
+}: OfferSearchParams): Promise<{
   totalCount: number;
   supplierInquiryList: SupplierInquiryListIF[];
 }> => {
-  // Query parameters를 객체로 정의
-  const queryParams: { [key: string]: string } = {
+  const queryParams = {
     registerStartDate,
     registerEndDate,
     query,
     documentNumber,
     refNumber,
     customerName,
-    page: (page - 1).toString(), // 페이지는 0부터 시작
-    pageSize: pageSize.toString(), // 페이지당 아이템 수
-    writer: viewMyInquiryOnly ? "MY" : "ALL",
+    supplierName,
+    page: (page - 1).toString(),
+    pageSize: pageSize.toString(),
+    writer,
+    itemName,
+    itemCode,
   };
 
-  // 쿼리 문자열을 생성
-  const queryString = Object.keys(queryParams)
-    .filter((key) => queryParams[key] !== "") // 빈 문자열 필터링
-    .map((key) => `${key}=${encodeURIComponent(queryParams[key])}`)
-    .join("&");
+  const queryString = new URLSearchParams(
+    Object.entries(queryParams)
+      .filter(([_, value]) => value !== "")
+      .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {})
+  ).toString();
 
-  // GET 요청을 보냄 (POST가 아닌 GET으로 보내야 할 경우)
   const response = await axios.post<{
     totalCount: number;
     supplierInquiryList: SupplierInquiryListIF[];

@@ -15,7 +15,7 @@ import styled from "styled-components";
 import { fetchOfferList, searchOfferList } from "../api/api";
 import { useNavigate } from "react-router-dom";
 import type { ColumnsType } from "antd/es/table";
-import type { SupplierInquiryListIF } from "../types/types";
+import type { OfferSearchParams, SupplierInquiryListIF } from "../types/types";
 import Checkbox, { CheckboxChangeEvent } from "antd/es/checkbox";
 
 const Container = styled.div`
@@ -37,14 +37,46 @@ const Title = styled.h1`
 
 const TableHeader = styled.div`
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 20px;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
 `;
 
 const SearchBar = styled.div`
   display: flex;
   align-items: center;
+  padding: 12px 16px;
+  background-color: white;
+  border-bottom: 1px solid #e6e6e6;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+
+  &:focus-within {
+    border-color: #1890ff;
+    box-shadow: 0 2px 0 0 rgba(24, 144, 255, 0.1);
+  }
 `;
+
+const SearchSection = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+`;
+
+const CheckboxWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  margin-left: 16px;
+  padding-left: 16px;
+  border-left: 1px solid #f0f0f0;
+`;
+
+// Select, Input, DatePicker 등의 공통 스타일
+const commonInputStyles = {
+  borderRadius: "4px",
+  height: "32px",
+};
 
 const Button = styled(AntButton)`
   background-color: ${(props) => props.theme.blue};
@@ -135,11 +167,15 @@ const OfferList = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [searchText, setSearchText] = useState<string>("");
   const [searchCategory, setSearchCategory] = useState<string>("query");
+  const [searchSubCategory, setSearchSubCategory] =
+    useState<string>("itemName");
+  const [searchSubText, setSearchSubText] = useState<string>("");
   const [registerStartDate, setRegisterStartDate] = useState<string>("");
   const [registerEndDate, setRegisterEndDate] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage, setItemsPerPage] = useState<number>(30);
   const [viewMyOfferOnly, setViewMyOfferOnly] = useState<boolean>(false);
+  const [showItemSearch, setShowItemSearch] = useState<boolean>(false);
 
   useEffect(() => {
     if (searchText || registerStartDate || registerEndDate || viewMyOfferOnly) {
@@ -168,31 +204,40 @@ const OfferList = () => {
   const handleSearch = async () => {
     setLoading(true);
     try {
-      // searchCategory에 해당하는 필드만 searchText를 할당
-      const query = searchCategory === "query" ? searchText : "";
-      const documentNumber =
-        searchCategory === "documentNumber" ? searchText : "";
-      const refNumber = searchCategory === "refNumber" ? searchText : "";
-      const customerName = searchCategory === "customerName" ? searchText : "";
-
-      const response = await searchOfferList(
+      const searchParams: OfferSearchParams = {
         registerStartDate,
         registerEndDate,
-        query,
-        documentNumber,
-        refNumber,
-        customerName,
-        currentPage,
-        itemsPerPage,
-        viewMyOfferOnly
-      );
+        ...(searchCategory === "query" && { query: searchText }),
+        ...(searchCategory === "documentNumber" && {
+          documentNumber: searchText,
+        }),
+        ...(searchCategory === "refNumber" && { refNumber: searchText }),
+        ...(searchCategory === "customerName" && { customerName: searchText }),
+        ...(searchCategory === "supplierName" && { supplierName: searchText }),
+        page: currentPage,
+        pageSize: itemsPerPage,
+        writer: viewMyOfferOnly ? "MY" : ("ALL" as const),
+        ...(showItemSearch && {
+          [searchSubCategory]: searchSubText,
+        }),
+      };
+
+      const response = await searchOfferList(searchParams);
 
       setData(response.supplierInquiryList);
       setTotalCount(response.totalCount);
     } catch (error) {
-      message.error("An error occurred while searching");
+      message.error("검색 중 오류가 발생했습니다");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleItemSearchToggle = (e: CheckboxChangeEvent) => {
+    setShowItemSearch(e.target.checked);
+    if (!e.target.checked) {
+      setSearchSubCategory("");
+      setSearchSubText("");
     }
   };
 
@@ -230,56 +275,91 @@ const OfferList = () => {
         <Title>견적 제안 - Offers</Title>
         <TableHeader>
           <SearchBar>
-            <Select
-              defaultValue="ALL"
-              style={{ width: 150, marginRight: 10 }}
-              onChange={(value) => setSearchCategory(value)}
-            >
-              <Select.Option value="query">ALL</Select.Option>
-              <Select.Option value="documentNumber">Document No.</Select.Option>
-              <Select.Option value="refNumber">REF No.</Select.Option>
-              <Select.Option value="customerName">Costomer Name</Select.Option>
-            </Select>
-            <Input
-              placeholder="Search..."
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              onPressEnter={() => handleSearch()}
-              style={{ width: 300, marginRight: 10 }}
-            />
-            <DatePicker
-              placeholder="Start Date"
-              format="YYYY-MM-DD"
-              onChange={(date) =>
-                setRegisterStartDate(date ? date.format("YYYY-MM-DD") : "")
-              }
-              style={{ marginRight: 10 }}
-            />
-            <DatePicker
-              placeholder="End Date"
-              format="YYYY-MM-DD"
-              onChange={(date) =>
-                setRegisterEndDate(date ? date.format("YYYY-MM-DD") : "")
-              }
-              style={{ marginRight: 10 }}
-            />
-            <Button
-              type="primary"
-              onClick={() => {
-                if (currentPage === 1) {
-                  handleSearch();
-                } else {
-                  setCurrentPage(1);
+            <SearchSection>
+              <Select
+                defaultValue="ALL"
+                style={{ ...commonInputStyles, width: 140 }}
+                onChange={(value) => setSearchCategory(value)}
+              >
+                <Select.Option value="query">ALL</Select.Option>
+                <Select.Option value="documentNumber">
+                  Document No.
+                </Select.Option>
+                <Select.Option value="refNumber">REF No.</Select.Option>
+                <Select.Option value="customerName">
+                  Customer Name
+                </Select.Option>
+                <Select.Option value="supplierName">
+                  Supplier Name
+                </Select.Option>
+              </Select>
+              <Input
+                placeholder="Search..."
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                onPressEnter={() => handleSearch()}
+                style={{ ...commonInputStyles, width: 280 }}
+              />
+              <DatePicker
+                placeholder="Start Date"
+                format="YYYY-MM-DD"
+                onChange={(date) =>
+                  setRegisterStartDate(date ? date.format("YYYY-MM-DD") : "")
                 }
-              }}
-            >
-              Search
-            </Button>
-            <div style={{ marginLeft: 15 }}>
+                style={commonInputStyles}
+              />
+              <DatePicker
+                placeholder="End Date"
+                format="YYYY-MM-DD"
+                onChange={(date) =>
+                  setRegisterEndDate(date ? date.format("YYYY-MM-DD") : "")
+                }
+                style={commonInputStyles}
+              />
+              <Button
+                type="primary"
+                onClick={() => {
+                  if (currentPage === 1) {
+                    handleSearch();
+                  } else {
+                    setCurrentPage(1);
+                  }
+                }}
+              >
+                Search
+              </Button>
+            </SearchSection>
+            <CheckboxWrapper>
               <Checkbox onChange={handleViewMyOfferOnlyChange}>
                 View My Offer Only
               </Checkbox>
-            </div>
+            </CheckboxWrapper>
+          </SearchBar>
+          <SearchBar>
+            <SearchSection>
+              <Checkbox onChange={handleItemSearchToggle}>
+                Item Search Option
+              </Checkbox>
+              {showItemSearch && (
+                <>
+                  <Select
+                    defaultValue="Item Name"
+                    style={{ ...commonInputStyles, width: 140 }}
+                    onChange={(value) => setSearchSubCategory(value)}
+                  >
+                    <Select.Option value="itemName">Item Name</Select.Option>
+                    <Select.Option value="itemCode">Item Code</Select.Option>
+                  </Select>
+                  <Input
+                    placeholder="Search items..."
+                    value={searchSubText}
+                    onChange={(e) => setSearchSubText(e.target.value)}
+                    onPressEnter={() => handleSearch()}
+                    style={{ ...commonInputStyles, width: 280 }}
+                  />
+                </>
+              )}
+            </SearchSection>
           </SearchBar>
         </TableHeader>
         <Divider />
