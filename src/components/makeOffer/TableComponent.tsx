@@ -27,7 +27,7 @@ import {
   FileExcelOutlined,
   ExportOutlined,
 } from "@ant-design/icons";
-import { fetchItemData, handleExport, handleOfferExport } from "../../api/api";
+import { fetchItemData, handleOfferExport } from "../../api/api";
 import ExcelUploadModal from "../ExcelUploadModal";
 import { TextAreaRef } from "antd/es/input/TextArea";
 import { debounce } from "lodash";
@@ -134,6 +134,9 @@ interface TableComponentProps {
     currency: number
   ) => void;
   offerId: number;
+  documentNumber: string;
+  supplierName: string;
+  pdfUrl: string | null;
   tableTotals: {
     totalSalesAmountKRW: number;
     totalSalesAmountGlobal: number;
@@ -172,6 +175,9 @@ const TableComponent = ({
   setDcInfo,
   invChargeList,
   setInvChargeList,
+  pdfUrl,
+  supplierName,
+  documentNumber,
 }: TableComponentProps) => {
   const inputRefs = useRef<(TextAreaRef | null)[][]>([]);
   const [itemCodeOptions, setItemCodeOptions] = useState<
@@ -465,23 +471,26 @@ const TableComponent = ({
     }
   };
 
-  const handleDownloadExcel = async () => {
-    try {
-      const response = await handleExport(offerId);
-      // 사용자가 경로를 설정하여 파일을 다운로드할 수 있도록 설정
+  const handleDownloadPdf = (
+    pdfUrl: string,
+    supplierName: string,
+    documentNumber: string
+  ) => {
+    // 사용자가 경로를 설정하여 파일을 다운로드할 수 있도록 설정
+    if (pdfUrl) {
       const link = document.createElement("a");
-      link.href = response; // 서버에서 받은 파일 경로
-      link.download = "exported_file.xlsx"; // 사용자에게 보여질 파일 이름
-      link.click(); // 다운로드 트리거
+      link.href = pdfUrl;
+      link.download = `${supplierName}_REQUEST FOR QUOTATION_${documentNumber}.pdf`; // 다운로드할 파일 이름
+      link.click();
 
       notification.success({
         message: "Export Success",
-        description: "Excel file exported successfully.",
+        description: "PDF file exported successfully.",
       });
-    } catch (error) {
+    } else {
       notification.error({
         message: "Export Failed",
-        description: "Failed to export the Excel file.",
+        description: "Failed to export the PDF file.",
       });
     }
   };
@@ -1159,14 +1168,16 @@ const TableComponent = ({
         </Button>
       </Tooltip>
       <div style={{ float: "right" }}>
-        <Tooltip title="Download excel file before you send">
+        <Tooltip title="Download PDF file before you send">
           <Button
             type="dashed"
             style={{ margin: "20px 5px" }}
-            onClick={handleDownloadExcel}
+            onClick={() =>
+              handleDownloadPdf(pdfUrl || "", supplierName, documentNumber)
+            }
             icon={<FileExcelOutlined />}
           >
-            Download Excel File
+            Download PDF File
           </Button>
         </Tooltip>
       </div>

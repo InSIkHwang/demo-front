@@ -829,6 +829,9 @@ const MakeOffer = () => {
             handleMarginChange={handleMarginChange}
             handlePriceInputChange={handlePriceInputChange}
             offerId={supplier.inquiryId}
+            documentNumber={dataSource.documentInfo.documentNumber}
+            supplierName={supplier.supplierInfo.supplierName}
+            pdfUrl={supplier.pdfUrl}
             tableTotals={tableTotals}
             applyDcAndCharge={applyDcAndCharge}
             dcInfo={dcInfo}
