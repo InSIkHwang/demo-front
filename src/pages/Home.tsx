@@ -1,7 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Table, Card, message, Divider } from "antd";
+import { Table, Card, message, Typography, Statistic, Row, Col } from "antd";
+import {
+  FileTextOutlined,
+  ShopOutlined,
+  DollarOutlined,
+  ArrowUpOutlined,
+} from "@ant-design/icons";
 import styled from "styled-components";
 import { fetchHome } from "../api/api";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 interface CustomerInquiry {
   customInquiryId: number;
@@ -34,37 +41,54 @@ interface HomeData {
   quotationListByMemberId: Quotation[];
 }
 
+const { Title } = Typography;
+
 const Container = styled.div`
   position: relative;
-  top: 150px;
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  min-height: 100vh;
+  top: 100px;
   margin-bottom: 200px;
 `;
 
-const CardContainer = styled.div`
-  position: relative;
-  display: flex;
-  gap: 20px;
-  padding: 20px;
-  flex-wrap: wrap;
-  max-width: 70vw;
-  margin: 0 auto;
-  align-items: flex-start;
-  justify-content: center;
-`;
+const StyledCard = styled(Card)`
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
 
-const TableCard = styled(Card)`
-  flex: 1 1 calc(50% - 20px);
-  max-width: calc(33% - 20px);
-  border: 1px solid #f0f0f0;
-  box-sizing: border-box;
-`;
-
-const CustomTable = styled(Table)`
-  .ant-table-thead {
-    font-size: 12px;
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
   }
-  .ant-table-tbody {
-    font-size: 12px;
+`;
+
+const StatisticCard = styled(StyledCard)`
+  text-align: center;
+  margin-bottom: 24px;
+`;
+
+const TableCard = styled(StyledCard)`
+  margin-bottom: 24px;
+
+  .ant-table {
+    background: transparent;
+  }
+
+  .ant-table-thead > tr > th {
+    background: #f8fafd;
+    font-weight: 600;
+  }
+`;
+
+const StyledTable = styled(Table)`
+  .ant-table-tbody > tr:hover > td {
+    background: #f0f5ff;
+  }
+
+  .ant-table-thead > tr > th {
+    border-bottom: 2px solid #e8eef7;
   }
 `;
 
@@ -152,43 +176,100 @@ const Home = () => {
     supplierInquiry: [],
     quotationListByMemberId: [],
   });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchData().then((result) => setData(result));
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const result = await fetchData();
+        setData(result);
+      } catch (error) {
+        message.error("Error fetching data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
   }, []);
+
+  if (loading || !data) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <Container>
-      <CardContainer>
-        <Divider style={{ borderColor: "#007bff" }}>Quotation List</Divider>
-        <TableCard title="Customer Inquiries">
-          <CustomTable
-            size="small"
-            columns={columnsCustomerInquiry}
-            dataSource={data.customerInquiry.slice(0, 5)}
-            pagination={false}
-            rowKey="customInquiryId"
-          />
-        </TableCard>
-        <TableCard title="Supplier Inquiries">
-          <CustomTable
-            size="small"
-            columns={columnsSupplierInquiry}
-            dataSource={data.supplierInquiry.slice(0, 5)}
-            pagination={false}
-            rowKey="supplierInquiryId"
-          />
-        </TableCard>
-        <TableCard title="Quotations">
-          <CustomTable
-            size="small"
-            columns={columnsQuotation}
-            dataSource={data.quotationListByMemberId.slice(0, 5)}
-            pagination={false}
-            rowKey="quotationId"
-          />
-        </TableCard>
-      </CardContainer>
+      <Title level={2} style={{ marginBottom: 24, color: "#1a3353" }}>
+        Dashboard Overview
+      </Title>
+      <Row gutter={24}>
+        <Col span={8}>
+          <StatisticCard>
+            <Statistic
+              title="Customer Inquiries"
+              value={data.customerInquiry.length}
+              prefix={<FileTextOutlined />}
+              valueStyle={{ color: "#3f8600" }}
+            />
+          </StatisticCard>
+        </Col>
+        <Col span={8}>
+          <StatisticCard>
+            <Statistic
+              title="Supplier Inquiries"
+              value={data.supplierInquiry.length}
+              prefix={<ShopOutlined />}
+              valueStyle={{ color: "#fc4050" }}
+            />
+          </StatisticCard>
+        </Col>
+        <Col span={8}>
+          <StatisticCard>
+            <Statistic
+              title="Quotations"
+              value={data.quotationListByMemberId.length}
+              prefix={<DollarOutlined />}
+              valueStyle={{ color: "#1890ff" }}
+            />
+          </StatisticCard>
+        </Col>
+      </Row>
+      <Row gutter={24}>
+        <Col span={8}>
+          <TableCard title="Recent Customer Inquiries">
+            <StyledTable
+              columns={columnsCustomerInquiry}
+              dataSource={data.customerInquiry.slice(0, 5)}
+              pagination={false}
+              rowKey="customInquiryId"
+              size="middle"
+            />
+          </TableCard>
+        </Col>
+        <Col span={8}>
+          <TableCard title="Recent Supplier Inquiries">
+            <StyledTable
+              columns={columnsSupplierInquiry}
+              dataSource={data.supplierInquiry.slice(0, 5)}
+              pagination={false}
+              rowKey="supplierInquiryId"
+              size="middle"
+            />
+          </TableCard>
+        </Col>
+        <Col span={8}>
+          <TableCard title="Recent Quotations">
+            <StyledTable
+              columns={columnsQuotation}
+              dataSource={data.quotationListByMemberId.slice(0, 5)}
+              pagination={false}
+              rowKey="quotationId"
+              size="middle"
+            />
+          </TableCard>
+        </Col>
+      </Row>
     </Container>
   );
 };
