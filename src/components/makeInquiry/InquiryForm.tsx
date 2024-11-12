@@ -102,32 +102,12 @@ interface InquiryFormProps {
   formValues: FormValues;
   autoCompleteOptions: { value: string }[];
   vesselNameList: { id: number; name: string; imoNumber: number }[];
-  selectedSuppliers: {
-    id: number;
-    name: string;
-    code: string;
-    email: string;
-    communicationLanguage: string;
-    supplierRemark: string;
-  }[];
   handleFormChange: <K extends keyof FormValues>(
     key: K,
     value: FormValues[K]
   ) => void;
   customerUnreg: boolean;
   vesselUnreg: boolean;
-  setSelectedSupplierTag: Dispatch<
-    SetStateAction<
-      {
-        id: number;
-        name: string;
-        korName: string;
-        code: string;
-        email: string;
-        communicationLanguage: string;
-      }[]
-    >
-  >;
   setSelectedSuppliers: Dispatch<
     SetStateAction<
       {
@@ -172,7 +152,6 @@ const InquiryForm = ({
   formValues,
   autoCompleteOptions,
   vesselNameList,
-  selectedSuppliers,
   handleFormChange,
   customerUnreg,
   vesselUnreg,
@@ -193,10 +172,6 @@ const InquiryForm = ({
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedType, setSelectedType] = useState("");
   const [checkedSuppliers, setCheckedSuppliers] = useState<any[]>([]);
-  const [supplierList, setSupplierList] = useState<
-    { name: string; korName: string; id: number; code: string; email: string }[]
-  >([]);
-
   const [autoSearchSupCompleteOptions, setAutoSearchSupCompleteOptions] =
     useState<{ value: string }[]>([]);
   const [makerOptions, setMakerOptions] = useState<{ value: string }[]>([]);
@@ -217,7 +192,6 @@ const InquiryForm = ({
       }[];
     }[]
   >([]);
-  const [isFromAutoComplete, setIsFromAutoComplete] = useState(false);
 
   useEffect(() => {
     const fetchCategoryList = async () => {
@@ -236,7 +210,6 @@ const InquiryForm = ({
     setSelectedType(type);
     setSupplierSearch("");
     setCategoryWord("");
-    setSupplierList([]);
     setMakerSupplierList([]);
     setCheckedSuppliers([]);
     setIsModalVisible(true);
@@ -259,8 +232,6 @@ const InquiryForm = ({
         ),
       ];
 
-      // 플래그 설정 - 자동완성 또는 모달에서 추가된 경우
-      setIsFromAutoComplete(true);
       return updatedSuppliers;
     });
 
@@ -317,7 +288,6 @@ const InquiryForm = ({
           communicationLanguage: supplier.communicationLanguage || "KOR",
           supplierRemark: supplier.supplierRemark || "",
         }));
-        setSupplierList(options);
 
         // 공급자 객체를 포함하여 자동완성 옵션 설정
         setAutoSearchSupCompleteOptions(
@@ -331,7 +301,7 @@ const InquiryForm = ({
         message.error("An error occurred while searching.");
       }
     } else {
-      setSupplierList([]);
+      setAutoSearchSupCompleteOptions([]);
     }
   };
 
@@ -673,9 +643,6 @@ const InquiryForm = ({
                         ...prevSuppliers,
                         selectedSupplier,
                       ]);
-
-                      // 자동완성에서 선택된 경우 플래그 설정
-                      setIsFromAutoComplete(true);
                     }
 
                     // 검색창 초기화

@@ -189,11 +189,6 @@ const MakeInquiry = () => {
       label: string;
     }[]
   >([]);
-  const [itemNameMap, setItemNameMap] = useState<{ [key: string]: string }>({});
-  const [itemIdMap, setItemIdMap] = useState<{ [key: string]: number }>({});
-  const [supplierOptions, setSupplierOptions] = useState<
-    { value: string; id: number; itemId: number; code: string; email: string }[]
-  >([]);
   const [selectedSuppliers, setSelectedSuppliers] = useState<
     {
       id: number;
@@ -203,16 +198,6 @@ const MakeInquiry = () => {
       email: string;
       communicationLanguage: string;
       supplierRemark: string;
-    }[]
-  >([]);
-  const [selectedSupplierTag, setSelectedSupplierTag] = useState<
-    {
-      id: number;
-      name: string;
-      korName: string;
-      code: string;
-      email: string;
-      communicationLanguage: string;
     }[]
   >([]);
   const [showPDFPreview, setShowPDFPreview] = useState(false);
@@ -228,17 +213,11 @@ const MakeInquiry = () => {
   const [formValues, setFormValues] = useState(INITIAL_FORM_VALUES);
   const [mailDataList, setMailDataList] = useState<emailSendData[]>([]);
   const [isDuplicate, setIsDuplicate] = useState<boolean>(false);
-  const [fileData, setFileData] = useState<File[]>([]);
-  const [pdfFileData, setPdfFileData] = useState<File[]>([]);
-  const [isSendMail, setIsSendMail] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(true); // 로딩 상태 변수 추가
   const [isDocNumDuplicate, setIsDocNumDuplicate] = useState<boolean>(false);
-  const [inquiryId, setInquiryId] = useState<number | null>(null);
   const [inquirySearchMakerName, setInquirySearchMakerName] = useState("");
   const [inquirySearchMakerNameResult, setInquirySearchMakerNameResult] =
     useState<InquirySearchMakerInquirySearchResult | null>(null);
-  const [isFromInquirySearchModal, setIsFromInquirySearchModal] =
-    useState(false);
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
   const [isVesselModalOpen, setIsVesselModalOpen] = useState(false);
   const [isSupplierModalOpen, setIsSupplierModalOpen] = useState(false);
@@ -320,15 +299,11 @@ const MakeInquiry = () => {
       setFormValues(INITIAL_FORM_VALUES);
       setItems(INITIAL_TABLE_VALUES);
       setSelectedSuppliers([]);
-      setSelectedSupplierTag([]);
       setPdfSupplierTag([]);
       setVesselList([]);
       setVesselNameList([]);
       setAutoCompleteOptions([]);
       setItemCodeOptions([]);
-      setItemNameMap({});
-      setItemIdMap({});
-      setSupplierOptions([]);
       setInquiryDetail(null);
       setTables([]);
       setShowPDFPreview(false);
@@ -416,7 +391,6 @@ const MakeInquiry = () => {
         []
       );
       const suppliers = getSupplierMap(allItems);
-      setSelectedSupplierTag(suppliers);
       setSelectedSuppliers(suppliers);
     };
 
@@ -706,7 +680,6 @@ const MakeInquiry = () => {
         isEditMode
       );
 
-      setInquiryId(response);
       message.success("Saved successfully!");
 
       const newInquiryDetail = await fetchInquiryDetail(
@@ -750,7 +723,6 @@ const MakeInquiry = () => {
         const itemArray = await fetchAndProcessItemData(value);
 
         updateItemCodeOptions(itemArray);
-        updateItemMaps(itemArray);
       } catch (error) {
         console.error("Error fetching item codes and suppliers:", error);
       }
@@ -773,27 +745,6 @@ const MakeInquiry = () => {
         itemId: item.itemId,
       }))
     );
-  };
-
-  const updateItemMaps = (itemArray: Item[]) => {
-    const newItemNameMap = itemArray.reduce<{ [key: number]: string }>(
-      (acc, item) => {
-        acc[item.itemId] = item.itemName;
-        return acc;
-      },
-      {}
-    );
-
-    const newItemIdMap = itemArray.reduce<{ [key: number]: number }>(
-      (acc, item) => {
-        acc[item.itemId] = item.itemId;
-        return acc;
-      },
-      {}
-    );
-
-    setItemNameMap(newItemNameMap);
-    setItemIdMap(newItemIdMap);
   };
 
   const handleHeaderSave = (text: string) => {
@@ -926,11 +877,9 @@ const MakeInquiry = () => {
           formValues={formValues}
           autoCompleteOptions={autoCompleteOptions}
           vesselNameList={vesselNameList}
-          selectedSuppliers={selectedSuppliers}
           handleFormChange={handleFormChange}
           customerUnreg={!selectedCustomerId}
           vesselUnreg={!selectedVessel?.id}
-          setSelectedSupplierTag={setSelectedSupplierTag}
           setSelectedSuppliers={setSelectedSuppliers}
           isEditMode={isEditMode}
           isDocNumDuplicate={isDocNumDuplicate}
@@ -1006,8 +955,6 @@ const MakeInquiry = () => {
           inquiryFormValues={formValues}
           handleSubmit={handleSubmit}
           selectedSupplierTag={getAllTableSuppliers()}
-          setFileData={setFileData}
-          setIsSendMail={setIsSendMail}
           getItemsForSupplier={(supplierId) => {
             const selectedTables = tables.filter((table) =>
               table.supplierList?.some(
@@ -1024,7 +971,6 @@ const MakeInquiry = () => {
           }}
           vesselInfo={selectedVessel}
           pdfHeader={pdfHeader}
-          setPdfFileData={setPdfFileData}
           handleLanguageChange={handleLanguageChange}
         />
       </Modal>
@@ -1121,7 +1067,6 @@ const MakeInquiry = () => {
           items={getSelectedTableItems()}
           vesselInfo={selectedVessel}
           pdfHeader={pdfHeader}
-          setPdfFileData={setPdfFileData}
         />
       )}
 
@@ -1151,7 +1096,6 @@ const MakeInquiry = () => {
           inquirySearchMakerNameResult={inquirySearchMakerNameResult}
           handleInquirySearch={handleInquirySearch}
           setSelectedSuppliers={setSelectedSuppliers}
-          setIsFromInquirySearchModal={setIsFromInquirySearchModal}
         />
         <FloatButton.BackTop visibilityHeight={0} />
       </BtnGroup>

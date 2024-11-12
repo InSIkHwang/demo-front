@@ -29,7 +29,6 @@ interface PDFGeneratorProps {
   items: InquiryItem[];
   vesselInfo: VesselList | null;
   pdfHeader: string;
-  setPdfFileData: Dispatch<SetStateAction<File[]>>;
 }
 
 const generateMailData = (
@@ -113,7 +112,6 @@ export const generatePDFs = async (
   getItemsForSupplier: (supplierId: number) => InquiryItem[],
   vesselInfo: VesselList | null,
   pdfHeader: string,
-  setPdfFileData: Dispatch<SetStateAction<File[]>>,
   selectedSupplierIndex: number
 ): Promise<File[]> => {
   const updatedFiles: File[] = [];
@@ -144,7 +142,6 @@ export const generatePDFs = async (
 
     updatedFiles.push(newFile);
   }
-  setPdfFileData(updatedFiles);
   return updatedFiles;
 };
 

@@ -48,7 +48,6 @@ const SearchBar = styled.div`
   padding: 12px 16px;
   background-color: white;
   border-bottom: 1px solid #e6e6e6;
-  border-radius: 6px;
   transition: all 0.2s ease;
 
   &:focus-within {

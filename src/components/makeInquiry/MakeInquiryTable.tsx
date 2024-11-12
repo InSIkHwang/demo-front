@@ -1177,6 +1177,7 @@ function MakeInquiryTable({
             Export Excel
           </Button>
         </div>
+        {/* 테이블 추가 버튼 주석 처리 */}
         {/* <Button
           type="primary"
           onClick={handleAddTable}

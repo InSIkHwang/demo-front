@@ -70,6 +70,14 @@ const StyledTag = styled(Tag)`
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
 `;
 
+const CheckboxWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  margin-left: 16px;
+  padding-left: 16px;
+  border-left: 1px solid #f0f0f0;
+`;
+
 const columns: ColumnsType<Inquiry> = [
   {
     title: "Document Number",
@@ -329,7 +337,7 @@ const CustomerInquiryList = () => {
             >
               Search
             </Button>
-            <div style={{ marginLeft: 15 }}>
+            <CheckboxWrapper>
               <Checkbox onChange={handleViewMyInquiryOnlyChange}>
                 View My Inquiry Only
               </Checkbox>
@@ -339,7 +347,7 @@ const CustomerInquiryList = () => {
               >
                 View Only Sent Emails
               </Checkbox>
-            </div>
+            </CheckboxWrapper>
           </SearchBar>
           <Button type="primary" onClick={() => navigate("/makeinquiry")}>
             New Request
