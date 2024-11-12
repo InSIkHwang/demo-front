@@ -415,7 +415,6 @@ const MakeInquiry = () => {
 
   useEffect(() => {
     const resetCompanyData = () => {
-      setCompanyNameList([]);
       setSelectedCustomerId(null);
       setVesselNameList([]);
       setVesselList([]);
@@ -495,6 +494,7 @@ const MakeInquiry = () => {
     };
 
     const filteredOptions = getFilteredCompanyOptions();
+
     setAutoCompleteOptions(filteredOptions);
   }, [companyNameList, formValues.customer]);
 
