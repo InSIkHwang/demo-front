@@ -616,7 +616,6 @@ function MakeInquiryTable({
     setIsDuplicate(hasDuplicate);
   }, [getDuplicateStates, items, setIsDuplicate]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleUnitBlur = (index: number, value: string) => {
     handleInputChange(index, "unit", value);
     setUnitOptions((prevOptions) =>
@@ -624,14 +623,16 @@ function MakeInquiryTable({
     );
   };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const applyUnitToAllRows = (selectedUnit: string) => {
     if (!items) return;
 
-    setItems((prevItems) =>
-      prevItems.map((item) => ({
-        ...item,
-        unit: selectedUnit,
+    setTables((prevTables) =>
+      prevTables.map((table) => ({
+        ...table,
+        itemDetails: table.itemDetails.map((item) => ({
+          ...item,
+          unit: selectedUnit,
+        })),
       }))
     );
   };
