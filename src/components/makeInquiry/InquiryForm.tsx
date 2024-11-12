@@ -102,32 +102,12 @@ interface InquiryFormProps {
   formValues: FormValues;
   autoCompleteOptions: { value: string }[];
   vesselNameList: { id: number; name: string; imoNumber: number }[];
-  selectedSuppliers: {
-    id: number;
-    name: string;
-    code: string;
-    email: string;
-    communicationLanguage: string;
-    supplierRemark: string;
-  }[];
   handleFormChange: <K extends keyof FormValues>(
     key: K,
     value: FormValues[K]
   ) => void;
   customerUnreg: boolean;
   vesselUnreg: boolean;
-  setSelectedSupplierTag: Dispatch<
-    SetStateAction<
-      {
-        id: number;
-        name: string;
-        korName: string;
-        code: string;
-        email: string;
-        communicationLanguage: string;
-      }[]
-    >
-  >;
   setSelectedSuppliers: Dispatch<
     SetStateAction<
       {
@@ -172,7 +152,6 @@ const InquiryForm = ({
   formValues,
   autoCompleteOptions,
   vesselNameList,
-  selectedSuppliers,
   handleFormChange,
   customerUnreg,
   vesselUnreg,

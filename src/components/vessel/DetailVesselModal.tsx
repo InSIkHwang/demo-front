@@ -66,7 +66,7 @@ const StyledFormItem = styled(Form.Item)`
   .ant-input {
     border-radius: 10px;
     border: 1px solid #e2e8f0;
-    padding: 8px 12px;
+    padding: 2px 6px;
     transition: all 0.3s ease;
 
     &:hover,
@@ -198,11 +198,23 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
     const selected = option as any;
     if (!value) {
       setSelectedCustomer(null);
+      return;
     }
-    setSelectedCustomer({
-      companyName: selected.companyName,
-      id: selected.id,
-    });
+
+    // 이미 추가된 매출처인지 확인
+    const isDuplicate = vessel.customers?.some(
+      (customer: any) => customer.id === selected.id
+    );
+
+    if (isDuplicate) {
+      message.warning("Already added customer.");
+      setSelectedCustomer(null);
+    } else {
+      setSelectedCustomer({
+        companyName: selected.companyName,
+        id: selected.id,
+      });
+    }
     setCustomerSuggestions([]);
   };
 

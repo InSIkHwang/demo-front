@@ -48,7 +48,7 @@ const StyledFormItem = styled(Form.Item)`
   .ant-input {
     border-radius: 10px;
     border: 1px solid #e2e8f0;
-    padding: 8px 12px;
+    padding: 2px 6px;
     transition: all 0.3s ease;
 
     &:hover,

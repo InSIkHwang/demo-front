@@ -200,16 +200,6 @@ const MakeInquiry = () => {
       supplierRemark: string;
     }[]
   >([]);
-  const [selectedSupplierTag, setSelectedSupplierTag] = useState<
-    {
-      id: number;
-      name: string;
-      korName: string;
-      code: string;
-      email: string;
-      communicationLanguage: string;
-    }[]
-  >([]);
   const [showPDFPreview, setShowPDFPreview] = useState(false);
   const [pdfSupplierTag, setPdfSupplierTag] = useState<
     {
@@ -315,7 +305,6 @@ const MakeInquiry = () => {
       setFormValues(INITIAL_FORM_VALUES);
       setItems(INITIAL_TABLE_VALUES);
       setSelectedSuppliers([]);
-      setSelectedSupplierTag([]);
       setPdfSupplierTag([]);
       setVesselList([]);
       setVesselNameList([]);
@@ -408,7 +397,6 @@ const MakeInquiry = () => {
         []
       );
       const suppliers = getSupplierMap(allItems);
-      setSelectedSupplierTag(suppliers);
       setSelectedSuppliers(suppliers);
     };
 
@@ -896,11 +884,9 @@ const MakeInquiry = () => {
           formValues={formValues}
           autoCompleteOptions={autoCompleteOptions}
           vesselNameList={vesselNameList}
-          selectedSuppliers={selectedSuppliers}
           handleFormChange={handleFormChange}
           customerUnreg={!selectedCustomerId}
           vesselUnreg={!selectedVessel?.id}
-          setSelectedSupplierTag={setSelectedSupplierTag}
           setSelectedSuppliers={setSelectedSuppliers}
           isEditMode={isEditMode}
           isDocNumDuplicate={isDocNumDuplicate}
