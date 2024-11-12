@@ -189,11 +189,6 @@ const MakeInquiry = () => {
       label: string;
     }[]
   >([]);
-  const [itemNameMap, setItemNameMap] = useState<{ [key: string]: string }>({});
-  const [itemIdMap, setItemIdMap] = useState<{ [key: string]: number }>({});
-  const [supplierOptions, setSupplierOptions] = useState<
-    { value: string; id: number; itemId: number; code: string; email: string }[]
-  >([]);
   const [selectedSuppliers, setSelectedSuppliers] = useState<
     {
       id: number;
@@ -326,9 +321,6 @@ const MakeInquiry = () => {
       setVesselNameList([]);
       setAutoCompleteOptions([]);
       setItemCodeOptions([]);
-      setItemNameMap({});
-      setItemIdMap({});
-      setSupplierOptions([]);
       setInquiryDetail(null);
       setTables([]);
       setShowPDFPreview(false);
@@ -750,7 +742,6 @@ const MakeInquiry = () => {
         const itemArray = await fetchAndProcessItemData(value);
 
         updateItemCodeOptions(itemArray);
-        updateItemMaps(itemArray);
       } catch (error) {
         console.error("Error fetching item codes and suppliers:", error);
       }
@@ -773,27 +764,6 @@ const MakeInquiry = () => {
         itemId: item.itemId,
       }))
     );
-  };
-
-  const updateItemMaps = (itemArray: Item[]) => {
-    const newItemNameMap = itemArray.reduce<{ [key: number]: string }>(
-      (acc, item) => {
-        acc[item.itemId] = item.itemName;
-        return acc;
-      },
-      {}
-    );
-
-    const newItemIdMap = itemArray.reduce<{ [key: number]: number }>(
-      (acc, item) => {
-        acc[item.itemId] = item.itemId;
-        return acc;
-      },
-      {}
-    );
-
-    setItemNameMap(newItemNameMap);
-    setItemIdMap(newItemIdMap);
   };
 
   const handleHeaderSave = (text: string) => {
