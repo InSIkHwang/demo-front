@@ -41,7 +41,6 @@ interface InquirySearchModalProps {
       }[]
     >
   >;
-  setIsFromInquirySearchModal: Dispatch<SetStateAction<boolean>>;
 }
 
 const InquirySearchModal = ({
@@ -53,7 +52,6 @@ const InquirySearchModal = ({
   inquirySearchMakerNameResult,
   handleInquirySearch,
   setSelectedSuppliers,
-  setIsFromInquirySearchModal,
 }: InquirySearchModalProps) => {
   const searchListColumns: ColumnsType<any> = [
     {
@@ -90,8 +88,6 @@ const InquirySearchModal = ({
                 setSelectedSuppliers((prevSuppliers) => {
                   const newSuppliers = [...prevSuppliers, selectedSupplier];
 
-                  setIsFromInquirySearchModal(true);
-
                   return newSuppliers; // 업데이트된 공급업체 리스트 반환
                 });
               }}
@@ -126,8 +122,6 @@ const InquirySearchModal = ({
             // 새로운 공급업체 추가
             setSelectedSuppliers((prevSuppliers) => {
               const newSuppliers = [...prevSuppliers, selectedSupplier];
-
-              setIsFromInquirySearchModal(true);
 
               return newSuppliers; // 업데이트된 공급업체 리스트 반환
             });

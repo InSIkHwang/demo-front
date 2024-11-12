@@ -213,17 +213,11 @@ const MakeInquiry = () => {
   const [formValues, setFormValues] = useState(INITIAL_FORM_VALUES);
   const [mailDataList, setMailDataList] = useState<emailSendData[]>([]);
   const [isDuplicate, setIsDuplicate] = useState<boolean>(false);
-  const [fileData, setFileData] = useState<File[]>([]);
-  const [pdfFileData, setPdfFileData] = useState<File[]>([]);
-  const [isSendMail, setIsSendMail] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(true); // 로딩 상태 변수 추가
   const [isDocNumDuplicate, setIsDocNumDuplicate] = useState<boolean>(false);
-  const [inquiryId, setInquiryId] = useState<number | null>(null);
   const [inquirySearchMakerName, setInquirySearchMakerName] = useState("");
   const [inquirySearchMakerNameResult, setInquirySearchMakerNameResult] =
     useState<InquirySearchMakerInquirySearchResult | null>(null);
-  const [isFromInquirySearchModal, setIsFromInquirySearchModal] =
-    useState(false);
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
   const [isVesselModalOpen, setIsVesselModalOpen] = useState(false);
   const [isSupplierModalOpen, setIsSupplierModalOpen] = useState(false);
@@ -686,7 +680,6 @@ const MakeInquiry = () => {
         isEditMode
       );
 
-      setInquiryId(response);
       message.success("Saved successfully!");
 
       const newInquiryDetail = await fetchInquiryDetail(
@@ -962,8 +955,6 @@ const MakeInquiry = () => {
           inquiryFormValues={formValues}
           handleSubmit={handleSubmit}
           selectedSupplierTag={getAllTableSuppliers()}
-          setFileData={setFileData}
-          setIsSendMail={setIsSendMail}
           getItemsForSupplier={(supplierId) => {
             const selectedTables = tables.filter((table) =>
               table.supplierList?.some(
@@ -980,7 +971,6 @@ const MakeInquiry = () => {
           }}
           vesselInfo={selectedVessel}
           pdfHeader={pdfHeader}
-          setPdfFileData={setPdfFileData}
           handleLanguageChange={handleLanguageChange}
         />
       </Modal>
@@ -1077,7 +1067,6 @@ const MakeInquiry = () => {
           items={getSelectedTableItems()}
           vesselInfo={selectedVessel}
           pdfHeader={pdfHeader}
-          setPdfFileData={setPdfFileData}
         />
       )}
 
@@ -1107,7 +1096,6 @@ const MakeInquiry = () => {
           inquirySearchMakerNameResult={inquirySearchMakerNameResult}
           handleInquirySearch={handleInquirySearch}
           setSelectedSuppliers={setSelectedSuppliers}
-          setIsFromInquirySearchModal={setIsFromInquirySearchModal}
         />
         <FloatButton.BackTop visibilityHeight={0} />
       </BtnGroup>

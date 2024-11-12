@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Dispatch, SetStateAction } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Form,
   Input,
@@ -92,12 +92,9 @@ interface MailSenderModalProps {
     email: string;
     communicationLanguage: string;
   }[];
-  setFileData: Dispatch<SetStateAction<File[]>>;
-  setIsSendMail: Dispatch<SetStateAction<boolean>>;
   getItemsForSupplier: (supplierId: number) => InquiryItem[];
   vesselInfo: VesselList | null;
   pdfHeader: string;
-  setPdfFileData: Dispatch<SetStateAction<File[]>>;
   handleLanguageChange: (value: string, id: number) => void;
 }
 
@@ -107,18 +104,14 @@ const MailSenderModal = ({
   inquiryFormValues,
   handleSubmit,
   selectedSupplierTag,
-  setFileData,
-  setIsSendMail,
   getItemsForSupplier,
   vesselInfo,
   pdfHeader,
-  setPdfFileData,
   handleLanguageChange,
 }: MailSenderModalProps) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [currentMailDataList, setCurrentMailDataList] = useState(mailDataList);
-  const [activeTabIndex, setActiveTabIndex] = useState("0");
   const [selectedMailIndexes, setSelectedMailIndexes] = useState<Set<number>>(
     new Set()
   );
@@ -149,10 +142,6 @@ const MailSenderModal = ({
     setCurrentMailDataList(mailDataList);
   }, [mailDataList, form, inquiryFormValues.docNumber]);
 
-  const handleTabChange = (key: string) => {
-    setActiveTabIndex(key);
-  };
-
   const handleSelectAllChange = (e: CheckboxChangeEvent) => {
     if (e.target.checked) {
       setSelectedMailIndexes(
@@ -180,7 +169,6 @@ const MailSenderModal = ({
       return message.error("There is no selected mail destination");
     }
     setLoading(true);
-    setIsSendMail(true);
 
     // 진행 상황 모달 표시 (OK 버튼 숨김)
     const modal = Modal.confirm({
@@ -204,7 +192,6 @@ const MailSenderModal = ({
       if (inquiryId || mode === "addSupplier") {
         for (const index of Array.from(selectedMailIndexes)) {
           const updatedFileData = [...uploadFile];
-          setFileData(updatedFileData);
 
           const pdfFiles = await generatePDFs(
             filteredSupplierTags,
@@ -212,7 +199,6 @@ const MailSenderModal = ({
             getItemsForSupplier,
             vesselInfo,
             pdfHeader,
-            setPdfFileData,
             index
           );
 
@@ -231,7 +217,6 @@ const MailSenderModal = ({
           };
 
           const finalFileData = [...updatedFileData, ...pdfFiles];
-          setFileData(finalFileData);
 
           await sendInquiryMail(
             mode,
@@ -384,12 +369,7 @@ const MailSenderModal = ({
             No Supplier selected!
           </Typography.Paragraph>
         ) : (
-          <Tabs
-            defaultActiveKey="0"
-            type="card"
-            onChange={handleTabChange}
-            items={tabsItems}
-          />
+          <Tabs defaultActiveKey="0" type="card" items={tabsItems} />
         )}
 
         <div>

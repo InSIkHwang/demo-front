@@ -86,17 +86,12 @@ const AddSupplierOnInquiry = () => {
   const [pdfHeader, setPdfHeader] = useState<string>("");
   const [formValues, setFormValues] = useState(INITIAL_FORM_VALUES);
   const [mailDataList, setMailDataList] = useState<emailSendData[]>([]);
-  const [fileData, setFileData] = useState<File[]>([]);
-  const [pdfFileData, setPdfFileData] = useState<File[]>([]);
-  const [isSendMail, setIsSendMail] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(true); // 로딩 상태 변수 추가
   const [inquirySearchMakerName, setInquirySearchMakerName] = useState("");
   const [inquirySearchMakerNameResult, setInquirySearchMakerNameResult] =
     useState<InquirySearchMakerInquirySearchResult | null>(null);
 
   const [tagColors, setTagColors] = useState<{ [id: number]: string }>({});
-  const [isFromInquirySearchModal, setIsFromInquirySearchModal] =
-    useState(false);
   const [headerEditModalVisible, setHeaderEditModalVisible] =
     useState<boolean>(false);
   const [isMailSenderVisible, setIsMailSenderVisible] = useState(false);
@@ -296,14 +291,11 @@ const AddSupplierOnInquiry = () => {
             inquiryFormValues={formValues}
             handleSubmit={handleSubmit}
             selectedSupplierTag={selectedSuppliers}
-            setFileData={setFileData}
-            setIsSendMail={setIsSendMail}
             getItemsForSupplier={(supplierId) => {
               return items;
             }}
             vesselInfo={selectedVessel}
             pdfHeader={pdfHeader}
-            setPdfFileData={setPdfFileData}
             handleLanguageChange={handleLanguageChange}
           />
         )}
@@ -370,7 +362,6 @@ const AddSupplierOnInquiry = () => {
           items={items}
           vesselInfo={selectedVessel}
           pdfHeader={pdfHeader}
-          setPdfFileData={setPdfFileData}
         />
       )}
 
@@ -400,7 +391,6 @@ const AddSupplierOnInquiry = () => {
           inquirySearchMakerNameResult={inquirySearchMakerNameResult}
           handleInquirySearch={handleInquirySearch}
           setSelectedSuppliers={setSelectedSuppliers}
-          setIsFromInquirySearchModal={setIsFromInquirySearchModal}
         />
         <FloatButton.BackTop visibilityHeight={0} />
       </BtnGroup>
