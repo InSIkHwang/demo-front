@@ -966,7 +966,9 @@ const MakeInquiry = () => {
         onClick={handleSubmit}
         style={{ margin: "20px 0 0 15px", float: "right" }}
         disabled={
-          isDocNumDuplicate || !formValues.docNumber || !formValues.refNumber
+          isDocNumDuplicate ||
+          !formValues.docNumber ||
+          !formValues.refNumber.trim()
         }
       >
         Save
@@ -975,7 +977,11 @@ const MakeInquiry = () => {
         type="primary"
         onClick={() => toggleModal("mail", true)}
         style={{ margin: "20px 0 0 15px", float: "right" }}
-        disabled={isDocNumDuplicate}
+        disabled={
+          isDocNumDuplicate ||
+          !formValues.docNumber ||
+          !formValues.refNumber.trim()
+        }
       >
         Send Email
       </Button>

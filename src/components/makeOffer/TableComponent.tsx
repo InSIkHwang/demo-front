@@ -640,7 +640,13 @@ const TableComponent = ({
       render: (text: string, record: any, index: number) => (
         <Select
           value={text}
-          onChange={(value) => handleInputChange(index, "itemType", value)}
+          onChange={(value) => {
+            handleInputChange(index, "itemType", value);
+            // DASH가 아닌 타입으로 변경될 때 indexNo를 빈 문자열로 설정
+            if (value !== "DASH") {
+              handleInputChange(index, "indexNo", "");
+            }
+          }}
           style={{ width: "100%" }}
         >
           {["MAKER", "TYPE", "DESC", "ITEM", "DASH"].map((opt) => (
