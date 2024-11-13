@@ -830,9 +830,9 @@ const TableComponent = ({
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
               }
-              inputRefs.current[index][5] = el;
+              inputRefs.current[index][6] = el;
             }}
-            onKeyDown={(e) => handleNextRowKeyDown(e, index, 5)}
+            onKeyDown={(e) => handleNextRowKeyDown(e, index, 6)}
             onChange={(e) =>
               handleInputChange(index, "salesPriceKRW", e.target.value)
             }
@@ -876,9 +876,9 @@ const TableComponent = ({
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
               }
-              inputRefs.current[index][6] = el;
+              inputRefs.current[index][7] = el;
             }}
-            onKeyDown={(e) => handleNextRowKeyDown(e, index, 6)}
+            onKeyDown={(e) => handleNextRowKeyDown(e, index, 7)}
             onChange={(e) =>
               handleInputChange(index, "salesPriceGlobal", e.target.value)
             }
