@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button, Divider, message, Modal, Select, Tabs, Tooltip } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
@@ -21,6 +21,7 @@ import OfferPDFGenerator from "../components/makeOffer/OfferPDFGenerator";
 import OfferMailSender from "../components/makeOffer/OfferSendMail";
 import { InvCharge } from "./../types/types";
 import TotalCardsComponent from "../components/makeOffer/TotalCardsComponent";
+import { produce } from "immer";
 
 const FormContainer = styled.div`
   position: relative;
@@ -72,7 +73,6 @@ const MakeOffer = () => {
     imoNo: 0,
     discount: 0,
   });
-  const [isDuplicate, setIsDuplicate] = useState<boolean>(false);
   const [showPDFPreview, setShowPDFPreview] = useState(false);
   const [language, setLanguage] = useState<string>("KOR");
   const [headerEditModalVisible, setHeaderEditModalVisible] =
@@ -157,28 +157,20 @@ const MakeOffer = () => {
 
   const handleInputChange = useCallback(
     (index: number, key: keyof ItemDetailType, value: any) => {
-      setCurrentDetailItems((prevItems) => {
-        if (!prevItems) return []; // prevItems가 undefined인 경우 처리
+      setCurrentDetailItems((prevItems: ItemDetailType[]) => {
+        if (!prevItems?.[index]) return prevItems;
+        if (prevItems[index][key] === value) return prevItems;
 
-        const updatedItems = [...prevItems];
-        const currentItem = updatedItems[index];
-
-        if (!currentItem) return prevItems; // 해당 인덱스의 아이템이 없는 경우 처리
-
-        if ((key === "itemName" || key === "itemCode") && currentItem.itemId) {
-          updatedItems[index] = {
-            ...currentItem,
-            [key]: value,
-            itemId: null,
-          };
-        } else {
-          updatedItems[index] = {
-            ...currentItem,
-            [key]: value,
-          };
-        }
-
-        return updatedItems;
+        // produce 대신 불변성을 직접 관리
+        const newItems = [...prevItems];
+        newItems[index] = {
+          ...newItems[index],
+          [key]: value,
+          ...(["itemName", "itemCode"].includes(key) && newItems[index].itemId
+            ? { itemId: null }
+            : {}),
+        };
+        return newItems;
       });
     },
     []
@@ -189,7 +181,7 @@ const MakeOffer = () => {
       if (!prevItems || !currentSupplierInfo) return prevItems; // null/undefined 체크
 
       return prevItems.map((record) => {
-        if (!record || record.itemType !== "ITEM") return record; // record가 없거나 ITEM이 아닌 경우 처��
+        if (!record || record.itemType !== "ITEM") return record; // record가 없거나 ITEM이 아닌 경우 처
 
         const updatedSalesPriceGlobal = convertCurrency(
           record.salesPriceKRW,
@@ -436,23 +428,9 @@ const MakeOffer = () => {
     }));
 
     try {
-      if (isDuplicate) {
-        // 중복된 품목이 있을 경우 사용자에게 확인 메시지 표시
-        Modal.confirm({
-          title: "Duplicate items found.",
-          content: "Do you want to save it?",
-          okText: "OK",
-          cancelText: "Cancel",
-          onOk: async () => {
-            // 확인 버튼을 눌렀을 때 저장 로직 실행
-            await saveData(formattedData);
-          },
-        });
-      } else {
-        // 중복이 없을 경우 바로 저장
-        await saveData(formattedData);
-        loadOfferDetail();
-      }
+      // 중복이 없을 경우 바로 저장
+      await saveData(formattedData);
+      loadOfferDetail();
     } catch (error) {
       message.error("An error occurred while saving data.");
     }
@@ -493,7 +471,7 @@ const MakeOffer = () => {
         // 저장 후 최신 데이터로 업데이트
         const response = await fetchOfferDetail(loadDocumentId.documentId);
 
-        // 현재 선택된 공급업체 찾기
+        // 현재 선택 공급업체 찾기
         const currentSupplier = response.response.find(
           (supplier: { inquiryId: number }) =>
             supplier.inquiryId === currentInquiryId
@@ -837,48 +815,39 @@ const MakeOffer = () => {
       setCombinedItemDetails(filteredItems);
     }
   };
-  // 현재 선택된 공급업체의 최신 itemDetail 정보를 가져옴
-  useEffect(() => {
-    if (dataSource?.response && selectedSupplierIds.length > 0) {
-      const updatedSelectedItems = dataSource.response
-        .filter((resp) =>
-          selectedSupplierIds.some(
-            (v) =>
-              v.supplierId === resp.supplierInfo.supplierId &&
-              v.inquiryId === resp.inquiryId
-          )
+
+  // useMemo를 컴포넌트 레벨로 이동
+  const memoizedItems = useMemo(() => {
+    if (!dataSource?.response || selectedSupplierIds.length === 0) return [];
+
+    return dataSource.response
+      .filter((resp) =>
+        selectedSupplierIds.some(
+          (v) =>
+            v.supplierId === resp.supplierInfo.supplierId &&
+            v.inquiryId === resp.inquiryId
         )
-        .reduce<any[]>((acc, curr) => {
-          // 현재 선택된 탭의 공급업체인 경우 currentDetailItems 사용
-          if (curr.inquiryId === currentInquiryId) {
-            return [...acc, ...currentDetailItems];
-          }
-          // 다른 공급업체의 경우 원래 itemDetail 사용
-          return [...acc, ...curr.itemDetail];
-        }, []);
-
-      // MAKER와 TYPE 아이템의 중복 제거
-      const seenMakerTypes = new Set<string>();
-      const filteredItems = updatedSelectedItems.filter((item) => {
-        if (item.itemType === "MAKER" || item.itemType === "TYPE") {
-          const normalizedItemName = item.itemName.replace(/\s+/g, "");
-          const key = `${item.itemType}-${normalizedItemName}`;
-          if (seenMakerTypes.has(key)) {
-            return false;
-          }
-          seenMakerTypes.add(key);
+      )
+      .reduce<any[]>((acc, curr) => {
+        // 현재 선택된 탭의 공급업체인 경우 currentDetailItems 사용
+        if (curr.inquiryId === currentInquiryId) {
+          return [...acc, ...currentDetailItems];
         }
-        return true;
-      });
-
-      setCombinedItemDetails(filteredItems);
-    }
+        // 다른 공급업체의 경우 원래 itemDetail 사용
+        return [...acc, ...curr.itemDetail];
+      }, []);
   }, [
-    currentDetailItems,
-    selectedSupplierIds,
     dataSource?.response,
+    selectedSupplierIds,
     currentInquiryId,
+    currentDetailItems,
   ]);
+
+  // useEffect에서는 memoizedItems를 사용
+  useEffect(() => {
+    if (!dataSource?.response || selectedSupplierIds.length === 0) return;
+    setCombinedItemDetails(memoizedItems);
+  }, [memoizedItems, dataSource?.response, selectedSupplierIds]);
 
   const renderSupplierTabs = () => {
     if (!dataSource?.response || !currentDetailItems || !currentSupplierInfo)
@@ -915,7 +884,6 @@ const MakeOffer = () => {
             setItemDetails={setCurrentDetailItems}
             handleInputChange={handleInputChange}
             currency={formValues.currency}
-            setIsDuplicate={setIsDuplicate}
             roundToTwoDecimalPlaces={roundToTwoDecimalPlaces}
             calculateTotalAmount={calculateTotalAmount}
             handleMarginChange={handleMarginChange}
