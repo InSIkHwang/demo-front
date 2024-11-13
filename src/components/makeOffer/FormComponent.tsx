@@ -213,7 +213,6 @@ const FormComponent = ({
             label="Ref No."
             name="refNumber"
             rules={[{ required: true, message: "Please enter ref number" }]}
-            normalize={(value) => value.trim()}
             validateStatus={
               !formValues.refNumber
                 ? "error"

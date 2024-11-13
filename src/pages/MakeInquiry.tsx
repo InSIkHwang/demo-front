@@ -929,7 +929,7 @@ const MakeInquiry = () => {
         disabled={
           isDocNumDuplicate ||
           !formValues.docNumber ||
-          !formValues.refNumber?.trim()
+          formValues.refNumber?.trim() === ""
         }
       >
         Send Email

@@ -189,7 +189,7 @@ const MakeOffer = () => {
       if (!prevItems || !currentSupplierInfo) return prevItems; // null/undefined 체크
 
       return prevItems.map((record) => {
-        if (!record || record.itemType !== "ITEM") return record; // record가 없거나 ITEM이 아닌 경우 처리
+        if (!record || record.itemType !== "ITEM") return record; // record가 없거나 ITEM이 아닌 경우 처��
 
         const updatedSalesPriceGlobal = convertCurrency(
           record.salesPriceKRW,
@@ -702,7 +702,47 @@ const MakeOffer = () => {
 
   /**********************************************************************/
 
-  const handleTabChange = (activeKey: string) => {
+  // 아이템 데이터 비교 함수
+  const compareItemDetails = (
+    currentItems: ItemDetailType[],
+    savedItems: ItemDetailType[]
+  ): boolean => {
+    if (currentItems.length !== savedItems.length) return false;
+
+    return currentItems.every((currentItem, index) => {
+      const savedItem = savedItems[index];
+      return (
+        currentItem.itemCode === savedItem.itemCode &&
+        currentItem.itemName === savedItem.itemName &&
+        currentItem.itemType === savedItem.itemType &&
+        currentItem.qty === savedItem.qty &&
+        currentItem.unit === savedItem.unit &&
+        currentItem.salesPriceKRW === savedItem.salesPriceKRW &&
+        currentItem.purchasePriceKRW === savedItem.purchasePriceKRW &&
+        currentItem.margin === savedItem.margin
+      );
+    });
+  };
+
+  // 저장 확인 모달을 보여주는 함수
+  const showSaveConfirmModal = async (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      Modal.confirm({
+        title: "Unsaved Changes",
+        content: "Do you want to save the current changes?",
+        okText: "Save",
+        cancelText: "Cancel",
+        onOk: async () => {
+          await handleSave();
+          resolve(true);
+        },
+        onCancel: () => resolve(false),
+      });
+    });
+  };
+
+  // 탭 변경 핸들러 수정
+  const handleTabChange = async (activeKey: string) => {
     if (!dataSource?.response) return;
 
     const selectedSupplier = dataSource.response.find(
@@ -710,6 +750,22 @@ const MakeOffer = () => {
     );
 
     if (selectedSupplier) {
+      // 현재 아이템과 저장된 아이템 비교
+      const currentSupplierData = dataSource.response.find(
+        (supplier) => supplier.inquiryId === currentInquiryId
+      );
+
+      if (currentSupplierData && currentDetailItems) {
+        const isDataEqual = compareItemDetails(
+          currentDetailItems,
+          currentSupplierData.itemDetail
+        );
+
+        if (!isDataEqual) {
+          await showSaveConfirmModal();
+        }
+      }
+
       setCurrentDetailItems(selectedSupplier.itemDetail);
       setCurrentSupplierInfo(selectedSupplier.supplierInfo);
       setCurrentInquiryId(selectedSupplier.inquiryId);
@@ -728,12 +784,30 @@ const MakeOffer = () => {
     }
   };
 
-  const handleSupplierSelect = (
-    values: Array<{
-      supplierId: number;
-      inquiryId: number;
-    }>
+  // Select 컴포넌트의 onChange 핸들러 수정
+  const handleSupplierSelect = async (
+    values: Array<{ supplierId: number; inquiryId: number }>
   ) => {
+    // 현재 아이템과 저장된 아이템 비교
+    const currentSupplierData = dataSource?.response.find(
+      (supplier) => supplier.inquiryId === currentInquiryId
+    );
+
+    if (currentSupplierData && currentDetailItems) {
+      const isDataEqual = compareItemDetails(
+        currentDetailItems,
+        currentSupplierData.itemDetail
+      );
+
+      if (!isDataEqual) {
+        const shouldSave = await showSaveConfirmModal();
+        if (!shouldSave) {
+          // 저장하지 않기로 했다면 이전 선택 상태 유지
+          return;
+        }
+      }
+    }
+
     setSelectedSupplierIds(values);
 
     if (dataSource?.response) {
@@ -747,7 +821,6 @@ const MakeOffer = () => {
         )
         .reduce<any[]>((acc, curr) => [...acc, ...curr.itemDetail], []);
 
-      // MAKER와 TYPE 아이템의 중복 제거 로직은 동일하게 유지
       const seenMakerTypes = new Set<string>();
       const filteredItems = selectedItems.filter((item) => {
         if (item.itemType === "MAKER" || item.itemType === "TYPE") {
@@ -863,7 +936,9 @@ const MakeOffer = () => {
             htmlType="submit"
             style={{ float: "right", width: 100, marginBottom: 20 }}
             onClick={handleSave}
-            disabled={!formValues.refNumber}
+            disabled={
+              !formValues.refNumber || formValues.refNumber.trim() === ""
+            }
           >
             Save
           </Button>
@@ -915,12 +990,23 @@ const MakeOffer = () => {
         Supplier's item data
       </Divider>
       {dataSource?.response && renderSupplierTabs()}
-      <Tooltip title="Please Save before sending email" placement="topLeft">
+      <Tooltip
+        title={
+          selectedSupplierIds.length === 0
+            ? "Please select supplier to send email"
+            : "Please Save before sending email"
+        }
+        placement="topLeft"
+      >
         <Button
           type="primary"
           onClick={showMailSenderModal}
           style={{ float: "right", marginTop: 20 }}
-          disabled={!formValues.refNumber}
+          disabled={
+            !formValues.refNumber ||
+            formValues.refNumber.trim() === "" ||
+            selectedSupplierIds.length === 0
+          }
         >
           Send Email
         </Button>
@@ -960,7 +1046,11 @@ const MakeOffer = () => {
         <span style={{ marginLeft: 20 }}>SUPPLIER: </span>
         <Select
           mode="multiple"
-          style={{ minWidth: 500, marginLeft: 10 }}
+          style={{
+            minWidth: 500,
+            marginLeft: 10,
+          }}
+          status={selectedSupplierIds.length === 0 ? "error" : undefined}
           onChange={(values: string[]) => {
             // 문자열로 된 값들을 다시 객체로 파싱
             const selectedIds = values.map((value) => JSON.parse(value));
