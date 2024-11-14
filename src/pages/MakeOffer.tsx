@@ -160,17 +160,17 @@ const MakeOffer = () => {
       setCurrentDetailItems((prevItems: ItemDetailType[]) => {
         if (!prevItems?.[index]) return prevItems;
         if (prevItems[index][key] === value) return prevItems;
-
-        // produce 대신 불변성을 직접 관리
-        const newItems = [...prevItems];
-        newItems[index] = {
-          ...newItems[index],
+  
+        const newItem = {
+          ...prevItems[index],
           [key]: value,
-          ...(["itemName", "itemCode"].includes(key) && newItems[index].itemId
+          ...(["itemName", "itemCode"].includes(key) && prevItems[index].itemId
             ? { itemId: null }
             : {}),
         };
-        return newItems;
+
+        // 변경된 항목만 업데이트
+        return Object.assign([], prevItems, { [index]: newItem });
       });
     },
     []

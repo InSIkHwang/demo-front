@@ -22,7 +22,7 @@ import {
   InputProps,
   InputRef,
 } from "antd";
-import { ColumnsType } from "antd/es/table";
+import { ColumnsType, ColumnType } from "antd/es/table";
 import styled from "styled-components";
 import { InvCharge, ItemDetailType } from "../../types/types";
 import {
@@ -129,6 +129,12 @@ interface DisplayInputProps extends Omit<InputProps, "value" | "onChange"> {
   className?: string;
 }
 
+interface TableRowProps {
+  record: ItemDetailType;
+  index: number;
+  columns: ColumnsType<ItemDetailType>;
+}
+
 interface TableComponentProps {
   itemDetails: ItemDetailType[];
   setItemDetails: Dispatch<SetStateAction<ItemDetailType[]>>;
@@ -199,23 +205,16 @@ const DisplayInput = memo(
         }
       }, [value, formatter]);
 
-      const debouncedHandleChange = useCallback(
-        debounce((value: string) => {
-          if (onChange) {
-            const parsedValue = parser(value);
-            onChange(parsedValue);
-          }
-        }, 300),
-        [onChange, parser]
-      );
-
       const handleChange = useCallback(
         (e: React.ChangeEvent<HTMLInputElement>) => {
           const rawValue = e.target.value;
           setDisplayValue(rawValue);
-          debouncedHandleChange(rawValue);
+          if (onChange) {
+            const parsedValue = parser(rawValue);
+            onChange(parsedValue);
+          }
         },
-        [debouncedHandleChange]
+        [onChange, parser]
       );
 
       return (
@@ -232,6 +231,39 @@ const DisplayInput = memo(
 );
 
 DisplayInput.displayName = "DisplayInput";
+
+const MemoizedDisplayInput = memo(DisplayInput, (prevProps, nextProps) => {
+  return prevProps.value === nextProps.value;
+});
+
+const TableRow = memo(({ record, index, columns }: TableRowProps) => {
+  return (
+    <tr>
+      {columns.map((column) => {
+        // ColumnGroupType 체크
+        if ("children" in column) {
+          return null; // 또는 그룹 컬럼에 대한 별도 처리
+        }
+
+        const columnWithDataIndex = column as ColumnType<ItemDetailType>;
+        const value = columnWithDataIndex.dataIndex
+          ? record[columnWithDataIndex.dataIndex as keyof ItemDetailType]
+          : undefined;
+        const renderedCell = columnWithDataIndex.render?.(value, record, index);
+
+        return (
+          <td key={column.key}>
+            {renderedCell && React.isValidElement(renderedCell)
+              ? renderedCell
+              : value}
+          </td>
+        );
+      })}
+    </tr>
+  );
+});
+
+TableRow.displayName = "TableRow";
 
 const TableComponent = ({
   itemDetails,
@@ -504,7 +536,7 @@ const TableComponent = ({
     columnIndex: number
   ) => {
     if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-      e.preventDefault(); // 방향키 기본 동작을 막음
+      e.preventDefault(); // ���향키 기본 동작을 막음
       if (
         e.key === "ArrowDown" &&
         inputRefs.current[rowIndex + 1]?.[columnIndex]
@@ -576,7 +608,7 @@ const TableComponent = ({
       render: (text: string, record: any, index: number) => {
         if (record.itemType === "DASH") {
           return (
-            <DisplayInput
+            <MemoizedDisplayInput
               value={text}
               ref={(el) => {
                 if (!inputRefs.current[index]) {
@@ -588,7 +620,7 @@ const TableComponent = ({
                 handleInputChange(index, "indexNo", value);
               }}
               onKeyDown={(e) => handleNextRowKeyDown(e, index, 0)}
-            ></DisplayInput>
+            ></MemoizedDisplayInput>
           );
         }
 
@@ -609,7 +641,7 @@ const TableComponent = ({
       render: (text: string, record: any, index: number) => {
         if (record.itemType !== "ITEM" && record.itemType !== "DASH") {
           return (
-            <DisplayInput
+            <MemoizedDisplayInput
               value={text}
               ref={(el) => {
                 if (!inputRefs.current[index]) {
@@ -618,7 +650,7 @@ const TableComponent = ({
                 inputRefs.current[index][1] = el;
               }}
               onKeyDown={(e) => handleNextRowKeyDown(e, index, 1)}
-            ></DisplayInput>
+            ></MemoizedDisplayInput>
           );
         }
         return (
@@ -732,7 +764,7 @@ const TableComponent = ({
         // itemType이 ITEM이 아닐 경우 qty 값을 0으로 설정
         if (record.itemType !== "ITEM" && record.itemType !== "DASH") {
           return (
-            <DisplayInput
+            <MemoizedDisplayInput
               value={text}
               ref={(el) => {
                 if (!inputRefs.current[index]) {
@@ -741,12 +773,12 @@ const TableComponent = ({
                 inputRefs.current[index][3] = el;
               }}
               onKeyDown={(e) => handleNextRowKeyDown(e, index, 3)}
-            ></DisplayInput>
+            ></MemoizedDisplayInput>
           ); // 화면에는 0을 표시
         }
 
         return (
-          <DisplayInput
+          <MemoizedDisplayInput
             type="text"
             value={text?.toLocaleString()}
             ref={(el) => {
@@ -791,7 +823,7 @@ const TableComponent = ({
       width: 75,
       render: (text: string, record: any, index: number) =>
         record.itemType === "ITEM" || record.itemType === "DASH" ? (
-          <DisplayInput
+          <MemoizedDisplayInput
             value={text}
             ref={(el) => {
               if (!inputRefs.current[index]) {
@@ -804,7 +836,7 @@ const TableComponent = ({
             onChange={(value) => handleInputChange(index, "unit", value)}
           />
         ) : (
-          <DisplayInput
+          <MemoizedDisplayInput
             value={text}
             ref={(el) => {
               if (!inputRefs.current[index]) {
@@ -813,7 +845,7 @@ const TableComponent = ({
               inputRefs.current[index][4] = el;
             }}
             onKeyDown={(e) => handleNextRowKeyDown(e, index, 4)}
-          ></DisplayInput>
+          ></MemoizedDisplayInput>
         ),
     },
     {
@@ -853,7 +885,7 @@ const TableComponent = ({
             : text;
 
         return (
-          <DisplayInput
+          <MemoizedDisplayInput
             type="text" // Change to "text" to handle formatted input
             value={value?.toLocaleString()} // Display formatted value
             ref={(el) => {
@@ -899,7 +931,7 @@ const TableComponent = ({
             : text;
 
         return (
-          <DisplayInput
+          <MemoizedDisplayInput
             type="text" // Change to "text" to handle formatted input
             value={value?.toLocaleString()} // Display formatted value
             ref={(el) => {
@@ -941,7 +973,7 @@ const TableComponent = ({
       render: (text: number, record: any) =>
         (record.itemType === "ITEM" || record.itemType === "DASH") &&
         !record.itemRemark ? (
-          <DisplayInput
+          <MemoizedDisplayInput
             type="text"
             value={calculateTotalAmount(
               record.salesPriceKRW,
@@ -962,7 +994,7 @@ const TableComponent = ({
       render: (text: number, record: any) =>
         (record.itemType === "ITEM" || record.itemType === "DASH") &&
         !record.itemRemark ? (
-          <DisplayInput
+          <MemoizedDisplayInput
             type="text"
             value={calculateTotalAmount(
               record.salesPriceGlobal,
@@ -987,7 +1019,7 @@ const TableComponent = ({
             : text;
 
         return (
-          <DisplayInput
+          <MemoizedDisplayInput
             type="text" // Change to "text" to handle formatted input
             value={value?.toLocaleString()} // Display formatted value
             ref={(el) => {
@@ -1033,7 +1065,7 @@ const TableComponent = ({
             : text;
 
         return (
-          <DisplayInput
+          <MemoizedDisplayInput
             type="text" // Change to "text" to handle formatted input
             value={value?.toLocaleString()} // Display formatted value
             ref={(el) => {
@@ -1075,7 +1107,7 @@ const TableComponent = ({
       render: (text: number, record: any, index: number) =>
         (record.itemType === "ITEM" || record.itemType === "DASH") &&
         !record.itemRemark ? (
-          <DisplayInput
+          <MemoizedDisplayInput
             type="text" // Change to "text" to handle formatted input
             value={calculateTotalAmount(
               record.purchasePriceKRW,
@@ -1099,7 +1131,7 @@ const TableComponent = ({
       render: (text: number, record: any, index: number) =>
         (record.itemType === "ITEM" || record.itemType === "DASH") &&
         !record.itemRemark ? (
-          <DisplayInput
+          <MemoizedDisplayInput
             type="text" // Change to "text" to handle formatted input
             value={calculateTotalAmount(
               record.purchasePriceGlobal,
@@ -1145,7 +1177,7 @@ const TableComponent = ({
             : text;
 
         return (
-          <DisplayInput
+          <MemoizedDisplayInput
             value={value}
             ref={(el) => {
               if (!inputRefs.current[index]) {

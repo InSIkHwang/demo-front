@@ -186,11 +186,17 @@ const MailSenderModal = ({
     });
 
     try {
+      console.log("Starting email send process...");
       const savedInquiryId = await handleSubmit(); // inquiryId 반환받기
+      console.log("Inquiry saved with ID:", savedInquiryId);
       const inquiryId: number | null = savedInquiryId as number | null;
 
       if (inquiryId || mode === "addSupplier") {
+        const results = [];
         for (const index of Array.from(selectedMailIndexes)) {
+          console.log(
+            `Processing email ${index + 1}/${selectedMailIndexes.size}`
+          );
           const updatedFileData = [...uploadFile];
 
           const pdfFiles = await generatePDFs(
@@ -201,6 +207,7 @@ const MailSenderModal = ({
             pdfHeader,
             index
           );
+          console.log("PDF files generated:", pdfFiles.length);
 
           if (!pdfFiles || pdfFiles.length === 0) {
             throw new Error("Failed to generate PDF files");
@@ -218,31 +225,49 @@ const MailSenderModal = ({
 
           const finalFileData = [...updatedFileData, ...pdfFiles];
 
-          await sendInquiryMail(
+          console.log("Sending email to:", currentFormData.toRecipient);
+          const response = await sendInquiryMail(
             mode,
             values.docNumber,
             inquiryId,
             finalFileData,
             [currentFormData]
           );
+          console.log("Email send response:", response);
+          results.push({ index, success: true });
         }
-        message.success("The selected email has been sent successfully!");
+
+        // 모든 이메일 전송 결과 확인
+        const allSuccess = results.every((r) => r.success);
+        if (allSuccess) {
+          message.success("All emails sent successfully!");
+        } else {
+          message.warning(
+            "Some emails failed to send. Please check the console for details."
+          );
+        }
         navigate("/supplierInquirylist");
       } else {
         message.error("Save failed.");
       }
     } catch (error) {
       if (error instanceof Error) {
-        console.error("Error sending email:", error);
+        console.error("Detailed error information:", {
+          message: error.message,
+          stack: error.stack,
+          name: error.name,
+        });
+
         if (error.message === "Failed to generate PDF files") {
           message.error("Failed to generate PDF files. Please try again.");
         } else if (error.message === "404") {
           message.error("PLEASE CHECK YOUR ATTACHED FILE");
         } else {
-          message.error("Email sending failed. Please try again.");
+          // 구체적인 에러 메시지 표시
+          message.error(`Email sending failed: ${error.message}`);
         }
       } else {
-        console.error("Unknown error:", error);
+        console.error("Unknown error details:", error);
         message.error("An unknown error occurred. Please try again.");
       }
     } finally {
