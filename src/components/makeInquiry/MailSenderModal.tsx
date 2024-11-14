@@ -165,6 +165,8 @@ const MailSenderModal = ({
   };
 
   const onFinish = async (values: any) => {
+    console.log("currentMailDataList", currentMailDataList);
+    console.log("values", values);
     if (selectedMailIndexes.size === 0) {
       return message.error("There is no selected mail destination");
     }
@@ -225,6 +227,7 @@ const MailSenderModal = ({
 
           const finalFileData = [...updatedFileData, ...pdfFiles];
 
+          console.log("currentFormData", currentFormData);
           console.log("Sending email to:", currentFormData.toRecipient);
           const response = await sendInquiryMail(
             mode,

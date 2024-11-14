@@ -40,6 +40,8 @@ const generateMailData = (
   const mailDataList: emailSendData[] = [];
 
   for (const supplierTag of selectedSupplierTag) {
+    console.log("supplierTag", supplierTag);
+
     const mailData: emailSendData = {
       supplierId: supplierTag.id,
       toRecipient: supplierTag.email,

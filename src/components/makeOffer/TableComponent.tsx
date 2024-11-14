@@ -22,7 +22,7 @@ import {
   InputProps,
   InputRef,
 } from "antd";
-import { ColumnsType, ColumnType } from "antd/es/table";
+import { ColumnsType } from "antd/es/table";
 import styled from "styled-components";
 import { InvCharge, ItemDetailType } from "../../types/types";
 import {
@@ -127,12 +127,6 @@ interface DisplayInputProps extends Omit<InputProps, "value" | "onChange"> {
   addonBefore?: string;
   addonAfter?: string;
   className?: string;
-}
-
-interface TableRowProps {
-  record: ItemDetailType;
-  index: number;
-  columns: ColumnsType<ItemDetailType>;
 }
 
 interface TableComponentProps {
