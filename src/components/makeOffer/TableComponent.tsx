@@ -236,35 +236,6 @@ const MemoizedDisplayInput = memo(DisplayInput, (prevProps, nextProps) => {
   return prevProps.value === nextProps.value;
 });
 
-const TableRow = memo(({ record, index, columns }: TableRowProps) => {
-  return (
-    <tr>
-      {columns.map((column) => {
-        // ColumnGroupType 체크
-        if ("children" in column) {
-          return null; // 또는 그룹 컬럼에 대한 별도 처리
-        }
-
-        const columnWithDataIndex = column as ColumnType<ItemDetailType>;
-        const value = columnWithDataIndex.dataIndex
-          ? record[columnWithDataIndex.dataIndex as keyof ItemDetailType]
-          : undefined;
-        const renderedCell = columnWithDataIndex.render?.(value, record, index);
-
-        return (
-          <td key={column.key}>
-            {renderedCell && React.isValidElement(renderedCell)
-              ? renderedCell
-              : value}
-          </td>
-        );
-      })}
-    </tr>
-  );
-});
-
-TableRow.displayName = "TableRow";
-
 const TableComponent = ({
   itemDetails,
   handleInputChange,
