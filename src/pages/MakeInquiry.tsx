@@ -402,7 +402,7 @@ const MakeInquiry = () => {
   const checkDuplicateOnMount = useCallback(async () => {
     if (formValues.docNumber) {
       const isDuplicate = await chkDuplicateDocNum(
-        formValues.docNumber.trim(),
+        formValues.docNumber?.trim(),
         Number(customerInquiryId)
       );
       setIsDocNumDuplicate(isDuplicate);
@@ -463,7 +463,7 @@ const MakeInquiry = () => {
       }
     };
 
-    const customerName = (formValues.customer + "").trim();
+    const customerName = (formValues.customer + "")?.trim();
     customerName ? searchCompanyName(customerName) : resetCompanyData();
   }, [formValues.customer, isCustomerModalOpen, isVesselModalOpen]);
 
@@ -546,7 +546,7 @@ const MakeInquiry = () => {
   const handleSubmit = async (): Promise<number | null> => {
     if (formValues.docNumber) {
       const isDuplicate = await chkDuplicateDocNum(
-        formValues.docNumber.trim(),
+        formValues.docNumber?.trim(),
         Number(customerInquiryId)
       );
       setIsDocNumDuplicate(isDuplicate);
@@ -714,7 +714,7 @@ const MakeInquiry = () => {
     async (index: number, value: string) => {
       handleInputChange(index, "itemCode", value?.trim());
 
-      if ((value + "").trim() === "") {
+      if ((value + "")?.trim() === "") {
         updateItemId(index, null);
         return;
       }
@@ -917,7 +917,7 @@ const MakeInquiry = () => {
         disabled={
           isDocNumDuplicate ||
           !formValues.docNumber ||
-          !formValues.refNumber.trim()
+          !formValues.refNumber?.trim()
         }
       >
         Save
@@ -929,7 +929,7 @@ const MakeInquiry = () => {
         disabled={
           isDocNumDuplicate ||
           !formValues.docNumber ||
-          !formValues.refNumber.trim()
+          formValues.refNumber?.trim() === ""
         }
       >
         Send Email

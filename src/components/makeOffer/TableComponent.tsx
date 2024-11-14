@@ -6,6 +6,8 @@ import React, {
   useRef,
   useState,
   useMemo,
+  memo,
+  forwardRef,
 } from "react";
 import {
   Table,
@@ -17,6 +19,8 @@ import {
   notification,
   message,
   Tooltip,
+  InputProps,
+  InputRef,
 } from "antd";
 import { ColumnsType } from "antd/es/table";
 import styled from "styled-components";
@@ -114,6 +118,17 @@ const CustomTable = styled(Table)`
   }
 `;
 
+interface DisplayInputProps extends Omit<InputProps, "value" | "onChange"> {
+  value: string | number | null;
+  onChange?: (value: string) => void;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
+  formatter?: (value: any) => string;
+  parser?: (value: string) => string;
+  addonBefore?: string;
+  addonAfter?: string;
+  className?: string;
+}
+
 interface TableComponentProps {
   itemDetails: ItemDetailType[];
   setItemDetails: Dispatch<SetStateAction<ItemDetailType[]>>;
@@ -123,7 +138,6 @@ interface TableComponentProps {
     value: any
   ) => void;
   currency: number;
-  setIsDuplicate: Dispatch<SetStateAction<boolean>>;
   roundToTwoDecimalPlaces: (value: number) => number;
   calculateTotalAmount: (price: number, qty: number) => number;
   handleMarginChange: (index: number, marginValue: number) => void;
@@ -158,12 +172,72 @@ interface TableComponentProps {
   setInvChargeList: Dispatch<SetStateAction<InvCharge[] | null>>;
 }
 
+// DisplayInput 컴포넌트를 TableComponent 외부로 이동
+const DisplayInput = memo(
+  forwardRef<InputRef, DisplayInputProps>(
+    (
+      {
+        value,
+        onChange,
+        onBlur,
+        formatter = (val: number | null | undefined) =>
+          val?.toLocaleString() ?? "",
+        parser = (val: string) => val.replace(/[^\d.-]/g, ""),
+        ...props
+      },
+      ref
+    ) => {
+      const [displayValue, setDisplayValue] = useState<string>(
+        formatter(value as number)
+      );
+
+      // 외부 value가 변경될 때만 displayValue 업데이트
+      useEffect(() => {
+        const formattedValue = formatter(value as number);
+        if (formattedValue !== displayValue) {
+          setDisplayValue(formattedValue);
+        }
+      }, [value, formatter]);
+
+      const debouncedHandleChange = useCallback(
+        debounce((value: string) => {
+          if (onChange) {
+            const parsedValue = parser(value);
+            onChange(parsedValue);
+          }
+        }, 300),
+        [onChange, parser]
+      );
+
+      const handleChange = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+          const rawValue = e.target.value;
+          setDisplayValue(rawValue);
+          debouncedHandleChange(rawValue);
+        },
+        [debouncedHandleChange]
+      );
+
+      return (
+        <Input
+          {...props}
+          ref={ref}
+          value={displayValue}
+          onChange={handleChange}
+          onBlur={onBlur}
+        />
+      );
+    }
+  )
+);
+
+DisplayInput.displayName = "DisplayInput";
+
 const TableComponent = ({
   itemDetails,
   handleInputChange,
   currency,
   setItemDetails,
-  setIsDuplicate,
   roundToTwoDecimalPlaces,
   calculateTotalAmount,
   handleMarginChange,
@@ -308,30 +382,6 @@ const TableComponent = ({
     handleInputChange(index, "itemCode", trimmedValue);
     debouncedFetchItemData(trimmedValue, index);
   };
-
-  const checkDuplicate = useCallback(
-    (key: string, value: string, index: number) => {
-      if (!(value + "")?.trim()) {
-        return false;
-      }
-
-      return itemDetails?.some(
-        (item: any, idx) => item[key] === value && idx !== index
-      );
-    },
-    [itemDetails]
-  );
-  // 컴포넌트 최초 렌더링 시 중복 여부를 확인
-  useEffect(() => {
-    // 중복 여부를 전체적으로 확인합니다.
-    const hasDuplicate = itemDetails?.some((item: any, index) =>
-      ["itemCode", "itemName"]?.some((key) =>
-        checkDuplicate(key, item[key], index)
-      )
-    );
-
-    setIsDuplicate(hasDuplicate);
-  }, [itemDetails, checkDuplicate]);
 
   const handleAddItem = (index: number) => {
     const newItem: ItemDetailType = {
@@ -526,7 +576,7 @@ const TableComponent = ({
       render: (text: string, record: any, index: number) => {
         if (record.itemType === "DASH") {
           return (
-            <Input
+            <DisplayInput
               value={text}
               ref={(el) => {
                 if (!inputRefs.current[index]) {
@@ -534,11 +584,11 @@ const TableComponent = ({
                 }
                 inputRefs.current[index][0] = el;
               }}
-              onChange={(e) => {
-                handleInputChange(index, "indexNo", e.target.value);
+              onChange={(value) => {
+                handleInputChange(index, "indexNo", value);
               }}
               onKeyDown={(e) => handleNextRowKeyDown(e, index, 0)}
-            ></Input>
+            ></DisplayInput>
           );
         }
 
@@ -559,8 +609,8 @@ const TableComponent = ({
       render: (text: string, record: any, index: number) => {
         if (record.itemType !== "ITEM" && record.itemType !== "DASH") {
           return (
-            <Input
-              readOnly
+            <DisplayInput
+              value={text}
               ref={(el) => {
                 if (!inputRefs.current[index]) {
                   inputRefs.current[index] = [];
@@ -568,7 +618,7 @@ const TableComponent = ({
                 inputRefs.current[index][1] = el;
               }}
               onKeyDown={(e) => handleNextRowKeyDown(e, index, 1)}
-            ></Input>
+            ></DisplayInput>
           );
         }
         return (
@@ -614,20 +664,8 @@ const TableComponent = ({
               }}
               onKeyDown={(e) => handleNextRowKeyDown(e, index, 1)}
             >
-              <Input.TextArea
-                autoSize={{ maxRows: 10 }}
-                style={{
-                  borderColor: checkDuplicate("itemCode", text, index)
-                    ? "#faad14"
-                    : "#d9d9d9",
-                }}
-              />
+              <Input.TextArea autoSize={{ maxRows: 10 }} />
             </AutoComplete>
-            {checkDuplicate("itemCode", text, index) && (
-              <div style={{ color: "#faad14", marginTop: "5px" }}>
-                duplicate code.
-              </div>
-            )}
           </>
         );
       },
@@ -680,16 +718,8 @@ const TableComponent = ({
             style={{
               borderRadius: "4px",
               width: "100%",
-              borderColor: checkDuplicate("itemName", text, index)
-                ? "#faad14"
-                : "#d9d9d9", // 중복 시 배경색 빨간색
             }}
           />
-          {checkDuplicate("itemName", text, index) && (
-            <div style={{ color: "#faad14", marginTop: "5px" }}>
-              duplicate name.
-            </div>
-          )}
         </>
       ),
     },
@@ -702,8 +732,8 @@ const TableComponent = ({
         // itemType이 ITEM이 아닐 경우 qty 값을 0으로 설정
         if (record.itemType !== "ITEM" && record.itemType !== "DASH") {
           return (
-            <Input
-              readOnly
+            <DisplayInput
+              value={text}
               ref={(el) => {
                 if (!inputRefs.current[index]) {
                   inputRefs.current[index] = [];
@@ -711,12 +741,12 @@ const TableComponent = ({
                 inputRefs.current[index][3] = el;
               }}
               onKeyDown={(e) => handleNextRowKeyDown(e, index, 3)}
-            ></Input>
+            ></DisplayInput>
           ); // 화면에는 0을 표시
         }
 
         return (
-          <Input
+          <DisplayInput
             type="text"
             value={text?.toLocaleString()}
             ref={(el) => {
@@ -726,8 +756,8 @@ const TableComponent = ({
               inputRefs.current[index][3] = el;
             }}
             onKeyDown={(e) => handleNextRowKeyDown(e, index, 3)}
-            onChange={(e) => {
-              const unformattedValue = e.target.value.replace(/,/g, "");
+            onChange={(value) => {
+              const unformattedValue = value.replace(/,/g, "");
               const updatedValue = isNaN(Number(unformattedValue))
                 ? 0
                 : Number(unformattedValue);
@@ -761,7 +791,7 @@ const TableComponent = ({
       width: 75,
       render: (text: string, record: any, index: number) =>
         record.itemType === "ITEM" || record.itemType === "DASH" ? (
-          <Input
+          <DisplayInput
             value={text}
             ref={(el) => {
               if (!inputRefs.current[index]) {
@@ -771,11 +801,11 @@ const TableComponent = ({
             }}
             onKeyDown={(e) => handleNextRowKeyDown(e, index, 4)}
             onBlur={(e) => handleUnitBlur(index, e.target.value)}
-            onChange={(e) => handleInputChange(index, "unit", e.target.value)}
+            onChange={(value) => handleInputChange(index, "unit", value)}
           />
         ) : (
-          <Input
-            readOnly
+          <DisplayInput
+            value={text}
             ref={(el) => {
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
@@ -783,7 +813,7 @@ const TableComponent = ({
               inputRefs.current[index][4] = el;
             }}
             onKeyDown={(e) => handleNextRowKeyDown(e, index, 4)}
-          ></Input>
+          ></DisplayInput>
         ),
     },
     {
@@ -823,18 +853,18 @@ const TableComponent = ({
             : text;
 
         return (
-          <Input
+          <DisplayInput
             type="text" // Change to "text" to handle formatted input
             value={value?.toLocaleString()} // Display formatted value
             ref={(el) => {
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
               }
-              inputRefs.current[index][5] = el;
+              inputRefs.current[index][6] = el;
             }}
-            onKeyDown={(e) => handleNextRowKeyDown(e, index, 5)}
-            onChange={(e) =>
-              handleInputChange(index, "salesPriceKRW", e.target.value)
+            onKeyDown={(e) => handleNextRowKeyDown(e, index, 6)}
+            onChange={(value) =>
+              handleInputChange(index, "salesPriceKRW", value)
             }
             onBlur={(e) => {
               const value = e.target.value;
@@ -869,18 +899,18 @@ const TableComponent = ({
             : text;
 
         return (
-          <Input
+          <DisplayInput
             type="text" // Change to "text" to handle formatted input
             value={value?.toLocaleString()} // Display formatted value
             ref={(el) => {
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
               }
-              inputRefs.current[index][6] = el;
+              inputRefs.current[index][7] = el;
             }}
-            onKeyDown={(e) => handleNextRowKeyDown(e, index, 6)}
-            onChange={(e) =>
-              handleInputChange(index, "salesPriceGlobal", e.target.value)
+            onKeyDown={(e) => handleNextRowKeyDown(e, index, 7)}
+            onChange={(value) =>
+              handleInputChange(index, "salesPriceGlobal", value)
             }
             onBlur={(e) => {
               const value = e.target.value;
@@ -911,7 +941,7 @@ const TableComponent = ({
       render: (text: number, record: any) =>
         (record.itemType === "ITEM" || record.itemType === "DASH") &&
         !record.itemRemark ? (
-          <Input
+          <DisplayInput
             type="text"
             value={calculateTotalAmount(
               record.salesPriceKRW,
@@ -932,7 +962,7 @@ const TableComponent = ({
       render: (text: number, record: any) =>
         (record.itemType === "ITEM" || record.itemType === "DASH") &&
         !record.itemRemark ? (
-          <Input
+          <DisplayInput
             type="text"
             value={calculateTotalAmount(
               record.salesPriceGlobal,
@@ -957,7 +987,7 @@ const TableComponent = ({
             : text;
 
         return (
-          <Input
+          <DisplayInput
             type="text" // Change to "text" to handle formatted input
             value={value?.toLocaleString()} // Display formatted value
             ref={(el) => {
@@ -967,9 +997,9 @@ const TableComponent = ({
               inputRefs.current[index][9] = el;
             }}
             onKeyDown={(e) => handleNextRowKeyDown(e, index, 9)}
-            onChange={(e) =>
-              handleInputChange(index, "purchasePriceKRW", e.target.value)
-            }
+            onChange={(value) => {
+              handleInputChange(index, "purchasePriceKRW", value);
+            }}
             onBlur={(e) => {
               const value = e.target.value;
               const unformattedValue = value.replace(/,/g, "");
@@ -1003,7 +1033,7 @@ const TableComponent = ({
             : text;
 
         return (
-          <Input
+          <DisplayInput
             type="text" // Change to "text" to handle formatted input
             value={value?.toLocaleString()} // Display formatted value
             ref={(el) => {
@@ -1013,9 +1043,9 @@ const TableComponent = ({
               inputRefs.current[index][10] = el;
             }}
             onKeyDown={(e) => handleNextRowKeyDown(e, index, 10)}
-            onChange={(e) =>
-              handleInputChange(index, "purchasePriceGlobal", e.target.value)
-            }
+            onChange={(value) => {
+              handleInputChange(index, "purchasePriceGlobal", value);
+            }}
             onBlur={(e) => {
               const value = e.target.value;
               const unformattedValue = value.replace(/,/g, "");
@@ -1045,14 +1075,14 @@ const TableComponent = ({
       render: (text: number, record: any, index: number) =>
         (record.itemType === "ITEM" || record.itemType === "DASH") &&
         !record.itemRemark ? (
-          <Input
+          <DisplayInput
             type="text" // Change to "text" to handle formatted input
             value={calculateTotalAmount(
               record.purchasePriceKRW,
               record.qty
             )?.toLocaleString()} // Display formatted value
-            onChange={(e) =>
-              handleInputChange(index, "purchaseAmountKRW", e.target.value)
+            onChange={(value) =>
+              handleInputChange(index, "purchaseAmountKRW", value)
             }
             style={{ width: "100%" }}
             readOnly
@@ -1069,14 +1099,14 @@ const TableComponent = ({
       render: (text: number, record: any, index: number) =>
         (record.itemType === "ITEM" || record.itemType === "DASH") &&
         !record.itemRemark ? (
-          <Input
+          <DisplayInput
             type="text" // Change to "text" to handle formatted input
             value={calculateTotalAmount(
               record.purchasePriceGlobal,
               record.qty
             )?.toLocaleString()} // Display formatted value
-            onChange={(e) =>
-              handleInputChange(index, "purchaseAmountGlobal", e.target.value)
+            onChange={(value) =>
+              handleInputChange(index, "purchaseAmountGlobal", value)
             }
             style={{ width: "100%" }}
             readOnly
@@ -1115,7 +1145,7 @@ const TableComponent = ({
             : text;
 
         return (
-          <Input
+          <DisplayInput
             value={value}
             ref={(el) => {
               if (!inputRefs.current[index]) {
@@ -1127,8 +1157,8 @@ const TableComponent = ({
             className="custom-input"
             addonAfter={"%"}
             onKeyDown={(e) => handleNextRowKeyDown(e, index, 13)}
-            onChange={(e) => {
-              const inputValue = e.target.value.replace(/[^0-9.-]/g, "");
+            onChange={(value) => {
+              const inputValue = value.replace(/[^0-9.-]/g, "");
               if (
                 inputValue === "" ||
                 inputValue === "-" ||

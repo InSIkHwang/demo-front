@@ -379,7 +379,7 @@ const DetailQuotationModal = ({
       key: "salesAmountKRW",
       width: 130,
       render: (text: number, record: any) => {
-        if (isSpecialItemType(record.itemType)) {
+        if (isSpecialItemType(record.itemType) || record.itemRemark) {
           return null;
         }
         const amount = text ?? 0; // 값이 null일 경우 0으로 처리
@@ -392,7 +392,7 @@ const DetailQuotationModal = ({
       key: "purchaseAmountKRW",
       width: 130,
       render: (text: number, record: any) => {
-        if (isSpecialItemType(record.itemType)) {
+        if (isSpecialItemType(record.itemType) || record.itemRemark) {
           return null;
         }
         const amount = text ?? 0; // 값이 null일 경우 0으로 처리
@@ -405,10 +405,19 @@ const DetailQuotationModal = ({
       key: "margin",
       width: 100,
       render: (text: number, record: any) => {
-        if (isSpecialItemType(record.itemType)) {
+        if (isSpecialItemType(record.itemType) || record.itemRemark) {
           return null;
         }
         return typeof text === "number" ? `${text.toFixed(2)}%` : "0.00%";
+      },
+    },
+    {
+      title: "Remark",
+      dataIndex: "itemRemark",
+      key: "itemRemark",
+      width: 100,
+      render: (text: string, record: any) => {
+        return text;
       },
     },
     {
@@ -427,7 +436,7 @@ const DetailQuotationModal = ({
       open={open}
       onCancel={onClose}
       footer={[
-        <Button type="primary" key="edit" onClick={handleConfirmClick}>
+        <Button type="primary" key="confirm" onClick={handleConfirmClick}>
           Confirm
         </Button>,
         <Button type="default" key="edit" onClick={handleEditClick}>

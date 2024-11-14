@@ -100,6 +100,51 @@ const StyledTag = styled(Tag)`
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
 `;
 
+const SupplierPreviewCard = styled.div`
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  box-sizing: border-box;
+  flex-wrap: wrap;
+`;
+
+const Card = styled.div`
+  background: white;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  width: 280px;
+
+  .supplier-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1890ff;
+    margin-bottom: 12px;
+  }
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+
+    .label {
+      color: #666;
+    }
+  }
+`;
+
+const Value = styled.span<{ isZero: boolean }>`
+  font-weight: 500;
+  color: ${({ isZero }) =>
+    isZero ? "red" : "inherit"}; // 값이 0일 경우 빨간색
+`;
+
+const EditButton = styled(Button)`
+  margin-top: 12px;
+`;
+
 const columns: ColumnsType<SupplierInquiryListIF> = [
   {
     title: "Document Number",
@@ -240,12 +285,6 @@ const OfferList = () => {
     }
   };
 
-  const handleRowClick = (record: SupplierInquiryListIF) => {
-    navigate(`/makeoffer/${record.documentId}`, {
-      state: { info: record, catrgory: "offer" },
-    });
-  };
-
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
@@ -267,6 +306,57 @@ const OfferList = () => {
   useEffect(() => {
     fetchFilteredData(); // 상태가 변경되면 데이터 재요청
   }, [viewMyOfferOnly]);
+
+  const expandedRowRender = (record: SupplierInquiryListIF) => {
+    return (
+      <div>
+        <EditButton
+          type="primary"
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/makeoffer/${record.documentId}`, {
+              state: { info: record, category: "offer" },
+            });
+          }}
+        >
+          View Details
+        </EditButton>
+        <SupplierPreviewCard>
+          {record.supplierPreview.map((supplier) => {
+            const isSalesZero = supplier.totalSalesAmountGlobal === 0;
+            const isPurchaseZero = supplier.totalPurchaseAmountGlobal === 0;
+
+            return (
+              <Card key={supplier.supplierInquiryId}>
+                <div className="supplier-name">{supplier.supplierName}</div>
+                <div className="info-row">
+                  <span className="label">Sales Amount:</span>
+                  <Value isZero={isSalesZero}>
+                    {supplier.totalSalesAmountGlobal.toLocaleString("en-US", {
+                      style: "currency",
+                      currency: record.currencyType,
+                    })}
+                  </Value>
+                </div>
+                <div className="info-row">
+                  <span className="label">Purchase Amount:</span>
+                  <Value isZero={isPurchaseZero}>
+                    {supplier.totalPurchaseAmountGlobal.toLocaleString(
+                      "en-US",
+                      {
+                        style: "currency",
+                        currency: record.currencyType,
+                      }
+                    )}
+                  </Value>
+                </div>
+              </Card>
+            );
+          })}
+        </SupplierPreviewCard>
+      </div>
+    );
+  };
 
   return (
     <>
@@ -370,8 +460,11 @@ const OfferList = () => {
               pagination={false}
               loading={loading}
               rowKey="documentId"
+              expandable={{
+                expandedRowRender,
+                expandRowByClick: true,
+              }}
               onRow={(record) => ({
-                onClick: () => handleRowClick(record),
                 style: { cursor: "pointer" },
               })}
             />

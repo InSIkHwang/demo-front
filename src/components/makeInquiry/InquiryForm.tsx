@@ -417,7 +417,6 @@ const InquiryForm = ({
             label="Ref No."
             name="refNumber"
             rules={[{ required: true, message: "Please enter ref number" }]}
-            normalize={(value) => value.trim()}
             validateStatus={
               !formValues.refNumber
                 ? "error"
@@ -434,8 +433,10 @@ const InquiryForm = ({
             }
           >
             <Input
-              value={formValues.refNumber}
-              onChange={(e) => handleFormChange("refNumber", e.target.value)}
+              value={formValues.refNumber?.trim()}
+              onChange={(e) =>
+                handleFormChange("refNumber", e.target.value.trim())
+              }
               onBlur={async (e) => {
                 const refNumber = e.target.value.trim();
                 const isDuplicate = await chkDuplicateRefNum(
