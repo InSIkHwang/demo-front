@@ -267,6 +267,8 @@ const MailSenderModal = ({
           message.error("PLEASE CHECK YOUR ATTACHED FILE");
         } else {
           // 구체적인 에러 메시지 표시
+          console.log("values(error)", values);
+
           message.error(`Email sending failed: ${error.message}`);
         }
       } else {
