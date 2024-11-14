@@ -241,12 +241,12 @@ const MailSenderModal = ({
         const allSuccess = results.every((r) => r.success);
         if (allSuccess) {
           message.success("All emails sent successfully!");
+          navigate("/supplierInquirylist");
         } else {
           message.warning(
             "Some emails failed to send. Please check the console for details."
           );
         }
-        navigate("/supplierInquirylist");
       } else {
         message.error("Save failed.");
       }
