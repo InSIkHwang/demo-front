@@ -156,12 +156,12 @@ export interface SupplierInquiryListIF {
   docRemark: string;
   docManager: string;
   documentStatus: string;
-  supplierInfoList: {
+  supplierPreview: {
     supplierInquiryId: number;
-    supplierId: number;
-    pdfUrl: string;
-    code: string;
-    companyName: string;
+    supplierCode: string;
+    supplierName: string;
+    totalSalesAmountGlobal: number;
+    totalPurchaseAmountGlobal: number;
   }[];
 }
 
