@@ -161,7 +161,6 @@ const MakeOffer = () => {
         if (!prevItems?.[index]) return prevItems;
         if (prevItems[index][key] === value) return prevItems;
 
-        // produce 대신 불변성을 직접 관리
         const newItems = [...prevItems];
         newItems[index] = {
           ...newItems[index],
@@ -170,6 +169,7 @@ const MakeOffer = () => {
             ? { itemId: null }
             : {}),
         };
+
         return newItems;
       });
     },
