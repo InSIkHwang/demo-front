@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Button, Divider, message, Modal, Select, Tabs, Tooltip } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import styled from "styled-components";
@@ -43,8 +43,9 @@ const Title = styled.h1`
 
 const MakeOffer = () => {
   const { state } = useLocation();
+  const { documentId: urlDocumentId } = useParams();
   const loadDocumentId = {
-    documentId: state?.info.documentId || [],
+    documentId: state?.info.documentId || Number(urlDocumentId) || [],
   };
   const [info, setInfo] = useState<any>(null);
   const [dataSource, setDataSource] = useState<OfferResponse | null>(null);

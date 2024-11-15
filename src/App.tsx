@@ -141,7 +141,7 @@ const App = () => {
             }
           />
           <Route
-            path="/makeoffer/:supplierInquiryId"
+            path="/makeoffer/:documentId"
             element={
               isAuthenticated ? <MakeOffer /> : <Navigate to="/userlogin" />
             }

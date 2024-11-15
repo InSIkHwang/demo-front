@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import styled from "styled-components";
-import { Button, Divider, FloatButton, message, Modal, Select } from "antd";
+import { Button, Divider, FloatButton, Modal, Select } from "antd";
 import { FileSearchOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { fetchVessel, searchInquiryWithMaker } from "../api/api";
@@ -61,7 +61,7 @@ const AddSupplierOnInquiry = () => {
   const location = useLocation();
   const data = location.state;
   const navigate = useNavigate();
-  const [items, setItems] = useState<InquiryItem[]>(data.itemDetails);
+  const [items, setItems] = useState<InquiryItem[]>(data?.itemDetails || []);
   const [selectedVessel, setSelectedVessel] = useState<VesselList | null>(null);
   const [selectedSuppliers, setSelectedSuppliers] = useState<
     {
@@ -115,6 +115,23 @@ const AddSupplierOnInquiry = () => {
     }
   };
 
+  const handleWrongWay = () => {
+    Modal.error({
+      title: "this is wrong way to access this page.",
+      content: "Please go back to the home page and use right way.",
+      okText: "Home",
+      onOk: () => {
+        navigate("/");
+      },
+    });
+  };
+
+  useEffect(() => {
+    if (!data || !data.documentInfo) {
+      handleWrongWay();
+    }
+  }, []);
+
   useEffect(() => {
     const checkAlreadySentSuppliers = async () => {
       if (selectedSuppliers.length > 0 && data.sendSupplier) {
@@ -147,10 +164,10 @@ const AddSupplierOnInquiry = () => {
     };
 
     checkAlreadySentSuppliers();
-  }, [selectedSuppliers, data.sendSupplier]);
+  }, [selectedSuppliers, data?.sendSupplier]);
 
   useEffect(() => {
-    if (data.documentInfo) {
+    if (data?.documentInfo) {
       // 최초 렌더링 시 data로 formValues 설정
       setFormValues({
         docNumber: data.documentInfo.documentNumber,
@@ -245,7 +262,7 @@ const AddSupplierOnInquiry = () => {
     fetchInquirySearchResults(); // 검색 수행
   };
 
-  if (isLoading) {
+  if (isLoading || !data) {
     return <LoadingSpinner />;
   }
 
