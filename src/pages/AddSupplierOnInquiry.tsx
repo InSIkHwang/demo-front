@@ -117,8 +117,8 @@ const AddSupplierOnInquiry = () => {
 
   const handleWrongWay = () => {
     Modal.error({
-      title: "this is wrong way to access this page",
-      content: "Please go back to the home page",
+      title: "this is wrong way to access this page.",
+      content: "Please go back to the home page and use right way.",
       okText: "Home",
       onOk: () => {
         navigate("/");
