@@ -15,6 +15,7 @@ import {
   notification,
   Tooltip,
   Tag,
+  Space,
 } from "antd";
 import {
   DeleteOutlined,
@@ -22,60 +23,75 @@ import {
   ExportOutlined,
   PlusCircleOutlined,
   CloseCircleOutlined,
+  ZoomOutOutlined,
+  ZoomInOutlined,
 } from "@ant-design/icons";
 import { InquiryItem, InquiryResponse, InquiryTable } from "../../types/types";
 import ExcelUploadModal from "../ExcelUploadModal";
 import { ColumnsType } from "antd/es/table";
 import { handleExport } from "../../api/api";
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import { TextAreaRef } from "antd/es/input/TextArea";
 
 const { Option } = Select;
 
-const CustomTable = styled(Table)`
+interface TableProps {
+  $zoomLevel?: number;
+}
+
+const CustomTable = styled(Table)<TableProps>`
   .ant-table * {
-    font-size: 13px;
+    font-size: ${(props) =>
+      props.$zoomLevel ? `${13 * props.$zoomLevel}px` : "13px"};
   }
 
   .ant-table-cell {
-    padding: 14px 4px !important;
+    padding: ${(props) =>
+      props.$zoomLevel
+        ? `${14 * props.$zoomLevel}px ${4 * props.$zoomLevel}px`
+        : "14px 4px"} !important;
     text-align: center !important;
     align-self: center;
     border: none !important;
   }
 
-  .maker-row {
-    background-color: #deefffd8; /* MAKER 행의 배경색 */
-    &:hover {
-      background-color: #deefff !important;
+  ${(props) => css`
+    .maker-row {
+      background-color: #deefffd8;
+      &:hover {
+        background-color: #deefff !important;
+      }
+      .ant-table-cell-row-hover {
+        background-color: #deefff !important;
+      }
     }
-    .ant-table-cell-row-hover {
-      background-color: #deefff !important;
+
+    .type-row {
+      background-color: #fffdded8;
+      &:hover {
+        background-color: #fffdde !important;
+      }
+      .ant-table-cell-row-hover {
+        background-color: #fffdde !important;
+      }
     }
-  }
-  .type-row {
-    background-color: #fffdded8; /* TYPE 행의 배경색 */
-    &:hover {
-      background-color: #fffdde !important;
+
+    .desc-row {
+      background-color: #f0f0f0d8;
+      &:hover {
+        background-color: #f0f0f0 !important;
+      }
+      .ant-table-cell-row-hover {
+        background-color: #f0f0f0 !important;
+      }
     }
-    .ant-table-cell-row-hover {
-      background-color: #fffdde !important;
+
+    .item-row {
+      &:hover {
+        background-color: #fafafa !important;
+      }
     }
-  }
-  .desc-row {
-    background-color: #f0f0f0d8;
-    &:hover {
-      background-color: #f0f0f0 !important;
-    }
-    .ant-table-cell-row-hover {
-      background-color: #f0f0f0 !important;
-    }
-  }
-  .item-row {
-    &:hover {
-      background-color: #fafafa !important;
-    }
-  }
+  `}
 `;
 
 interface DuplicateState {
@@ -139,6 +155,8 @@ interface TableSectionProps extends MakeInquiryTableProps {
   setTables: React.Dispatch<React.SetStateAction<InquiryTable[]>>;
   handleAddItem: (tableIndex: number, position: number) => void;
   setCurrentTableNo: Dispatch<SetStateAction<number>>;
+  zoomLevel: number;
+  setZoomLevel: Dispatch<SetStateAction<number>>;
 }
 
 // 개별 테이블 컴포넌트
@@ -153,9 +171,23 @@ function TableSection({
   uniqueSuppliers,
   setCurrentTableNo,
   setItems,
+  zoomLevel,
+  setZoomLevel,
 }: TableSectionProps) {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const currentTable = tables[tableIndex];
+
+  const ZOOM_STEP = 0.1;
+  const MIN_ZOOM = 0.5; // 최소 50% 크기
+  const MAX_ZOOM = 1.5; // 최대 150% 크기
+
+  const handleZoomIn = () => {
+    setZoomLevel((prev) => Math.min(prev + ZOOM_STEP, MAX_ZOOM));
+  };
+
+  const handleZoomOut = () => {
+    setZoomLevel((prev) => Math.max(prev - ZOOM_STEP, MIN_ZOOM));
+  };
 
   const handleSupplierSelect = (supplierId: number) => {
     const selectedSupplier = uniqueSuppliers?.find(
@@ -393,29 +425,51 @@ function TableSection({
           )}
         </div>
       </div>
-      <CustomTable
-        rowClassName={(record: any) => {
-          if (record.itemType === "MAKER") {
-            return "maker-row";
-          } else if (record.itemType === "TYPE") {
-            return "type-row";
-          } else if (record.itemType === "DESC") {
-            return "desc-row";
-          } else {
-            return "item-row";
-          }
-        }}
-        columns={columns}
-        dataSource={currentTable.itemDetails}
-        pagination={false}
-        rowKey="position"
-        scroll={{ y: 500 }}
-        virtual
-        size="small"
-        onRow={() => ({
-          onClick: () => setCurrentTableNo(tableIndex + 1),
-        })}
-      />
+      <Space style={{ marginBottom: 16 }}>
+        <Button
+          icon={<ZoomOutOutlined />}
+          onClick={handleZoomOut}
+          disabled={zoomLevel <= MIN_ZOOM}
+        />
+        <span>{Math.round(zoomLevel * 100)}%</span>
+        <Button
+          icon={<ZoomInOutlined />}
+          onClick={handleZoomIn}
+          disabled={zoomLevel >= MAX_ZOOM}
+        />
+      </Space>{" "}
+      <div
+        style={
+          {
+            "--table-scale": zoomLevel,
+          } as React.CSSProperties
+        }
+      >
+        <CustomTable
+          $zoomLevel={zoomLevel}
+          rowClassName={(record: any) => {
+            if (record.itemType === "MAKER") {
+              return "maker-row";
+            } else if (record.itemType === "TYPE") {
+              return "type-row";
+            } else if (record.itemType === "DESC") {
+              return "desc-row";
+            } else {
+              return "item-row";
+            }
+          }}
+          columns={columns}
+          dataSource={currentTable.itemDetails}
+          pagination={false}
+          rowKey="position"
+          scroll={{ y: 500 }}
+          virtual
+          size="small"
+          onRow={() => ({
+            onClick: () => setCurrentTableNo(tableIndex + 1),
+          })}
+        />
+      </div>
       <ExcelUploadModal
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
@@ -445,6 +499,7 @@ function MakeInquiryTable({
   uniqueSuppliers,
 }: MakeInquiryTableProps) {
   const [isDataReady, setIsDataReady] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(1);
 
   // 초기 데이터를 테이블별로 분리
   useEffect(() => {
@@ -834,7 +889,7 @@ function MakeInquiryTable({
       title: "No.",
       dataIndex: "no",
       key: "no",
-      width: 40,
+      width: 40 * zoomLevel,
       render: (_: any, record: any) => {
         if (!items || items.length === 0) {
           return null;
@@ -933,7 +988,7 @@ function MakeInquiryTable({
           ></Input>
         );
       },
-      width: 300,
+      width: 300 * zoomLevel,
     },
     {
       title: "OPT",
@@ -955,7 +1010,7 @@ function MakeInquiryTable({
           ))}
         </Select>
       ),
-      width: 120,
+      width: 120 * zoomLevel,
     },
     {
       title: "Name",
@@ -1002,7 +1057,7 @@ function MakeInquiryTable({
           </div>
         );
       },
-      width: 450,
+      width: 450 * zoomLevel,
     },
     {
       title: "QTY",
@@ -1045,7 +1100,7 @@ function MakeInquiryTable({
           ></Input>
         );
       },
-      width: 80,
+      width: 80 * zoomLevel,
     },
     {
       title: (
@@ -1099,7 +1154,7 @@ function MakeInquiryTable({
           ></Input>
         );
       },
-      width: 110,
+      width: 110 * zoomLevel,
     },
     {
       title: "Remark",
@@ -1151,7 +1206,7 @@ function MakeInquiryTable({
           />
         </div>
       ),
-      width: 120,
+      width: 120 * zoomLevel,
     },
   ];
 
@@ -1210,6 +1265,8 @@ function MakeInquiryTable({
             handleAddItem={handleAddItem}
             setCurrentTableNo={setCurrentTableNo}
             uniqueSuppliers={uniqueSuppliers}
+            zoomLevel={zoomLevel}
+            setZoomLevel={setZoomLevel}
           />
         ))}
     </div>
