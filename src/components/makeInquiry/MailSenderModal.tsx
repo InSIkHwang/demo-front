@@ -14,7 +14,7 @@ import {
   Spin,
   Select,
 } from "antd";
-import { SendOutlined, MailOutlined } from "@ant-design/icons";
+import { SendOutlined, MailOutlined, WarningOutlined } from "@ant-design/icons";
 import { UploadOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 import { sendInquiryMail } from "../../api/api";
@@ -66,6 +66,32 @@ const StyledButton = styled(Button)`
   margin-top: 24px;
 `;
 
+// 스타일 컴포넌트 추가
+const ValidationMessage = styled.div`
+  padding: 16px;
+  margin: 16px 0;
+  border-radius: 8px;
+  background-color: #fff2f0;
+  border: 1px solid #ffccc7;
+  color: #cf1322;
+
+  .title {
+    font-weight: bold;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .missing-items {
+    padding-left: 24px;
+  }
+
+  .supplier-item {
+    margin-bottom: 4px;
+  }
+`;
+
 interface FormValue {
   docNumber: string;
   registerDate: dayjs.Dayjs;
@@ -96,6 +122,7 @@ interface MailSenderModalProps {
   vesselInfo: VesselList | null;
   pdfHeader: string;
   handleLanguageChange: (value: string, id: number) => void;
+  isMailSenderVisible: boolean;
 }
 
 const MailSenderModal = ({
@@ -108,6 +135,7 @@ const MailSenderModal = ({
   vesselInfo,
   pdfHeader,
   handleLanguageChange,
+  isMailSenderVisible,
 }: MailSenderModalProps) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -116,6 +144,9 @@ const MailSenderModal = ({
     new Set()
   );
   const [uploadFile, setUploadFile] = useState<File[]>([]);
+  const [missingFieldsState, setMissingFieldsState] = useState<{
+    [key: string]: string[];
+  } | null>(null);
 
   const navigate = useNavigate();
 
@@ -123,24 +154,89 @@ const MailSenderModal = ({
     selectedMailIndexes.has(index)
   );
 
-  useEffect(() => {
-    // 기존 폼 데이터 초기화
-    form.resetFields();
+  const formValues = Form.useWatch([], form);
 
-    // 새로운 데이터로 폼 설정
-    form.setFieldsValue({
-      docNumber: inquiryFormValues.docNumber,
-      mails: mailDataList.map((mail) => ({
-        toRecipient: mail.toRecipient || "",
-        subject: mail.subject || "",
-        content: mail.content || "",
-        ccRecipient: mail.ccRecipient || "",
-        bccRecipient: mail.bccRecipient || "",
-      })),
+  useEffect(() => {
+    if (isMailSenderVisible && selectedSupplierTag.length > 0) {
+      // 모든 탭의 초기값을 설정
+      const initialValues = {
+        docNumber: inquiryFormValues.docNumber,
+        refNumber: inquiryFormValues.refNumber,
+        customer: inquiryFormValues.customer,
+        vesselName: inquiryFormValues.vesselName,
+        mails: selectedSupplierTag.map((supplier, index) => ({
+          toRecipient: mailDataList[index]?.toRecipient || supplier.email || "",
+          subject: mailDataList[index]?.subject || "",
+          content: mailDataList[index]?.content || "",
+          ccRecipient: mailDataList[index]?.ccRecipient || "",
+          bccRecipient: mailDataList[index]?.bccRecipient || "",
+          communicationLanguage: supplier.communicationLanguage || "",
+        })),
+      };
+
+      // 폼 초기화
+      form.setFieldsValue(initialValues);
+
+      // 모든 탭의 필드를 한 번에 터치하여 유효성 검사 트리거
+      selectedSupplierTag.forEach((_, index) => {
+        form
+          .validateFields([
+            ["mails", index, "toRecipient"],
+            ["mails", index, "subject"],
+            ["mails", index, "content"],
+          ])
+          .catch(() => {
+            // 유효성 검사 실패는 무시 - validateAndUpdateFields에서 처리됨
+          });
+      });
+
+      setCurrentMailDataList(mailDataList);
+    }
+  }, [isMailSenderVisible, selectedSupplierTag, mailDataList]);
+
+  const validateAndUpdateFields = () => {
+    const currentValues = form.getFieldsValue();
+    const missingFields: { [key: string]: string[] } = {};
+
+    selectedSupplierTag.forEach((supplier, index) => {
+      const supplierName = supplier?.name || `Supplier ${index + 1}`;
+      const missing: string[] = [];
+      const currentMail = currentValues.mails?.[index];
+      const mailListData = mailDataList[index];
+
+      if (
+        !currentMail?.toRecipient &&
+        !mailListData?.toRecipient &&
+        !supplier.email
+      ) {
+        missing.push("Recipient email");
+      }
+
+      if (!currentMail?.subject && !mailListData?.subject) {
+        missing.push("Email title");
+      }
+
+      if (!currentMail?.content && !mailListData?.content) {
+        missing.push("Email content");
+      }
+
+      if (!supplier.communicationLanguage) {
+        missing.push("Language");
+      }
+
+      if (missing.length > 0) {
+        missingFields[supplierName] = missing;
+      }
     });
 
-    setCurrentMailDataList(mailDataList);
-  }, [mailDataList, form, inquiryFormValues.docNumber]);
+    setMissingFieldsState(
+      Object.keys(missingFields).length > 0 ? missingFields : null
+    );
+  };
+
+  useEffect(() => {
+    validateAndUpdateFields();
+  }, [formValues, selectedSupplierTag]);
 
   const handleSelectAllChange = (e: CheckboxChangeEvent) => {
     if (e.target.checked) {
@@ -165,8 +261,6 @@ const MailSenderModal = ({
   };
 
   const onFinish = async (values: any) => {
-    console.log("currentMailDataList", currentMailDataList);
-    console.log("values", values);
     if (selectedMailIndexes.size === 0) {
       return message.error("There is no selected mail destination");
     }
@@ -188,9 +282,7 @@ const MailSenderModal = ({
     });
 
     try {
-      console.log("Starting email send process...");
       const savedInquiryId = await handleSubmit(); // inquiryId 반환받기
-      console.log("Inquiry saved with ID:", savedInquiryId);
       const inquiryId: number | null = savedInquiryId as number | null;
 
       if (inquiryId || mode === "addSupplier") {
@@ -209,34 +301,48 @@ const MailSenderModal = ({
             pdfHeader,
             index
           );
-          console.log("PDF files generated:", pdfFiles.length);
 
           if (!pdfFiles || pdfFiles.length === 0) {
             throw new Error("Failed to generate PDF files");
           }
 
           const currentFormData = {
-            toRecipient: values.mails[index].toRecipient,
-            subject: values.mails[index].subject,
-            content: values.mails[index].content,
-            ccRecipient: values.mails[index].ccRecipient,
-            bccRecipient: values.mails[index].bccRecipient,
+            toRecipient:
+              values.mails?.[index]?.toRecipient ||
+              currentMailDataList[index]?.toRecipient ||
+              selectedSupplierTag[index]?.email ||
+              "",
+            subject:
+              values.mails?.[index]?.subject ||
+              currentMailDataList[index]?.subject ||
+              "",
+            content:
+              values.mails?.[index]?.content ||
+              currentMailDataList[index]?.content ||
+              "",
+            ccRecipient:
+              values.mails?.[index]?.ccRecipient ||
+              currentMailDataList[index]?.ccRecipient ||
+              "",
+            bccRecipient: values.mails?.[index]?.bccRecipient || "",
             supplierName: selectedSupplierTag[index]?.name || "",
             supplierId: selectedSupplierTag[index]?.id,
           };
 
+          // 유효성 검사 실행
+          if (!validateFormData(currentFormData, index)) {
+            throw new Error("Required input fields are missing.");
+          }
+
           const finalFileData = [...updatedFileData, ...pdfFiles];
 
-          console.log("currentFormData", currentFormData);
-          console.log("Sending email to:", currentFormData.toRecipient);
-          const response = await sendInquiryMail(
+          await sendInquiryMail(
             mode,
             values.docNumber,
             inquiryId,
             finalFileData,
             [currentFormData]
           );
-          console.log("Email send response:", response);
           results.push({ index, success: true });
         }
 
@@ -352,6 +458,60 @@ const MailSenderModal = ({
     ),
   }));
 
+  const validateFormData = (data: any, index: number) => {
+    let isValid = true;
+
+    if (!data.toRecipient || data.toRecipient.trim() === "") {
+      message.error(
+        `Recipient email is missing for ${
+          selectedSupplierTag[index]?.name || `${index + 1}th supplier`
+        }.`
+      );
+      isValid = false;
+    }
+
+    if (!data.subject || data.subject.trim() === "") {
+      message.error(
+        `Email title is missing for ${
+          selectedSupplierTag[index]?.name || `${index + 1}th supplier`
+        }.`
+      );
+      isValid = false;
+    }
+
+    if (!data.content || data.content.trim() === "") {
+      message.error(
+        `Email content is missing for ${
+          selectedSupplierTag[index]?.name || `${index + 1}th supplier`
+        }.`
+      );
+      isValid = false;
+    }
+
+    if (!data.supplierName) {
+      message.error(`Supplier information is missing for ${index + 1}th item.`);
+      isValid = false;
+    }
+
+    if (!data.supplierId) {
+      message.error(`Supplier ID is missing for ${index + 1}th item.`);
+      isValid = false;
+    }
+
+    return isValid;
+  };
+
+  useEffect(() => {
+    if (!isMailSenderVisible) {
+      setMissingFieldsState(null);
+      setSelectedMailIndexes(new Set());
+    }
+  }, [isMailSenderVisible]);
+
+  if (!isMailSenderVisible) {
+    return null;
+  }
+
   return (
     <>
       {loading && <BlockingLayer />}
@@ -363,7 +523,7 @@ const MailSenderModal = ({
             initialValue={inquiryFormValues.docNumber}
             style={{ flex: 0.8 }}
           >
-            <Input disabled placeholder="문서 번호" />
+            <Input disabled placeholder="Document Number" />
           </StyledFormItem>
           <StyledFormItem
             name="refNumber"
@@ -439,7 +599,7 @@ const MailSenderModal = ({
           <Upload.Dragger
             customRequest={({ file }) => handleFileUpload(file)}
             showUploadList={false}
-            multiple={true} // 여러 파일 업로드 가능
+            multiple={true} // 여러 파 업로드 가능
           >
             <p className="ant-upload-drag-icon">
               <UploadOutlined />
@@ -463,6 +623,21 @@ const MailSenderModal = ({
             </div>
           )}
         </StyledFormItem>
+        {missingFieldsState && (
+          <ValidationMessage>
+            <div className="title">
+              <WarningOutlined />
+              Missing Required Information
+            </div>
+            <div className="missing-items">
+              {Object.entries(missingFieldsState).map(([supplier, fields]) => (
+                <div key={supplier} className="supplier-item">
+                  • {supplier}: {fields.join(", ")}
+                </div>
+              ))}
+            </div>
+          </ValidationMessage>
+        )}
         <StyledButton
           type="primary"
           htmlType="submit"
@@ -470,8 +645,11 @@ const MailSenderModal = ({
           icon={<SendOutlined />}
           size="large"
           block
+          disabled={!!missingFieldsState || selectedMailIndexes.size === 0}
         >
-          Send Email
+          {missingFieldsState
+            ? "Required information is missing"
+            : "Send Email"}
         </StyledButton>
       </StyledForm>
     </>

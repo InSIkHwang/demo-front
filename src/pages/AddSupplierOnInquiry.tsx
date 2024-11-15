@@ -297,6 +297,7 @@ const AddSupplierOnInquiry = () => {
             vesselInfo={selectedVessel}
             pdfHeader={pdfHeader}
             handleLanguageChange={handleLanguageChange}
+            isMailSenderVisible={isMailSenderVisible}
           />
         )}
       </Modal>

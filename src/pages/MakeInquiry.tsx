@@ -869,6 +869,8 @@ const MakeInquiry = () => {
     return <LoadingSpinner />;
   }
 
+  console.log(isMailSenderVisible);
+
   return (
     <FormContainer>
       <Title>견적요청서 작성(MAKE INQUIRY)</Title>
@@ -972,6 +974,7 @@ const MakeInquiry = () => {
           vesselInfo={selectedVessel}
           pdfHeader={pdfHeader}
           handleLanguageChange={handleLanguageChange}
+          isMailSenderVisible={isMailSenderVisible}
         />
       </Modal>
       <div
