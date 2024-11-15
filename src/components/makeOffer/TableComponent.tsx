@@ -21,6 +21,7 @@ import {
   Tooltip,
   InputProps,
   InputRef,
+  Space,
 } from "antd";
 import { ColumnsType } from "antd/es/table";
 import styled from "styled-components";
@@ -30,6 +31,8 @@ import {
   PlusCircleOutlined,
   FileExcelOutlined,
   ExportOutlined,
+  ZoomOutOutlined,
+  ZoomInOutlined,
 } from "@ant-design/icons";
 import { fetchItemData, handleOfferExport } from "../../api/api";
 import ExcelUploadModal from "../ExcelUploadModal";
@@ -37,13 +40,21 @@ import { TextAreaRef } from "antd/es/input/TextArea";
 import { debounce } from "lodash";
 import TotalCardsComponent from "./TotalCardsComponent";
 
-const CustomTable = styled(Table)`
+interface TableProps {
+  $zoomLevel?: number;
+}
+
+const CustomTable = styled(Table)<TableProps>`
   .ant-table * {
-    font-size: 11px;
+    font-size: ${(props) =>
+      props.$zoomLevel ? `${11 * props.$zoomLevel}px` : "11px"};
   }
 
   .ant-table-cell {
-    padding: 12px 2px !important;
+    padding: ${(props) =>
+      props.$zoomLevel
+        ? `${12 * props.$zoomLevel}px ${2 * props.$zoomLevel}px`
+        : "12px 2px"} !important;
     text-align: center !important;
     align-self: center;
     border: none !important;
@@ -262,6 +273,19 @@ const TableComponent = ({
   >([]);
   const [unitOptions, setUnitOptions] = useState<string[]>(["PCS", "SET"]);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(1);
+
+  const ZOOM_STEP = 0.1;
+  const MIN_ZOOM = 0.5;
+  const MAX_ZOOM = 1.5;
+
+  const handleZoomIn = () => {
+    setZoomLevel((prev) => Math.min(prev + ZOOM_STEP, MAX_ZOOM));
+  };
+
+  const handleZoomOut = () => {
+    setZoomLevel((prev) => Math.max(prev - ZOOM_STEP, MIN_ZOOM));
+  };
 
   // 공통 데이터 처리 함수
   const updateDataSource = (
@@ -543,7 +567,7 @@ const TableComponent = ({
     {
       title: "Action",
       key: "action",
-      width: 80,
+      width: 80 * zoomLevel,
       render: (text: any, record: any, index: number) => (
         <div>
           <Button
@@ -569,7 +593,7 @@ const TableComponent = ({
       title: "No.",
       dataIndex: "indexNo",
       key: "indexNo",
-      width: 70,
+      width: 70 * zoomLevel,
       render: (text: string, record: any, index: number) => {
         if (record.itemType === "DASH") {
           return (
@@ -602,7 +626,7 @@ const TableComponent = ({
       title: "PartNo",
       dataIndex: "itemCode",
       key: "itemCode",
-      width: 115,
+      width: 115 * zoomLevel,
       render: (text: string, record: any, index: number) => {
         if (record.itemType !== "ITEM" && record.itemType !== "DASH") {
           return (
@@ -671,7 +695,7 @@ const TableComponent = ({
       title: "OPT",
       dataIndex: "itemType",
       key: "itemType",
-      width: 80,
+      width: 80 * zoomLevel,
       render: (text: string, record: any, index: number) => (
         <Select
           value={text}
@@ -696,7 +720,7 @@ const TableComponent = ({
       title: "Name",
       dataIndex: "itemName",
       key: "itemName",
-      width: 200,
+      width: 200 * zoomLevel,
       render: (text: string, record: any, index: number) => (
         <>
           <Input.TextArea
@@ -724,7 +748,7 @@ const TableComponent = ({
       title: "Qty",
       dataIndex: "qty",
       key: "qty",
-      width: 60,
+      width: 60 * zoomLevel,
       render: (text: number, record: any, index: number) => {
         // itemType이 ITEM이 아닐 경우 qty 값을 0으로 설정
         if (record.itemType !== "ITEM" && record.itemType !== "DASH") {
@@ -785,7 +809,7 @@ const TableComponent = ({
       ),
       dataIndex: "unit",
       key: "unit",
-      width: 75,
+      width: 75 * zoomLevel,
       render: (text: string, record: any, index: number) =>
         record.itemType === "ITEM" || record.itemType === "DASH" ? (
           <MemoizedDisplayInput
@@ -817,7 +841,7 @@ const TableComponent = ({
       title: "Remark",
       dataIndex: "itemRemark",
       key: "itemRemark",
-      width: 150,
+      width: 150 * zoomLevel,
       render: (text: string, record: any, index: number) => (
         <Input.TextArea
           placeholder="ex) N/A, Incl#1..."
@@ -841,7 +865,7 @@ const TableComponent = ({
       title: "Sales Price(KRW)",
       dataIndex: "salesPriceKRW",
       key: "salesPriceKRW",
-      width: 115,
+      width: 115 * zoomLevel,
       render: (text: number, record: any, index: number) => {
         const value =
           (record.itemType !== "ITEM" && record.itemType !== "DASH") ||
@@ -887,7 +911,7 @@ const TableComponent = ({
       title: "Sales Price(F)",
       dataIndex: "salesPriceGlobal",
       key: "salesPriceGlobal",
-      width: 115,
+      width: 115 * zoomLevel,
       render: (text: number, record: any, index: number) => {
         const value =
           (record.itemType !== "ITEM" && record.itemType !== "DASH") ||
@@ -933,7 +957,7 @@ const TableComponent = ({
       title: "Sales Amount(KRW)",
       dataIndex: "salesAmountKRW",
       key: "salesAmountKRW",
-      width: 115,
+      width: 115 * zoomLevel,
       className: "highlight-cell",
       render: (text: number, record: any) =>
         (record.itemType === "ITEM" || record.itemType === "DASH") &&
@@ -954,7 +978,7 @@ const TableComponent = ({
       title: "Sales Amount(F)",
       dataIndex: "salesAmountGlobal",
       key: "salesAmountGlobal",
-      width: 115,
+      width: 115 * zoomLevel,
       className: "highlight-cell",
       render: (text: number, record: any) =>
         (record.itemType === "ITEM" || record.itemType === "DASH") &&
@@ -975,7 +999,7 @@ const TableComponent = ({
       title: "Purchase Price(KRW)",
       dataIndex: "purchasePriceKRW",
       key: "purchasePriceKRW",
-      width: 115,
+      width: 115 * zoomLevel,
       render: (text: number, record: any, index: number) => {
         const value =
           (record.itemType !== "ITEM" && record.itemType !== "DASH") ||
@@ -1021,7 +1045,7 @@ const TableComponent = ({
       title: "Purchase Price(F)",
       dataIndex: "purchasePriceGlobal",
       key: "purchasePriceGlobal",
-      width: 115,
+      width: 115 * zoomLevel,
       render: (text: number, record: any, index: number) => {
         const value =
           (record.itemType !== "ITEM" && record.itemType !== "DASH") ||
@@ -1067,7 +1091,7 @@ const TableComponent = ({
       title: "Purchase Amount(KRW)",
       dataIndex: "purchaseAmountKRW",
       key: "purchaseAmountKRW",
-      width: 115,
+      width: 115 * zoomLevel,
       className: "highlight-cell",
       render: (text: number, record: any, index: number) =>
         (record.itemType === "ITEM" || record.itemType === "DASH") &&
@@ -1091,7 +1115,7 @@ const TableComponent = ({
       title: "Purchase Amount(F)",
       dataIndex: "purchaseAmountGlobal",
       key: "purchaseAmountGlobal",
-      width: 115,
+      width: 115 * zoomLevel,
       className: "highlight-cell",
       render: (text: number, record: any, index: number) =>
         (record.itemType === "ITEM" || record.itemType === "DASH") &&
@@ -1131,7 +1155,7 @@ const TableComponent = ({
       ),
       dataIndex: "margin",
       key: "margin",
-      width: 60,
+      width: 60 * zoomLevel,
       className: "highlight-cell",
 
       render: (text: number, record: any, index: number) => {
@@ -1221,26 +1245,48 @@ const TableComponent = ({
         invChargeList={invChargeList}
         setInvChargeList={setInvChargeList}
       />
-      <CustomTable
-        rowClassName={(record: any, index) => {
-          if (record.itemType === "MAKER") {
-            return "maker-row";
-          } else if (record.itemType === "TYPE") {
-            return "type-row";
-          } else if (record.itemType === "DESC") {
-            return "desc-row";
-          } else if (record.itemRemark) {
-            return "remark-row";
-          }
-          return "";
-        }}
-        rowKey="position"
-        columns={columns}
-        dataSource={itemDetails}
-        pagination={false}
-        scroll={{ y: 600 }}
-        virtual
-      />
+      <Space style={{ marginBottom: 16 }}>
+        <Button
+          icon={<ZoomOutOutlined />}
+          onClick={handleZoomOut}
+          disabled={zoomLevel <= MIN_ZOOM}
+        />
+        <span>{Math.round(zoomLevel * 100)}%</span>
+        <Button
+          icon={<ZoomInOutlined />}
+          onClick={handleZoomIn}
+          disabled={zoomLevel >= MAX_ZOOM}
+        />
+      </Space>
+      <div
+        style={
+          {
+            "--table-scale": zoomLevel,
+          } as React.CSSProperties
+        }
+      >
+        <CustomTable
+          $zoomLevel={zoomLevel}
+          rowClassName={(record: any, index) => {
+            if (record.itemType === "MAKER") {
+              return "maker-row";
+            } else if (record.itemType === "TYPE") {
+              return "type-row";
+            } else if (record.itemType === "DESC") {
+              return "desc-row";
+            } else if (record.itemRemark) {
+              return "remark-row";
+            }
+            return "";
+          }}
+          rowKey="position"
+          columns={columns}
+          dataSource={itemDetails}
+          pagination={false}
+          scroll={{ y: 600 }}
+          virtual
+        />
+      </div>
       <Button
         type="primary"
         style={{ margin: "20px 5px" }}
