@@ -869,8 +869,6 @@ const MakeInquiry = () => {
     return <LoadingSpinner />;
   }
 
-  console.log(isMailSenderVisible);
-
   return (
     <FormContainer>
       <Title>견적요청서 작성(MAKE INQUIRY)</Title>

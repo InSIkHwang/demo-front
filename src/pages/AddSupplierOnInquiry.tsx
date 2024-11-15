@@ -116,29 +116,37 @@ const AddSupplierOnInquiry = () => {
   };
 
   useEffect(() => {
-    // selectedSuppliers가 변경될 때마다 체크
-    if (selectedSuppliers.length > 0 && data.sendSupplier) {
-      const alreadySentSuppliers = selectedSuppliers.filter((supplier) =>
-        data.sendSupplier.includes(supplier.id)
-      );
-
-      if (alreadySentSuppliers.length > 0) {
-        // 이미 메일을 보낸 공급업체들 메시지 표시
-        alreadySentSuppliers.forEach((supplier) => {
-          message.error(
-            `${supplier.name} is a supplier that has already been sent an email.`,
-            3
-          );
-        });
-
-        // 이미 메일을 보낸 공급업체들을 제외한 새로운 배열 생성
-        setSelectedSuppliers((prevSuppliers) =>
-          prevSuppliers.filter(
-            (supplier) => !data.sendSupplier.includes(supplier.id)
-          )
+    const checkAlreadySentSuppliers = async () => {
+      if (selectedSuppliers.length > 0 && data.sendSupplier) {
+        const alreadySentSuppliers = selectedSuppliers.filter((supplier) =>
+          data.sendSupplier.includes(supplier.id)
         );
+
+        if (alreadySentSuppliers.length > 0) {
+          // 각 공급업체에 대해 순차적으로 확인
+          for (const supplier of alreadySentSuppliers) {
+            const confirmed = await new Promise((resolve) => {
+              Modal.confirm({
+                title: "Already Sent Supplier",
+                content: `${supplier.name} is already sent. Do you want to add it?`,
+                okText: "Yes",
+                cancelText: "No",
+                onOk: () => resolve(true),
+                onCancel: () => resolve(false),
+              });
+            });
+
+            if (!confirmed) {
+              setSelectedSuppliers((prevSuppliers) =>
+                prevSuppliers.filter((s) => s.id !== supplier.id)
+              );
+            }
+          }
+        }
       }
-    }
+    };
+
+    checkAlreadySentSuppliers();
   }, [selectedSuppliers, data.sendSupplier]);
 
   useEffect(() => {
@@ -266,6 +274,7 @@ const AddSupplierOnInquiry = () => {
         type="primary"
         onClick={showMailSenderModal}
         style={{ margin: "20px 0 0 15px", float: "right" }}
+        disabled={selectedSuppliers.length === 0}
       >
         Send Email
       </Button>

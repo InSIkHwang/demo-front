@@ -326,6 +326,16 @@ const OfferList = () => {
             const isSalesZero = supplier.totalSalesAmountGlobal === 0;
             const isPurchaseZero = supplier.totalPurchaseAmountGlobal === 0;
 
+            // 이익 금액과 이익율 계산
+            const profit =
+              supplier.totalSalesAmountGlobal -
+              supplier.totalPurchaseAmountGlobal;
+            const profitRate =
+              supplier.totalSalesAmountGlobal === 0
+                ? 0
+                : (profit / supplier.totalSalesAmountGlobal) * 100;
+            const isProfitNegative = profit < 0;
+
             return (
               <Card key={supplier.supplierInquiryId}>
                 <div className="supplier-name">{supplier.supplierName}</div>
@@ -348,6 +358,27 @@ const OfferList = () => {
                         currency: record.currencyType,
                       }
                     )}
+                  </Value>
+                </div>
+                <div className="info-row">
+                  <span className="label">Profit:</span>
+                  <Value
+                    isZero={isProfitNegative}
+                    style={{ color: isProfitNegative ? "red" : "green" }}
+                  >
+                    {profit.toLocaleString("en-US", {
+                      style: "currency",
+                      currency: record.currencyType,
+                    })}
+                  </Value>
+                </div>
+                <div className="info-row">
+                  <span className="label">Profit Rate:</span>
+                  <Value
+                    isZero={isProfitNegative}
+                    style={{ color: isProfitNegative ? "red" : "green" }}
+                  >
+                    {profitRate.toFixed(2)}%
                   </Value>
                 </div>
               </Card>
