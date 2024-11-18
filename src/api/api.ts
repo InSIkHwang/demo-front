@@ -267,6 +267,40 @@ export const submitInquiry = async (
   }
 };
 
+//복합 Inquiry 저장
+export const submitComplexInquiry = async (
+  inquiryId: number | null,
+  documentId: number | null,
+  data: any,
+  isEditMode: boolean
+) => {
+  try {
+    let response;
+
+    if (isEditMode) {
+      // 수정 모드일 때 PUT 요청 사용
+      // response = await axios.put(
+      //   `/api/customer-inquiries/mixed/${inquiryId}`,
+      //   data
+      // );
+
+      // 응답을 반환
+      return inquiryId;
+    } else {
+      // 생성 모드일 때 POST 요청 사용
+
+      response = await axios.post(`/api/complex/inquiry/${inquiryId}`, data);
+
+      // 응답을 반환
+      return response.data.inquiryId;
+    }
+  } catch (error) {
+    // 에러를 처리하거나 다시 던짐
+    console.error("Error in submitInquiry:", error);
+    throw error;
+  }
+};
+
 //Inquiry 삭제
 export const deleteInquiry = async (inquiryId: number) => {
   await axios.put(`/api/customer-inquiries/${inquiryId}/trash`);
@@ -392,6 +426,13 @@ export const fetchInquiryDetail = async (inquiryId: number) => {
   const response = await axios.get(
     `/api/customer-inquiries/mixed/${inquiryId}`
   );
+
+  return response.data;
+};
+
+//복합 Inquiry 상세 정보 조회
+export const fetchComplexInquiryDetail = async (inquiryId: number) => {
+  const response = await axios.get(`/api/complex/inquiry/${inquiryId}`);
 
   return response.data;
 };

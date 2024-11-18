@@ -102,7 +102,6 @@ const generateMailData = (
 
     mailDataList.push(mailData);
   }
-
   setMailDataList(mailDataList);
 };
 
@@ -152,6 +151,7 @@ const PDFGenerator = ({
   setMailDataList,
 }: PDFGeneratorProps) => {
   // 메일 데이터 생성 로직을 useEffect에서 실행
+
   useEffect(() => {
     generateMailData(
       selectedSupplierTag,

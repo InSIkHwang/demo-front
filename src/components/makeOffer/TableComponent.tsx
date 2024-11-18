@@ -947,7 +947,7 @@ const TableComponent = ({
               );
             }}
             style={{ width: "100%" }}
-            addonBefore="₩"
+            addonBefore="F"
             className="custom-input"
           />
         );

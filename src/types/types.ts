@@ -65,7 +65,7 @@ export interface InquiryItem {
   itemDetailId?: number;
   itemId?: number | null;
   position: number;
-  itemType: "ITEM" | "MAKER" | "TYPE" | "DESC";
+  itemType: "ITEM" | "MAKER" | "TYPE" | "DESC" | "DASH";
   itemCode: string;
   itemName: string;
   itemRemark: string;
@@ -197,7 +197,7 @@ export interface SupplierInquiryDetailIF {
 }
 
 export interface invCharge {
-  invChargeId: number;
+  invChargeId: number | null;
   customCharge: string;
   chargePriceKRW: number;
   chargePriceGlobal: number;
@@ -471,8 +471,8 @@ export interface ItemDetailType {
   itemRemark: string;
   qty: number;
   position: number;
-  indexNo: string | null;
   unit: string;
+  indexNo: string | null;
   salesPriceKRW: number;
   salesPriceGlobal: number;
   salesAmountKRW: number;
@@ -497,4 +497,65 @@ export interface OfferSearchParams {
   writer: "MY" | "ALL";
   itemName?: string;
   itemCode?: string;
+}
+
+export interface ComplexInquirySupplier {
+  inquiryItemDetailId?: number | null;
+  supplierId: number;
+  code: string;
+  companyName: string;
+  korCompanyName?: string | null;
+  representative?: string | null;
+  email?: string;
+  communicationLanguage?: string;
+  supplierRemark?: string | null;
+}
+
+export interface ComplexInquiryItemDetail {
+  itemDetailId?: number;
+  itemId?: number;
+  itemType: "MAKER" | "ITEM" | "DESC" | "TYPE" | "DASH";
+  itemCode: string;
+  itemName: string;
+  itemRemark: string;
+  qty: number;
+  unit?: string;
+  position: number;
+  indexNo: string | null;
+  salesPriceKRW: number;
+  salesPriceGlobal: number;
+  salesAmountKRW: number;
+  salesAmountGlobal: number;
+  margin: number;
+  purchasePriceKRW: number;
+  purchasePriceGlobal: number;
+  purchaseAmountKRW: number;
+  purchaseAmountGlobal: number;
+  suppliers: ComplexInquirySupplier[];
+}
+
+export interface ComplexInquiry {
+  customerInquiryId: number;
+  vesselId: number;
+  customerId: number;
+  documentNumber: string;
+  registerDate: Dayjs;
+  shippingDate: Dayjs;
+  companyName: string;
+  refNumber: string;
+  currencyType: string;
+  currency: number;
+  vesselName: string;
+  vesselHullNo?: string;
+  shipYard?: string;
+  countryOfManufacture?: string;
+  docRemark?: string;
+  docManager: string;
+  representative: string | null;
+  documentStatus: string;
+  pdfUrl: string | null;
+  inquiryType: string;
+  discount?: number;
+  invChargeList?: InvCharge[];
+  inquiryItemDetails: ComplexInquiryItemDetail[];
 }
