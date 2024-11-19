@@ -20,6 +20,7 @@ import TrashList from "./pages/TrashList";
 import OrderList from "./pages/OrderList";
 import AddSupplierOnInquiry from "./pages/AddSupplierOnInquiry";
 import UserSignUp from "./pages/UserSignUp";
+import MakeComplexInquiry from "./pages/MakeComplexInquiry";
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -162,6 +163,26 @@ const App = () => {
             path="/trashlist"
             element={
               isAuthenticated ? <TrashList /> : <Navigate to="/userlogin" />
+            }
+          />
+          <Route
+            path="/makecomplexinquiry"
+            element={
+              isAuthenticated ? (
+                <MakeComplexInquiry />
+              ) : (
+                <Navigate to="/userlogin" />
+              )
+            }
+          />
+          <Route
+            path="/makecomplexinquiry/:complexInquiryId"
+            element={
+              isAuthenticated ? (
+                <MakeComplexInquiry />
+              ) : (
+                <Navigate to="/userlogin" />
+              )
             }
           />
         </Routes>

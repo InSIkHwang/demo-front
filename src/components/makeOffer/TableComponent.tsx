@@ -193,7 +193,7 @@ const DisplayInput = memo(
         onBlur,
         formatter = (val: number | null | undefined) =>
           val?.toLocaleString() ?? "",
-        parser = (val: string) => val.replace(/[^\d.-]/g, ""),
+        parser = (val: string) => val.replace(/[^a-zA-Z0-9.-]/g, ""),
         ...props
       },
       ref
@@ -947,7 +947,7 @@ const TableComponent = ({
               );
             }}
             style={{ width: "100%" }}
-            addonBefore="₩"
+            addonBefore="F"
             className="custom-input"
           />
         );

@@ -13,7 +13,7 @@ import {
 import { SendOutlined, MailOutlined, UploadOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 import { sendQuotationMail } from "../../api/api";
-import { offerEmailSendData } from "../../types/types";
+import { HeaderFormData, offerEmailSendData } from "../../types/types";
 import { useNavigate } from "react-router-dom";
 import LoadingSpinner from "../LoadingSpinner";
 
@@ -32,6 +32,11 @@ const BlockingLayer = styled.div`
   pointer-events: all; /* 모든 이벤트 차단 */
 `;
 
+const FormRow = styled.div`
+  display: flex;
+  gap: 16px;
+`;
+
 const StyledForm = styled(Form)`
   max-width: 1200px;
   margin: 0 auto;
@@ -39,9 +44,11 @@ const StyledForm = styled(Form)`
   background-color: #ffffff;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  flex: 1;
 `;
 
 const StyledFormItem = styled(Form.Item)`
+  width: 100%;
   margin-bottom: 16px;
 `;
 
@@ -69,7 +76,7 @@ const OfferMailSender = ({
   setFileData: Dispatch<SetStateAction<(File | null)[]>>;
   pdfFileData: File | null;
   mailData: offerEmailSendData | null;
-  pdfHeader: string;
+  pdfHeader: HeaderFormData;
   selectedSupplierIds: number[];
 }) => {
   const [form] = Form.useForm();
@@ -79,6 +86,9 @@ const OfferMailSender = ({
   const navigate = useNavigate();
   const INITIAL_DATA = {
     documentNumber: inquiryFormValues.documentNumber ?? "",
+    customer: inquiryFormValues.customer ?? "",
+    refNumber: inquiryFormValues.refNumber ?? "",
+    vesselName: inquiryFormValues.vesselName ?? "",
     toRecipient: mailData?.toRecipient ?? "",
     subject: mailData?.subject ?? "",
     content: mailData?.content ?? "",
@@ -162,10 +172,28 @@ const OfferMailSender = ({
   return (
     <>
       {loading && <BlockingLayer />}
-      <StyledForm form={form} onFinish={onFinish} initialValues={INITIAL_DATA}>
-        <StyledFormItem name="documentNumber" label="Document Number">
-          <Input disabled placeholder="문서 번호" />
-        </StyledFormItem>
+      <StyledForm
+        form={form}
+        layout="vertical"
+        onFinish={onFinish}
+        initialValues={INITIAL_DATA}
+      >
+        <FormRow>
+          <StyledFormItem name="documentNumber" label="Document Number">
+            <Input disabled placeholder="Document Number" />
+          </StyledFormItem>
+          <StyledFormItem name="refNumber" label="Ref Number">
+            <Input disabled placeholder="Ref Number" />
+          </StyledFormItem>
+        </FormRow>
+        <FormRow>
+          <StyledFormItem name="customer" label="Customer">
+            <Input disabled placeholder="Customer" />
+          </StyledFormItem>
+          <StyledFormItem name="vesselName" label="Vessel Name">
+            <Input disabled placeholder="Vessel Name" />
+          </StyledFormItem>
+        </FormRow>
         <StyledFormItem
           name="toRecipient"
           label="Recipient"

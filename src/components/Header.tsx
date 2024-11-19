@@ -267,6 +267,13 @@ const Header = ({ isAuthenticated, onLogout }: HeaderProps) => {
           >
             최종 견적 - FInal Quotations
           </MenuItem>
+          <MenuItem
+            onClick={() =>
+              handleMenuItemClick(() => navigate("/makecomplexinquiry"))
+            }
+          >
+            복합 견적 - Complex Quotations
+          </MenuItem>
         </SubMenu>
         <MenuItem onClick={() => setOrderOpen(!isOrderOpen)}>
           <FontAwesomeIcon icon={faBoxOpen} style={{ marginRight: "10px" }} />

@@ -12,6 +12,7 @@ import {
   InvCharge,
   ItemDetailType,
   offerEmailSendData,
+  HeaderFormData,
 } from "../../types/types";
 import { fetchCustomerDetail } from "../../api/api";
 import { message } from "antd";
@@ -19,8 +20,8 @@ import { message } from "antd";
 interface PDFGeneratorProps {
   info: FormValuesType;
   items: ItemDetailType[];
-  pdfHeader: string;
-  pdfFooter: string;
+  pdfHeader: HeaderFormData;
+  pdfFooter: string[];
   setMailData: Dispatch<SetStateAction<offerEmailSendData | null>>;
   language: string;
   setPdfFileData: Dispatch<SetStateAction<File | null>>;
