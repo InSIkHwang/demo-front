@@ -289,7 +289,7 @@ export const submitComplexInquiry = async (
     } else {
       // 생성 모드일 때 POST 요청 사용
 
-      response = await axios.post(`/api/complex/inquiry/${inquiryId}`, data);
+      response = await axios.post(`/api/complex/inquiry/${documentId}`, data);
 
       // 응답을 반환
       return response.data.inquiryId;

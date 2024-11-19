@@ -221,7 +221,6 @@ const MakeComplexInquiry = () => {
   const [isMailSenderVisible, setIsMailSenderVisible] = useState(false);
   const [isInquirySearchModalVisible, setIsInquirySearchModalVisible] =
     useState(false);
-  const [tables, setTables] = useState<InquiryTable[]>([]);
   const [finalTotals, setFinalTotals] = useState({
     totalSalesAmountKRW: 0,
     totalSalesAmountGlobal: 0,
@@ -300,7 +299,7 @@ const MakeComplexInquiry = () => {
 
       setFormValues((prev) => ({
         ...prev,
-        documentId: docData.documentId,
+        customerInquiryId: docData.documentId,
         docNumber: docData.docNumber,
         registerDate: dayjs(docData.registerDate),
         shippingDate: dayjs(docData.shippingDate),
@@ -326,7 +325,6 @@ const MakeComplexInquiry = () => {
       setVesselNameList([]);
       setAutoCompleteOptions([]);
       setInquiryDetail(null);
-      setTables([]);
       setShowPDFPreview(false);
       setFinalTotals({
         totalSalesAmountKRW: 0,
@@ -578,6 +576,8 @@ const MakeComplexInquiry = () => {
     const isVesselInfoValid = await validateVesselInfo(selectedVessel);
     if (!isVesselInfoValid) return null;
 
+    await applyDcAndCharge();
+
     return await saveInquiry();
   };
 
@@ -634,21 +634,53 @@ const MakeComplexInquiry = () => {
         return null;
       }
 
-      const documentInfo = {
+      const requestData = {
+        customerInquiryId: formValues.customerInquiryId,
         vesselId: selectedVessel.id,
         customerId: selectedCustomerId,
-        customerInquiryId: formValues.customerInquiryId,
-        docNumber: formValues.docNumber,
+        documentNumber: formValues.docNumber,
         registerDate: formValues.registerDate.format("YYYY-MM-DD"),
         shippingDate: formValues.shippingDate.format("YYYY-MM-DD"),
+        companyName: formValues.customer,
         refNumber: formValues.refNumber,
-        remark: formValues.remark,
         currencyType: formValues.currencyType,
         currency: parseFloat(formValues.currency as any),
-        inquiryItemDetails: items,
+        vesselName: formValues.vesselName,
+        vesselHullNo: selectedVessel.hullNumber || "",
+        shipYard: selectedVessel.shipYard || "",
+        countryOfManufacture: selectedVessel.countryOfManufacture || "",
+        docRemark: formValues.remark || "",
+        docManager: documentInfo?.docManager || "",
+        representative: null,
+        documentStatus: "WRITING_INQUIRY",
+        pdfUrl: null,
+        inquiryType: "CUSTOMER_INQUIRY",
+        inquiryItemDetails: items.map((item) => ({
+          itemDetailId: item.itemDetailId || null,
+          itemId: item.itemId || null,
+          itemType: item.itemType,
+          itemCode: item.itemCode,
+          itemName: item.itemName,
+          itemRemark: item.itemRemark || "",
+          qty: item.qty,
+          unit: item.unit || "",
+          position: item.position,
+          indexNo: item.indexNo || null,
+          salesPriceKRW: item.salesPriceKRW || 0,
+          salesPriceGlobal: item.salesPriceGlobal || 0,
+          salesAmountKRW: item.salesAmountKRW || 0,
+          salesAmountGlobal: item.salesAmountGlobal || 0,
+          margin: item.margin || 0,
+          purchasePriceKRW: item.purchasePriceKRW || 0,
+          purchasePriceGlobal: item.purchasePriceGlobal || 0,
+          purchaseAmountKRW: item.purchaseAmountKRW || 0,
+          purchaseAmountGlobal: item.purchaseAmountGlobal || 0,
+          suppliers:
+            item.suppliers?.map((supplier) => ({
+              supplierId: supplier.supplierId,
+            })) || [],
+        })),
       };
-
-      const requestData = { documentInfo, inquiryItemDetails: items };
 
       const response = await submitComplexInquiry(
         Number(complexInquiryId),
@@ -675,8 +707,13 @@ const MakeComplexInquiry = () => {
     }
   };
 
-  const handleHeaderSave = (text: string) => {
+  const handleInquiryHeaderSave = (text: string) => {
     setPdfHeader(text);
+  };
+
+  const handleQuotationHeaderSave = (header: string, footer: string) => {
+    setPdfHeader(header);
+    setPdfFooter(footer);
   };
 
   const handlePDFPreview = () => {
@@ -730,13 +767,7 @@ const MakeComplexInquiry = () => {
   const uniqueSuppliers = removeDuplicates(selectedSuppliers);
 
   const getSelectedSupplierItems = useCallback(() => {
-    if (!pdfSupplierTag[0]) return [];
-
-    const filteredItems = items.filter((item) =>
-      item.suppliers?.some(
-        (supplier) => supplier.supplierId === pdfSupplierTag[0].id
-      )
-    );
+    if (!pdfSupplierTag[0] && documentType === "inquiry") return [];
 
     const baseItemFields = (item: any) => ({
       tableNo: 1,
@@ -762,6 +793,11 @@ const MakeComplexInquiry = () => {
     });
 
     if (documentType === "inquiry") {
+      const filteredItems = items.filter((item) =>
+        item.suppliers?.some(
+          (supplier) => supplier.supplierId === pdfSupplierTag[0].id
+        )
+      );
       return filteredItems
         .map((item) => ({
           ...baseItemFields(item),
@@ -778,7 +814,7 @@ const MakeComplexInquiry = () => {
         }))
         .sort((a, b) => a.position - b.position);
     } else {
-      return filteredItems
+      return items
         .map((item) => baseItemFields(item))
         .sort((a, b) => a.position - b.position);
     }
@@ -1200,7 +1236,10 @@ const MakeComplexInquiry = () => {
         <Select
           style={{ width: 250, float: "left", marginLeft: 10 }}
           value={documentType}
-          onChange={(value) => setDocumentType(value)}
+          onChange={(value) => {
+            setDocumentType(value);
+            setPdfSupplierTag([]);
+          }}
         >
           <Select.Option value="inquiry">INQUIRY TO SUPPLIER</Select.Option>
           <Select.Option value="quotation">QUOTATION TO CUSTOMER</Select.Option>
@@ -1209,7 +1248,7 @@ const MakeComplexInquiry = () => {
           <HeaderEditModal
             open={headerEditModalVisible}
             onClose={() => toggleModal("header", false)}
-            onSave={handleHeaderSave}
+            onSave={handleInquiryHeaderSave}
             pdfCompanyTag={pdfSupplierTag}
           />
         )}
@@ -1217,7 +1256,7 @@ const MakeComplexInquiry = () => {
           <OfferHeaderEditModal
             open={headerEditModalVisible}
             onClose={() => toggleModal("header", false)}
-            onSave={handleHeaderSave}
+            onSave={handleQuotationHeaderSave}
           />
         )}
       </div>

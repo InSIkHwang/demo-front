@@ -421,8 +421,8 @@ const ComplexInquiryTable = ({
           return (
             <Input
               value={text}
-              onChange={(value) => {
-                handleInputChange(index, "indexNo", value);
+              onChange={(e) => {
+                handleInputChange(index, "indexNo", e.target.value);
               }}
               ref={(el) => {
                 if (!inputRefs.current[index]) {
