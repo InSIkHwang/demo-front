@@ -559,3 +559,12 @@ export interface ComplexInquiry {
   invChargeList?: InvCharge[];
   inquiryItemDetails: ComplexInquiryItemDetail[];
 }
+
+export interface HeaderFormData {
+  portOfShipment: string | "";
+  exWork: string | "";
+  deliveryTime: string | "";
+  termsOfPayment: string | "";
+  offerValidity: string | "";
+  partCondition: string | "";
+}

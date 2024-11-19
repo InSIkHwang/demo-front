@@ -9,6 +9,7 @@ import TableComponent from "../components/makeOffer/TableComponent";
 import { editOffer, fetchOfferDetail } from "../api/api";
 import {
   FormValuesType,
+  HeaderFormData,
   ItemDetailType,
   offerEmailSendData,
   OfferResponse,
@@ -78,8 +79,15 @@ const MakeOffer = () => {
   const [language, setLanguage] = useState<string>("KOR");
   const [headerEditModalVisible, setHeaderEditModalVisible] =
     useState<boolean>(false);
-  const [pdfHeader, setPdfHeader] = useState<string>("");
-  const [pdfFooter, setPdfFooter] = useState<string>("");
+  const [pdfHeader, setPdfHeader] = useState<HeaderFormData>({
+    portOfShipment: "",
+    exWork: "",
+    deliveryTime: "",
+    termsOfPayment: "",
+    offerValidity: "",
+    partCondition: "",
+  });
+  const [pdfFooter, setPdfFooter] = useState<string[]>([]);
   const [pdfCustomerTag, setPdfCustomerTag] = useState<{
     id: number;
     name: string;
@@ -518,7 +526,7 @@ const MakeOffer = () => {
     setHeaderEditModalVisible(false);
   };
 
-  const handleHeaderSave = (header: string, footer: string) => {
+  const handleHeaderSave = (header: HeaderFormData, footer: string[]) => {
     setPdfHeader(header);
     setPdfFooter(footer);
   };

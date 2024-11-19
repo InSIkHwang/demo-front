@@ -31,6 +31,7 @@ import {
   ItemDetailType,
   FormValuesType,
   offerEmailSendData,
+  HeaderFormData,
 } from "../types/types";
 import { useNavigate, useParams } from "react-router-dom";
 import HeaderEditModal from "../components/makeInquiry/HeaderEditModal";
@@ -204,8 +205,16 @@ const MakeComplexInquiry = () => {
       communicationLanguage: string;
     }[]
   >([]);
-  const [pdfHeader, setPdfHeader] = useState<string>("");
-  const [pdfFooter, setPdfFooter] = useState<string>("");
+  const [inquiryPdfHeader, setInquiryPdfHeader] = useState<string>("");
+  const [quotationPdfHeader, setQuotationPdfHeader] = useState<HeaderFormData>({
+    portOfShipment: "",
+    exWork: "",
+    deliveryTime: "",
+    termsOfPayment: "",
+    offerValidity: "",
+    partCondition: "",
+  });
+  const [quotationPdfFooter, setQuotationPdfFooter] = useState<string[]>([]);
   const [formValues, setFormValues] = useState(INITIAL_FORM_VALUES);
   const [mailDataList, setMailDataList] = useState<emailSendData[]>([]);
   const [isLoading, setIsLoading] = useState(true); // 로딩 상태 변수 추가
@@ -708,12 +717,15 @@ const MakeComplexInquiry = () => {
   };
 
   const handleInquiryHeaderSave = (text: string) => {
-    setPdfHeader(text);
+    setInquiryPdfHeader(text);
   };
 
-  const handleQuotationHeaderSave = (header: string, footer: string) => {
-    setPdfHeader(header);
-    setPdfFooter(footer);
+  const handleQuotationHeaderSave = (
+    header: HeaderFormData,
+    footer: string[]
+  ) => {
+    setQuotationPdfHeader(header);
+    setQuotationPdfFooter(footer);
   };
 
   const handlePDFPreview = () => {
@@ -1158,7 +1170,7 @@ const MakeComplexInquiry = () => {
             selectedSupplierTag={supplierTags}
             getItemsForSupplier={getSelectedSupplierItems}
             vesselInfo={selectedVessel}
-            pdfHeader={pdfHeader}
+            pdfHeader={inquiryPdfHeader}
             handleLanguageChange={handleLanguageChange}
             isMailSenderVisible={isMailSenderVisible}
           />
@@ -1175,7 +1187,7 @@ const MakeComplexInquiry = () => {
             setFileData={setFileData}
             pdfFileData={pdfFileData}
             mailData={mailData}
-            pdfHeader={pdfHeader}
+            pdfHeader={quotationPdfHeader}
             selectedSupplierIds={supplierTags.map((item) => item.inquiryId)} //문서ID로 수정할 것
           />
         )}
@@ -1188,26 +1200,30 @@ const MakeComplexInquiry = () => {
           paddingLeft: 20,
         }}
       >
-        <span>Supplier: </span>
-        <Select
-          style={{ width: 200, float: "left", marginLeft: 10 }}
-          value={pdfSupplierTag[0]?.id || ""}
-          onChange={(supplierId) => {
-            const selectedSupplier = supplierTags.find(
-              (supplier) => supplier.id === supplierId
-            );
+        {documentType === "inquiry" && (
+          <>
+            <span>Supplier: </span>
+            <Select
+              style={{ width: 200, float: "left", marginLeft: 10 }}
+              value={pdfSupplierTag[0]?.id || ""}
+              onChange={(supplierId) => {
+                const selectedSupplier = supplierTags.find(
+                  (supplier) => supplier.id === supplierId
+                );
 
-            if (selectedSupplier) {
-              setPdfSupplierTag([selectedSupplier]);
-            }
-          }}
-        >
-          {supplierTags.map((supplier) => (
-            <Select.Option key={supplier.id} value={supplier.id}>
-              {supplier.code}
-            </Select.Option>
-          ))}
-        </Select>
+                if (selectedSupplier) {
+                  setPdfSupplierTag([selectedSupplier]);
+                }
+              }}
+            >
+              {supplierTags.map((supplier) => (
+                <Select.Option key={supplier.id} value={supplier.id}>
+                  {supplier.code}
+                </Select.Option>
+              ))}
+            </Select>
+          </>
+        )}
         <Button
           onClick={() => toggleModal("header", true)}
           style={{ marginLeft: 20 }}
@@ -1239,6 +1255,7 @@ const MakeComplexInquiry = () => {
           onChange={(value) => {
             setDocumentType(value);
             setPdfSupplierTag([]);
+            setShowPDFPreview(false);
           }}
         >
           <Select.Option value="inquiry">INQUIRY TO SUPPLIER</Select.Option>
@@ -1267,7 +1284,7 @@ const MakeComplexInquiry = () => {
           setMailDataList={setMailDataList}
           items={getSelectedSupplierItems()}
           vesselInfo={selectedVessel}
-          pdfHeader={pdfHeader}
+          pdfHeader={inquiryPdfHeader}
         />
       )}
 
@@ -1277,7 +1294,7 @@ const MakeComplexInquiry = () => {
           items={getSelectedSupplierItems()}
           supplier={pdfSupplierTag[0]}
           vesselInfo={selectedVessel}
-          pdfHeader={pdfHeader}
+          pdfHeader={inquiryPdfHeader}
           viewMode={true}
         />
       )}
@@ -1285,8 +1302,8 @@ const MakeComplexInquiry = () => {
         <OfferPDFGenerator
           info={documentInfo}
           items={getSelectedSupplierItems()}
-          pdfHeader={pdfHeader}
-          pdfFooter={pdfFooter}
+          pdfHeader={quotationPdfHeader}
+          pdfFooter={quotationPdfFooter}
           language={"ENG"}
           setMailData={setMailData}
           setPdfFileData={setPdfFileData}
@@ -1300,8 +1317,8 @@ const MakeComplexInquiry = () => {
         <OfferPDFDocument
           info={documentInfo}
           items={getSelectedSupplierItems()}
-          pdfHeader={pdfHeader}
-          pdfFooter={pdfFooter}
+          pdfHeader={quotationPdfHeader}
+          pdfFooter={quotationPdfFooter}
           viewMode={true}
           language={"ENG"}
           finalTotals={finalTotals}

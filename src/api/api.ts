@@ -4,6 +4,7 @@ import { AxiosError } from "axios";
 
 import {
   Customer,
+  HeaderFormData,
   Inquiry,
   Item,
   ItemDataType,
@@ -645,7 +646,7 @@ export const sendQuotationMail = async (
       ccRecipient: string;
       bccRecipient: string;
     };
-    quotationHeader: string;
+    quotationHeader: HeaderFormData;
     supplierInquiryIds: number[];
   }
 ) => {

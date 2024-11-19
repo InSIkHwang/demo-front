@@ -15,7 +15,12 @@ import NotoSerifKRExtraBold from "../../assets/font/NotoSerifKR-ExtraBold.ttf";
 import NotoSerifKR from "../../assets/font/NotoSerifKR-Medium.ttf";
 import NotoSansRegular from "../../assets/font/NotoSansRegular.ttf";
 import logoUrl from "../../assets/logo/baskorea_logo-removebg.png";
-import { FormValuesType, InvCharge, ItemDetailType } from "../../types/types";
+import {
+  FormValuesType,
+  HeaderFormData,
+  InvCharge,
+  ItemDetailType,
+} from "../../types/types";
 
 // 한글 글꼴 등록
 Font.register({
@@ -39,10 +44,10 @@ Font.registerHyphenationCallback((word) => ["", word, ""]);
 interface PDFDocumentProps {
   info: FormValuesType;
   items: ItemDetailType[];
-  pdfHeader: string;
+  pdfHeader: HeaderFormData;
   viewMode: boolean;
   language: string;
-  pdfFooter: string;
+  pdfFooter: string[];
   finalTotals: {
     totalSalesAmountKRW: number;
     totalSalesAmountGlobal: number;
@@ -88,15 +93,27 @@ const styles = StyleSheet.create({
   headerMessage: {
     fontSize: 10,
     textAlign: "left",
-    padding: "10px 0",
+    padding: "2px 0",
+    display: "flex",
+    flexDirection: "row",
+  },
+  headerValue: {
+    fontSize: 10,
+    textAlign: "left",
+    width: "100%",
+  },
+  headerLabel: {
+    width: 150, // 라벨의 고정 너비
+    textAlign: "left",
+  },
+  dottedLine: {
     borderBottom: "1px dotted #000",
+    margin: "15px 0",
   },
   footerMessage: {
     fontSize: 10,
     textAlign: "left",
-    marginTop: 30,
     padding: "10px 0",
-    borderTop: "1px dotted #000",
   },
   inquiryInfoWrap: {
     flexDirection: "row",
@@ -109,6 +126,16 @@ const styles = StyleSheet.create({
   inquiryInfoText: {
     fontSize: 10,
     marginBottom: 5,
+    display: "flex",
+    flexDirection: "row",
+  },
+  inquiryInfoLabel: {
+    width: 80, // 라벨의 고정 너비
+    textAlign: "left",
+  },
+  inquiryInfoValue: {
+    width: 120, // 라벨의 고정 너비
+    textAlign: "left",
   },
   page: {
     padding: 20,
@@ -298,7 +325,7 @@ const renderHeader = (
   vesselName: string,
   docNumber: string,
   registerDate: string | dayjs.Dayjs,
-  pdfHeader: string,
+  pdfHeader: HeaderFormData,
   language: string,
   refNumber: string
 ) => (
@@ -323,31 +350,75 @@ const renderHeader = (
     </View>
     <View style={styles.inquiryInfoWrap}>
       <View style={styles.inquiryInfoColumn}>
-        <Text style={styles.inquiryInfoText}>
-          MESSERS : {customerName?.split("")}
-        </Text>
-        <Text style={[styles.inquiryInfoText]}>
-          VESSEL NAME : {vesselName?.split("")}
-        </Text>
-        <Text style={[styles.inquiryInfoText, { marginBottom: 10 }]}>
-          YOUR REF NO. : {refNumber?.split("")}
-        </Text>
+        <View style={styles.inquiryInfoText}>
+          <Text style={styles.inquiryInfoLabel}>MESSERS</Text>
+          <Text style={styles.inquiryInfoValue}>
+            : {customerName?.split("")}
+          </Text>
+        </View>
+        <View style={styles.inquiryInfoText}>
+          <Text style={styles.inquiryInfoLabel}>VESSEL NAME</Text>
+          <Text style={styles.inquiryInfoValue}>: {vesselName?.split("")}</Text>
+        </View>
+        <View style={[styles.inquiryInfoText, { marginBottom: 10 }]}>
+          <Text style={styles.inquiryInfoLabel}>YOUR REF NO.</Text>
+          <Text style={styles.inquiryInfoValue}>: {refNumber?.split("")}</Text>
+        </View>
       </View>
       <View style={[styles.inquiryInfoColumn, { alignItems: "flex-end" }]}>
-        <Text style={styles.inquiryInfoText}>
-          REF NO. : {docNumber?.split("")}
-        </Text>
-        <Text style={styles.inquiryInfoText}>
-          {language === "KOR"
-            ? "DATE : " +
-              dayjs(registerDate).format("DD MMM, YYYY").toUpperCase()
-            : "DATE : " +
-              dayjs(registerDate).format("DD MMM, YYYY").toUpperCase()}
-        </Text>
+        <View style={styles.inquiryInfoText}>
+          <Text style={styles.inquiryInfoLabel}>REF NO.</Text>
+          <Text style={styles.inquiryInfoValue}>: {docNumber?.split("")}</Text>
+        </View>
+        <View style={styles.inquiryInfoText}>
+          <Text style={styles.inquiryInfoLabel}>DATE</Text>
+          <Text style={styles.inquiryInfoValue}>
+            :{" "}
+            {language === "KOR"
+              ? dayjs(registerDate).format("DD MMM, YYYY").toUpperCase()
+              : dayjs(registerDate).format("DD MMM, YYYY").toUpperCase()}
+          </Text>
+        </View>
       </View>
     </View>
     <View>
-      <Text style={styles.headerMessage}>{pdfHeader?.split("")}</Text>
+      {pdfHeader?.portOfShipment && (
+        <View style={styles.headerMessage}>
+          <Text style={styles.headerLabel}>PORT OF SHIPMENT</Text>
+          <Text style={styles.headerValue}>: {pdfHeader.portOfShipment}</Text>
+        </View>
+      )}
+      {pdfHeader?.exWork && (
+        <View style={styles.headerMessage}>
+          <Text style={styles.headerLabel}>EX-WORK</Text>
+          <Text style={styles.headerValue}>: {pdfHeader.exWork}</Text>
+        </View>
+      )}
+      {pdfHeader?.deliveryTime && (
+        <View style={styles.headerMessage}>
+          <Text style={styles.headerLabel}>DELIVERY TIME</Text>
+          <Text style={styles.headerValue}>: {pdfHeader.deliveryTime}</Text>
+        </View>
+      )}
+      {pdfHeader?.termsOfPayment && (
+        <View style={styles.headerMessage}>
+          <Text style={styles.headerLabel}>TERMS OF PAYMENT</Text>
+          <Text style={styles.headerValue}>: {pdfHeader.termsOfPayment}</Text>
+        </View>
+      )}
+      {pdfHeader?.offerValidity && (
+        <View style={styles.headerMessage}>
+          <Text style={styles.headerLabel}>OFFER VALIDITY</Text>
+          <Text style={styles.headerValue}>: {pdfHeader.offerValidity}</Text>
+        </View>
+      )}
+      {pdfHeader?.partCondition && (
+        <View style={styles.headerMessage}>
+          <Text style={styles.headerLabel}>PART CONDITION</Text>
+          <Text style={styles.headerValue}>: {pdfHeader.partCondition}</Text>
+        </View>
+      )}
+      <View style={styles.dottedLine} />
     </View>
   </>
 );
@@ -551,9 +622,33 @@ const OfferPDFDocument = ({
             </View>
           )}
         </View>
-        {pdfFooter && (
+        {pdfFooter.length > 0 && (
           <View>
-            <Text style={styles.footerMessage}>{pdfFooter?.split("")}</Text>
+            <Text
+              style={[
+                styles.footerMessage,
+                {
+                  borderTop: "1px dotted #000",
+                  fontWeight: "bold",
+                  marginTop: 30,
+                },
+              ]}
+            >
+              ** REMARK
+            </Text>
+            {pdfFooter.map((footer, index) => (
+              <Text
+                key={index}
+                style={[
+                  styles.footerMessage,
+                  {
+                    borderTop: "none",
+                  },
+                ]}
+              >
+                {index + 1}. {footer}
+              </Text>
+            ))}
           </View>
         )}
       </Page>
