@@ -6,7 +6,6 @@ import {
   Button,
   Space,
   Checkbox,
-  message,
   Tooltip,
   InputRef,
 } from "antd";
@@ -21,9 +20,7 @@ import styled from "styled-components";
 import {
   ComplexInquiryItemDetail,
   ComplexInquirySupplier,
-  InvCharge,
 } from "../../types/types";
-import { fetchItemData } from "../../api/api";
 import ExcelUploadModal from "../ExcelUploadModal";
 import { TextAreaRef } from "antd/es/input/TextArea";
 

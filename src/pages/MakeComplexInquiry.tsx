@@ -1,6 +1,14 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import styled from "styled-components";
-import { Button, Divider, FloatButton, message, Modal, Select } from "antd";
+import {
+  Alert,
+  Button,
+  Divider,
+  FloatButton,
+  message,
+  Modal,
+  Select,
+} from "antd";
 import { FileSearchOutlined } from "@ant-design/icons";
 import dayjs, { Dayjs } from "dayjs";
 import {
@@ -71,7 +79,8 @@ const BtnGroup = styled(FloatButton.Group)`
 
 // Constants
 interface FormValues {
-  customerInquiryId: number | null;
+  documentId: number | null;
+  docManagerName: string;
   docNumber: string;
   registerDate: Dayjs;
   shippingDate: Dayjs;
@@ -85,7 +94,8 @@ interface FormValues {
 }
 
 const INITIAL_FORM_VALUES: FormValues = {
-  customerInquiryId: null,
+  documentId: null,
+  docManagerName: "",
   docNumber: "",
   registerDate: dayjs(),
   shippingDate: dayjs(),
@@ -308,7 +318,7 @@ const MakeComplexInquiry = () => {
 
       setFormValues((prev) => ({
         ...prev,
-        customerInquiryId: docData.documentId,
+        documentId: docData.documentId,
         docNumber: docData.docNumber,
         registerDate: dayjs(docData.registerDate),
         shippingDate: dayjs(docData.shippingDate),
@@ -335,6 +345,7 @@ const MakeComplexInquiry = () => {
       setAutoCompleteOptions([]);
       setInquiryDetail(null);
       setShowPDFPreview(false);
+      setDocumentInfo(null);
       setFinalTotals({
         totalSalesAmountKRW: 0,
         totalSalesAmountGlobal: 0,
@@ -379,70 +390,47 @@ const MakeComplexInquiry = () => {
 
     setIsEditMode(true);
 
-    const {
-      documentNumber: docNumber,
-      customerInquiryId,
-      vesselId,
-      customerId,
-      registerDate,
-      shippingDate,
-      companyName,
-      refNumber,
-      currencyType,
-      currency,
-      vesselName,
-      vesselHullNo,
-      shipYard,
-      countryOfManufacture,
-      docRemark,
-      docManager,
-      representative,
-      documentStatus,
-      pdfUrl,
-      inquiryType,
-      discount,
-      invChargeList,
-      inquiryItemDetails,
-    } = inquiryDetail;
+    const { documentInfo, discount, invChargeList } = inquiryDetail;
 
     setDocumentInfo({
-      documentId: customerInquiryId,
-      documentNumber: docNumber,
-      registerDate: dayjs(registerDate),
-      shippingDate: dayjs(shippingDate),
-      refNumber,
-      currencyType,
-      currency,
-      docRemark: docRemark || "",
-      docManager,
-      documentStatus,
-      customerId,
-      companyName,
-      vesselId,
-      vesselName,
-      vesselHullNo: selectedVessel?.hullNumber || "",
-      imoNo: selectedVessel?.imoNumber || undefined,
+      documentId: documentInfo.documentId,
+      documentNumber: documentInfo.documentNumber,
+      registerDate: dayjs(documentInfo.registerDate),
+      shippingDate: dayjs(documentInfo.shippingDate),
+      refNumber: documentInfo.refNumber,
+      currencyType: documentInfo.currencyType,
+      currency: documentInfo.currency,
+      docRemark: documentInfo.docRemark || "",
+      docManager: documentInfo.docManager,
+      documentStatus: documentInfo.documentStatus,
+      customerId: documentInfo.customerId,
+      companyName: documentInfo.companyName,
+      vesselId: documentInfo.vesselId,
+      vesselName: documentInfo.vesselName,
+      vesselHullNo: documentInfo.vesselHullNo || "",
+      imoNo: documentInfo.imoNo || undefined,
       discount,
       invChargeList: invChargeList || [],
     });
 
     setPdfCustomerTag({
-      id: inquiryDetail.customerId,
-      name: inquiryDetail.companyName,
+      id: documentInfo.customerId,
+      name: documentInfo.companyName,
     });
 
     // Form 값 업데이트
     setFormValues({
-      customerInquiryId,
-      docNumber,
-      registerDate: dayjs(registerDate),
-      shippingDate: dayjs(shippingDate),
-      customer: companyName,
-      vesselName,
-      refNumber,
-      currencyType,
-      currency,
-      remark: docRemark || "",
+      documentId: documentInfo.documentId,
+      docNumber: documentInfo.documentNumber,
+      docManagerName: documentInfo.docManager,
+      registerDate: dayjs(documentInfo.registerDate),
+      shippingDate: dayjs(documentInfo.shippingDate),
+      customer: documentInfo.companyName,
+      vesselName: documentInfo.vesselName,
+      refNumber: documentInfo.refNumber,
+      currencyType: documentInfo.currencyType,
+      currency: documentInfo.currency,
+      remark: documentInfo.docRemark || "",
       supplierName: "",
     });
 
@@ -644,26 +632,28 @@ const MakeComplexInquiry = () => {
       }
 
       const requestData = {
-        customerInquiryId: formValues.customerInquiryId,
-        vesselId: selectedVessel.id,
-        customerId: selectedCustomerId,
-        documentNumber: formValues.docNumber,
-        registerDate: formValues.registerDate.format("YYYY-MM-DD"),
-        shippingDate: formValues.shippingDate.format("YYYY-MM-DD"),
-        companyName: formValues.customer,
-        refNumber: formValues.refNumber,
-        currencyType: formValues.currencyType,
-        currency: parseFloat(formValues.currency as any),
-        vesselName: formValues.vesselName,
-        vesselHullNo: selectedVessel.hullNumber || "",
-        shipYard: selectedVessel.shipYard || "",
-        countryOfManufacture: selectedVessel.countryOfManufacture || "",
-        docRemark: formValues.remark || "",
-        docManager: documentInfo?.docManager || "",
-        representative: null,
-        documentStatus: "WRITING_INQUIRY",
-        pdfUrl: null,
-        inquiryType: "CUSTOMER_INQUIRY",
+        documentInfo: {
+          customerInquiryId: formValues.documentId,
+          vesselId: selectedVessel.id,
+          customerId: selectedCustomerId,
+          documentId: formValues.documentId,
+          documentNumber: formValues.docNumber,
+          registerDate: formValues.registerDate.format("YYYY-MM-DD"),
+          shippingDate: formValues.shippingDate.format("YYYY-MM-DD"),
+          companyName: formValues.customer,
+          refNumber: formValues.refNumber,
+          currencyType: formValues.currencyType,
+          currency: parseFloat(formValues.currency as any),
+          vesselName: formValues.vesselName,
+          vesselHullNo: selectedVessel.hullNumber || "",
+          shipYard: selectedVessel.shipYard || "",
+          countryOfManufacture: selectedVessel.countryOfManufacture || "",
+          remark: formValues.remark || "",
+          docManager: formValues.docManagerName,
+          representative: null,
+          documentStatus: "WRITING_INQUIRY",
+          inquiryType: "CUSTOMER_INQUIRY",
+        },
         inquiryItemDetails: items.map((item) => ({
           itemDetailId: item.itemDetailId || null,
           itemId: item.itemId || null,
@@ -689,11 +679,13 @@ const MakeComplexInquiry = () => {
               supplierId: supplier.supplierId,
             })) || [],
         })),
+        discount: dcInfo.dcPercent,
+        invChargeList: invChargeList || [],
       };
 
       const response = await submitComplexInquiry(
         Number(complexInquiryId),
-        Number(formValues.customerInquiryId),
+        Number(formValues.documentId),
         requestData,
         isEditMode
       );
@@ -1175,7 +1167,7 @@ const MakeComplexInquiry = () => {
             isMailSenderVisible={isMailSenderVisible}
           />
         )}
-        {documentInfo && documentType === "quotation" && (
+        {documentInfo && documentType === "quotation" ? (
           <OfferMailSender
             inquiryFormValues={{
               documentNumber: documentInfo.documentNumber,
@@ -1190,6 +1182,13 @@ const MakeComplexInquiry = () => {
             pdfHeader={quotationPdfHeader}
             selectedSupplierIds={supplierTags.map((item) => item.inquiryId)} //문서ID로 수정할 것
           />
+        ) : (
+          <div style={{ marginTop: 20 }}>
+            <Alert
+              message="There is no document information. Please Save the document first."
+              type="error"
+            />
+          </div>
         )}
       </Modal>
       <div

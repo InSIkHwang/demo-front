@@ -222,7 +222,7 @@ const OfferList = () => {
   const [showItemSearch, setShowItemSearch] = useState<boolean>(false);
 
   useEffect(() => {
-    if (searchText || registerStartDate || registerEndDate) {
+    if (searchText || searchSubText || registerStartDate || registerEndDate) {
       handleSearch();
     } else {
       fetchData();

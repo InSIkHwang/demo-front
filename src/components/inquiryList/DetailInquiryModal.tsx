@@ -10,13 +10,18 @@ import {
   Input,
   Typography,
 } from "antd";
-import { InquiryResponse } from "../../types/types";
+import {
+  ComplexInquiryItemDetail,
+  ComplexInquirySupplier,
+  InquiryResponse,
+} from "../../types/types";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import {
   chkDuplicateDocNum,
   copyInquiry,
   deleteInquiry,
+  fetchComplexInquiryDetail,
   fetchInquiryDetail,
 } from "../../api/api";
 import dayjs from "dayjs";
@@ -26,6 +31,7 @@ interface DetailInquiryModalProps {
   onClose: () => void;
   inquiryId: number;
   fetchData: () => Promise<void>;
+  documentType: string;
 }
 
 const StyledModal = styled(Modal)`
@@ -114,6 +120,7 @@ const DetailInquiryModal = ({
   onClose,
   inquiryId,
   fetchData,
+  documentType,
 }: DetailInquiryModalProps) => {
   const [inquiryDetail, setInquiryDetail] = useState<InquiryResponse | null>(
     null
@@ -128,9 +135,54 @@ const DetailInquiryModal = ({
       if (open) {
         try {
           setInquiryDetail(null);
-          const response: InquiryResponse = await fetchInquiryDetail(inquiryId);
+          let response;
 
-          setInquiryDetail(response);
+          if (documentType === "COMPLEX") {
+            response = await fetchComplexInquiryDetail(inquiryId);
+            const uniqueSuppliers = response.inquiryItemDetails
+              .flatMap((item: ComplexInquiryItemDetail) => item.suppliers)
+              .reduce(
+                (
+                  acc: ComplexInquirySupplier[],
+                  curr: ComplexInquirySupplier
+                ) => {
+                  if (
+                    !acc.find(
+                      (supplier) => supplier.supplierId === curr.supplierId
+                    )
+                  ) {
+                    acc.push(curr);
+                  }
+                  return acc;
+                },
+                []
+              );
+
+            const formattedResponse: InquiryResponse = {
+              documentInfo: response.documentInfo,
+              table: [
+                {
+                  itemDetails: response.inquiryItemDetails,
+                  supplierList: uniqueSuppliers.map(
+                    (supplier: ComplexInquirySupplier) => ({
+                      supplierId: supplier.supplierId,
+                      code: supplier.code,
+                      companyName: supplier.companyName,
+                      korCompanyName: supplier.korCompanyName,
+                      representative: supplier.representative,
+                      email: supplier.email,
+                      communicationLanguage: supplier.communicationLanguage,
+                      supplierRemark: supplier.supplierRemark,
+                    })
+                  ),
+                },
+              ],
+            };
+            setInquiryDetail(formattedResponse);
+          } else {
+            response = await fetchInquiryDetail(inquiryId);
+            setInquiryDetail(response);
+          }
         } catch (error) {
           message.error("Error fetching details:");
         } finally {
@@ -140,11 +192,13 @@ const DetailInquiryModal = ({
     };
 
     fetchDetails();
-  }, [open, inquiryId]);
+  }, [open, inquiryId, documentType]);
 
   const handleEditClick = () => {
     if (inquiryDetail) {
-      const path = inquiryId ? `/makeinquiry/${inquiryId}` : "/makeinquiry";
+      const basePath =
+        documentType === "COMPLEX" ? "/makecomplexinquiry" : "/makeinquiry";
+      const path = inquiryId ? `${basePath}/${inquiryId}` : basePath;
       navigate(path);
     }
   };

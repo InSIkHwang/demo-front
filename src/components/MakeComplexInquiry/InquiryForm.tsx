@@ -85,8 +85,9 @@ const StyledTag = styled(Tag)`
 `;
 
 interface FormValues {
-  customerInquiryId: number | null;
+  documentId: number | null;
   docNumber: string;
+  docManagerName: string;
   registerDate: any;
   shippingDate: any;
   customer: string;

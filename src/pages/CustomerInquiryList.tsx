@@ -36,6 +36,24 @@ const Title = styled.h1`
   color: #333;
 `;
 
+const StyledTable = styled(Table<Inquiry>)`
+  .ant-table-tbody {
+    tr {
+      &.complex-row {
+        background-color: #f5fff0;
+
+        &:hover > td {
+          background-color: #e5f7d3 !important;
+        }
+      }
+
+      &:hover > td {
+        background-color: #fafafa !important;
+      }
+    }
+  }
+`;
+
 const TableHeader = styled.div`
   display: flex;
   justify-content: space-between;
@@ -106,11 +124,6 @@ const columns: ColumnsType<Inquiry> = [
     key: "refNumber",
   },
   {
-    title: "Currency",
-    dataIndex: "currencyType",
-    key: "currencyType",
-  },
-  {
     title: "Exchange Rate",
     dataIndex: "currency",
     key: "currency",
@@ -139,6 +152,12 @@ const columns: ColumnsType<Inquiry> = [
     title: "Remark",
     dataIndex: "remark",
     key: "remark",
+  },
+  {
+    title: "Manager",
+    dataIndex: "docManager",
+    key: "docManager",
+    sorter: (a, b) => a.docManager.localeCompare(b.docManager),
   },
   {
     title: "Document Status",
@@ -350,7 +369,7 @@ const CustomerInquiryList = () => {
         <Divider />
         {data.length > 0 && ( // 데이터가 있을 때만 페이지네이션을 표시
           <>
-            <Table
+            <StyledTable
               columns={columns}
               dataSource={data}
               pagination={false}
@@ -359,6 +378,8 @@ const CustomerInquiryList = () => {
               style={{ cursor: "pointer" }}
               onRow={(record) => ({
                 onClick: () => handleRowClick(record),
+                className:
+                  record.documentType === "COMPLEX" ? "complex-row" : "",
               })}
             />
             <PaginationWrapper
@@ -386,6 +407,10 @@ const CustomerInquiryList = () => {
       {selectedInquiryId !== null && (
         <DetailInquiryModal
           open={isDetailModalOpen}
+          documentType={
+            data.find((item) => item.customerInquiryId === selectedInquiryId)
+              ?.documentType || "GENERAL"
+          }
           onClose={() => setIsDetailModalOpen(false)}
           inquiryId={selectedInquiryId}
           fetchData={fetchData}

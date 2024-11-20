@@ -121,6 +121,7 @@ export interface Inquiry {
   docManager: string;
   representative: string;
   documentStatus: string;
+  documentType: string;
   pdfUrl: string | null;
   inquiryType: string;
   inquiryItemDetails: InquiryItem[];
@@ -535,26 +536,7 @@ export interface ComplexInquiryItemDetail {
 }
 
 export interface ComplexInquiry {
-  customerInquiryId: number;
-  vesselId: number;
-  customerId: number;
-  documentNumber: string;
-  registerDate: Dayjs;
-  shippingDate: Dayjs;
-  companyName: string;
-  refNumber: string;
-  currencyType: string;
-  currency: number;
-  vesselName: string;
-  vesselHullNo?: string;
-  shipYard?: string;
-  countryOfManufacture?: string;
-  docRemark?: string;
-  docManager: string;
-  representative: string | null;
-  documentStatus: string;
-  pdfUrl: string | null;
-  inquiryType: string;
+  documentInfo: DocumentInfo;
   discount?: number;
   invChargeList?: InvCharge[];
   inquiryItemDetails: ComplexInquiryItemDetail[];
