@@ -157,6 +157,7 @@ interface TableSectionProps extends MakeInquiryTableProps {
   setCurrentTableNo: Dispatch<SetStateAction<number>>;
   zoomLevel: number;
   setZoomLevel: Dispatch<SetStateAction<number>>;
+  customerInquiryId: number;
 }
 
 // 개별 테이블 컴포넌트
@@ -173,6 +174,7 @@ function TableSection({
   setItems,
   zoomLevel,
   setZoomLevel,
+  customerInquiryId,
 }: TableSectionProps) {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const currentTable = tables[tableIndex];
@@ -339,6 +341,29 @@ function TableSection({
     updateItems(mappedItems, true); // true는 덮어쓰기 모드를 의미
   };
 
+  const handleExportButtonClick = async () => {
+    try {
+      // 선택한 파일들의 이름을 서버로 전송
+      const response = await handleExport(customerInquiryId);
+
+      // 사용자가 로를 설정하여 파일 다운로드할 수 있도록 설정
+      const link = document.createElement("a");
+      link.href = response; // 서버에서 받은 파일 경로
+      link.download = "exported_file.xlsx"; // 사용자에게 보여질 파일 이름
+      link.click(); // 다운로드 트리거
+
+      notification.success({
+        message: "Export Success",
+        description: "Excel file exported successfully.",
+      });
+    } catch (error) {
+      notification.error({
+        message: "Export Failed",
+        description: "Failed to export the Excel file.",
+      });
+    }
+  };
+
   return (
     <div
       style={{
@@ -361,15 +386,7 @@ function TableSection({
         }}
       >
         <div style={{ display: "flex", alignItems: "center" }}>
-          <h3 style={{ margin: "0 10px 0 0" }}>Table {tableIndex + 1}</h3>
-          <Button
-            type="default"
-            onClick={() => setIsModalVisible(true)}
-            icon={<FileExcelOutlined />}
-            style={{ marginRight: 10 }}
-          >
-            Load Excel
-          </Button>
+          <span style={{ margin: "0 10px 0 0" }}>Suplliers: </span>
           <Tooltip title="Search a supplier before you add">
             <Select
               style={{ width: 200, marginRight: 8 }}
@@ -405,6 +422,20 @@ function TableSection({
           ))}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <Button
+            type="default"
+            onClick={() => setIsModalVisible(true)}
+            icon={<FileExcelOutlined />}
+          >
+            Load Excel
+          </Button>
+          <Button
+            type="default"
+            icon={<ExportOutlined />}
+            onClick={handleExportButtonClick}
+          >
+            Export Excel
+          </Button>
           <Button
             type="primary"
             icon={<PlusCircleOutlined />}
@@ -690,29 +721,6 @@ function MakeInquiryTable({
         })),
       }))
     );
-  };
-
-  const handleExportButtonClick = async () => {
-    try {
-      // 선택한 파일들의 이름을 서버로 전송
-      const response = await handleExport(customerInquiryId);
-
-      // 사용자가 로를 설정하여 파일 다운로드할 수 있도록 설정
-      const link = document.createElement("a");
-      link.href = response; // 서버에서 받은 파일 경로
-      link.download = "exported_file.xlsx"; // 사용자에게 보여질 파일 이름
-      link.click(); // 다운로드 트리거
-
-      notification.success({
-        message: "Export Success",
-        description: "Excel file exported successfully.",
-      });
-    } catch (error) {
-      notification.error({
-        message: "Export Failed",
-        description: "Failed to export the Excel file.",
-      });
-    }
   };
 
   const handleNextRowKeyDown = (
@@ -1211,38 +1219,7 @@ function MakeInquiryTable({
   ];
 
   return (
-    <div style={{ padding: "20px" }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "20px",
-          padding: "16px",
-          backgroundColor: "#fafafa",
-          borderRadius: "8px",
-          boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
-        }}
-      >
-        <div style={{ display: "flex", gap: "12px" }}>
-          <Button
-            type="default"
-            icon={<ExportOutlined />}
-            onClick={handleExportButtonClick}
-          >
-            Export Excel
-          </Button>
-        </div>
-        {/* 테이블 추가 버튼 주석 처리 */}
-        {/* <Button
-          type="primary"
-          onClick={handleAddTable}
-          icon={<PlusCircleOutlined />}
-        >
-          Add New Table
-        </Button> */}
-      </div>
-
+    <>
       {isDataReady &&
         tables.map((table, index) => (
           <TableSection
@@ -1269,7 +1246,7 @@ function MakeInquiryTable({
             setZoomLevel={setZoomLevel}
           />
         ))}
-    </div>
+    </>
   );
 }
 

@@ -103,12 +103,12 @@ const CustomTable = styled(Table)<TableProps>`
     }
   }
   .desc-row {
-    background-color: #f0f0f090;
+    background-color: #ffe9bb90;
     &:hover {
-      background-color: #f0f0f0 !important;
+      background-color: #ffe9bb !important;
     }
     .ant-table-cell-row-hover {
-      background-color: #f0f0f0 !important;
+      background-color: #ffe9bb !important;
     }
   }
   .remark-row {

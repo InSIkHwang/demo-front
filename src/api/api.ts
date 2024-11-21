@@ -198,6 +198,7 @@ export const fetchDocData = async () => {
     shippingDate: string;
     currencyType: string;
     currencyValue: number;
+    docManagerName: string;
   }>("/api/customer-inquiries/create/doc-number");
 
   return response.data;

@@ -55,14 +55,13 @@ const StyledTable = styled(Table<Inquiry>)`
 `;
 
 const TableHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
   margin-bottom: 20px;
 `;
 
 const SearchBar = styled.div`
   display: flex;
   align-items: center;
+  margin-bottom: 10px;
 `;
 
 const Button = styled(AntButton)`
@@ -112,7 +111,7 @@ const columns: ColumnsType<Inquiry> = [
     sortDirections: ["ascend", "descend"],
   },
   {
-    title: "Costomer Name",
+    title: "Costomer",
     dataIndex: "companyName",
     key: "companyName",
     sorter: (a, b) => a.companyName.localeCompare(b.companyName),
@@ -123,26 +122,7 @@ const columns: ColumnsType<Inquiry> = [
     dataIndex: "refNumber",
     key: "refNumber",
   },
-  {
-    title: "Exchange Rate",
-    dataIndex: "currency",
-    key: "currency",
-    render: (_, record) => {
-      const { currency, currencyType } = record;
-      switch (currencyType) {
-        case "USD":
-          return `$${currency?.toFixed(0)}`;
-        case "EUR":
-          return `€${currency?.toFixed(0)}`;
-        case "INR":
-          return `₹${currency?.toFixed(0)}`;
-        case "JPY":
-          return `¥${currency?.toFixed(0)}`;
-        default:
-          return `${currency?.toFixed(0)}`;
-      }
-    },
-  },
+
   {
     title: "Vessel Name",
     dataIndex: "vesselName",
@@ -158,6 +138,26 @@ const columns: ColumnsType<Inquiry> = [
     dataIndex: "docManager",
     key: "docManager",
     sorter: (a, b) => a.docManager.localeCompare(b.docManager),
+  },
+  {
+    title: "Document Type",
+    dataIndex: "documentType",
+    key: "documentType",
+    sorter: (a, b) => a.documentType.localeCompare(b.documentType),
+    render: (type) => {
+      let color;
+      switch (type) {
+        case "GENERAL":
+          color = "orange";
+          break;
+        case "COMPLEX":
+          color = "blue";
+          break;
+        default:
+          color = "steelblue";
+      }
+      return <StyledTag color={color}>{type}</StyledTag>;
+    },
   },
   {
     title: "Document Status",
@@ -362,9 +362,18 @@ const CustomerInquiryList = () => {
               </Checkbox>
             </CheckboxWrapper>
           </SearchBar>
-          <Button type="primary" onClick={() => navigate("/makeinquiry")}>
-            New Request
-          </Button>
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <Button
+              type="primary"
+              onClick={() => navigate("/makecomplexinquiry")}
+              style={{ marginRight: 10 }}
+            >
+              New Complex Request
+            </Button>
+            <Button type="primary" onClick={() => navigate("/makeinquiry")}>
+              New Request
+            </Button>
+          </div>
         </TableHeader>{" "}
         <Divider />
         {data.length > 0 && ( // 데이터가 있을 때만 페이지네이션을 표시

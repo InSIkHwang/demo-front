@@ -3,6 +3,7 @@ import { pdf } from "@react-pdf/renderer";
 import PDFDocument from "./PDFDocument";
 import { emailSendData, InquiryItem, VesselList } from "../../types/types";
 import dayjs from "dayjs";
+import { message } from "antd";
 
 interface FormValues {
   docNumber: string;
@@ -26,7 +27,6 @@ interface PDFGeneratorProps {
   }[];
   formValues: FormValues;
   setMailDataList: Dispatch<SetStateAction<emailSendData[]>>;
-  items: InquiryItem[];
   vesselInfo: VesselList | null;
   pdfHeader: string;
 }
@@ -118,6 +118,13 @@ export const generatePDFs = async (
 
   if (supplierTag) {
     const supplierItems = getItemsForSupplier(supplierTag.id);
+
+    if (supplierItems.length < 1) {
+      //Error message
+      message.error("Please select supplier.");
+      console.log("supplierItems", supplierItems);
+      return [];
+    }
 
     const doc = (
       <PDFDocument

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import styled from "styled-components";
 import {
   Alert,
@@ -15,8 +15,6 @@ import {
   fetchDocData,
   fetchCompanyNames,
   fetchItemData,
-  submitInquiry,
-  fetchInquiryDetail,
   searchInquiryWithMaker,
   chkDuplicateDocNum,
   fetchComplexInquiryDetail,
@@ -25,18 +23,12 @@ import {
 import InquiryForm from "../components/MakeComplexInquiry/InquiryForm";
 import PDFDocument from "../components/makeInquiry/PDFDocument";
 import {
-  InquiryItem,
-  InquiryListSupplier,
   emailSendData,
   VesselList,
-  Item,
   InquirySearchMakerInquirySearchResult,
-  InquiryTable,
   ComplexInquiry,
   ComplexInquiryItemDetail,
-  ComplexInquirySupplier,
   InvCharge,
-  ItemDetailType,
   FormValuesType,
   offerEmailSendData,
   HeaderFormData,
@@ -91,6 +83,7 @@ interface FormValues {
   currency: number;
   remark: string;
   supplierName: string;
+  documentStatus: string;
 }
 
 const INITIAL_FORM_VALUES: FormValues = {
@@ -106,6 +99,7 @@ const INITIAL_FORM_VALUES: FormValues = {
   currency: 0,
   remark: "",
   supplierName: "",
+  documentStatus: "",
 };
 
 const INITIAL_ITEM_VALUES: ComplexInquiryItemDetail[] = [
@@ -128,6 +122,7 @@ const INITIAL_ITEM_VALUES: ComplexInquiryItemDetail[] = [
     purchaseAmountKRW: 0,
     purchaseAmountGlobal: 0,
     suppliers: [],
+    confirmSupplier: null,
   },
   {
     itemCode: "",
@@ -148,6 +143,7 @@ const INITIAL_ITEM_VALUES: ComplexInquiryItemDetail[] = [
     purchaseAmountKRW: 0,
     purchaseAmountGlobal: 0,
     suppliers: [],
+    confirmSupplier: null,
   },
   {
     itemCode: "",
@@ -168,6 +164,7 @@ const INITIAL_ITEM_VALUES: ComplexInquiryItemDetail[] = [
     purchaseAmountKRW: 0,
     purchaseAmountGlobal: 0,
     suppliers: [],
+    confirmSupplier: null,
   },
 ];
 
@@ -262,7 +259,6 @@ const MakeComplexInquiry = () => {
   const [documentInfo, setDocumentInfo] = useState<FormValuesType | null>(null);
   const [mailData, setMailData] = useState<offerEmailSendData | null>(null);
   const [pdfFileData, setPdfFileData] = useState<File | null>(null);
-  const [fileData, setFileData] = useState<(File | null)[]>([]);
   const [pdfCustomerTag, setPdfCustomerTag] = useState<{
     id: number;
     name: string;
@@ -320,6 +316,7 @@ const MakeComplexInquiry = () => {
         ...prev,
         documentId: docData.documentId,
         docNumber: docData.docNumber,
+        docManagerName: docData.docManagerName,
         registerDate: dayjs(docData.registerDate),
         shippingDate: dayjs(docData.shippingDate),
         currencyType: docData.currencyType,
@@ -432,6 +429,7 @@ const MakeComplexInquiry = () => {
       currency: documentInfo.currency,
       remark: documentInfo.docRemark || "",
       supplierName: "",
+      documentStatus: documentInfo.documentStatus,
     });
 
     setItems(inquiryDetail.inquiryItemDetails);
@@ -633,26 +631,15 @@ const MakeComplexInquiry = () => {
 
       const requestData = {
         documentInfo: {
-          customerInquiryId: formValues.documentId,
-          vesselId: selectedVessel.id,
-          customerId: selectedCustomerId,
-          documentId: formValues.documentId,
-          documentNumber: formValues.docNumber,
+          docNumber: formValues.docNumber,
           registerDate: formValues.registerDate.format("YYYY-MM-DD"),
           shippingDate: formValues.shippingDate.format("YYYY-MM-DD"),
-          companyName: formValues.customer,
+          remark: formValues.remark,
           refNumber: formValues.refNumber,
           currencyType: formValues.currencyType,
-          currency: parseFloat(formValues.currency as any),
-          vesselName: formValues.vesselName,
-          vesselHullNo: selectedVessel.hullNumber || "",
-          shipYard: selectedVessel.shipYard || "",
-          countryOfManufacture: selectedVessel.countryOfManufacture || "",
-          remark: formValues.remark || "",
-          docManager: formValues.docManagerName,
-          representative: null,
-          documentStatus: "WRITING_INQUIRY",
-          inquiryType: "CUSTOMER_INQUIRY",
+          currency: formValues.currency,
+          vesselId: selectedVessel.id,
+          customerId: selectedCustomerId,
         },
         inquiryItemDetails: items.map((item) => ({
           itemDetailId: item.itemDetailId || null,
@@ -674,13 +661,14 @@ const MakeComplexInquiry = () => {
           purchasePriceGlobal: item.purchasePriceGlobal || 0,
           purchaseAmountKRW: item.purchaseAmountKRW || 0,
           purchaseAmountGlobal: item.purchaseAmountGlobal || 0,
-          suppliers:
-            item.suppliers?.map((supplier) => ({
-              supplierId: supplier.supplierId,
-            })) || [],
+          supplierIdList:
+            item.suppliers?.map((supplier) => supplier.supplierId) || [],
+          confirmSupplier: item.confirmSupplier || null,
         })),
-        discount: dcInfo.dcPercent,
-        invChargeList: invChargeList || [],
+        ...(isEditMode && {
+          discount: dcInfo.dcPercent,
+          invChargeList: invChargeList || [],
+        }),
       };
 
       const response = await submitComplexInquiry(
@@ -692,11 +680,11 @@ const MakeComplexInquiry = () => {
 
       message.success("Saved successfully!");
 
-      const newInquiryDetail = await fetchInquiryDetail(
+      const newInquiryDetail = await fetchComplexInquiryDetail(
         Number(isEditMode ? complexInquiryId : response)
       );
 
-      navigate(`/makeinquiry/${response}`, {
+      navigate(`/makecomplexinquiry/${response}`, {
         state: { inquiry: newInquiryDetail },
       });
 
@@ -770,59 +758,76 @@ const MakeComplexInquiry = () => {
 
   const uniqueSuppliers = removeDuplicates(selectedSuppliers);
 
-  const getSelectedSupplierItems = useCallback(() => {
-    if (!pdfSupplierTag[0] && documentType === "inquiry") return [];
+  const getSelectedSupplierItems = useCallback(
+    (supplierId?: number) => {
+      if (
+        !pdfSupplierTag[0] &&
+        selectedSuppliers.length === 0 &&
+        documentType === "inquiry" &&
+        supplierTags.length < 1
+      ) {
+        message.error("Please select supplier.");
+        return [];
+      }
 
-    const baseItemFields = (item: any) => ({
-      tableNo: 1,
-      itemDetailId: item.itemDetailId || undefined,
-      itemId: item.itemId || undefined,
-      itemType: item.itemType,
-      itemCode: item.itemCode,
-      itemName: item.itemName,
-      itemRemark: item.itemRemark,
-      qty: item.qty,
-      unit: item.unit || "",
-      position: item.position,
-      indexNo: item.indexNo || null,
-      salesPriceKRW: item.salesPriceKRW || 0,
-      salesPriceGlobal: item.salesPriceGlobal || 0,
-      salesAmountKRW: item.salesAmountKRW || 0,
-      salesAmountGlobal: item.salesAmountGlobal || 0,
-      purchasePriceKRW: item.purchasePriceKRW || 0,
-      purchasePriceGlobal: item.purchasePriceGlobal || 0,
-      purchaseAmountKRW: item.purchaseAmountKRW || 0,
-      purchaseAmountGlobal: item.purchaseAmountGlobal || 0,
-      margin: item.margin || 0,
-    });
+      const baseItemFields = (item: any) => ({
+        tableNo: 1,
+        itemDetailId: item.itemDetailId || undefined,
+        itemId: item.itemId || undefined,
+        itemType: item.itemType,
+        itemCode: item.itemCode,
+        itemName: item.itemName,
+        itemRemark: item.itemRemark,
+        qty: item.qty,
+        unit: item.unit || "",
+        position: item.position,
+        indexNo: item.indexNo || null,
+        salesPriceKRW: item.salesPriceKRW || 0,
+        salesPriceGlobal: item.salesPriceGlobal || 0,
+        salesAmountKRW: item.salesAmountKRW || 0,
+        salesAmountGlobal: item.salesAmountGlobal || 0,
+        purchasePriceKRW: item.purchasePriceKRW || 0,
+        purchasePriceGlobal: item.purchasePriceGlobal || 0,
+        purchaseAmountKRW: item.purchaseAmountKRW || 0,
+        purchaseAmountGlobal: item.purchaseAmountGlobal || 0,
+        margin: item.margin || 0,
+      });
 
-    if (documentType === "inquiry") {
-      const filteredItems = items.filter((item) =>
-        item.suppliers?.some(
-          (supplier) => supplier.supplierId === pdfSupplierTag[0].id
-        )
-      );
-      return filteredItems
-        .map((item) => ({
-          ...baseItemFields(item),
-          suppliers: item.suppliers?.map((supplier) => ({
-            supplierId: supplier.supplierId,
-            inquiryItemDetailId: supplier.inquiryItemDetailId || undefined,
-            code: supplier.code,
-            companyName: supplier.companyName,
-            korCompanyName: supplier.korCompanyName || "",
-            representative: supplier.representative || "",
-            email: supplier.email || "",
-            communicationLanguage: supplier.communicationLanguage || "KOR",
-          })),
-        }))
-        .sort((a, b) => a.position - b.position);
-    } else {
-      return items
-        .map((item) => baseItemFields(item))
-        .sort((a, b) => a.position - b.position);
-    }
-  }, [items, pdfSupplierTag, documentType]);
+      if (documentType === "inquiry") {
+        const targetSupplierId = supplierId || pdfSupplierTag[0]?.id;
+        if (!targetSupplierId) return [];
+
+        const filteredItems = items.filter((item) =>
+          item.suppliers?.some(
+            (supplier) => supplier.supplierId === targetSupplierId
+          )
+        );
+
+        return filteredItems
+          .map((item) => ({
+            ...baseItemFields(item),
+            suppliers: item.suppliers
+              ?.filter((supplier) => supplier.supplierId === targetSupplierId)
+              .map((supplier) => ({
+                supplierId: supplier.supplierId,
+                inquiryItemDetailId: supplier.inquiryItemDetailId || undefined,
+                code: supplier.code,
+                companyName: supplier.companyName,
+                korCompanyName: supplier.korCompanyName || "",
+                representative: supplier.representative || "",
+                email: supplier.email || "",
+                communicationLanguage: supplier.communicationLanguage || "KOR",
+              })),
+          }))
+          .sort((a, b) => a.position - b.position);
+      } else {
+        return items
+          .map((item) => baseItemFields(item))
+          .sort((a, b) => a.position - b.position);
+      }
+    },
+    [items, pdfSupplierTag, documentType]
+  );
 
   // 메모이제이션된 계산 함수들
   const calculateAmounts = useCallback(
@@ -1113,6 +1118,7 @@ const MakeComplexInquiry = () => {
         setItems={setItems}
         uniqueSuppliers={uniqueSuppliers}
         currency={formValues.currency}
+        documentStatus={formValues.documentStatus}
       />
       <Button
         type="primary"
@@ -1176,20 +1182,19 @@ const MakeComplexInquiry = () => {
               vesselName: documentInfo.vesselName,
             }}
             handleSubmit={handleSubmit}
-            setFileData={setFileData}
             pdfFileData={pdfFileData}
             mailData={mailData}
             pdfHeader={quotationPdfHeader}
             selectedSupplierIds={supplierTags.map((item) => item.inquiryId)} //문서ID로 수정할 것
           />
-        ) : (
+        ) : documentType === "quotation" ? (
           <div style={{ marginTop: 20 }}>
             <Alert
               message="There is no document information. Please Save the document first."
               type="error"
             />
           </div>
-        )}
+        ) : null}
       </Modal>
       <div
         style={{
@@ -1281,7 +1286,6 @@ const MakeComplexInquiry = () => {
           selectedSupplierTag={supplierTags}
           formValues={formValues}
           setMailDataList={setMailDataList}
-          items={getSelectedSupplierItems()}
           vesselInfo={selectedVessel}
           pdfHeader={inquiryPdfHeader}
         />

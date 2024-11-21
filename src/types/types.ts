@@ -157,6 +157,8 @@ export interface SupplierInquiryListIF {
   docRemark: string;
   docManager: string;
   documentStatus: string;
+  documentType: string;
+  customerInquiryId?: number;
   supplierPreview: {
     supplierInquiryId: number;
     supplierCode: string;
@@ -512,6 +514,13 @@ export interface ComplexInquirySupplier {
   supplierRemark?: string | null;
 }
 
+export interface ComplexInquiryConfirmSupplier {
+  supplierId: number;
+  code?: string;
+  companyName?: string;
+  korCompanyName?: string;
+}
+
 export interface ComplexInquiryItemDetail {
   itemDetailId?: number;
   itemId?: number;
@@ -533,6 +542,7 @@ export interface ComplexInquiryItemDetail {
   purchaseAmountKRW: number;
   purchaseAmountGlobal: number;
   suppliers: ComplexInquirySupplier[];
+  confirmSupplier: ComplexInquiryConfirmSupplier | null;
 }
 
 export interface ComplexInquiry {

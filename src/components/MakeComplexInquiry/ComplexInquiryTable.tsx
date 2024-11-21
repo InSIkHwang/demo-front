@@ -8,6 +8,7 @@ import {
   Checkbox,
   Tooltip,
   InputRef,
+  TableColumnType,
 } from "antd";
 import {
   PlusCircleOutlined,
@@ -38,6 +39,11 @@ const CustomTable = styled(Table<ComplexInquiryItemDetail>)<TableProps>`
       props.$zoomLevel ? `${11 * props.$zoomLevel}px` : "11px"};
   }
 
+  .ant-table-row,
+  .ant-table-cell {
+    transition: all 0.3s ease !important;
+  }
+
   .ant-table-cell {
     padding: ${(props) =>
       props.$zoomLevel
@@ -62,47 +68,101 @@ const CustomTable = styled(Table<ComplexInquiryItemDetail>)<TableProps>`
     padding: 0 2px !important;
   }
 
+  .item-row {
+    background-color: rgb(255, 255, 255) !important;
+  }
+
   .ant-table-row {
     &:hover {
-      background-color: rgba(240, 240, 240, 0.875) !important;
+      background-color: #f0f0f0 !important;
     }
     .ant-table-cell-row-hover {
-      background-color: rgba(240, 240, 240, 0.875) !important;
+      background-color: #f0f0f0 !important;
     }
-    transition: background-color 0.3s ease;
+  }
+
+  .ant-table-cell-fix-left {
+    background: none !important;
+    background-color: inherit !important;
+    z-index: 2 !important;
+  }
+
+  .ant-table-cell-fix-left-last {
+    box-shadow: 14px 0 10px -10px rgba(0, 0, 0, 0.05) !important;
+  }
+
+  tr .ant-table-cell-fix-left {
+    background-color: #fafafa !important;
+  }
+
+  .maker-row .ant-table-cell-fix-left {
+    background: none !important;
+    background-color: #e3f2ff !important;
+  }
+  .type-row .ant-table-cell-fix-left {
+    background: none !important;
+    background-color: #e3f2ff !important;
+  }
+  .desc-row .ant-table-cell-fix-left {
+    background: none !important;
+    background-color: #e3f2ff !important;
+  }
+  .remark-row .ant-table-cell-fix-left {
+    background: none !important;
+    background-color: #eaffe6 !important;
+  }
+
+  .maker-row:hover .ant-table-cell-fix-left {
+    background: none !important;
+    background-color: #c8e4ff !important;
+  }
+  .type-row:hover .ant-table-cell-fix-left {
+    background: none !important;
+    background-color: #fffdde !important;
+  }
+  .desc-row:hover .ant-table-cell-fix-left {
+    background: none !important;
+    background-color: #ffe9bb !important;
+  }
+  .remark-row:hover .ant-table-cell-fix-left {
+    background: none !important;
+    background-color: #dcffd1 !important;
   }
 
   .maker-row {
-    background-color: #c8e4ff90; /* MAKER 행의 배경색 */
+    background-color: #e3f2ff !important; /* 기본 색상 */
     &:hover {
-      background-color: #c8e4ff !important;
+      background-color: #c8e4ff !important; /* 호버 시 더 진한 색상 */
     }
     .ant-table-cell-row-hover {
       background-color: #c8e4ff !important;
     }
   }
+
   .type-row {
-    background-color: #fffdde90; /* TYPE 행의 배경색 */
+    background-color: #fffef0 !important; /* 기본 색상 */
     &:hover {
-      background-color: #fffdde !important;
+      background-color: #fffdde !important; /* 호버 시 더 진한 색상 */
     }
     .ant-table-cell-row-hover {
       background-color: #fffdde !important;
     }
   }
+
   .desc-row {
-    background-color: #f0f0f090;
+    background-color: #fff5e0 !important; /* 기본 색상 */
     &:hover {
-      background-color: #f0f0f0 !important;
+      background-color: #ffe9bb !important; /* 호버 시 더 진한 색상 */
     }
     .ant-table-cell-row-hover {
-      background-color: #f0f0f0 !important;
+      background-color: #ffe9bb !important;
     }
   }
+
   .remark-row {
-    background-color: #d5ffd190;
+    background-color: #eaffe6 !important; /* 기본 색상 */
     &:hover {
-      background-color: #dcffd1 !important;
+      background-color: #dcffd1 !important; /* 호버 시 더 진한 색상 */
     }
     .ant-table-cell-row-hover {
       background-color: #dcffd1 !important;
@@ -130,6 +190,7 @@ interface ComplexInquiryTableProps {
     supplierRemark: string;
   }[];
   currency: number;
+  documentStatus: string;
 }
 
 const ComplexInquiryTable = ({
@@ -137,6 +198,7 @@ const ComplexInquiryTable = ({
   setItems,
   uniqueSuppliers,
   currency,
+  documentStatus,
 }: ComplexInquiryTableProps) => {
   const [unitOptions, setUnitOptions] = useState<string[]>(["PCS", "SET"]);
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -304,6 +366,7 @@ const ComplexInquiryTable = ({
         purchaseAmountKRW: 0,
         purchaseAmountGlobal: 0,
         suppliers: [],
+        confirmSupplier: null,
       };
 
       const updatedItems = [
@@ -385,7 +448,7 @@ const ComplexInquiryTable = ({
     }
   };
 
-  const columns = [
+  const columns: TableColumnType<ComplexInquiryItemDetail>[] = [
     {
       title: "Actions",
       key: "actions",
@@ -413,6 +476,7 @@ const ComplexInquiryTable = ({
       dataIndex: "indexNo",
       key: "indexNo",
       width: 70 * zoomLevel,
+      fixed: "left",
       render: (text: string, record: any, index: number) => {
         if (record.itemType === "DASH") {
           return (
@@ -465,6 +529,7 @@ const ComplexInquiryTable = ({
       dataIndex: "itemCode",
       key: "itemCode",
       width: 115 * zoomLevel,
+      fixed: "left",
       render: (text: string, _: any, index: number) => (
         <Input
           value={text}
@@ -484,6 +549,7 @@ const ComplexInquiryTable = ({
       dataIndex: "itemName",
       key: "itemName",
       width: 200 * zoomLevel,
+      fixed: "left",
       render: (text: string, _: any, index: number) => (
         <Input.TextArea
           value={text}
@@ -819,7 +885,7 @@ const ComplexInquiryTable = ({
       title: () => (
         <Select
           style={{ width: "100%" }}
-          placeholder="Apply to checked"
+          placeholder="Select supplier to send email"
           value={null}
           onChange={(selectedId: number) => {
             const newItems = [...items];
@@ -941,6 +1007,86 @@ const ComplexInquiryTable = ({
         );
       },
     },
+    {
+      ...(documentStatus !== "WRITING_INQUIRY" &&
+      documentStatus !== "WAITING_TO_SEND_INQUIRY" &&
+      documentStatus !== ""
+        ? {
+            title: () => (
+              <Select
+                style={{ width: "100%" }}
+                placeholder="Select supplier to confirm"
+                value={null}
+                onChange={(selectedId: number) => {
+                  const newItems = [...items];
+                  checkedItems.forEach((index) => {
+                    // 해당 행의 suppliers에 있는 경우에만 적용
+                    if (
+                      newItems[index].suppliers?.some(
+                        (s) => s.supplierId === selectedId
+                      )
+                    ) {
+                      newItems[index] = {
+                        ...newItems[index],
+                        confirmSupplier: {
+                          supplierId: selectedId,
+                        },
+                      };
+                    }
+                  });
+                  setItems(newItems);
+                }}
+              >
+                {Array.from(
+                  new Set(
+                    checkedItems
+                      .flatMap((index) => items[index].suppliers || [])
+                      .map((supplier) => supplier.supplierId)
+                  )
+                ).map((supplierId) => {
+                  const supplier = items
+                    .flatMap((item) => item.suppliers)
+                    .find((s) => s?.supplierId === supplierId);
+                  return (
+                    <Option key={supplierId} value={supplierId}>
+                      {supplier?.companyName}
+                    </Option>
+                  );
+                })}
+              </Select>
+            ),
+            dataIndex: "confirmSupplierId",
+            key: "confirmSupplierId",
+            width: 200 * zoomLevel,
+            render: (
+              _: any, // confirmSupplierId 대신 사용하지 않는 파라미터로 변경
+              record: ComplexInquiryItemDetail,
+              index: number
+            ) => (
+              <Select
+                style={{ width: "100%" }}
+                value={record.confirmSupplier?.supplierId || null} // 수정된 부분
+                onChange={(selectedId: number) => {
+                  const newItems = [...items];
+                  newItems[index] = {
+                    ...newItems[index],
+                    confirmSupplier: {
+                      supplierId: selectedId,
+                    },
+                  };
+                  setItems(newItems);
+                }}
+              >
+                {record.suppliers?.map((supplier) => (
+                  <Option key={supplier.supplierId} value={supplier.supplierId}>
+                    {supplier.code}
+                  </Option>
+                ))}
+              </Select>
+            ),
+          }
+        : null),
+    },
   ];
 
   return (
@@ -991,6 +1137,7 @@ const ComplexInquiryTable = ({
           dataSource={items}
           pagination={false}
           rowKey="position"
+          bordered={true}
           rowClassName={(record: ComplexInquiryItemDetail) => {
             if (record.itemRemark) {
               return "remark-row";

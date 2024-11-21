@@ -386,7 +386,6 @@ const AddSupplierOnInquiry = () => {
           selectedSupplierTag={selectedSuppliers}
           formValues={formValues}
           setMailDataList={setMailDataList}
-          items={items}
           vesselInfo={selectedVessel}
           pdfHeader={pdfHeader}
         />
