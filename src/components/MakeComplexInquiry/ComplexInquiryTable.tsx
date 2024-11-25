@@ -40,7 +40,9 @@ const CustomTable = styled(Table<ComplexInquiryItemDetail>)<TableProps>`
   }
 
   .ant-table-row,
-  .ant-table-cell {
+  .ant-table-row *,
+  .ant-table-cell *,
+  .ant-table-cell-row-hover {
     transition: all 0.3s ease !important;
   }
 
@@ -68,10 +70,6 @@ const CustomTable = styled(Table<ComplexInquiryItemDetail>)<TableProps>`
     padding: 0 2px !important;
   }
 
-  .item-row {
-    background-color: rgb(255, 255, 255) !important;
-  }
-
   .ant-table-row {
     &:hover {
       background-color: #f0f0f0 !important;
@@ -95,23 +93,31 @@ const CustomTable = styled(Table<ComplexInquiryItemDetail>)<TableProps>`
     background-color: #fafafa !important;
   }
 
+  .item-row .ant-table-cell-fix-left {
+    background: none !important;
+    background-color: #ffffff !important;
+  }
   .maker-row .ant-table-cell-fix-left {
     background: none !important;
     background-color: #e3f2ff !important;
   }
   .type-row .ant-table-cell-fix-left {
     background: none !important;
-    background-color: #e3f2ff !important;
+    background-color: #fffef0 !important;
   }
   .desc-row .ant-table-cell-fix-left {
     background: none !important;
-    background-color: #e3f2ff !important;
+    background-color: #fff5e0 !important;
   }
   .remark-row .ant-table-cell-fix-left {
     background: none !important;
     background-color: #eaffe6 !important;
   }
 
+  .item-row:hover .ant-table-cell-fix-left {
+    background: none !important;
+    background-color: #f0f0f0 !important;
+  }
   .maker-row:hover .ant-table-cell-fix-left {
     background: none !important;
     background-color: #c8e4ff !important;
@@ -127,6 +133,16 @@ const CustomTable = styled(Table<ComplexInquiryItemDetail>)<TableProps>`
   .remark-row:hover .ant-table-cell-fix-left {
     background: none !important;
     background-color: #dcffd1 !important;
+  }
+
+  .item-row {
+    background-color: #ffffff !important;
+    &:hover {
+      background-color: #f0f0f0 !important;
+    }
+    .ant-table-cell-row-hover {
+      background-color: #f0f0f0 !important;
+    }
   }
 
   .maker-row {
@@ -665,6 +681,8 @@ const ComplexInquiryTable = ({
               newItems[index] = {
                 ...newItems[index],
                 salesPriceGlobal: 0,
+                salesAmountKRW: 0,
+                salesAmountGlobal: 0,
                 margin: 0,
               };
               setItems(newItems);
@@ -702,6 +720,8 @@ const ComplexInquiryTable = ({
             newItems[index] = {
               ...newItems[index],
               salesPriceKRW: 0,
+              salesAmountKRW: 0,
+              salesAmountGlobal: 0,
               margin: 0,
             };
             setItems(newItems);
@@ -754,6 +774,8 @@ const ComplexInquiryTable = ({
             newItems[index] = {
               ...newItems[index],
               purchasePriceGlobal: 0,
+              purchaseAmountKRW: 0,
+              purchaseAmountGlobal: 0,
             };
             setItems(newItems);
           }}
@@ -787,6 +809,8 @@ const ComplexInquiryTable = ({
             newItems[index] = {
               ...newItems[index],
               purchasePriceKRW: 0,
+              purchaseAmountKRW: 0,
+              purchaseAmountGlobal: 0,
             };
             setItems(newItems);
           }}
@@ -844,16 +868,21 @@ const ComplexInquiryTable = ({
           value={text}
           className="custom-input"
           addonAfter={"%"}
-          onChange={(e) => {
+          onFocus={(e) => {
+            e.target.select();
             const newItems = [...items];
             newItems[index] = {
               ...newItems[index],
               salesPriceGlobal: 0,
               salesPriceKRW: 0,
-              margin: Number(e.target.value),
+              salesAmountKRW: 0,
+              salesAmountGlobal: 0,
             };
             setItems(newItems);
           }}
+          onChange={(e) =>
+            handleInputChange(index, "margin", Number(e.target.value))
+          }
           ref={(el) => {
             if (!inputRefs.current[index]) {
               inputRefs.current[index] = [];

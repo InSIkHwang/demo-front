@@ -658,6 +658,17 @@ export const sendQuotationMail = async (
   // `emailSend` 데이터 추가
   formData.append("emailSendData", JSON.stringify(emailSendData));
 
+  // files.forEach((file) => {
+  //   const url = URL.createObjectURL(file);
+  //   const a = document.createElement("a");
+  //   a.href = url;
+  //   a.download = file.name;
+  //   document.body.appendChild(a);
+  //   a.click();
+  //   document.body.removeChild(a);
+  //   URL.revokeObjectURL(url); // 메모리 해제
+  // });
+
   // POST 요청
   const response = await axios.post(
     `/api/supplier-inquiries/send-email/merged-inquiry`,

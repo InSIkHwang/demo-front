@@ -387,7 +387,7 @@ const PDFDocument = ({
 
   if (viewMode) {
     return (
-      <PDFViewer width="100%" height="600" style={{ margin: "20px 0" }}>
+      <PDFViewer width="100%" height="800" style={{ margin: "20px 0" }}>
         <Document>
           <Page size="A4" style={styles.page}>
             {renderHeader(

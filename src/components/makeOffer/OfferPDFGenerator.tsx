@@ -156,9 +156,13 @@ Thanks & Best Regards`,
 
   useEffect(() => {
     if (customerInfo.id !== null) {
-      generateAndSendPDFs();
+      const timer = setTimeout(() => {
+        generateAndSendPDFs();
+      }, 500);
+
+      return () => clearTimeout(timer);
     }
-  }, [customerInfo, pdfHeader, generateAndSendPDFs]);
+  }, [customerInfo.id, pdfHeader]);
 
   return null;
 };

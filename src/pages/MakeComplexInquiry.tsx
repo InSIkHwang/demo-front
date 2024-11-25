@@ -294,6 +294,7 @@ const MakeComplexInquiry = () => {
     isVisible: boolean
   ) => {
     setModalVisibility(modalType, isVisible);
+    setShowPDFPreview(false);
   };
 
   const fetchDetail = useCallback(async () => {
@@ -934,11 +935,55 @@ const MakeComplexInquiry = () => {
           newItem.purchasePriceKRW = amounts.krw;
         }
 
-        // 마진이 있는 경우 판매가격 계산
-        if (newItem.margin) {
+        // 판매가격이 있고 마진이 없는 경우의 마진율 계산 로직 추가
+        if (
+          newItem.salesPriceKRW &&
+          !newItem.salesPriceGlobal &&
+          !newItem.margin
+        ) {
+          const amounts = calculateAmounts(
+            newItem.salesPriceKRW,
+            1,
+            formValues.currency,
+            false
+          );
+          newItem.salesPriceGlobal = amounts.global;
+          newItem.margin = Number(
+            Number(
+              ((newItem.salesPriceKRW - newItem.purchasePriceKRW) /
+                newItem.purchasePriceKRW) *
+                100
+            ).toFixed(2)
+          );
+        } else if (
+          newItem.salesPriceGlobal &&
+          !newItem.salesPriceKRW &&
+          !newItem.margin
+        ) {
+          const amounts = calculateAmounts(
+            newItem.salesPriceGlobal,
+            1,
+            formValues.currency,
+            true
+          );
+          newItem.salesPriceKRW = amounts.krw;
+          newItem.margin = Number(
+            Number(
+              ((newItem.salesPriceGlobal - newItem.purchasePriceKRW) /
+                newItem.purchasePriceKRW) *
+                100
+            ).toFixed(2)
+          );
+        }
+        // 마진이 있고 판매가격이 없는 경우
+        else if (
+          newItem.salesPriceKRW === 0 &&
+          newItem.salesPriceGlobal === 0
+        ) {
           newItem.salesPriceKRW = Math.round(
             newItem.purchasePriceKRW * (1 + newItem.margin / 100)
           );
+
           newItem.salesPriceGlobal = Number(
             (newItem.purchasePriceGlobal * (1 + newItem.margin / 100)).toFixed(
               2
@@ -1185,7 +1230,7 @@ const MakeComplexInquiry = () => {
             pdfFileData={pdfFileData}
             mailData={mailData}
             pdfHeader={quotationPdfHeader}
-            selectedSupplierIds={supplierTags.map((item) => item.inquiryId)} //문서ID로 수정할 것
+            selectedSupplierIds={[]} //복합일 때만 빈 배열
           />
         ) : documentType === "quotation" ? (
           <div style={{ marginTop: 20 }}>
