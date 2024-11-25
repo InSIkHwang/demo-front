@@ -60,13 +60,6 @@ const CustomTable = styled(Table)<TableProps>`
     border: none !important;
   }
 
-  .highlight-cell {
-    font-weight: bold !important;
-
-    .ant-input-group-addon {
-      background-color: #dff4ff;
-    }
-  }
   .ant-input-group-addon {
     padding: 0 2px !important;
   }
@@ -126,6 +119,16 @@ const CustomTable = styled(Table)<TableProps>`
   }
   .custom-input .ant-input-group-addon {
     background-color: #dff4ff !important;
+  }
+
+  .highlight-cell {
+    font-weight: bold !important;
+
+    .ant-input-group-addon,
+    .ant-input-outlined {
+      border-color: #007bff !important;
+      font-weight: bold !important;
+    }
   }
 `;
 
@@ -862,144 +865,11 @@ const TableComponent = ({
       ),
     },
     {
-      title: "Sales Price(KRW)",
-      dataIndex: "salesPriceKRW",
-      key: "salesPriceKRW",
-      width: 115 * zoomLevel,
-      render: (text: number, record: any, index: number) => {
-        const value =
-          (record.itemType !== "ITEM" && record.itemType !== "DASH") ||
-          record.itemRemark
-            ? 0
-            : text;
-
-        return (
-          <MemoizedDisplayInput
-            type="text" // Change to "text" to handle formatted input
-            value={value?.toLocaleString()} // Display formatted value
-            ref={(el) => {
-              if (!inputRefs.current[index]) {
-                inputRefs.current[index] = [];
-              }
-              inputRefs.current[index][6] = el;
-            }}
-            onKeyDown={(e) => handleNextRowKeyDown(e, index, 6)}
-            onChange={(value) =>
-              handleInputChange(index, "salesPriceKRW", value)
-            }
-            onBlur={(e) => {
-              const value = e.target.value;
-              const unformattedValue = value.replace(/,/g, "");
-              const updatedValue = isNaN(Number(unformattedValue))
-                ? 0
-                : Number(unformattedValue);
-              handlePriceInputChange(
-                index,
-                "salesPriceKRW",
-                roundToTwoDecimalPlaces(updatedValue),
-                currency
-              );
-            }}
-            style={{ width: "100%" }}
-            addonBefore="₩"
-            className="custom-input"
-          />
-        );
-      },
-    },
-    {
-      title: "Sales Price(F)",
-      dataIndex: "salesPriceGlobal",
-      key: "salesPriceGlobal",
-      width: 115 * zoomLevel,
-      render: (text: number, record: any, index: number) => {
-        const value =
-          (record.itemType !== "ITEM" && record.itemType !== "DASH") ||
-          record.itemRemark
-            ? 0
-            : text;
-
-        return (
-          <MemoizedDisplayInput
-            type="text" // Change to "text" to handle formatted input
-            value={value?.toLocaleString()} // Display formatted value
-            ref={(el) => {
-              if (!inputRefs.current[index]) {
-                inputRefs.current[index] = [];
-              }
-              inputRefs.current[index][7] = el;
-            }}
-            onKeyDown={(e) => handleNextRowKeyDown(e, index, 7)}
-            onChange={(value) =>
-              handleInputChange(index, "salesPriceGlobal", value)
-            }
-            onBlur={(e) => {
-              const value = e.target.value;
-              const unformattedValue = value.replace(/,/g, "");
-              const updatedValue = isNaN(Number(unformattedValue))
-                ? 0
-                : Number(unformattedValue);
-              handlePriceInputChange(
-                index,
-                "salesPriceGlobal",
-                roundToTwoDecimalPlaces(updatedValue),
-                currency
-              );
-            }}
-            style={{ width: "100%" }}
-            addonBefore="F"
-            className="custom-input"
-          />
-        );
-      },
-    },
-    {
-      title: "Sales Amount(KRW)",
-      dataIndex: "salesAmountKRW",
-      key: "salesAmountKRW",
-      width: 115 * zoomLevel,
-      className: "highlight-cell",
-      render: (text: number, record: any) =>
-        (record.itemType === "ITEM" || record.itemType === "DASH") &&
-        !record.itemRemark ? (
-          <MemoizedDisplayInput
-            type="text"
-            value={calculateTotalAmount(
-              record.salesPriceKRW,
-              record.qty
-            )?.toLocaleString()}
-            style={{ width: "100%" }}
-            readOnly
-            addonBefore="₩"
-          />
-        ) : null,
-    },
-    {
-      title: "Sales Amount(F)",
-      dataIndex: "salesAmountGlobal",
-      key: "salesAmountGlobal",
-      width: 115 * zoomLevel,
-      className: "highlight-cell",
-      render: (text: number, record: any) =>
-        (record.itemType === "ITEM" || record.itemType === "DASH") &&
-        !record.itemRemark ? (
-          <MemoizedDisplayInput
-            type="text"
-            value={calculateTotalAmount(
-              record.salesPriceGlobal,
-              record.qty
-            )?.toLocaleString()}
-            style={{ width: "100%" }}
-            readOnly
-            addonBefore="F"
-          />
-        ) : null,
-    },
-    {
       title: "Purchase Price(KRW)",
       dataIndex: "purchasePriceKRW",
       key: "purchasePriceKRW",
       width: 115 * zoomLevel,
+      className: "highlight-cell",
       render: (text: number, record: any, index: number) => {
         const value =
           (record.itemType !== "ITEM" && record.itemType !== "DASH") ||
@@ -1007,7 +877,8 @@ const TableComponent = ({
             ? 0
             : text;
 
-        return (
+        return (record.itemType === "ITEM" || record.itemType === "DASH") &&
+          !record.itemRemark ? (
           <MemoizedDisplayInput
             type="text" // Change to "text" to handle formatted input
             value={value?.toLocaleString()} // Display formatted value
@@ -1038,7 +909,7 @@ const TableComponent = ({
             addonBefore="₩"
             className="custom-input"
           />
-        );
+        ) : null;
       },
     },
     {
@@ -1046,6 +917,7 @@ const TableComponent = ({
       dataIndex: "purchasePriceGlobal",
       key: "purchasePriceGlobal",
       width: 115 * zoomLevel,
+      className: "highlight-cell",
       render: (text: number, record: any, index: number) => {
         const value =
           (record.itemType !== "ITEM" && record.itemType !== "DASH") ||
@@ -1053,7 +925,8 @@ const TableComponent = ({
             ? 0
             : text;
 
-        return (
+        return (record.itemType === "ITEM" || record.itemType === "DASH") &&
+          !record.itemRemark ? (
           <MemoizedDisplayInput
             type="text" // Change to "text" to handle formatted input
             value={value?.toLocaleString()} // Display formatted value
@@ -1084,7 +957,7 @@ const TableComponent = ({
             addonBefore="F"
             className="custom-input"
           />
-        );
+        ) : null;
       },
     },
     {
@@ -1092,7 +965,6 @@ const TableComponent = ({
       dataIndex: "purchaseAmountKRW",
       key: "purchaseAmountKRW",
       width: 115 * zoomLevel,
-      className: "highlight-cell",
       render: (text: number, record: any, index: number) =>
         (record.itemType === "ITEM" || record.itemType === "DASH") &&
         !record.itemRemark ? (
@@ -1116,7 +988,6 @@ const TableComponent = ({
       dataIndex: "purchaseAmountGlobal",
       key: "purchaseAmountGlobal",
       width: 115 * zoomLevel,
-      className: "highlight-cell",
       render: (text: number, record: any, index: number) =>
         (record.itemType === "ITEM" || record.itemType === "DASH") &&
         !record.itemRemark ? (
@@ -1129,6 +1000,140 @@ const TableComponent = ({
             onChange={(value) =>
               handleInputChange(index, "purchaseAmountGlobal", value)
             }
+            style={{ width: "100%" }}
+            readOnly
+            addonBefore="F"
+          />
+        ) : null,
+    },
+    {
+      title: "Sales Price(KRW)",
+      dataIndex: "salesPriceKRW",
+      key: "salesPriceKRW",
+      width: 115 * zoomLevel,
+      render: (text: number, record: any, index: number) => {
+        const value =
+          (record.itemType !== "ITEM" && record.itemType !== "DASH") ||
+          record.itemRemark
+            ? 0
+            : text;
+
+        return (record.itemType === "ITEM" || record.itemType === "DASH") &&
+          !record.itemRemark ? (
+          <MemoizedDisplayInput
+            type="text" // Change to "text" to handle formatted input
+            value={value?.toLocaleString()} // Display formatted value
+            ref={(el) => {
+              if (!inputRefs.current[index]) {
+                inputRefs.current[index] = [];
+              }
+              inputRefs.current[index][6] = el;
+            }}
+            onKeyDown={(e) => handleNextRowKeyDown(e, index, 6)}
+            onChange={(value) =>
+              handleInputChange(index, "salesPriceKRW", value)
+            }
+            onBlur={(e) => {
+              const value = e.target.value;
+              const unformattedValue = value.replace(/,/g, "");
+              const updatedValue = isNaN(Number(unformattedValue))
+                ? 0
+                : Number(unformattedValue);
+              handlePriceInputChange(
+                index,
+                "salesPriceKRW",
+                roundToTwoDecimalPlaces(updatedValue),
+                currency
+              );
+            }}
+            style={{ width: "100%" }}
+            addonBefore="₩"
+            className="custom-input"
+          />
+        ) : null;
+      },
+    },
+    {
+      title: "Sales Price(F)",
+      dataIndex: "salesPriceGlobal",
+      key: "salesPriceGlobal",
+      width: 115 * zoomLevel,
+      render: (text: number, record: any, index: number) => {
+        const value =
+          (record.itemType !== "ITEM" && record.itemType !== "DASH") ||
+          record.itemRemark
+            ? 0
+            : text;
+
+        return (record.itemType === "ITEM" || record.itemType === "DASH") &&
+          !record.itemRemark ? (
+          <MemoizedDisplayInput
+            type="text" // Change to "text" to handle formatted input
+            value={value?.toLocaleString()} // Display formatted value
+            ref={(el) => {
+              if (!inputRefs.current[index]) {
+                inputRefs.current[index] = [];
+              }
+              inputRefs.current[index][7] = el;
+            }}
+            onKeyDown={(e) => handleNextRowKeyDown(e, index, 7)}
+            onChange={(value) =>
+              handleInputChange(index, "salesPriceGlobal", value)
+            }
+            onBlur={(e) => {
+              const value = e.target.value;
+              const unformattedValue = value.replace(/,/g, "");
+              const updatedValue = isNaN(Number(unformattedValue))
+                ? 0
+                : Number(unformattedValue);
+              handlePriceInputChange(
+                index,
+                "salesPriceGlobal",
+                roundToTwoDecimalPlaces(updatedValue),
+                currency
+              );
+            }}
+            style={{ width: "100%" }}
+            addonBefore="F"
+            className="custom-input"
+          />
+        ) : null;
+      },
+    },
+    {
+      title: "Sales Amount(KRW)",
+      dataIndex: "salesAmountKRW",
+      key: "salesAmountKRW",
+      width: 115 * zoomLevel,
+      render: (text: number, record: any) =>
+        (record.itemType === "ITEM" || record.itemType === "DASH") &&
+        !record.itemRemark ? (
+          <MemoizedDisplayInput
+            type="text"
+            value={calculateTotalAmount(
+              record.salesPriceKRW,
+              record.qty
+            )?.toLocaleString()}
+            style={{ width: "100%" }}
+            readOnly
+            addonBefore="₩"
+          />
+        ) : null,
+    },
+    {
+      title: "Sales Amount(F)",
+      dataIndex: "salesAmountGlobal",
+      key: "salesAmountGlobal",
+      width: 115 * zoomLevel,
+      render: (text: number, record: any) =>
+        (record.itemType === "ITEM" || record.itemType === "DASH") &&
+        !record.itemRemark ? (
+          <MemoizedDisplayInput
+            type="text"
+            value={calculateTotalAmount(
+              record.salesPriceGlobal,
+              record.qty
+            )?.toLocaleString()}
             style={{ width: "100%" }}
             readOnly
             addonBefore="F"
@@ -1156,7 +1161,6 @@ const TableComponent = ({
       dataIndex: "margin",
       key: "margin",
       width: 60 * zoomLevel,
-      className: "highlight-cell",
 
       render: (text: number, record: any, index: number) => {
         const value =
@@ -1165,7 +1169,8 @@ const TableComponent = ({
             ? 0
             : text;
 
-        return (
+        return (record.itemType === "ITEM" || record.itemType === "DASH") &&
+          !record.itemRemark ? (
           <MemoizedDisplayInput
             value={value}
             ref={(el) => {
@@ -1194,7 +1199,7 @@ const TableComponent = ({
               handleMarginChange(index, Number(processedValue) || 0);
             }}
           />
-        );
+        ) : null;
       },
     },
   ];

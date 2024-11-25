@@ -9,6 +9,7 @@ import {
   Tooltip,
   InputRef,
   TableColumnType,
+  message,
 } from "antd";
 import {
   PlusCircleOutlined,
@@ -59,8 +60,10 @@ const CustomTable = styled(Table<ComplexInquiryItemDetail>)<TableProps>`
   .highlight-cell {
     font-weight: bold !important;
 
-    .ant-input-group-addon {
-      background-color: #dff4ff;
+    .ant-input-group-addon,
+    .ant-input-outlined {
+      border-color: #007bff !important;
+      font-weight: bold !important;
     }
   }
   .ant-input-group-addon {
@@ -222,6 +225,8 @@ const ComplexInquiryTable = ({
   const [selectAll, setSelectAll] = useState(false);
   const [isExcelModalVisible, setIsExcelModalVisible] = useState(false);
   const inputRefs = useRef<(RefType | null)[][]>([]);
+  const [startItemNo, setStartItemNo] = useState<string>("");
+  const [endItemNo, setEndItemNo] = useState<string>("");
 
   const ZOOM_STEP = 0.1;
   const MIN_ZOOM = 0.5;
@@ -464,6 +469,72 @@ const ComplexInquiryTable = ({
     }
   };
 
+  const handleRangeSupplierAdd = (selectedId: number) => {
+    if (!startItemNo || !endItemNo) {
+      message.error("Please enter both start and end item numbers.");
+      return;
+    }
+
+    // 시작과 끝 아이템의 인덱스 찾기
+    const startIndex = items.findIndex((item) => item.indexNo === startItemNo);
+    const endIndex = items.findIndex((item) => item.indexNo === endItemNo);
+
+    if (startIndex === -1 || endIndex === -1) {
+      message.error(
+        "Could not find the item corresponding to the entered number."
+      );
+      return;
+    }
+
+    if (startIndex > endIndex) {
+      message.error("The start number must be before the end number.");
+      return;
+    }
+
+    const newItems = [...items];
+
+    // 시작과 끝 인덱스 사이의 모든 아이템에 대해 처리
+    for (let i = startIndex; i <= endIndex; i++) {
+      const existingSuppliers = newItems[i].suppliers || [];
+
+      // 이미 선택된 supplier가 아닌 경우에만 추가
+      if (!existingSuppliers.some((s) => s.supplierId === selectedId)) {
+        const selectedSupplier = uniqueSuppliers.find(
+          (s) => s.id === selectedId
+        );
+        if (selectedSupplier) {
+          newItems[i] = {
+            ...newItems[i],
+            suppliers: [
+              ...existingSuppliers,
+              {
+                supplierId: selectedId,
+                inquiryItemDetailId: null,
+                code: selectedSupplier.code || "",
+                companyName: selectedSupplier.name || "",
+                korCompanyName: selectedSupplier.korName || "",
+                representative: null,
+                email: selectedSupplier.email || "",
+                communicationLanguage:
+                  selectedSupplier.communicationLanguage || "KOR",
+                supplierRemark: selectedSupplier.supplierRemark || "",
+              },
+            ],
+          };
+        }
+      }
+    }
+
+    setItems(newItems);
+    setStartItemNo("");
+    setEndItemNo("");
+    message.success(
+      `${startItemNo} - ${endItemNo} items have been added to suppliers.`
+    );
+  };
+
+  console.log(items);
+
   const columns: TableColumnType<ComplexInquiryItemDetail>[] = [
     {
       title: "Actions",
@@ -508,7 +579,7 @@ const ComplexInquiryTable = ({
                 inputRefs.current[index][1] = el;
               }}
               onKeyDown={(e) => handleKeyDown(e, index, 1)}
-            ></Input>
+            />
           );
         }
 
@@ -516,9 +587,16 @@ const ComplexInquiryTable = ({
           .filter((item: any) => item.itemType === "ITEM")
           .indexOf(record);
 
-        return record.itemType === "ITEM" ? (
-          <span>{filteredIndex + 1}</span>
-        ) : null;
+        // ITEM 타입일 때 자동으로 번호 저장
+        if (record.itemType === "ITEM") {
+          const itemNo = (filteredIndex + 1).toString();
+          if (record.indexNo !== itemNo) {
+            handleInputChange(index, "indexNo", itemNo);
+          }
+          return <span>{itemNo}</span>;
+        }
+
+        return null;
       },
     },
     {
@@ -666,6 +744,100 @@ const ComplexInquiryTable = ({
       ),
     },
     {
+      title: "Purchase Price KRW",
+      dataIndex: "purchasePriceKRW",
+      key: "purchasePriceKRW",
+      width: 115 * zoomLevel,
+      className: "highlight-cell",
+      render: (text: string, _: any, index: number) => (
+        <Input
+          type="number"
+          value={text}
+          addonBefore="₩"
+          className="custom-input"
+          onFocus={(e) => {
+            e.target.select();
+            const newItems = [...items];
+            newItems[index] = {
+              ...newItems[index],
+              purchasePriceGlobal: 0,
+              purchaseAmountKRW: 0,
+              purchaseAmountGlobal: 0,
+            };
+            setItems(newItems);
+          }}
+          onChange={(e) =>
+            handleInputChange(index, "purchasePriceKRW", Number(e.target.value))
+          }
+          ref={(el) => {
+            if (!inputRefs.current[index]) {
+              inputRefs.current[index] = [];
+            }
+            inputRefs.current[index][10] = el;
+          }}
+          onKeyDown={(e) => handleKeyDown(e, index, 10)}
+        />
+      ),
+    },
+    {
+      title: "Purchase Price(F)",
+      dataIndex: "purchasePriceGlobal",
+      key: "purchasePriceGlobal",
+      width: 115 * zoomLevel,
+      className: "highlight-cell",
+      render: (text: string, _: any, index: number) => (
+        <Input
+          type="number"
+          value={text}
+          addonBefore="F"
+          className="custom-input"
+          onFocus={(e) => {
+            e.target.select();
+            const newItems = [...items];
+            newItems[index] = {
+              ...newItems[index],
+              purchasePriceKRW: 0,
+              purchaseAmountKRW: 0,
+              purchaseAmountGlobal: 0,
+            };
+            setItems(newItems);
+          }}
+          onChange={(e) =>
+            handleInputChange(
+              index,
+              "purchasePriceGlobal",
+              Number(e.target.value)
+            )
+          }
+          ref={(el) => {
+            if (!inputRefs.current[index]) {
+              inputRefs.current[index] = [];
+            }
+            inputRefs.current[index][11] = el;
+          }}
+          onKeyDown={(e) => handleKeyDown(e, index, 11)}
+        />
+      ),
+    },
+    {
+      title: "Purchase Amount KRW",
+      dataIndex: "purchaseAmountKRW",
+      key: "purchaseAmountKRW",
+      width: 115 * zoomLevel,
+      render: (text: string, _: any, index: number) => (
+        <Input type="number" value={text} readOnly addonBefore="₩" />
+      ),
+    },
+    {
+      title: "Purchase Amount(F)",
+      dataIndex: "purchaseAmountGlobal",
+      key: "purchaseAmountGlobal",
+      width: 115 * zoomLevel,
+      render: (text: string, _: any, index: number) => (
+        <Input type="number" value={text} readOnly addonBefore="F" />
+      ),
+    },
+    {
       title: "Sales Price KRW",
       dataIndex: "salesPriceKRW",
       key: "salesPriceKRW",
@@ -752,98 +924,6 @@ const ComplexInquiryTable = ({
       title: "Sales Amount(F)",
       dataIndex: "salesAmountGlobal",
       key: "salesAmountGlobal",
-      width: 115 * zoomLevel,
-      render: (text: string, _: any, index: number) => (
-        <Input type="number" value={text} readOnly addonBefore="F" />
-      ),
-    },
-    {
-      title: "Purchase Price KRW",
-      dataIndex: "purchasePriceKRW",
-      key: "purchasePriceKRW",
-      width: 115 * zoomLevel,
-      render: (text: string, _: any, index: number) => (
-        <Input
-          type="number"
-          value={text}
-          addonBefore="₩"
-          className="custom-input"
-          onFocus={(e) => {
-            e.target.select();
-            const newItems = [...items];
-            newItems[index] = {
-              ...newItems[index],
-              purchasePriceGlobal: 0,
-              purchaseAmountKRW: 0,
-              purchaseAmountGlobal: 0,
-            };
-            setItems(newItems);
-          }}
-          onChange={(e) =>
-            handleInputChange(index, "purchasePriceKRW", Number(e.target.value))
-          }
-          ref={(el) => {
-            if (!inputRefs.current[index]) {
-              inputRefs.current[index] = [];
-            }
-            inputRefs.current[index][10] = el;
-          }}
-          onKeyDown={(e) => handleKeyDown(e, index, 10)}
-        />
-      ),
-    },
-    {
-      title: "Purchase Price(F)",
-      dataIndex: "purchasePriceGlobal",
-      key: "purchasePriceGlobal",
-      width: 115 * zoomLevel,
-      render: (text: string, _: any, index: number) => (
-        <Input
-          type="number"
-          value={text}
-          addonBefore="F"
-          className="custom-input"
-          onFocus={(e) => {
-            e.target.select();
-            const newItems = [...items];
-            newItems[index] = {
-              ...newItems[index],
-              purchasePriceKRW: 0,
-              purchaseAmountKRW: 0,
-              purchaseAmountGlobal: 0,
-            };
-            setItems(newItems);
-          }}
-          onChange={(e) =>
-            handleInputChange(
-              index,
-              "purchasePriceGlobal",
-              Number(e.target.value)
-            )
-          }
-          ref={(el) => {
-            if (!inputRefs.current[index]) {
-              inputRefs.current[index] = [];
-            }
-            inputRefs.current[index][11] = el;
-          }}
-          onKeyDown={(e) => handleKeyDown(e, index, 11)}
-        />
-      ),
-    },
-    {
-      title: "Purchase Amount KRW",
-      dataIndex: "purchaseAmountKRW",
-      key: "purchaseAmountKRW",
-      width: 115 * zoomLevel,
-      render: (text: string, _: any, index: number) => (
-        <Input type="number" value={text} readOnly addonBefore="₩" />
-      ),
-    },
-    {
-      title: "Purchase Amount(F)",
-      dataIndex: "purchaseAmountGlobal",
-      key: "purchaseAmountGlobal",
       width: 115 * zoomLevel,
       render: (text: string, _: any, index: number) => (
         <Input type="number" value={text} readOnly addonBefore="F" />
@@ -1141,6 +1221,35 @@ const ComplexInquiryTable = ({
           />
         </Space>
         <Space>
+          <div style={{ display: "flex", gap: 10, marginRight: 10 }}>
+            <Input
+              size="small"
+              placeholder="Start item No."
+              value={startItemNo}
+              onChange={(e) => setStartItemNo(e.target.value)}
+              style={{ width: 150 }}
+            />
+            <span>-</span>
+            <Input
+              size="small"
+              placeholder="End item No."
+              value={endItemNo}
+              onChange={(e) => setEndItemNo(e.target.value)}
+              style={{ width: 150 }}
+            />
+            <Select
+              size="small"
+              placeholder="Select supplier"
+              style={{ width: 200 }}
+              onChange={handleRangeSupplierAdd}
+            >
+              {uniqueSuppliers.map((supplier) => (
+                <Option key={supplier.id} value={supplier.id}>
+                  {supplier.code}
+                </Option>
+              ))}
+            </Select>
+          </div>
           <Tooltip title="Load excel file on your local">
             <Button
               type="dashed"
