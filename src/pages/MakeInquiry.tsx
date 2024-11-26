@@ -892,7 +892,9 @@ const MakeInquiry = () => {
           uniqueSuppliers={uniqueSuppliers}
         />
       )}
-      <Divider variant="dashed" style={{ borderColor: "#ccc" }} />
+      <Divider variant="dashed" style={{ borderColor: "#007bff" }}>
+        ITEMS
+      </Divider>
       <MakeInquiryTable
         items={items}
         inquiryDetail={inquiryDetail}
@@ -1065,7 +1067,6 @@ const MakeInquiry = () => {
           selectedSupplierTag={memoizedSuppliers}
           formValues={formValues}
           setMailDataList={setMailDataList}
-          items={getSelectedTableItems()}
           vesselInfo={selectedVessel}
           pdfHeader={pdfHeader}
         />

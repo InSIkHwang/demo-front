@@ -82,7 +82,7 @@ const columns: ColumnsType<orderAllResponses> = [
     sortDirections: ["ascend", "descend"],
   },
   {
-    title: "Costomer Name",
+    title: "Costomer",
     dataIndex: "companyName",
     key: "companyName",
     sorter: (a, b) => a.companyName.localeCompare(b.companyName),
@@ -92,31 +92,6 @@ const columns: ColumnsType<orderAllResponses> = [
     title: "REF NO.",
     dataIndex: "refNumber",
     key: "refNumber",
-  },
-  {
-    title: "Currency",
-    dataIndex: "currencyType",
-    key: "currencyType",
-  },
-  {
-    title: "Exchange Rate",
-    dataIndex: "currency",
-    key: "currency",
-    render: (_, record) => {
-      const { currency, currencyType } = record;
-      switch (currencyType) {
-        case "USD":
-          return `$${currency?.toFixed(0)}`;
-        case "EUR":
-          return `€${currency?.toFixed(0)}`;
-        case "INR":
-          return `₹${currency?.toFixed(0)}`;
-        case "JPY":
-          return `¥${currency?.toFixed(0)}`;
-        default:
-          return `${currency?.toFixed(0)}`;
-      }
-    },
   },
   {
     title: "Vessel Name",

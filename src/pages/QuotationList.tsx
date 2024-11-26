@@ -84,7 +84,7 @@ const columns: ColumnsType<Quotation> = [
     sortDirections: ["ascend", "descend"],
   },
   {
-    title: "Costomer Name",
+    title: "Costomer",
     dataIndex: "companyName",
     key: "companyName",
     sorter: (a, b) => a.companyName.localeCompare(b.companyName),
@@ -96,31 +96,6 @@ const columns: ColumnsType<Quotation> = [
     key: "refNumber",
   },
   {
-    title: "Currency",
-    dataIndex: "currencyType",
-    key: "currencyType",
-  },
-  {
-    title: "Exchange Rate",
-    dataIndex: "currency",
-    key: "currency",
-    render: (_, record) => {
-      const { currency, currencyType } = record;
-      switch (currencyType) {
-        case "USD":
-          return `$${currency?.toFixed(0)}`;
-        case "EUR":
-          return `€${currency?.toFixed(0)}`;
-        case "INR":
-          return `₹${currency?.toFixed(0)}`;
-        case "JPY":
-          return `¥${currency?.toFixed(0)}`;
-        default:
-          return `${currency?.toFixed(0)}`;
-      }
-    },
-  },
-  {
     title: "Vessel Name",
     dataIndex: "vesselName",
     key: "vesselName",
@@ -129,6 +104,12 @@ const columns: ColumnsType<Quotation> = [
     title: "Remark",
     dataIndex: "remark",
     key: "remark",
+  },
+  {
+    title: "Manager",
+    dataIndex: "docManager",
+    key: "docManager",
+    sorter: (a, b) => a.docManager.localeCompare(b.docManager),
   },
   {
     title: "Document Status",

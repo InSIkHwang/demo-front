@@ -1,14 +1,20 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import styled from "styled-components";
-import { Button, Divider, FloatButton, message, Modal, Select } from "antd";
+import {
+  Alert,
+  Button,
+  Divider,
+  FloatButton,
+  message,
+  Modal,
+  Select,
+} from "antd";
 import { FileSearchOutlined } from "@ant-design/icons";
 import dayjs, { Dayjs } from "dayjs";
 import {
   fetchDocData,
   fetchCompanyNames,
   fetchItemData,
-  submitInquiry,
-  fetchInquiryDetail,
   searchInquiryWithMaker,
   chkDuplicateDocNum,
   fetchComplexInquiryDetail,
@@ -17,18 +23,12 @@ import {
 import InquiryForm from "../components/MakeComplexInquiry/InquiryForm";
 import PDFDocument from "../components/makeInquiry/PDFDocument";
 import {
-  InquiryItem,
-  InquiryListSupplier,
   emailSendData,
   VesselList,
-  Item,
   InquirySearchMakerInquirySearchResult,
-  InquiryTable,
   ComplexInquiry,
   ComplexInquiryItemDetail,
-  ComplexInquirySupplier,
   InvCharge,
-  ItemDetailType,
   FormValuesType,
   offerEmailSendData,
   HeaderFormData,
@@ -71,7 +71,8 @@ const BtnGroup = styled(FloatButton.Group)`
 
 // Constants
 interface FormValues {
-  customerInquiryId: number | null;
+  documentId: number | null;
+  docManagerName: string;
   docNumber: string;
   registerDate: Dayjs;
   shippingDate: Dayjs;
@@ -82,10 +83,12 @@ interface FormValues {
   currency: number;
   remark: string;
   supplierName: string;
+  documentStatus: string;
 }
 
 const INITIAL_FORM_VALUES: FormValues = {
-  customerInquiryId: null,
+  documentId: null,
+  docManagerName: "",
   docNumber: "",
   registerDate: dayjs(),
   shippingDate: dayjs(),
@@ -96,6 +99,7 @@ const INITIAL_FORM_VALUES: FormValues = {
   currency: 0,
   remark: "",
   supplierName: "",
+  documentStatus: "",
 };
 
 const INITIAL_ITEM_VALUES: ComplexInquiryItemDetail[] = [
@@ -118,6 +122,7 @@ const INITIAL_ITEM_VALUES: ComplexInquiryItemDetail[] = [
     purchaseAmountKRW: 0,
     purchaseAmountGlobal: 0,
     suppliers: [],
+    confirmSupplier: null,
   },
   {
     itemCode: "",
@@ -138,6 +143,7 @@ const INITIAL_ITEM_VALUES: ComplexInquiryItemDetail[] = [
     purchaseAmountKRW: 0,
     purchaseAmountGlobal: 0,
     suppliers: [],
+    confirmSupplier: null,
   },
   {
     itemCode: "",
@@ -158,6 +164,7 @@ const INITIAL_ITEM_VALUES: ComplexInquiryItemDetail[] = [
     purchaseAmountKRW: 0,
     purchaseAmountGlobal: 0,
     suppliers: [],
+    confirmSupplier: null,
   },
 ];
 
@@ -252,11 +259,21 @@ const MakeComplexInquiry = () => {
   const [documentInfo, setDocumentInfo] = useState<FormValuesType | null>(null);
   const [mailData, setMailData] = useState<offerEmailSendData | null>(null);
   const [pdfFileData, setPdfFileData] = useState<File | null>(null);
-  const [fileData, setFileData] = useState<(File | null)[]>([]);
   const [pdfCustomerTag, setPdfCustomerTag] = useState<{
     id: number;
     name: string;
   }>({ id: 0, name: "" });
+  const [supplierTags, setSupplierTags] = useState<
+    {
+      id: number;
+      name: string;
+      korName: string;
+      communicationLanguage: string;
+      code: string;
+      email: string;
+      supplierRemark: string;
+    }[]
+  >([]);
 
   const modalActions = {
     header: [setHeaderEditModalVisible, () => {}],
@@ -288,6 +305,7 @@ const MakeComplexInquiry = () => {
     isVisible: boolean
   ) => {
     setModalVisibility(modalType, isVisible);
+    setShowPDFPreview(false);
   };
 
   const fetchDetail = useCallback(async () => {
@@ -308,8 +326,9 @@ const MakeComplexInquiry = () => {
 
       setFormValues((prev) => ({
         ...prev,
-        customerInquiryId: docData.documentId,
+        documentId: docData.documentId,
         docNumber: docData.docNumber,
+        docManagerName: docData.docManagerName,
         registerDate: dayjs(docData.registerDate),
         shippingDate: dayjs(docData.shippingDate),
         currencyType: docData.currencyType,
@@ -335,6 +354,7 @@ const MakeComplexInquiry = () => {
       setAutoCompleteOptions([]);
       setInquiryDetail(null);
       setShowPDFPreview(false);
+      setDocumentInfo(null);
       setFinalTotals({
         totalSalesAmountKRW: 0,
         totalSalesAmountGlobal: 0,
@@ -379,71 +399,49 @@ const MakeComplexInquiry = () => {
 
     setIsEditMode(true);
 
-    const {
-      documentNumber: docNumber,
-      customerInquiryId,
-      vesselId,
-      customerId,
-      registerDate,
-      shippingDate,
-      companyName,
-      refNumber,
-      currencyType,
-      currency,
-      vesselName,
-      vesselHullNo,
-      shipYard,
-      countryOfManufacture,
-      docRemark,
-      docManager,
-      representative,
-      documentStatus,
-      pdfUrl,
-      inquiryType,
-      discount,
-      invChargeList,
-      inquiryItemDetails,
-    } = inquiryDetail;
+    const { documentInfo, discount, invChargeList } = inquiryDetail;
 
     setDocumentInfo({
-      documentId: customerInquiryId,
-      documentNumber: docNumber,
-      registerDate: dayjs(registerDate),
-      shippingDate: dayjs(shippingDate),
-      refNumber,
-      currencyType,
-      currency,
-      docRemark: docRemark || "",
-      docManager,
-      documentStatus,
-      customerId,
-      companyName,
-      vesselId,
-      vesselName,
-      vesselHullNo: selectedVessel?.hullNumber || "",
-      imoNo: selectedVessel?.imoNumber || undefined,
+      documentId: documentInfo.documentId,
+      documentNumber: documentInfo.documentNumber,
+      registerDate: dayjs(documentInfo.registerDate),
+      shippingDate: dayjs(documentInfo.shippingDate),
+      refNumber: documentInfo.refNumber,
+      currencyType: documentInfo.currencyType,
+      currency: documentInfo.currency,
+      docRemark: documentInfo.docRemark || "",
+      docManager: documentInfo.docManager,
+      documentStatus: documentInfo.documentStatus,
+      customerId: documentInfo.customerId,
+      companyName: documentInfo.companyName,
+      vesselId: documentInfo.vesselId,
+      vesselName: documentInfo.vesselName,
+      vesselHullNo: documentInfo.vesselHullNo || "",
+      imoNo: documentInfo.imoNo || undefined,
       discount,
       invChargeList: invChargeList || [],
     });
 
     setPdfCustomerTag({
-      id: inquiryDetail.customerId,
-      name: inquiryDetail.companyName,
+      id: documentInfo.customerId,
+      name: documentInfo.companyName,
     });
 
     // Form 값 업데이트
     setFormValues({
-      customerInquiryId,
-      docNumber,
-      registerDate: dayjs(registerDate),
-      shippingDate: dayjs(shippingDate),
-      customer: companyName,
-      vesselName,
-      refNumber,
-      currencyType,
-      currency,
-      remark: docRemark || "",
+      documentId: documentInfo.documentId,
+      docNumber: documentInfo.documentNumber,
+      docManagerName: documentInfo.docManager,
+      registerDate: dayjs(documentInfo.registerDate),
+      shippingDate: dayjs(documentInfo.shippingDate),
+      customer: documentInfo.companyName,
+      vesselName: documentInfo.vesselName,
+      refNumber: documentInfo.refNumber,
+      currencyType: documentInfo.currencyType,
+      currency: documentInfo.currency,
+      remark: documentInfo.docRemark || "",
       supplierName: "",
+      documentStatus: documentInfo.documentStatus,
     });
 
     setItems(inquiryDetail.inquiryItemDetails);
@@ -644,26 +642,17 @@ const MakeComplexInquiry = () => {
       }
 
       const requestData = {
-        customerInquiryId: formValues.customerInquiryId,
-        vesselId: selectedVessel.id,
-        customerId: selectedCustomerId,
-        documentNumber: formValues.docNumber,
-        registerDate: formValues.registerDate.format("YYYY-MM-DD"),
-        shippingDate: formValues.shippingDate.format("YYYY-MM-DD"),
-        companyName: formValues.customer,
-        refNumber: formValues.refNumber,
-        currencyType: formValues.currencyType,
-        currency: parseFloat(formValues.currency as any),
-        vesselName: formValues.vesselName,
-        vesselHullNo: selectedVessel.hullNumber || "",
-        shipYard: selectedVessel.shipYard || "",
-        countryOfManufacture: selectedVessel.countryOfManufacture || "",
-        docRemark: formValues.remark || "",
-        docManager: documentInfo?.docManager || "",
-        representative: null,
-        documentStatus: "WRITING_INQUIRY",
-        pdfUrl: null,
-        inquiryType: "CUSTOMER_INQUIRY",
+        documentInfo: {
+          docNumber: formValues.docNumber,
+          registerDate: formValues.registerDate.format("YYYY-MM-DD"),
+          shippingDate: formValues.shippingDate.format("YYYY-MM-DD"),
+          remark: formValues.remark,
+          refNumber: formValues.refNumber,
+          currencyType: formValues.currencyType,
+          currency: formValues.currency,
+          vesselId: selectedVessel.id,
+          customerId: selectedCustomerId,
+        },
         inquiryItemDetails: items.map((item) => ({
           itemDetailId: item.itemDetailId || null,
           itemId: item.itemId || null,
@@ -684,27 +673,30 @@ const MakeComplexInquiry = () => {
           purchasePriceGlobal: item.purchasePriceGlobal || 0,
           purchaseAmountKRW: item.purchaseAmountKRW || 0,
           purchaseAmountGlobal: item.purchaseAmountGlobal || 0,
-          suppliers:
-            item.suppliers?.map((supplier) => ({
-              supplierId: supplier.supplierId,
-            })) || [],
+          supplierIdList:
+            item.suppliers?.map((supplier) => supplier.supplierId) || [],
+          confirmSupplier: item.confirmSupplier || null,
         })),
+        ...(isEditMode && {
+          discount: dcInfo.dcPercent,
+          invChargeList: invChargeList || [],
+        }),
       };
 
       const response = await submitComplexInquiry(
         Number(complexInquiryId),
-        Number(formValues.customerInquiryId),
+        Number(formValues.documentId),
         requestData,
         isEditMode
       );
 
       message.success("Saved successfully!");
 
-      const newInquiryDetail = await fetchInquiryDetail(
+      const newInquiryDetail = await fetchComplexInquiryDetail(
         Number(isEditMode ? complexInquiryId : response)
       );
 
-      navigate(`/makeinquiry/${response}`, {
+      navigate(`/makecomplexinquiry/${response}`, {
         state: { inquiry: newInquiryDetail },
       });
 
@@ -735,6 +727,11 @@ const MakeComplexInquiry = () => {
   const handleLanguageChange = useCallback((value: string, id: number) => {
     // PDF 생성용 태그만 별도 업데이트
     setPdfSupplierTag((prevTags) =>
+      prevTags.map((tag) =>
+        tag.id === id ? { ...tag, communicationLanguage: value } : tag
+      )
+    );
+    setSupplierTags((prevTags) =>
       prevTags.map((tag) =>
         tag.id === id ? { ...tag, communicationLanguage: value } : tag
       )
@@ -778,59 +775,76 @@ const MakeComplexInquiry = () => {
 
   const uniqueSuppliers = removeDuplicates(selectedSuppliers);
 
-  const getSelectedSupplierItems = useCallback(() => {
-    if (!pdfSupplierTag[0] && documentType === "inquiry") return [];
+  const getSelectedSupplierItems = useCallback(
+    (supplierId?: number) => {
+      if (
+        !pdfSupplierTag[0] &&
+        selectedSuppliers.length === 0 &&
+        documentType === "inquiry" &&
+        supplierTags.length < 1
+      ) {
+        message.error("Please select supplier.");
+        return [];
+      }
 
-    const baseItemFields = (item: any) => ({
-      tableNo: 1,
-      itemDetailId: item.itemDetailId || undefined,
-      itemId: item.itemId || undefined,
-      itemType: item.itemType,
-      itemCode: item.itemCode,
-      itemName: item.itemName,
-      itemRemark: item.itemRemark,
-      qty: item.qty,
-      unit: item.unit || "",
-      position: item.position,
-      indexNo: item.indexNo || null,
-      salesPriceKRW: item.salesPriceKRW || 0,
-      salesPriceGlobal: item.salesPriceGlobal || 0,
-      salesAmountKRW: item.salesAmountKRW || 0,
-      salesAmountGlobal: item.salesAmountGlobal || 0,
-      purchasePriceKRW: item.purchasePriceKRW || 0,
-      purchasePriceGlobal: item.purchasePriceGlobal || 0,
-      purchaseAmountKRW: item.purchaseAmountKRW || 0,
-      purchaseAmountGlobal: item.purchaseAmountGlobal || 0,
-      margin: item.margin || 0,
-    });
+      const baseItemFields = (item: any) => ({
+        tableNo: 1,
+        itemDetailId: item.itemDetailId || undefined,
+        itemId: item.itemId || undefined,
+        itemType: item.itemType,
+        itemCode: item.itemCode,
+        itemName: item.itemName,
+        itemRemark: item.itemRemark,
+        qty: item.qty,
+        unit: item.unit || "",
+        position: item.position,
+        indexNo: item.indexNo || null,
+        salesPriceKRW: item.salesPriceKRW || 0,
+        salesPriceGlobal: item.salesPriceGlobal || 0,
+        salesAmountKRW: item.salesAmountKRW || 0,
+        salesAmountGlobal: item.salesAmountGlobal || 0,
+        purchasePriceKRW: item.purchasePriceKRW || 0,
+        purchasePriceGlobal: item.purchasePriceGlobal || 0,
+        purchaseAmountKRW: item.purchaseAmountKRW || 0,
+        purchaseAmountGlobal: item.purchaseAmountGlobal || 0,
+        margin: item.margin || 0,
+      });
 
-    if (documentType === "inquiry") {
-      const filteredItems = items.filter((item) =>
-        item.suppliers?.some(
-          (supplier) => supplier.supplierId === pdfSupplierTag[0].id
-        )
-      );
-      return filteredItems
-        .map((item) => ({
-          ...baseItemFields(item),
-          suppliers: item.suppliers?.map((supplier) => ({
-            supplierId: supplier.supplierId,
-            inquiryItemDetailId: supplier.inquiryItemDetailId || undefined,
-            code: supplier.code,
-            companyName: supplier.companyName,
-            korCompanyName: supplier.korCompanyName || "",
-            representative: supplier.representative || "",
-            email: supplier.email || "",
-            communicationLanguage: supplier.communicationLanguage || "KOR",
-          })),
-        }))
-        .sort((a, b) => a.position - b.position);
-    } else {
-      return items
-        .map((item) => baseItemFields(item))
-        .sort((a, b) => a.position - b.position);
-    }
-  }, [items, pdfSupplierTag, documentType]);
+      if (documentType === "inquiry") {
+        const targetSupplierId = supplierId || pdfSupplierTag[0]?.id;
+        if (!targetSupplierId) return [];
+
+        const filteredItems = items.filter((item) =>
+          item.suppliers?.some(
+            (supplier) => supplier.supplierId === targetSupplierId
+          )
+        );
+
+        return filteredItems
+          .map((item) => ({
+            ...baseItemFields(item),
+            suppliers: item.suppliers
+              ?.filter((supplier) => supplier.supplierId === targetSupplierId)
+              .map((supplier) => ({
+                supplierId: supplier.supplierId,
+                inquiryItemDetailId: supplier.inquiryItemDetailId || undefined,
+                code: supplier.code,
+                companyName: supplier.companyName,
+                korCompanyName: supplier.korCompanyName || "",
+                representative: supplier.representative || "",
+                email: supplier.email || "",
+                communicationLanguage: supplier.communicationLanguage || "KOR",
+              })),
+          }))
+          .sort((a, b) => a.position - b.position);
+      } else {
+        return items
+          .map((item) => baseItemFields(item))
+          .sort((a, b) => a.position - b.position);
+      }
+    },
+    [items, pdfSupplierTag, documentType]
+  );
 
   // 메모이제이션된 계산 함수들
   const calculateAmounts = useCallback(
@@ -937,11 +951,55 @@ const MakeComplexInquiry = () => {
           newItem.purchasePriceKRW = amounts.krw;
         }
 
-        // 마진이 있는 경우 판매가격 계산
-        if (newItem.margin) {
+        // 판매가격이 있고 마진이 없는 경우의 마진율 계산 로직 추가
+        if (
+          newItem.salesPriceKRW &&
+          !newItem.salesPriceGlobal &&
+          !newItem.margin
+        ) {
+          const amounts = calculateAmounts(
+            newItem.salesPriceKRW,
+            1,
+            formValues.currency,
+            false
+          );
+          newItem.salesPriceGlobal = amounts.global;
+          newItem.margin = Number(
+            Number(
+              ((newItem.salesPriceKRW - newItem.purchasePriceKRW) /
+                newItem.purchasePriceKRW) *
+                100
+            ).toFixed(2)
+          );
+        } else if (
+          newItem.salesPriceGlobal &&
+          !newItem.salesPriceKRW &&
+          !newItem.margin
+        ) {
+          const amounts = calculateAmounts(
+            newItem.salesPriceGlobal,
+            1,
+            formValues.currency,
+            true
+          );
+          newItem.salesPriceKRW = amounts.krw;
+          newItem.margin = Number(
+            Number(
+              ((newItem.salesPriceGlobal - newItem.purchasePriceKRW) /
+                newItem.purchasePriceKRW) *
+                100
+            ).toFixed(2)
+          );
+        }
+        // 마진이 있고 판매가격이 없는 경우
+        else if (
+          newItem.salesPriceKRW === 0 &&
+          newItem.salesPriceGlobal === 0
+        ) {
           newItem.salesPriceKRW = Math.round(
             newItem.purchasePriceKRW * (1 + newItem.margin / 100)
           );
+
           newItem.salesPriceGlobal = Number(
             (newItem.purchasePriceGlobal * (1 + newItem.margin / 100)).toFixed(
               2
@@ -1062,19 +1120,20 @@ const MakeComplexInquiry = () => {
               korName: supplier.korCompanyName || supplier.companyName,
               communicationLanguage: supplier.communicationLanguage || "KOR",
               code: supplier.code,
+              email: supplier.email || "",
+              supplierRemark: supplier.supplierRemark || "",
             });
           }
         });
       }
     });
 
-    return Array.from(supplierMap.values());
-  }, [items]); // items를 의존성 배열에 추가
+    setSupplierTags(Array.from(supplierMap.values()));
+  }, [items]);
 
-  const supplierTags = useMemo(
-    () => getSuppliersByItems(),
-    [getSuppliersByItems]
-  );
+  useEffect(() => {
+    getSuppliersByItems();
+  }, [getSuppliersByItems]);
 
   if (docDataloading || isLoading) {
     return <LoadingSpinner />;
@@ -1121,6 +1180,7 @@ const MakeComplexInquiry = () => {
         setItems={setItems}
         uniqueSuppliers={uniqueSuppliers}
         currency={formValues.currency}
+        documentStatus={formValues.documentStatus}
       />
       <Button
         type="primary"
@@ -1175,7 +1235,7 @@ const MakeComplexInquiry = () => {
             isMailSenderVisible={isMailSenderVisible}
           />
         )}
-        {documentInfo && documentType === "quotation" && (
+        {documentInfo && documentType === "quotation" ? (
           <OfferMailSender
             inquiryFormValues={{
               documentNumber: documentInfo.documentNumber,
@@ -1184,13 +1244,19 @@ const MakeComplexInquiry = () => {
               vesselName: documentInfo.vesselName,
             }}
             handleSubmit={handleSubmit}
-            setFileData={setFileData}
             pdfFileData={pdfFileData}
             mailData={mailData}
             pdfHeader={quotationPdfHeader}
-            selectedSupplierIds={supplierTags.map((item) => item.inquiryId)} //문서ID로 수정할 것
+            selectedSupplierIds={[]} //복합일 때만 빈 배열
           />
-        )}
+        ) : documentType === "quotation" ? (
+          <div style={{ marginTop: 20 }}>
+            <Alert
+              message="There is no document information. Please Save the document first."
+              type="error"
+            />
+          </div>
+        ) : null}
       </Modal>
       <div
         style={{
@@ -1228,7 +1294,7 @@ const MakeComplexInquiry = () => {
           onClick={() => toggleModal("header", true)}
           style={{ marginLeft: 20 }}
         >
-          Edit Header Text
+          {documentType === "inquiry" ? "Edit Header" : "Edit Header / Remark"}
         </Button>
         <Button
           type="default"
@@ -1282,7 +1348,6 @@ const MakeComplexInquiry = () => {
           selectedSupplierTag={supplierTags}
           formValues={formValues}
           setMailDataList={setMailDataList}
-          items={getSelectedSupplierItems()}
           vesselInfo={selectedVessel}
           pdfHeader={inquiryPdfHeader}
         />

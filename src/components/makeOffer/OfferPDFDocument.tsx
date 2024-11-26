@@ -110,10 +110,15 @@ const styles = StyleSheet.create({
     borderBottom: "1px dotted #000",
     margin: "15px 0",
   },
-  footerMessage: {
+  footerTitle: {
     fontSize: 10,
     textAlign: "left",
     padding: "10px 0",
+  },
+  footerMessage: {
+    fontSize: 10,
+    textAlign: "left",
+    padding: "2px 0",
   },
   inquiryInfoWrap: {
     flexDirection: "row",
@@ -134,7 +139,7 @@ const styles = StyleSheet.create({
     textAlign: "left",
   },
   inquiryInfoValue: {
-    width: 120, // 라벨의 고정 너비
+    width: 120,
     textAlign: "left",
   },
   page: {
@@ -351,7 +356,7 @@ const renderHeader = (
     <View style={styles.inquiryInfoWrap}>
       <View style={styles.inquiryInfoColumn}>
         <View style={styles.inquiryInfoText}>
-          <Text style={styles.inquiryInfoLabel}>MESSERS</Text>
+          <Text style={styles.inquiryInfoLabel}>MESSRS</Text>
           <Text style={styles.inquiryInfoValue}>
             : {customerName?.split("")}
           </Text>
@@ -361,13 +366,13 @@ const renderHeader = (
           <Text style={styles.inquiryInfoValue}>: {vesselName?.split("")}</Text>
         </View>
         <View style={[styles.inquiryInfoText, { marginBottom: 10 }]}>
-          <Text style={styles.inquiryInfoLabel}>YOUR REF NO.</Text>
+          <Text style={styles.inquiryInfoLabel}>YOUR REF No.</Text>
           <Text style={styles.inquiryInfoValue}>: {refNumber?.split("")}</Text>
         </View>
       </View>
       <View style={[styles.inquiryInfoColumn, { alignItems: "flex-end" }]}>
         <View style={styles.inquiryInfoText}>
-          <Text style={styles.inquiryInfoLabel}>REF NO.</Text>
+          <Text style={styles.inquiryInfoLabel}>REF No.</Text>
           <Text style={styles.inquiryInfoValue}>: {docNumber?.split("")}</Text>
         </View>
         <View style={styles.inquiryInfoText}>
@@ -468,7 +473,7 @@ const OfferPDFDocument = ({
               <View>
                 {pageNumber >= 2 && (
                   <Text
-                    render={() => `OUR REF NO. : ${info.documentNumber}`}
+                    render={() => `OUR REF No. : ${info.documentNumber}`}
                     style={{ textAlign: "right" }}
                   />
                 )}
@@ -516,10 +521,10 @@ const OfferPDFDocument = ({
             <View
               style={[styles.tableSmallCol, { borderLeft: "0.5px solid #000" }]}
             >
-              <Text style={styles.tableCell}>NO.</Text>
+              <Text style={styles.tableCell}>No.</Text>
             </View>
             <View style={styles.tableMedCol}>
-              <Text style={styles.tableCell}>PART NO.</Text>
+              <Text style={styles.tableCell}>PART No.</Text>
             </View>
             <View style={styles.tableBigCol}>
               <Text style={styles.tableCell}>DESCRIPTION</Text>
@@ -626,7 +631,7 @@ const OfferPDFDocument = ({
           <View>
             <Text
               style={[
-                styles.footerMessage,
+                styles.footerTitle,
                 {
                   borderTop: "1px dotted #000",
                   fontWeight: "bold",
@@ -657,7 +662,7 @@ const OfferPDFDocument = ({
 
   if (viewMode) {
     return (
-      <PDFViewer width="100%" height="600" style={{ margin: "20px 0" }}>
+      <PDFViewer width="100%" height="800" style={{ margin: "20px 0" }}>
         {pdfBody}
       </PDFViewer>
     );

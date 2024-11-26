@@ -99,10 +99,26 @@ const styles = StyleSheet.create({
   inquiryInfoColumn: {
     flex: 1,
     flexDirection: "column",
+    width: "50%",
   },
   inquiryInfoText: {
     fontSize: 10,
     marginBottom: 5,
+    display: "flex",
+    flexDirection: "row",
+  },
+  inquiryInfoLabel: {
+    width: 60,
+    textAlign: "left",
+  },
+  inquiryInfoValue: {
+    width: 120,
+    textAlign: "left",
+    paddingLeft: 5,
+  },
+  inquiryInfoColon: {
+    width: 15,
+    textAlign: "center",
   },
   page: {
     padding: 20,
@@ -278,52 +294,78 @@ const renderHeader = (
     </View>
     <View style={styles.inquiryInfoWrap}>
       <View style={styles.inquiryInfoColumn}>
-        <Text style={styles.inquiryInfoText}>
-          MESSRS:
-          {supplier?.communicationLanguage === "KOR"
-            ? supplier?.korName || ""
-            : supplier?.name || ""}
-        </Text>
+        <View style={styles.inquiryInfoText}>
+          <Text style={styles.inquiryInfoLabel}>MESSRS</Text>
+          <Text style={styles.inquiryInfoColon}>:</Text>
+          <Text style={styles.inquiryInfoValue}>
+            {supplier?.communicationLanguage === "KOR"
+              ? supplier?.korName || ""
+              : supplier?.name || ""}
+          </Text>
+        </View>
         {vesselName.trim().toUpperCase() !== "UNKNOWN" && (
           <>
-            <Text style={[styles.inquiryInfoText, { marginBottom: 10 }]}>
-              VESSEL: {vesselName}
-            </Text>
+            <View style={styles.inquiryInfoText}>
+              <Text style={styles.inquiryInfoLabel}>VESSEL</Text>
+              <Text style={styles.inquiryInfoColon}>:</Text>
+              <Text style={styles.inquiryInfoValue}>{vesselName}</Text>
+            </View>
             {vesselInfo?.imoNumber && (
-              <Text style={styles.inquiryInfoText}>
-                IMO NO: {vesselInfo?.imoNumber}
-              </Text>
+              <View style={styles.inquiryInfoText}>
+                <Text style={styles.inquiryInfoLabel}>IMO No.</Text>
+                <Text style={styles.inquiryInfoColon}>:</Text>
+                <Text style={styles.inquiryInfoValue}>
+                  {vesselInfo?.imoNumber}
+                </Text>
+              </View>
             )}
             {vesselInfo?.hullNumber && (
-              <Text style={styles.inquiryInfoText}>
-                HULL NO: {vesselInfo?.hullNumber}
-              </Text>
+              <View style={styles.inquiryInfoText}>
+                <Text style={styles.inquiryInfoLabel}>HULL No.</Text>
+                <Text style={styles.inquiryInfoColon}>:</Text>
+                <Text style={styles.inquiryInfoValue}>
+                  {vesselInfo?.hullNumber}
+                </Text>
+              </View>
             )}
             {vesselInfo?.shipYard && (
-              <Text style={styles.inquiryInfoText}>
-                SHIPYARD: {vesselInfo?.shipYard}
-              </Text>
+              <View style={styles.inquiryInfoText}>
+                <Text style={styles.inquiryInfoLabel}>SHIPYARD</Text>
+                <Text style={styles.inquiryInfoColon}>:</Text>
+                <Text style={styles.inquiryInfoValue}>
+                  {vesselInfo?.shipYard}
+                </Text>
+              </View>
             )}
             {vesselInfo?.countryOfManufacture && (
-              <Text style={styles.inquiryInfoText}>
-                NATIONALITY: {vesselInfo?.countryOfManufacture}
-              </Text>
+              <View style={styles.inquiryInfoText}>
+                <Text style={styles.inquiryInfoLabel}>NATIONALITY</Text>
+                <Text style={styles.inquiryInfoColon}>:</Text>
+                <Text style={styles.inquiryInfoValue}>
+                  {vesselInfo?.countryOfManufacture}
+                </Text>
+              </View>
             )}
           </>
         )}
       </View>
       <View style={[styles.inquiryInfoColumn, { alignItems: "flex-end" }]}>
-        <Text style={styles.inquiryInfoText}>
-          OUR REF No: {docNumber?.split("")}
-        </Text>
-        <Text style={styles.inquiryInfoText}>
-          {supplier?.communicationLanguage === "KOR"
-            ? "DATE: " + dayjs(registerDate).format("YYYY-MM-DD") ||
-              "DATE: " + dayjs().format("YYYY-MM-DD")
-            : "DATE: " +
-                dayjs(registerDate).format("DD MMM, YYYY").toUpperCase() ||
-              "DATE: " + dayjs().format("DD MMM, YYYY").toUpperCase()}
-        </Text>
+        <View style={styles.inquiryInfoText}>
+          <Text style={styles.inquiryInfoLabel}>OUR REF No.</Text>
+          <Text style={styles.inquiryInfoColon}>:</Text>
+          <Text style={styles.inquiryInfoValue}>{docNumber?.split("")}</Text>
+        </View>
+        <View style={styles.inquiryInfoText}>
+          <Text style={styles.inquiryInfoLabel}>DATE</Text>
+          <Text style={styles.inquiryInfoColon}>:</Text>
+          <Text style={styles.inquiryInfoValue}>
+            {supplier?.communicationLanguage === "KOR"
+              ? dayjs(registerDate).format("YYYY-MM-DD") ||
+                dayjs().format("YYYY-MM-DD")
+              : dayjs(registerDate).format("DD MMM, YYYY").toUpperCase() ||
+                dayjs().format("DD MMM, YYYY").toUpperCase()}
+          </Text>
+        </View>
       </View>
     </View>
     <View style={styles.section}>
@@ -345,7 +387,7 @@ const PDFDocument = ({
 
   if (viewMode) {
     return (
-      <PDFViewer width="100%" height="600" style={{ margin: "20px 0" }}>
+      <PDFViewer width="100%" height="800" style={{ margin: "20px 0" }}>
         <Document>
           <Page size="A4" style={styles.page}>
             {renderHeader(
@@ -374,10 +416,10 @@ const PDFDocument = ({
                     { borderLeft: "0.5px solid #000" },
                   ]}
                 >
-                  <Text style={styles.tableCell}>NO.</Text>
+                  <Text style={styles.tableCell}>No.</Text>
                 </View>
                 <View style={styles.tableMedCol}>
-                  <Text style={styles.tableCell}>PART NO.</Text>
+                  <Text style={styles.tableCell}>PART No.</Text>
                 </View>
                 <View style={styles.tableBigCol}>
                   <Text style={styles.tableCell}>DESCRIPTION</Text>
@@ -426,10 +468,10 @@ const PDFDocument = ({
             <View
               style={[styles.tableSmallCol, { borderLeft: "0.5px solid #000" }]}
             >
-              <Text style={styles.tableCell}>NO.</Text>
+              <Text style={styles.tableCell}>No.</Text>
             </View>
             <View style={styles.tableMedCol}>
-              <Text style={styles.tableCell}>PART NO.</Text>
+              <Text style={styles.tableCell}>PART No.</Text>
             </View>
             <View style={styles.tableBigCol}>
               <Text style={styles.tableCell}>DESCRIPTION</Text>

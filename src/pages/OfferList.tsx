@@ -35,6 +35,24 @@ const Title = styled.h1`
   color: #333;
 `;
 
+const StyledTable = styled(Table<SupplierInquiryListIF>)`
+  .ant-table-tbody {
+    tr {
+      &.complex-row {
+        background-color: #f5fff0;
+
+        &:hover > td {
+          background-color: #e5f7d3 !important;
+        }
+      }
+
+      &:hover > td {
+        background-color: #fafafa !important;
+      }
+    }
+  }
+`;
+
 const TableHeader = styled.div`
   display: flex;
   flex-direction: column;
@@ -161,9 +179,14 @@ const columns: ColumnsType<SupplierInquiryListIF> = [
     sortDirections: ["ascend", "descend"],
   },
   {
-    title: "Costomer Name",
+    title: "Costomer",
     dataIndex: "companyName",
     key: "companyName",
+  },
+  {
+    title: "REF No.",
+    dataIndex: "refNumber",
+    key: "refNumber",
   },
   {
     title: "Remark",
@@ -173,15 +196,30 @@ const columns: ColumnsType<SupplierInquiryListIF> = [
     sortDirections: ["ascend", "descend"],
   },
   {
-    title: "REF No.",
-    dataIndex: "refNumber",
-    key: "refNumber",
-  },
-  {
     title: "Manager",
     dataIndex: "docManager",
     key: "docManager",
     sorter: (a, b) => a.docManager.localeCompare(b.docManager),
+  },
+  {
+    title: "Document Type",
+    dataIndex: "documentType",
+    key: "documentType",
+    sorter: (a, b) => a.documentType.localeCompare(b.documentType),
+    render: (type) => {
+      let color;
+      switch (type) {
+        case "GENERAL":
+          color = "orange";
+          break;
+        case "COMPLEX":
+          color = "blue";
+          break;
+        default:
+          color = "steelblue";
+      }
+      return type ? <StyledTag color={color}>{type}</StyledTag> : null;
+    },
   },
   {
     title: "Document Status",
@@ -222,7 +260,7 @@ const OfferList = () => {
   const [showItemSearch, setShowItemSearch] = useState<boolean>(false);
 
   useEffect(() => {
-    if (searchText || registerStartDate || registerEndDate) {
+    if (searchText || searchSubText || registerStartDate || registerEndDate) {
       handleSearch();
     } else {
       fetchData();
@@ -314,9 +352,14 @@ const OfferList = () => {
           type="primary"
           onClick={(e) => {
             e.stopPropagation();
-            navigate(`/makeoffer/${record.documentId}`, {
-              state: { info: record, category: "offer" },
-            });
+            navigate(
+              record.documentType === "COMPLEX"
+                ? `/makecomplexinquiry/${record.customerInquiryId}`
+                : `/makeoffer/${record.documentId}`,
+              {
+                state: { info: record, category: "offer" },
+              }
+            );
           }}
         >
           View Details
@@ -485,7 +528,7 @@ const OfferList = () => {
         <Divider />
         {data.length > 0 && ( // 데이터가 있을 때만 페이지네이션을 표시
           <>
-            <Table
+            <StyledTable
               columns={columns}
               dataSource={data}
               pagination={false}
@@ -497,6 +540,8 @@ const OfferList = () => {
               }}
               onRow={(record) => ({
                 style: { cursor: "pointer" },
+                className:
+                  record.documentType === "COMPLEX" ? "complex-row" : "",
               })}
             />
             <PaginationWrapper

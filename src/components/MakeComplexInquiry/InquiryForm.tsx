@@ -85,8 +85,9 @@ const StyledTag = styled(Tag)`
 `;
 
 interface FormValues {
-  customerInquiryId: number | null;
+  documentId: number | null;
   docNumber: string;
+  docManagerName: string;
   registerDate: any;
   shippingDate: any;
   customer: string;
@@ -96,6 +97,7 @@ interface FormValues {
   currency: number;
   remark: string;
   supplierName: string;
+  documentStatus: string;
 }
 
 interface InquiryFormProps {
@@ -529,6 +531,7 @@ const InquiryForm = ({
             }
             help={validateCustomer().message}
             rules={[{ required: true, message: "Please enter customer" }]}
+            style={{ flex: 2 }}
           >
             <Button
               type="primary"
@@ -560,6 +563,7 @@ const InquiryForm = ({
             }
             help={validateVessel().message}
             rules={[{ required: true, message: "Please enter vessel name" }]}
+            style={{ flex: 2 }}
           >
             <Button
               type="primary"
@@ -589,9 +593,16 @@ const InquiryForm = ({
             </AutoComplete>
           </InquiryItemForm>
           <InquiryItemForm
+            label="문서상태(Document Status)"
+            name="documentStatus"
+            style={{ flex: 1 }}
+          >
+            <Input value={formValues.documentStatus} readOnly />
+          </InquiryItemForm>
+          <InquiryItemForm
             label="비고(Remark)"
             name="remark"
-            style={{ flex: "30%" }}
+            style={{ flex: 3 }}
           >
             <Input
               value={formValues.remark}

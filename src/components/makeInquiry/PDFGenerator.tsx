@@ -3,6 +3,8 @@ import { pdf } from "@react-pdf/renderer";
 import PDFDocument from "./PDFDocument";
 import { emailSendData, InquiryItem, VesselList } from "../../types/types";
 import dayjs from "dayjs";
+import { message } from "antd";
+import { fetchSupplierDetail } from "../../api/api";
 
 interface FormValues {
   docNumber: string;
@@ -26,12 +28,11 @@ interface PDFGeneratorProps {
   }[];
   formValues: FormValues;
   setMailDataList: Dispatch<SetStateAction<emailSendData[]>>;
-  items: InquiryItem[];
   vesselInfo: VesselList | null;
   pdfHeader: string;
 }
 
-const generateMailData = (
+const generateMailData = async (
   selectedSupplierTag: PDFGeneratorProps["selectedSupplierTag"],
   formValues: FormValues,
   vesselInfo: VesselList | null,
@@ -40,9 +41,16 @@ const generateMailData = (
   const mailDataList: emailSendData[] = [];
 
   for (const supplierTag of selectedSupplierTag) {
+    const supplierDetail = await fetchSupplierDetail(
+      supplierTag.id,
+      "supplier"
+    );
+
+    console.log(supplierDetail);
+
     const mailData: emailSendData = {
       supplierId: supplierTag.id,
-      toRecipient: supplierTag.email,
+      toRecipient: supplierDetail.email,
       subject:
         supplierTag.communicationLanguage === "ENG"
           ? `BASKOREA REQUEST FOR QUOTATION  ${formValues.docNumber}  ${formValues.vesselName}`
@@ -118,6 +126,13 @@ export const generatePDFs = async (
 
   if (supplierTag) {
     const supplierItems = getItemsForSupplier(supplierTag.id);
+
+    if (supplierItems.length < 1) {
+      //Error message
+      message.error("Please select supplier.");
+      console.log("supplierItems", supplierItems);
+      return [];
+    }
 
     const doc = (
       <PDFDocument

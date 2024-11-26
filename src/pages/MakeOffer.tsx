@@ -22,7 +22,6 @@ import OfferPDFGenerator from "../components/makeOffer/OfferPDFGenerator";
 import OfferMailSender from "../components/makeOffer/OfferSendMail";
 import { InvCharge } from "./../types/types";
 import TotalCardsComponent from "../components/makeOffer/TotalCardsComponent";
-import { produce } from "immer";
 
 const FormContainer = styled.div`
   position: relative;
@@ -96,7 +95,6 @@ const MakeOffer = () => {
   const [isMailSenderVisible, setIsMailSenderVisible] = useState(false);
   const [mailData, setMailData] = useState<offerEmailSendData | null>(null);
   const [pdfFileData, setPdfFileData] = useState<File | null>(null);
-  const [fileData, setFileData] = useState<(File | null)[]>([]);
   const [selectedSupplierIds, setSelectedSupplierIds] = useState<
     Array<{ supplierId: number; inquiryId: number }>
   >([]);
@@ -1022,19 +1020,23 @@ const MakeOffer = () => {
         </Button>
         <span style={{ marginLeft: 20 }}>SUPPLIER: </span>
         <Select
-          mode="multiple"
+          // mode="multiple" 제거
           style={{
             minWidth: 500,
             marginLeft: 10,
           }}
-          status={selectedSupplierIds.length === 0 ? "error" : undefined}
-          onChange={(values: string[]) => {
-            // 문자열로 된 값들을 다시 객체로 파싱
-            const selectedIds = values.map((value) => JSON.parse(value));
-            handleSupplierSelect(selectedIds);
+          status={!selectedSupplierIds.length ? "error" : undefined}
+          onChange={(value: string) => {
+            // 단일 값을 처리하도록 수정
+            const selectedId = JSON.parse(value);
+            handleSupplierSelect([selectedId]); // 배열 호환성을 위해 배열로 감싸서 전달
           }}
-          value={selectedSupplierIds.map((item) => JSON.stringify(item))} // 객체를 문자열로 변환
-          placeholder="Please select supplier to send email"
+          value={
+            selectedSupplierIds.length
+              ? JSON.stringify(selectedSupplierIds[0])
+              : undefined
+          }
+          placeholder="Please select supplier."
         >
           {dataSource?.response.map((item) => (
             <Select.Option
@@ -1060,7 +1062,6 @@ const MakeOffer = () => {
         <OfferMailSender
           inquiryFormValues={info.documentInfo}
           handleSubmit={handleSave}
-          setFileData={setFileData}
           pdfFileData={pdfFileData}
           mailData={mailData}
           pdfHeader={pdfHeader}

@@ -121,6 +121,7 @@ export interface Inquiry {
   docManager: string;
   representative: string;
   documentStatus: string;
+  documentType: string;
   pdfUrl: string | null;
   inquiryType: string;
   inquiryItemDetails: InquiryItem[];
@@ -156,6 +157,8 @@ export interface SupplierInquiryListIF {
   docRemark: string;
   docManager: string;
   documentStatus: string;
+  documentType: string;
+  customerInquiryId?: number;
   supplierPreview: {
     supplierInquiryId: number;
     supplierCode: string;
@@ -511,6 +514,13 @@ export interface ComplexInquirySupplier {
   supplierRemark?: string | null;
 }
 
+export interface ComplexInquiryConfirmSupplier {
+  supplierId: number;
+  code?: string;
+  companyName?: string;
+  korCompanyName?: string;
+}
+
 export interface ComplexInquiryItemDetail {
   itemDetailId?: number;
   itemId?: number;
@@ -532,29 +542,11 @@ export interface ComplexInquiryItemDetail {
   purchaseAmountKRW: number;
   purchaseAmountGlobal: number;
   suppliers: ComplexInquirySupplier[];
+  confirmSupplier: ComplexInquiryConfirmSupplier | null;
 }
 
 export interface ComplexInquiry {
-  customerInquiryId: number;
-  vesselId: number;
-  customerId: number;
-  documentNumber: string;
-  registerDate: Dayjs;
-  shippingDate: Dayjs;
-  companyName: string;
-  refNumber: string;
-  currencyType: string;
-  currency: number;
-  vesselName: string;
-  vesselHullNo?: string;
-  shipYard?: string;
-  countryOfManufacture?: string;
-  docRemark?: string;
-  docManager: string;
-  representative: string | null;
-  documentStatus: string;
-  pdfUrl: string | null;
-  inquiryType: string;
+  documentInfo: DocumentInfo;
   discount?: number;
   invChargeList?: InvCharge[];
   inquiryItemDetails: ComplexInquiryItemDetail[];

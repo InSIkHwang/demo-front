@@ -1,4 +1,4 @@
-import React, { useState, Dispatch, SetStateAction } from "react";
+import React, { useState } from "react";
 import {
   Form,
   Input,
@@ -65,7 +65,6 @@ interface FormValue {
 
 const OfferMailSender = ({
   inquiryFormValues,
-  setFileData,
   pdfFileData,
   mailData,
   pdfHeader,
@@ -73,7 +72,6 @@ const OfferMailSender = ({
 }: {
   inquiryFormValues: FormValue;
   handleSubmit: () => Promise<unknown>;
-  setFileData: Dispatch<SetStateAction<(File | null)[]>>;
   pdfFileData: File | null;
   mailData: offerEmailSendData | null;
   pdfHeader: HeaderFormData;
@@ -114,7 +112,6 @@ const OfferMailSender = ({
 
     try {
       const updatedFileData = [...uploadFile];
-      setFileData(updatedFileData);
 
       const { documentNumber, ...restValues } = values;
 
@@ -138,7 +135,6 @@ const OfferMailSender = ({
       // 메일 전송 로직
       if (pdfFileData) {
         const finalFileData = [...updatedFileData, pdfFileData];
-        setFileData(finalFileData);
         await sendQuotationMail(finalFileData, mailDataToSend);
       } else {
         await sendQuotationMail(updatedFileData, mailDataToSend);

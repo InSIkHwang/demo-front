@@ -6,9 +6,10 @@ import {
   Button,
   Space,
   Checkbox,
-  message,
   Tooltip,
   InputRef,
+  TableColumnType,
+  message,
 } from "antd";
 import {
   PlusCircleOutlined,
@@ -21,9 +22,7 @@ import styled from "styled-components";
 import {
   ComplexInquiryItemDetail,
   ComplexInquirySupplier,
-  InvCharge,
 } from "../../types/types";
-import { fetchItemData } from "../../api/api";
 import ExcelUploadModal from "../ExcelUploadModal";
 import { TextAreaRef } from "antd/es/input/TextArea";
 
@@ -41,6 +40,13 @@ const CustomTable = styled(Table<ComplexInquiryItemDetail>)<TableProps>`
       props.$zoomLevel ? `${11 * props.$zoomLevel}px` : "11px"};
   }
 
+  .ant-table-row,
+  .ant-table-row *,
+  .ant-table-cell *,
+  .ant-table-cell-row-hover {
+    transition: all 0.3s ease !important;
+  }
+
   .ant-table-cell {
     padding: ${(props) =>
       props.$zoomLevel
@@ -54,8 +60,10 @@ const CustomTable = styled(Table<ComplexInquiryItemDetail>)<TableProps>`
   .highlight-cell {
     font-weight: bold !important;
 
-    .ant-input-group-addon {
-      background-color: #dff4ff;
+    .ant-input-group-addon,
+    .ant-input-outlined {
+      border-color: #007bff !important;
+      font-weight: bold !important;
     }
   }
   .ant-input-group-addon {
@@ -67,45 +75,113 @@ const CustomTable = styled(Table<ComplexInquiryItemDetail>)<TableProps>`
 
   .ant-table-row {
     &:hover {
-      background-color: rgba(240, 240, 240, 0.875) !important;
+      background-color: #f0f0f0 !important;
     }
     .ant-table-cell-row-hover {
-      background-color: rgba(240, 240, 240, 0.875) !important;
+      background-color: #f0f0f0 !important;
     }
-    transition: background-color 0.3s ease;
+  }
+
+  .ant-table-cell-fix-left {
+    background: none !important;
+    background-color: inherit !important;
+    z-index: 2 !important;
+  }
+
+  .ant-table-cell-fix-left-last {
+    box-shadow: 14px 0 10px -10px rgba(0, 0, 0, 0.05) !important;
+  }
+
+  tr .ant-table-cell-fix-left {
+    background-color: #fafafa !important;
+  }
+
+  .item-row .ant-table-cell-fix-left {
+    background: none !important;
+    background-color: #ffffff !important;
+  }
+  .maker-row .ant-table-cell-fix-left {
+    background: none !important;
+    background-color: #e3f2ff !important;
+  }
+  .type-row .ant-table-cell-fix-left {
+    background: none !important;
+    background-color: #fffef0 !important;
+  }
+  .desc-row .ant-table-cell-fix-left {
+    background: none !important;
+    background-color: #fff5e0 !important;
+  }
+  .remark-row .ant-table-cell-fix-left {
+    background: none !important;
+    background-color: #eaffe6 !important;
+  }
+
+  .item-row:hover .ant-table-cell-fix-left {
+    background: none !important;
+    background-color: #f0f0f0 !important;
+  }
+  .maker-row:hover .ant-table-cell-fix-left {
+    background: none !important;
+    background-color: #c8e4ff !important;
+  }
+  .type-row:hover .ant-table-cell-fix-left {
+    background: none !important;
+    background-color: #fffdde !important;
+  }
+  .desc-row:hover .ant-table-cell-fix-left {
+    background: none !important;
+    background-color: #ffe9bb !important;
+  }
+  .remark-row:hover .ant-table-cell-fix-left {
+    background: none !important;
+    background-color: #dcffd1 !important;
+  }
+
+  .item-row {
+    background-color: #ffffff !important;
+    &:hover {
+      background-color: #f0f0f0 !important;
+    }
+    .ant-table-cell-row-hover {
+      background-color: #f0f0f0 !important;
+    }
   }
 
   .maker-row {
-    background-color: #c8e4ff90; /* MAKER 행의 배경색 */
+    background-color: #e3f2ff !important; /* 기본 색상 */
     &:hover {
-      background-color: #c8e4ff !important;
+      background-color: #c8e4ff !important; /* 호버 시 더 진한 색상 */
     }
     .ant-table-cell-row-hover {
       background-color: #c8e4ff !important;
     }
   }
+
   .type-row {
-    background-color: #fffdde90; /* TYPE 행의 배경색 */
+    background-color: #fffef0 !important; /* 기본 색상 */
     &:hover {
-      background-color: #fffdde !important;
+      background-color: #fffdde !important; /* 호버 시 더 진한 색상 */
     }
     .ant-table-cell-row-hover {
       background-color: #fffdde !important;
     }
   }
+
   .desc-row {
-    background-color: #f0f0f090;
+    background-color: #fff5e0 !important; /* 기본 색상 */
     &:hover {
-      background-color: #f0f0f0 !important;
+      background-color: #ffe9bb !important; /* 호버 시 더 진한 색상 */
     }
     .ant-table-cell-row-hover {
-      background-color: #f0f0f0 !important;
+      background-color: #ffe9bb !important;
     }
   }
+
   .remark-row {
-    background-color: #d5ffd190;
+    background-color: #eaffe6 !important; /* 기본 색상 */
     &:hover {
-      background-color: #dcffd1 !important;
+      background-color: #dcffd1 !important; /* 호버 시 더 진한 색상 */
     }
     .ant-table-cell-row-hover {
       background-color: #dcffd1 !important;
@@ -133,6 +209,7 @@ interface ComplexInquiryTableProps {
     supplierRemark: string;
   }[];
   currency: number;
+  documentStatus: string;
 }
 
 const ComplexInquiryTable = ({
@@ -140,6 +217,7 @@ const ComplexInquiryTable = ({
   setItems,
   uniqueSuppliers,
   currency,
+  documentStatus,
 }: ComplexInquiryTableProps) => {
   const [unitOptions, setUnitOptions] = useState<string[]>(["PCS", "SET"]);
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -147,6 +225,8 @@ const ComplexInquiryTable = ({
   const [selectAll, setSelectAll] = useState(false);
   const [isExcelModalVisible, setIsExcelModalVisible] = useState(false);
   const inputRefs = useRef<(RefType | null)[][]>([]);
+  const [startItemNo, setStartItemNo] = useState<string>("");
+  const [endItemNo, setEndItemNo] = useState<string>("");
 
   const ZOOM_STEP = 0.1;
   const MIN_ZOOM = 0.5;
@@ -307,6 +387,7 @@ const ComplexInquiryTable = ({
         purchaseAmountKRW: 0,
         purchaseAmountGlobal: 0,
         suppliers: [],
+        confirmSupplier: null,
       };
 
       const updatedItems = [
@@ -346,15 +427,23 @@ const ComplexInquiryTable = ({
     switch (e.key) {
       case "ArrowUp":
         e.preventDefault();
-        if (inputRefs.current[rowIndex - 1]?.[columnIndex]) {
-          inputRefs.current[rowIndex - 1][columnIndex]?.focus();
+        // 이전 행부터 역순으로 검색하여 포커스 가능한 입력 요소 찾기
+        for (let i = rowIndex - 1; i >= 0; i--) {
+          if (inputRefs.current[i]?.[columnIndex]) {
+            inputRefs.current[i][columnIndex]?.focus();
+            break;
+          }
         }
         break;
 
       case "ArrowDown":
         e.preventDefault();
-        if (inputRefs.current[rowIndex + 1]?.[columnIndex]) {
-          inputRefs.current[rowIndex + 1][columnIndex]?.focus();
+        // 다음 행부터 순차적으로 검색하여 포커스 가능한 입력 요소 찾기
+        for (let i = rowIndex + 1; i < inputRefs.current.length; i++) {
+          if (inputRefs.current[i]?.[columnIndex]) {
+            inputRefs.current[i][columnIndex]?.focus();
+            break;
+          }
         }
         break;
 
@@ -388,7 +477,71 @@ const ComplexInquiryTable = ({
     }
   };
 
-  const columns = [
+  const handleRangeSupplierAdd = (selectedId: number) => {
+    if (!startItemNo || !endItemNo) {
+      message.error("Please enter both start and end item numbers.");
+      return;
+    }
+
+    // 시작과 끝 아이템의 인덱스 찾기
+    const startIndex = items.findIndex((item) => item.indexNo === startItemNo);
+    const endIndex = items.findIndex((item) => item.indexNo === endItemNo);
+
+    if (startIndex === -1 || endIndex === -1) {
+      message.error(
+        "Could not find the item corresponding to the entered number."
+      );
+      return;
+    }
+
+    if (startIndex > endIndex) {
+      message.error("The start number must be before the end number.");
+      return;
+    }
+
+    const newItems = [...items];
+
+    // 시작과 끝 인덱스 사이의 모든 아이템에 대해 처리
+    for (let i = startIndex; i <= endIndex; i++) {
+      const existingSuppliers = newItems[i].suppliers || [];
+
+      // 이미 선택된 supplier가 아닌 경우에만 추가
+      if (!existingSuppliers.some((s) => s.supplierId === selectedId)) {
+        const selectedSupplier = uniqueSuppliers.find(
+          (s) => s.id === selectedId
+        );
+        if (selectedSupplier) {
+          newItems[i] = {
+            ...newItems[i],
+            suppliers: [
+              ...existingSuppliers,
+              {
+                supplierId: selectedId,
+                inquiryItemDetailId: null,
+                code: selectedSupplier.code || "",
+                companyName: selectedSupplier.name || "",
+                korCompanyName: selectedSupplier.korName || "",
+                representative: null,
+                email: selectedSupplier.email || "",
+                communicationLanguage:
+                  selectedSupplier.communicationLanguage || "KOR",
+                supplierRemark: selectedSupplier.supplierRemark || "",
+              },
+            ],
+          };
+        }
+      }
+    }
+
+    setItems(newItems);
+    setStartItemNo("");
+    setEndItemNo("");
+    message.success(
+      `${startItemNo} - ${endItemNo} items have been added to suppliers.`
+    );
+  };
+
+  const columns: TableColumnType<ComplexInquiryItemDetail>[] = [
     {
       title: "Actions",
       key: "actions",
@@ -416,6 +569,7 @@ const ComplexInquiryTable = ({
       dataIndex: "indexNo",
       key: "indexNo",
       width: 70 * zoomLevel,
+      fixed: "left",
       render: (text: string, record: any, index: number) => {
         if (record.itemType === "DASH") {
           return (
@@ -431,7 +585,7 @@ const ComplexInquiryTable = ({
                 inputRefs.current[index][1] = el;
               }}
               onKeyDown={(e) => handleKeyDown(e, index, 1)}
-            ></Input>
+            />
           );
         }
 
@@ -439,9 +593,16 @@ const ComplexInquiryTable = ({
           .filter((item: any) => item.itemType === "ITEM")
           .indexOf(record);
 
-        return record.itemType === "ITEM" ? (
-          <span>{filteredIndex + 1}</span>
-        ) : null;
+        // ITEM 타입일 때 자동으로 번호 저장
+        if (record.itemType === "ITEM") {
+          const itemNo = (filteredIndex + 1).toString();
+          if (record.indexNo !== itemNo) {
+            handleInputChange(index, "indexNo", itemNo);
+          }
+          return <span>{itemNo}</span>;
+        }
+
+        return null;
       },
     },
     {
@@ -468,6 +629,7 @@ const ComplexInquiryTable = ({
       dataIndex: "itemCode",
       key: "itemCode",
       width: 115 * zoomLevel,
+      fixed: "left",
       render: (text: string, _: any, index: number) => (
         <Input
           value={text}
@@ -487,6 +649,7 @@ const ComplexInquiryTable = ({
       dataIndex: "itemName",
       key: "itemName",
       width: 200 * zoomLevel,
+      fixed: "left",
       render: (text: string, _: any, index: number) => (
         <Input.TextArea
           value={text}
@@ -587,12 +750,126 @@ const ComplexInquiryTable = ({
       ),
     },
     {
+      title: "Purchase Price KRW",
+      dataIndex: "purchasePriceKRW",
+      key: "purchasePriceKRW",
+      width: 115 * zoomLevel,
+      className: "highlight-cell",
+      render: (text: string, _: any, index: number) => {
+        return (items[index].itemType === "ITEM" ||
+          items[index].itemType === "DASH") &&
+          !items[index].itemRemark ? (
+          <Input
+            type="number"
+            value={text}
+            addonBefore="₩"
+            className="custom-input"
+            onFocus={(e) => {
+              e.target.select();
+              const newItems = [...items];
+              newItems[index] = {
+                ...newItems[index],
+                purchasePriceGlobal: 0,
+                purchaseAmountKRW: 0,
+                purchaseAmountGlobal: 0,
+              };
+              setItems(newItems);
+            }}
+            onChange={(e) =>
+              handleInputChange(
+                index,
+                "purchasePriceKRW",
+                Number(e.target.value)
+              )
+            }
+            ref={(el) => {
+              if (!inputRefs.current[index]) {
+                inputRefs.current[index] = [];
+              }
+              inputRefs.current[index][10] = el;
+            }}
+            onKeyDown={(e) => handleKeyDown(e, index, 10)}
+          />
+        ) : null;
+      },
+    },
+    {
+      title: "Purchase Price(F)",
+      dataIndex: "purchasePriceGlobal",
+      key: "purchasePriceGlobal",
+      width: 115 * zoomLevel,
+      className: "highlight-cell",
+      render: (text: string, _: any, index: number) => {
+        return (items[index].itemType === "ITEM" ||
+          items[index].itemType === "DASH") &&
+          !items[index].itemRemark ? (
+          <Input
+            type="number"
+            value={text}
+            addonBefore="F"
+            className="custom-input"
+            onFocus={(e) => {
+              e.target.select();
+              const newItems = [...items];
+              newItems[index] = {
+                ...newItems[index],
+                purchasePriceKRW: 0,
+                purchaseAmountKRW: 0,
+                purchaseAmountGlobal: 0,
+              };
+              setItems(newItems);
+            }}
+            onChange={(e) =>
+              handleInputChange(
+                index,
+                "purchasePriceGlobal",
+                Number(e.target.value)
+              )
+            }
+            ref={(el) => {
+              if (!inputRefs.current[index]) {
+                inputRefs.current[index] = [];
+              }
+              inputRefs.current[index][11] = el;
+            }}
+            onKeyDown={(e) => handleKeyDown(e, index, 11)}
+          />
+        ) : null;
+      },
+    },
+    {
+      title: "Purchase Amount KRW",
+      dataIndex: "purchaseAmountKRW",
+      key: "purchaseAmountKRW",
+      width: 115 * zoomLevel,
+      render: (text: string, _: any, index: number) =>
+        (items[index].itemType === "ITEM" ||
+          items[index].itemType === "DASH") &&
+        !items[index].itemRemark ? (
+          <Input type="number" value={text} readOnly addonBefore="₩" />
+        ) : null,
+    },
+    {
+      title: "Purchase Amount(F)",
+      dataIndex: "purchaseAmountGlobal",
+      key: "purchaseAmountGlobal",
+      width: 115 * zoomLevel,
+      render: (text: string, _: any, index: number) =>
+        (items[index].itemType === "ITEM" ||
+          items[index].itemType === "DASH") &&
+        !items[index].itemRemark ? (
+          <Input type="number" value={text} readOnly addonBefore="F" />
+        ) : null,
+    },
+    {
       title: "Sales Price KRW",
       dataIndex: "salesPriceKRW",
       key: "salesPriceKRW",
       width: 115 * zoomLevel,
-      render: (text: string, _: any, index: number) => {
-        return (
+      render: (text: string, _: any, index: number) =>
+        (items[index].itemType === "ITEM" ||
+          items[index].itemType === "DASH") &&
+        !items[index].itemRemark ? (
           <Input
             type="number"
             value={text}
@@ -602,6 +879,8 @@ const ComplexInquiryTable = ({
               newItems[index] = {
                 ...newItems[index],
                 salesPriceGlobal: 0,
+                salesAmountKRW: 0,
+                salesAmountGlobal: 0,
                 margin: 0,
               };
               setItems(newItems);
@@ -619,148 +898,74 @@ const ComplexInquiryTable = ({
             }}
             onKeyDown={(e) => handleKeyDown(e, index, 8)}
           />
-        );
-      },
+        ) : null,
     },
     {
       title: "Sales Price(F)",
       dataIndex: "salesPriceGlobal",
       key: "salesPriceGlobal",
       width: 115 * zoomLevel,
-      render: (text: string, _: any, index: number) => (
-        <Input
-          type="number"
-          value={text}
-          addonBefore="F"
-          className="custom-input"
-          onFocus={(e) => {
-            e.target.select();
-            const newItems = [...items];
-            newItems[index] = {
-              ...newItems[index],
-              salesPriceKRW: 0,
-              margin: 0,
-            };
-            setItems(newItems);
-          }}
-          onChange={(e) =>
-            handleInputChange(index, "salesPriceGlobal", Number(e.target.value))
-          }
-          ref={(el) => {
-            if (!inputRefs.current[index]) {
-              inputRefs.current[index] = [];
+      render: (text: string, _: any, index: number) =>
+        (items[index].itemType === "ITEM" ||
+          items[index].itemType === "DASH") &&
+        !items[index].itemRemark ? (
+          <Input
+            type="number"
+            value={text}
+            addonBefore="F"
+            className="custom-input"
+            onFocus={(e) => {
+              e.target.select();
+              const newItems = [...items];
+              newItems[index] = {
+                ...newItems[index],
+                salesPriceKRW: 0,
+                salesAmountKRW: 0,
+                salesAmountGlobal: 0,
+                margin: 0,
+              };
+              setItems(newItems);
+            }}
+            onChange={(e) =>
+              handleInputChange(
+                index,
+                "salesPriceGlobal",
+                Number(e.target.value)
+              )
             }
-            inputRefs.current[index][9] = el;
-          }}
-          onKeyDown={(e) => handleKeyDown(e, index, 9)}
-        />
-      ),
+            ref={(el) => {
+              if (!inputRefs.current[index]) {
+                inputRefs.current[index] = [];
+              }
+              inputRefs.current[index][9] = el;
+            }}
+            onKeyDown={(e) => handleKeyDown(e, index, 9)}
+          />
+        ) : null,
     },
     {
       title: "Sales Amount KRW",
       dataIndex: "salesAmountKRW",
       key: "salesAmountKRW",
       width: 115 * zoomLevel,
-      render: (text: string, _: any, index: number) => (
-        <Input type="number" value={text} readOnly addonBefore="₩" />
-      ),
+      render: (text: string, _: any, index: number) =>
+        (items[index].itemType === "ITEM" ||
+          items[index].itemType === "DASH") &&
+        !items[index].itemRemark ? (
+          <Input type="number" value={text} readOnly addonBefore="₩" />
+        ) : null,
     },
     {
       title: "Sales Amount(F)",
       dataIndex: "salesAmountGlobal",
       key: "salesAmountGlobal",
       width: 115 * zoomLevel,
-      render: (text: string, _: any, index: number) => (
-        <Input type="number" value={text} readOnly addonBefore="F" />
-      ),
-    },
-    {
-      title: "Purchase Price KRW",
-      dataIndex: "purchasePriceKRW",
-      key: "purchasePriceKRW",
-      width: 115 * zoomLevel,
-      render: (text: string, _: any, index: number) => (
-        <Input
-          type="number"
-          value={text}
-          addonBefore="₩"
-          className="custom-input"
-          onFocus={(e) => {
-            e.target.select();
-            const newItems = [...items];
-            newItems[index] = {
-              ...newItems[index],
-              purchasePriceGlobal: 0,
-            };
-            setItems(newItems);
-          }}
-          onChange={(e) =>
-            handleInputChange(index, "purchasePriceKRW", Number(e.target.value))
-          }
-          ref={(el) => {
-            if (!inputRefs.current[index]) {
-              inputRefs.current[index] = [];
-            }
-            inputRefs.current[index][10] = el;
-          }}
-          onKeyDown={(e) => handleKeyDown(e, index, 10)}
-        />
-      ),
-    },
-    {
-      title: "Purchase Price(F)",
-      dataIndex: "purchasePriceGlobal",
-      key: "purchasePriceGlobal",
-      width: 115 * zoomLevel,
-      render: (text: string, _: any, index: number) => (
-        <Input
-          type="number"
-          value={text}
-          addonBefore="F"
-          className="custom-input"
-          onFocus={(e) => {
-            e.target.select();
-            const newItems = [...items];
-            newItems[index] = {
-              ...newItems[index],
-              purchasePriceKRW: 0,
-            };
-            setItems(newItems);
-          }}
-          onChange={(e) =>
-            handleInputChange(
-              index,
-              "purchasePriceGlobal",
-              Number(e.target.value)
-            )
-          }
-          ref={(el) => {
-            if (!inputRefs.current[index]) {
-              inputRefs.current[index] = [];
-            }
-            inputRefs.current[index][11] = el;
-          }}
-          onKeyDown={(e) => handleKeyDown(e, index, 11)}
-        />
-      ),
-    },
-    {
-      title: "Purchase Amount KRW",
-      dataIndex: "purchaseAmountKRW",
-      key: "purchaseAmountKRW",
-      width: 115 * zoomLevel,
-      render: (text: string, _: any, index: number) => (
-        <Input type="number" value={text} readOnly addonBefore="₩" />
-      ),
-    },
-    {
-      title: "Purchase Amount(F)",
-      dataIndex: "purchaseAmountGlobal",
-      key: "purchaseAmountGlobal",
-      width: 115 * zoomLevel,
-      render: (text: string, _: any, index: number) => (
-        <Input type="number" value={text} readOnly addonBefore="F" />
-      ),
+      render: (text: string, _: any, index: number) =>
+        (items[index].itemType === "ITEM" ||
+          items[index].itemType === "DASH") &&
+        !items[index].itemRemark ? (
+          <Input type="number" value={text} readOnly addonBefore="F" />
+        ) : null,
     },
     {
       title: (
@@ -775,31 +980,39 @@ const ComplexInquiryTable = ({
       dataIndex: "margin",
       key: "margin",
       width: 60 * zoomLevel,
-      render: (text: string, _: any, index: number) => (
-        <Input
-          type="number"
-          value={text}
-          className="custom-input"
-          addonAfter={"%"}
-          onChange={(e) => {
-            const newItems = [...items];
-            newItems[index] = {
-              ...newItems[index],
-              salesPriceGlobal: 0,
-              salesPriceKRW: 0,
-              margin: Number(e.target.value),
-            };
-            setItems(newItems);
-          }}
-          ref={(el) => {
-            if (!inputRefs.current[index]) {
-              inputRefs.current[index] = [];
+      render: (text: string, _: any, index: number) =>
+        (items[index].itemType === "ITEM" ||
+          items[index].itemType === "DASH") &&
+        !items[index].itemRemark ? (
+          <Input
+            type="number"
+            value={text}
+            className="custom-input"
+            addonAfter={"%"}
+            onFocus={(e) => {
+              e.target.select();
+              const newItems = [...items];
+              newItems[index] = {
+                ...newItems[index],
+                salesPriceGlobal: 0,
+                salesPriceKRW: 0,
+                salesAmountKRW: 0,
+                salesAmountGlobal: 0,
+              };
+              setItems(newItems);
+            }}
+            onChange={(e) =>
+              handleInputChange(index, "margin", Number(e.target.value))
             }
-            inputRefs.current[index][12] = el;
-          }}
-          onKeyDown={(e) => handleKeyDown(e, index, 12)}
-        />
-      ),
+            ref={(el) => {
+              if (!inputRefs.current[index]) {
+                inputRefs.current[index] = [];
+              }
+              inputRefs.current[index][12] = el;
+            }}
+            onKeyDown={(e) => handleKeyDown(e, index, 12)}
+          />
+        ) : null,
     },
     {
       title: () => (
@@ -822,7 +1035,7 @@ const ComplexInquiryTable = ({
       title: () => (
         <Select
           style={{ width: "100%" }}
-          placeholder="Apply to checked"
+          placeholder="Select supplier to send email"
           value={null}
           onChange={(selectedId: number) => {
             const newItems = [...items];
@@ -944,6 +1157,86 @@ const ComplexInquiryTable = ({
         );
       },
     },
+    {
+      ...(documentStatus !== "WRITING_INQUIRY" &&
+      documentStatus !== "WAITING_TO_SEND_INQUIRY" &&
+      documentStatus !== ""
+        ? {
+            title: () => (
+              <Select
+                style={{ width: "100%" }}
+                placeholder="Select supplier to confirm"
+                value={null}
+                onChange={(selectedId: number) => {
+                  const newItems = [...items];
+                  checkedItems.forEach((index) => {
+                    // 해당 행의 suppliers에 있는 경우에만 적용
+                    if (
+                      newItems[index].suppliers?.some(
+                        (s) => s.supplierId === selectedId
+                      )
+                    ) {
+                      newItems[index] = {
+                        ...newItems[index],
+                        confirmSupplier: {
+                          supplierId: selectedId,
+                        },
+                      };
+                    }
+                  });
+                  setItems(newItems);
+                }}
+              >
+                {Array.from(
+                  new Set(
+                    checkedItems
+                      .flatMap((index) => items[index].suppliers || [])
+                      .map((supplier) => supplier.supplierId)
+                  )
+                ).map((supplierId) => {
+                  const supplier = items
+                    .flatMap((item) => item.suppliers)
+                    .find((s) => s?.supplierId === supplierId);
+                  return (
+                    <Option key={supplierId} value={supplierId}>
+                      {supplier?.companyName}
+                    </Option>
+                  );
+                })}
+              </Select>
+            ),
+            dataIndex: "confirmSupplierId",
+            key: "confirmSupplierId",
+            width: 200 * zoomLevel,
+            render: (
+              _: any, // confirmSupplierId 대신 사용하지 않는 파라미터로 변경
+              record: ComplexInquiryItemDetail,
+              index: number
+            ) => (
+              <Select
+                style={{ width: "100%" }}
+                value={record.confirmSupplier?.supplierId || null} // 수정된 부분
+                onChange={(selectedId: number) => {
+                  const newItems = [...items];
+                  newItems[index] = {
+                    ...newItems[index],
+                    confirmSupplier: {
+                      supplierId: selectedId,
+                    },
+                  };
+                  setItems(newItems);
+                }}
+              >
+                {record.suppliers?.map((supplier) => (
+                  <Option key={supplier.supplierId} value={supplier.supplierId}>
+                    {supplier.code}
+                  </Option>
+                ))}
+              </Select>
+            ),
+          }
+        : null),
+    },
   ];
 
   return (
@@ -969,6 +1262,35 @@ const ComplexInquiryTable = ({
           />
         </Space>
         <Space>
+          <div style={{ display: "flex", gap: 10, marginRight: 10 }}>
+            <Input
+              size="small"
+              placeholder="Start item No."
+              value={startItemNo}
+              onChange={(e) => setStartItemNo(e.target.value)}
+              style={{ width: 150 }}
+            />
+            <span>-</span>
+            <Input
+              size="small"
+              placeholder="End item No."
+              value={endItemNo}
+              onChange={(e) => setEndItemNo(e.target.value)}
+              style={{ width: 150 }}
+            />
+            <Select
+              size="small"
+              placeholder="Select supplier"
+              style={{ width: 200 }}
+              onChange={handleRangeSupplierAdd}
+            >
+              {uniqueSuppliers.map((supplier) => (
+                <Option key={supplier.id} value={supplier.id}>
+                  {supplier.code}
+                </Option>
+              ))}
+            </Select>
+          </div>
           <Tooltip title="Load excel file on your local">
             <Button
               type="dashed"
@@ -994,6 +1316,7 @@ const ComplexInquiryTable = ({
           dataSource={items}
           pagination={false}
           rowKey="position"
+          bordered={true}
           rowClassName={(record: ComplexInquiryItemDetail) => {
             if (record.itemRemark) {
               return "remark-row";
