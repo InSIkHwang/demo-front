@@ -308,7 +308,7 @@ const MailSenderModal = ({
             toRecipient:
               values.mails?.[i]?.toRecipient ||
               currentMailDataList[i]?.toRecipient ||
-              selectedSupplierTag[i]?.email ||
+              selectedSuppliers[i]?.email ||
               "",
             subject:
               values.mails?.[i]?.subject ||
@@ -323,8 +323,8 @@ const MailSenderModal = ({
               currentMailDataList[i]?.ccRecipient ||
               "",
             bccRecipient: values.mails?.[i]?.bccRecipient || "",
-            supplierName: selectedSupplierTag[i]?.name || "",
-            supplierId: selectedSupplierTag[i]?.id,
+            supplierName: selectedSuppliers[i]?.name || "",
+            supplierId: selectedSuppliers[i]?.id,
           };
 
           // 유효성 검사 실행
