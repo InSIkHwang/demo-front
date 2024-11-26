@@ -46,8 +46,6 @@ const generateMailData = async (
       "supplier"
     );
 
-    console.log(supplierDetail);
-
     const mailData: emailSendData = {
       supplierId: supplierTag.id,
       toRecipient: supplierDetail.email,
@@ -123,14 +121,15 @@ export const generatePDFs = async (
 ): Promise<File[]> => {
   const updatedFiles: File[] = [];
   const supplierTag = selectedSupplierTag[selectedSupplierIndex];
-
+  console.log("supplierTag", supplierTag);
   if (supplierTag) {
     const supplierItems = getItemsForSupplier(supplierTag.id);
+    console.log("supplierItems", supplierItems);
 
     if (supplierItems.length < 1) {
       //Error message
       message.error("Please select supplier.");
-      console.log("supplierItems", supplierItems);
+      // console.log("supplierTag", supplierTag);
       return [];
     }
 
@@ -154,7 +153,11 @@ export const generatePDFs = async (
       type: "application/pdf",
     });
 
-    updatedFiles.push(newFile);
+    if (newFile) {
+      updatedFiles.push(newFile);
+    } else {
+      console.log(`supplierTag: ${supplierTag.name} pdf is not generated`);
+    }
   }
   return updatedFiles;
 };

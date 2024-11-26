@@ -45,6 +45,7 @@ import OfferPDFGenerator from "../components/makeOffer/OfferPDFGenerator";
 import OfferPDFDocument from "../components/makeOffer/OfferPDFDocument";
 import OfferHeaderEditModal from "../components/makeOffer/OfferHeaderEditModal";
 import OfferMailSender from "../components/makeOffer/OfferSendMail";
+import { pdf } from "@react-pdf/renderer";
 
 // Styles
 const FormContainer = styled.div`
@@ -785,9 +786,18 @@ const MakeComplexInquiry = () => {
         !pdfSupplierTag[0] &&
         selectedSuppliers.length === 0 &&
         documentType === "inquiry" &&
-        supplierTags.length < 1
+        supplierTags.length < 1 &&
+        supplierTags.length > 0
       ) {
         message.error("Please select supplier.");
+        console.log(
+          pdfSupplierTag[0],
+          selectedSuppliers,
+          documentType,
+          supplierTags.length,
+          supplierTags.length
+        );
+
         return [];
       }
 
@@ -847,7 +857,13 @@ const MakeComplexInquiry = () => {
           .sort((a, b) => a.position - b.position);
       }
     },
-    [items, pdfSupplierTag, documentType]
+    [
+      pdfSupplierTag,
+      selectedSuppliers,
+      documentType,
+      supplierTags.length,
+      items,
+    ]
   );
 
   // 메모이제이션된 계산 함수들
@@ -1150,6 +1166,42 @@ const MakeComplexInquiry = () => {
     getSuppliersByItems();
   }, [getSuppliersByItems]);
 
+  const handlePDFDownload = async () => {
+    if (documentInfo) {
+      try {
+        const doc = (
+          <OfferPDFDocument
+            info={documentInfo}
+            items={getSelectedSupplierItems()}
+            pdfHeader={quotationPdfHeader}
+            pdfFooter={quotationPdfFooter}
+            viewMode={false} // viewMode를 false로 변경
+            language={"ENG"}
+            finalTotals={finalTotals}
+            dcInfo={dcInfo}
+            invChargeList={invChargeList}
+          />
+        );
+
+        const pdfBlob = await pdf(doc).toBlob();
+        const fileName = `${documentInfo.companyName} QUOTATION ${documentInfo.refNumber}.pdf`;
+
+        // Blob URL 대신 직접 다운로드
+        const reader = new FileReader();
+        reader.onload = () => {
+          const link = document.createElement("a");
+          link.href = reader.result as string;
+          link.download = fileName;
+          link.click();
+        };
+        reader.readAsDataURL(pdfBlob);
+      } catch (error) {
+        console.error("PDF Download Error:", error);
+        message.error("PDF Download Error.");
+      }
+    }
+  };
+
   if (docDataloading || isLoading) {
     return <LoadingSpinner />;
   }
@@ -1342,6 +1394,15 @@ const MakeComplexInquiry = () => {
           <Select.Option value="inquiry">INQUIRY TO SUPPLIER</Select.Option>
           <Select.Option value="quotation">QUOTATION TO CUSTOMER</Select.Option>
         </Select>
+        {documentType === "quotation" && (
+          <Button
+            type="default"
+            onClick={handlePDFDownload}
+            style={{ marginLeft: "10px" }}
+          >
+            PDF Download
+          </Button>
+        )}
         {documentType === "inquiry" && (
           <HeaderEditModal
             open={headerEditModalVisible}
