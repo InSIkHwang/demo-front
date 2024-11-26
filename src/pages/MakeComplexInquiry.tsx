@@ -409,7 +409,7 @@ const MakeComplexInquiry = () => {
       refNumber: documentInfo.refNumber,
       currencyType: documentInfo.currencyType,
       currency: documentInfo.currency,
-      docRemark: documentInfo.docRemark || "",
+      docRemark: documentInfo.remark || "",
       docManager: documentInfo.docManager,
       documentStatus: documentInfo.documentStatus,
       customerId: documentInfo.customerId,
@@ -439,7 +439,7 @@ const MakeComplexInquiry = () => {
       refNumber: documentInfo.refNumber,
       currencyType: documentInfo.currencyType,
       currency: documentInfo.currency,
-      remark: documentInfo.docRemark || "",
+      remark: documentInfo.remark || "",
       supplierName: "",
       documentStatus: documentInfo.documentStatus,
     });

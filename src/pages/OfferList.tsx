@@ -17,6 +17,7 @@ import { useNavigate } from "react-router-dom";
 import type { ColumnsType } from "antd/es/table";
 import type { OfferSearchParams, SupplierInquiryListIF } from "../types/types";
 import Checkbox, { CheckboxChangeEvent } from "antd/es/checkbox";
+import dayjs from "dayjs";
 
 const Container = styled.div`
   position: relative;
@@ -252,15 +253,19 @@ const OfferList = () => {
   const [searchSubCategory, setSearchSubCategory] =
     useState<string>("itemName");
   const [searchSubText, setSearchSubText] = useState<string>("");
-  const [registerStartDate, setRegisterStartDate] = useState<string>("");
-  const [registerEndDate, setRegisterEndDate] = useState<string>("");
+  const [registerStartDate, setRegisterStartDate] = useState<string>(
+    dayjs().subtract(1, "month").format("YYYY-MM-DD")
+  );
+  const [registerEndDate, setRegisterEndDate] = useState<string>(
+    dayjs().format("YYYY-MM-DD")
+  );
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage, setItemsPerPage] = useState<number>(30);
   const [viewMyOfferOnly, setViewMyOfferOnly] = useState<boolean>(false);
   const [showItemSearch, setShowItemSearch] = useState<boolean>(false);
 
   useEffect(() => {
-    if (searchText || searchSubText || registerStartDate || registerEndDate) {
+    if ((searchText || searchSubText) && registerStartDate && registerEndDate) {
       handleSearch();
     } else {
       fetchData();
@@ -466,6 +471,7 @@ const OfferList = () => {
               <DatePicker
                 placeholder="Start Date"
                 format="YYYY-MM-DD"
+                defaultValue={dayjs().subtract(1, "month")}
                 onChange={(date) =>
                   setRegisterStartDate(date ? date.format("YYYY-MM-DD") : "")
                 }
@@ -474,6 +480,7 @@ const OfferList = () => {
               <DatePicker
                 placeholder="End Date"
                 format="YYYY-MM-DD"
+                defaultValue={dayjs()}
                 onChange={(date) =>
                   setRegisterEndDate(date ? date.format("YYYY-MM-DD") : "")
                 }

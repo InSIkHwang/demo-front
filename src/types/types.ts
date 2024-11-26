@@ -436,7 +436,7 @@ export interface DocumentInfo {
   vesselHullNo: string;
   shipYard: string;
   countryOfManufacture: string;
-  docRemark: string;
+  remark: string;
   docManager: string;
   representative: string;
   documentStatus: string;
