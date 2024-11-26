@@ -440,7 +440,7 @@ const DetailInquiryModal = ({
                   </TagStyled>
                 </Descriptions.Item>
                 <Descriptions.Item label="Remark">
-                  {inquiryDetail.documentInfo.docRemark}
+                  {inquiryDetail.documentInfo.remark}
                 </Descriptions.Item>
               </Descriptions>
               <Divider variant="dashed" style={{ borderColor: "#007bff" }}>

@@ -343,7 +343,7 @@ const MakeInquiry = () => {
       currencyType,
       currency,
       vesselName,
-      docRemark,
+      remark,
     } = inquiryDetail.documentInfo;
 
     // Form 값 업데이트
@@ -357,7 +357,7 @@ const MakeInquiry = () => {
       refNumber,
       currencyType,
       currency,
-      remark: docRemark || "",
+      remark: remark || "",
       supplierName: "",
     });
 

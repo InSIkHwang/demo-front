@@ -18,6 +18,7 @@ import type { ColumnsType } from "antd/es/table";
 import { Inquiry } from "../types/types";
 import { useNavigate } from "react-router-dom";
 import { CheckboxChangeEvent } from "antd/es/checkbox";
+import dayjs from "dayjs";
 
 const Container = styled.div`
   position: relative;
@@ -196,13 +197,17 @@ const CustomerInquiryList = () => {
     null
   );
   const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
-  const [registerStartDate, setRegisterStartDate] = useState<string>("");
-  const [registerEndDate, setRegisterEndDate] = useState<string>("");
+  const [registerStartDate, setRegisterStartDate] = useState<string>(
+    dayjs().subtract(1, "month").format("YYYY-MM-DD")
+  );
+  const [registerEndDate, setRegisterEndDate] = useState<string>(
+    dayjs().format("YYYY-MM-DD")
+  );
   const [viewMyInquiryOnly, setViewMyInquiryOnly] = useState<boolean>(false);
   const [viewOnlySentEmails, setViewOnlySentEmails] = useState<boolean>(false);
 
   useEffect(() => {
-    if (searchText || registerStartDate || registerEndDate) {
+    if (searchText && registerStartDate && registerEndDate) {
       handleSearch();
     } else {
       fetchData();
@@ -325,6 +330,7 @@ const CustomerInquiryList = () => {
             <DatePicker
               placeholder="Start Date"
               format="YYYY-MM-DD"
+              defaultValue={dayjs().subtract(1, "month")}
               onChange={(date) =>
                 setRegisterStartDate(date ? date.format("YYYY-MM-DD") : "")
               }
@@ -333,6 +339,7 @@ const CustomerInquiryList = () => {
             <DatePicker
               placeholder="End Date"
               format="YYYY-MM-DD"
+              defaultValue={dayjs()}
               onChange={(date) =>
                 setRegisterEndDate(date ? date.format("YYYY-MM-DD") : "")
               }

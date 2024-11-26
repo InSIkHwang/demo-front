@@ -16,6 +16,7 @@ import type { ColumnsType } from "antd/es/table";
 import { Quotation } from "../types/types";
 import { useNavigate } from "react-router-dom";
 import DetailQuotationModal from "../components/quotationList/DetailQuotationModal";
+import dayjs from "dayjs";
 
 const Container = styled.div`
   position: relative;
@@ -140,11 +141,15 @@ const QuotationList = () => {
     null
   );
   const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
-  const [registerStartDate, setRegisterStartDate] = useState<string>("");
-  const [registerEndDate, setRegisterEndDate] = useState<string>("");
+  const [registerStartDate, setRegisterStartDate] = useState<string>(
+    dayjs().subtract(1, "month").format("YYYY-MM-DD")
+  );
+  const [registerEndDate, setRegisterEndDate] = useState<string>(
+    dayjs().format("YYYY-MM-DD")
+  );
 
   useEffect(() => {
-    if (searchText) {
+    if (searchText && registerStartDate && registerEndDate) {
       handleSearch();
     } else {
       fetchData();
@@ -239,6 +244,7 @@ const QuotationList = () => {
             <DatePicker
               placeholder="Start Date"
               format="YYYY-MM-DD"
+              defaultValue={dayjs().subtract(1, "month")}
               onChange={(date) =>
                 setRegisterStartDate(date ? date.format("YYYY-MM-DD") : "")
               }
@@ -247,6 +253,7 @@ const QuotationList = () => {
             <DatePicker
               placeholder="End Date"
               format="YYYY-MM-DD"
+              defaultValue={dayjs()}
               onChange={(date) =>
                 setRegisterEndDate(date ? date.format("YYYY-MM-DD") : "")
               }
