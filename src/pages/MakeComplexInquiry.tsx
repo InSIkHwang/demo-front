@@ -876,13 +876,21 @@ const MakeComplexInquiry = () => {
         if (item.itemType !== "ITEM" && item.itemType !== "DASH") return item;
 
         const trimmedCode = item.itemCode.trim();
+        const trimmedName = item.itemName.trim();
         if (!trimmedCode) return item;
 
         try {
           const { items: searchResult } = await fetchItemData(trimmedCode);
           const foundItem = Array.isArray(searchResult)
-            ? searchResult[0]
-            : searchResult;
+            ? searchResult.find(
+                (result) =>
+                  result.itemCode.trim() === trimmedCode &&
+                  result.itemName.trim() === trimmedName
+              )
+            : searchResult?.itemCode.trim() === trimmedCode &&
+              searchResult?.itemName.trim() === trimmedName
+            ? searchResult
+            : null;
 
           return foundItem?.itemId
             ? { ...item, itemId: foundItem.itemId }
