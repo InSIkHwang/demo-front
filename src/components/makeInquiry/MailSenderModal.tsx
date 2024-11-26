@@ -150,10 +150,6 @@ const MailSenderModal = ({
 
   const navigate = useNavigate();
 
-  const filteredSupplierTags = selectedSupplierTag.filter((_, index) =>
-    selectedMailIndexes.has(index)
-  );
-
   const formValues = Form.useWatch([], form);
 
   useEffect(() => {
@@ -287,19 +283,21 @@ const MailSenderModal = ({
 
       if (inquiryId || mode === "addSupplier") {
         const results = [];
-        for (const index of Array.from(selectedMailIndexes)) {
-          console.log(
-            `Processing email ${index + 1}/${selectedMailIndexes.size}`
-          );
+        const selectedSuppliers = Array.from(selectedMailIndexes).map(
+          (index) => selectedSupplierTag[index]
+        );
+        for (let i = 0; i < selectedSuppliers.length; i++) {
+          console.log(`Processing email ${i + 1}/${selectedSuppliers.length}`);
           const updatedFileData = [...uploadFile];
+          console.log(selectedSuppliers, "selectedSuppliersList");
 
           const pdfFiles = await generatePDFs(
-            filteredSupplierTags,
+            selectedSuppliers,
             inquiryFormValues,
             getItemsForSupplier,
             vesselInfo,
             pdfHeader,
-            index
+            i
           );
 
           if (!pdfFiles || pdfFiles.length === 0) {
@@ -308,29 +306,29 @@ const MailSenderModal = ({
 
           const currentFormData = {
             toRecipient:
-              values.mails?.[index]?.toRecipient ||
-              currentMailDataList[index]?.toRecipient ||
-              selectedSupplierTag[index]?.email ||
+              values.mails?.[i]?.toRecipient ||
+              currentMailDataList[i]?.toRecipient ||
+              selectedSupplierTag[i]?.email ||
               "",
             subject:
-              values.mails?.[index]?.subject ||
-              currentMailDataList[index]?.subject ||
+              values.mails?.[i]?.subject ||
+              currentMailDataList[i]?.subject ||
               "",
             content:
-              values.mails?.[index]?.content ||
-              currentMailDataList[index]?.content ||
+              values.mails?.[i]?.content ||
+              currentMailDataList[i]?.content ||
               "",
             ccRecipient:
-              values.mails?.[index]?.ccRecipient ||
-              currentMailDataList[index]?.ccRecipient ||
+              values.mails?.[i]?.ccRecipient ||
+              currentMailDataList[i]?.ccRecipient ||
               "",
-            bccRecipient: values.mails?.[index]?.bccRecipient || "",
-            supplierName: selectedSupplierTag[index]?.name || "",
-            supplierId: selectedSupplierTag[index]?.id,
+            bccRecipient: values.mails?.[i]?.bccRecipient || "",
+            supplierName: selectedSupplierTag[i]?.name || "",
+            supplierId: selectedSupplierTag[i]?.id,
           };
 
           // 유효성 검사 실행
-          if (!validateFormData(currentFormData, index)) {
+          if (!validateFormData(currentFormData, i)) {
             throw new Error("Required input fields are missing.");
           }
 
@@ -343,7 +341,7 @@ const MailSenderModal = ({
             finalFileData,
             [currentFormData]
           );
-          results.push({ index, success: true });
+          results.push({ i, success: true });
         }
 
         // 모든 이메일 전송 결과 확인

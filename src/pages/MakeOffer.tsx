@@ -22,6 +22,7 @@ import OfferPDFGenerator from "../components/makeOffer/OfferPDFGenerator";
 import OfferMailSender from "../components/makeOffer/OfferSendMail";
 import { InvCharge } from "./../types/types";
 import TotalCardsComponent from "../components/makeOffer/TotalCardsComponent";
+import { pdf } from "@react-pdf/renderer";
 
 const FormContainer = styled.div`
   position: relative;
@@ -945,6 +946,42 @@ const MakeOffer = () => {
     );
   };
 
+  const handlePDFDownload = async () => {
+    try {
+      const doc = (
+        <OfferPDFDocument
+          info={formValues}
+          items={combinedItemDetails}
+          pdfHeader={pdfHeader}
+          pdfFooter={pdfFooter}
+          viewMode={false}
+          language={language}
+          finalTotals={finalTotals}
+          dcInfo={dcInfo}
+          invChargeList={invChargeList}
+        />
+      );
+
+      const pdfBlob = await pdf(doc).toBlob();
+      const fileName =
+        language === "ENG"
+          ? `${formValues.companyName} QUOTATION ${formValues.refNumber}.pdf`
+          : `${formValues.companyName} QUOTATION ${formValues.refNumber}.pdf`;
+
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("PDF Download Error:", error);
+      message.error("PDF Download Error.");
+    }
+  };
+
   if (isLoading) {
     return <LoadingSpinner />; // 로딩 중 화면
   }
@@ -1050,6 +1087,14 @@ const MakeOffer = () => {
             </Select.Option>
           ))}
         </Select>
+        <Button
+          style={{ marginLeft: 10 }}
+          onClick={handlePDFDownload}
+          type="default"
+          disabled={selectedSupplierIds.length === 0}
+        >
+          PDF Download
+        </Button>
       </div>
       <Modal
         title="Send Mail"
