@@ -110,10 +110,15 @@ const styles = StyleSheet.create({
     borderBottom: "1px dotted #000",
     margin: "15px 0",
   },
-  footerMessage: {
+  footerTitle: {
     fontSize: 10,
     textAlign: "left",
     padding: "10px 0",
+  },
+  footerMessage: {
+    fontSize: 10,
+    textAlign: "left",
+    padding: "2px 0",
   },
   inquiryInfoWrap: {
     flexDirection: "row",
@@ -626,7 +631,7 @@ const OfferPDFDocument = ({
           <View>
             <Text
               style={[
-                styles.footerMessage,
+                styles.footerTitle,
                 {
                   borderTop: "1px dotted #000",
                   fontWeight: "bold",

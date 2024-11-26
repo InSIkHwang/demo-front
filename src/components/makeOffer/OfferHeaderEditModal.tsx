@@ -29,13 +29,6 @@ const StyledModal = styled(Modal)`
   }
 `;
 
-const StyledTextArea = styled(Input.TextArea)`
-  resize: none;
-  min-height: 200px;
-  border-radius: 5px;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.12);
-`;
-
 const FormRow = styled.div`
   display: flex;
   gap: 5px;
@@ -189,7 +182,7 @@ const OfferHeaderEditModal = ({
               }
               style={{ flex: 1 }}
             >
-              <Input
+              <Input.TextArea
                 placeholder={
                   shipmentTitle === "PORT OF SHIPMENT"
                     ? "BUSAN, KOREA"
@@ -199,12 +192,12 @@ const OfferHeaderEditModal = ({
             </StyledFormItem>
           </div>
           <StyledFormItem name="deliveryTime" label="DELIVERY TIME">
-            <Input placeholder="DAYS AFTER ORDER" />
+            <Input.TextArea placeholder="DAYS AFTER ORDER" />
           </StyledFormItem>
         </FormRow>
         <FormRow>
           <StyledFormItem name="offerValidity" label="OFFER VALIDITY">
-            <Input placeholder="DAYS" />
+            <Input.TextArea placeholder="DAYS" />
           </StyledFormItem>
           <StyledFormItem name="partCondition" label="PART CONDITION">
             <AutoComplete
@@ -225,7 +218,7 @@ const OfferHeaderEditModal = ({
                 return optionValue.startsWith(input);
               }}
             >
-              <Input />
+              <Input.TextArea />
             </AutoComplete>
           </StyledFormItem>
         </FormRow>
@@ -249,7 +242,7 @@ const OfferHeaderEditModal = ({
                 return optionValue.startsWith(input);
               }}
             >
-              <Input />
+              <Input.TextArea />
             </AutoComplete>
           </StyledFormItem>
         </FormRow>

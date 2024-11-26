@@ -4,6 +4,7 @@ import PDFDocument from "./PDFDocument";
 import { emailSendData, InquiryItem, VesselList } from "../../types/types";
 import dayjs from "dayjs";
 import { message } from "antd";
+import { fetchSupplierDetail } from "../../api/api";
 
 interface FormValues {
   docNumber: string;
@@ -31,7 +32,7 @@ interface PDFGeneratorProps {
   pdfHeader: string;
 }
 
-const generateMailData = (
+const generateMailData = async (
   selectedSupplierTag: PDFGeneratorProps["selectedSupplierTag"],
   formValues: FormValues,
   vesselInfo: VesselList | null,
@@ -40,9 +41,16 @@ const generateMailData = (
   const mailDataList: emailSendData[] = [];
 
   for (const supplierTag of selectedSupplierTag) {
+    const supplierDetail = await fetchSupplierDetail(
+      supplierTag.id,
+      "supplier"
+    );
+
+    console.log(supplierDetail);
+
     const mailData: emailSendData = {
       supplierId: supplierTag.id,
-      toRecipient: supplierTag.email,
+      toRecipient: supplierDetail.email,
       subject:
         supplierTag.communicationLanguage === "ENG"
           ? `BASKOREA REQUEST FOR QUOTATION  ${formValues.docNumber}  ${formValues.vesselName}`

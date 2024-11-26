@@ -263,6 +263,17 @@ const MakeComplexInquiry = () => {
     id: number;
     name: string;
   }>({ id: 0, name: "" });
+  const [supplierTags, setSupplierTags] = useState<
+    {
+      id: number;
+      name: string;
+      korName: string;
+      communicationLanguage: string;
+      code: string;
+      email: string;
+      supplierRemark: string;
+    }[]
+  >([]);
 
   const modalActions = {
     header: [setHeaderEditModalVisible, () => {}],
@@ -720,6 +731,11 @@ const MakeComplexInquiry = () => {
         tag.id === id ? { ...tag, communicationLanguage: value } : tag
       )
     );
+    setSupplierTags((prevTags) =>
+      prevTags.map((tag) =>
+        tag.id === id ? { ...tag, communicationLanguage: value } : tag
+      )
+    );
   }, []);
 
   const fetchInquirySearchResults = async () => {
@@ -1104,19 +1120,20 @@ const MakeComplexInquiry = () => {
               korName: supplier.korCompanyName || supplier.companyName,
               communicationLanguage: supplier.communicationLanguage || "KOR",
               code: supplier.code,
+              email: supplier.email || "",
+              supplierRemark: supplier.supplierRemark || "",
             });
           }
         });
       }
     });
 
-    return Array.from(supplierMap.values());
-  }, [items]); // items를 의존성 배열에 추가
+    setSupplierTags(Array.from(supplierMap.values()));
+  }, [items]);
 
-  const supplierTags = useMemo(
-    () => getSuppliersByItems(),
-    [getSuppliersByItems]
-  );
+  useEffect(() => {
+    getSuppliersByItems();
+  }, [getSuppliersByItems]);
 
   if (docDataloading || isLoading) {
     return <LoadingSpinner />;
@@ -1277,7 +1294,7 @@ const MakeComplexInquiry = () => {
           onClick={() => toggleModal("header", true)}
           style={{ marginLeft: 20 }}
         >
-          Edit Header Text
+          {documentType === "inquiry" ? "Edit Header" : "Edit Header / Remark"}
         </Button>
         <Button
           type="default"

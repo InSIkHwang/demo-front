@@ -427,15 +427,23 @@ const ComplexInquiryTable = ({
     switch (e.key) {
       case "ArrowUp":
         e.preventDefault();
-        if (inputRefs.current[rowIndex - 1]?.[columnIndex]) {
-          inputRefs.current[rowIndex - 1][columnIndex]?.focus();
+        // 이전 행부터 역순으로 검색하여 포커스 가능한 입력 요소 찾기
+        for (let i = rowIndex - 1; i >= 0; i--) {
+          if (inputRefs.current[i]?.[columnIndex]) {
+            inputRefs.current[i][columnIndex]?.focus();
+            break;
+          }
         }
         break;
 
       case "ArrowDown":
         e.preventDefault();
-        if (inputRefs.current[rowIndex + 1]?.[columnIndex]) {
-          inputRefs.current[rowIndex + 1][columnIndex]?.focus();
+        // 다음 행부터 순차적으로 검색하여 포커스 가능한 입력 요소 찾기
+        for (let i = rowIndex + 1; i < inputRefs.current.length; i++) {
+          if (inputRefs.current[i]?.[columnIndex]) {
+            inputRefs.current[i][columnIndex]?.focus();
+            break;
+          }
         }
         break;
 
@@ -532,8 +540,6 @@ const ComplexInquiryTable = ({
       `${startItemNo} - ${endItemNo} items have been added to suppliers.`
     );
   };
-
-  console.log(items);
 
   const columns: TableColumnType<ComplexInquiryItemDetail>[] = [
     {
@@ -749,35 +755,43 @@ const ComplexInquiryTable = ({
       key: "purchasePriceKRW",
       width: 115 * zoomLevel,
       className: "highlight-cell",
-      render: (text: string, _: any, index: number) => (
-        <Input
-          type="number"
-          value={text}
-          addonBefore="₩"
-          className="custom-input"
-          onFocus={(e) => {
-            e.target.select();
-            const newItems = [...items];
-            newItems[index] = {
-              ...newItems[index],
-              purchasePriceGlobal: 0,
-              purchaseAmountKRW: 0,
-              purchaseAmountGlobal: 0,
-            };
-            setItems(newItems);
-          }}
-          onChange={(e) =>
-            handleInputChange(index, "purchasePriceKRW", Number(e.target.value))
-          }
-          ref={(el) => {
-            if (!inputRefs.current[index]) {
-              inputRefs.current[index] = [];
+      render: (text: string, _: any, index: number) => {
+        return (items[index].itemType === "ITEM" ||
+          items[index].itemType === "DASH") &&
+          !items[index].itemRemark ? (
+          <Input
+            type="number"
+            value={text}
+            addonBefore="₩"
+            className="custom-input"
+            onFocus={(e) => {
+              e.target.select();
+              const newItems = [...items];
+              newItems[index] = {
+                ...newItems[index],
+                purchasePriceGlobal: 0,
+                purchaseAmountKRW: 0,
+                purchaseAmountGlobal: 0,
+              };
+              setItems(newItems);
+            }}
+            onChange={(e) =>
+              handleInputChange(
+                index,
+                "purchasePriceKRW",
+                Number(e.target.value)
+              )
             }
-            inputRefs.current[index][10] = el;
-          }}
-          onKeyDown={(e) => handleKeyDown(e, index, 10)}
-        />
-      ),
+            ref={(el) => {
+              if (!inputRefs.current[index]) {
+                inputRefs.current[index] = [];
+              }
+              inputRefs.current[index][10] = el;
+            }}
+            onKeyDown={(e) => handleKeyDown(e, index, 10)}
+          />
+        ) : null;
+      },
     },
     {
       title: "Purchase Price(F)",
@@ -785,65 +799,77 @@ const ComplexInquiryTable = ({
       key: "purchasePriceGlobal",
       width: 115 * zoomLevel,
       className: "highlight-cell",
-      render: (text: string, _: any, index: number) => (
-        <Input
-          type="number"
-          value={text}
-          addonBefore="F"
-          className="custom-input"
-          onFocus={(e) => {
-            e.target.select();
-            const newItems = [...items];
-            newItems[index] = {
-              ...newItems[index],
-              purchasePriceKRW: 0,
-              purchaseAmountKRW: 0,
-              purchaseAmountGlobal: 0,
-            };
-            setItems(newItems);
-          }}
-          onChange={(e) =>
-            handleInputChange(
-              index,
-              "purchasePriceGlobal",
-              Number(e.target.value)
-            )
-          }
-          ref={(el) => {
-            if (!inputRefs.current[index]) {
-              inputRefs.current[index] = [];
+      render: (text: string, _: any, index: number) => {
+        return (items[index].itemType === "ITEM" ||
+          items[index].itemType === "DASH") &&
+          !items[index].itemRemark ? (
+          <Input
+            type="number"
+            value={text}
+            addonBefore="F"
+            className="custom-input"
+            onFocus={(e) => {
+              e.target.select();
+              const newItems = [...items];
+              newItems[index] = {
+                ...newItems[index],
+                purchasePriceKRW: 0,
+                purchaseAmountKRW: 0,
+                purchaseAmountGlobal: 0,
+              };
+              setItems(newItems);
+            }}
+            onChange={(e) =>
+              handleInputChange(
+                index,
+                "purchasePriceGlobal",
+                Number(e.target.value)
+              )
             }
-            inputRefs.current[index][11] = el;
-          }}
-          onKeyDown={(e) => handleKeyDown(e, index, 11)}
-        />
-      ),
+            ref={(el) => {
+              if (!inputRefs.current[index]) {
+                inputRefs.current[index] = [];
+              }
+              inputRefs.current[index][11] = el;
+            }}
+            onKeyDown={(e) => handleKeyDown(e, index, 11)}
+          />
+        ) : null;
+      },
     },
     {
       title: "Purchase Amount KRW",
       dataIndex: "purchaseAmountKRW",
       key: "purchaseAmountKRW",
       width: 115 * zoomLevel,
-      render: (text: string, _: any, index: number) => (
-        <Input type="number" value={text} readOnly addonBefore="₩" />
-      ),
+      render: (text: string, _: any, index: number) =>
+        (items[index].itemType === "ITEM" ||
+          items[index].itemType === "DASH") &&
+        !items[index].itemRemark ? (
+          <Input type="number" value={text} readOnly addonBefore="₩" />
+        ) : null,
     },
     {
       title: "Purchase Amount(F)",
       dataIndex: "purchaseAmountGlobal",
       key: "purchaseAmountGlobal",
       width: 115 * zoomLevel,
-      render: (text: string, _: any, index: number) => (
-        <Input type="number" value={text} readOnly addonBefore="F" />
-      ),
+      render: (text: string, _: any, index: number) =>
+        (items[index].itemType === "ITEM" ||
+          items[index].itemType === "DASH") &&
+        !items[index].itemRemark ? (
+          <Input type="number" value={text} readOnly addonBefore="F" />
+        ) : null,
     },
     {
       title: "Sales Price KRW",
       dataIndex: "salesPriceKRW",
       key: "salesPriceKRW",
       width: 115 * zoomLevel,
-      render: (text: string, _: any, index: number) => {
-        return (
+      render: (text: string, _: any, index: number) =>
+        (items[index].itemType === "ITEM" ||
+          items[index].itemType === "DASH") &&
+        !items[index].itemRemark ? (
           <Input
             type="number"
             value={text}
@@ -872,62 +898,74 @@ const ComplexInquiryTable = ({
             }}
             onKeyDown={(e) => handleKeyDown(e, index, 8)}
           />
-        );
-      },
+        ) : null,
     },
     {
       title: "Sales Price(F)",
       dataIndex: "salesPriceGlobal",
       key: "salesPriceGlobal",
       width: 115 * zoomLevel,
-      render: (text: string, _: any, index: number) => (
-        <Input
-          type="number"
-          value={text}
-          addonBefore="F"
-          className="custom-input"
-          onFocus={(e) => {
-            e.target.select();
-            const newItems = [...items];
-            newItems[index] = {
-              ...newItems[index],
-              salesPriceKRW: 0,
-              salesAmountKRW: 0,
-              salesAmountGlobal: 0,
-              margin: 0,
-            };
-            setItems(newItems);
-          }}
-          onChange={(e) =>
-            handleInputChange(index, "salesPriceGlobal", Number(e.target.value))
-          }
-          ref={(el) => {
-            if (!inputRefs.current[index]) {
-              inputRefs.current[index] = [];
+      render: (text: string, _: any, index: number) =>
+        (items[index].itemType === "ITEM" ||
+          items[index].itemType === "DASH") &&
+        !items[index].itemRemark ? (
+          <Input
+            type="number"
+            value={text}
+            addonBefore="F"
+            className="custom-input"
+            onFocus={(e) => {
+              e.target.select();
+              const newItems = [...items];
+              newItems[index] = {
+                ...newItems[index],
+                salesPriceKRW: 0,
+                salesAmountKRW: 0,
+                salesAmountGlobal: 0,
+                margin: 0,
+              };
+              setItems(newItems);
+            }}
+            onChange={(e) =>
+              handleInputChange(
+                index,
+                "salesPriceGlobal",
+                Number(e.target.value)
+              )
             }
-            inputRefs.current[index][9] = el;
-          }}
-          onKeyDown={(e) => handleKeyDown(e, index, 9)}
-        />
-      ),
+            ref={(el) => {
+              if (!inputRefs.current[index]) {
+                inputRefs.current[index] = [];
+              }
+              inputRefs.current[index][9] = el;
+            }}
+            onKeyDown={(e) => handleKeyDown(e, index, 9)}
+          />
+        ) : null,
     },
     {
       title: "Sales Amount KRW",
       dataIndex: "salesAmountKRW",
       key: "salesAmountKRW",
       width: 115 * zoomLevel,
-      render: (text: string, _: any, index: number) => (
-        <Input type="number" value={text} readOnly addonBefore="₩" />
-      ),
+      render: (text: string, _: any, index: number) =>
+        (items[index].itemType === "ITEM" ||
+          items[index].itemType === "DASH") &&
+        !items[index].itemRemark ? (
+          <Input type="number" value={text} readOnly addonBefore="₩" />
+        ) : null,
     },
     {
       title: "Sales Amount(F)",
       dataIndex: "salesAmountGlobal",
       key: "salesAmountGlobal",
       width: 115 * zoomLevel,
-      render: (text: string, _: any, index: number) => (
-        <Input type="number" value={text} readOnly addonBefore="F" />
-      ),
+      render: (text: string, _: any, index: number) =>
+        (items[index].itemType === "ITEM" ||
+          items[index].itemType === "DASH") &&
+        !items[index].itemRemark ? (
+          <Input type="number" value={text} readOnly addonBefore="F" />
+        ) : null,
     },
     {
       title: (
@@ -942,36 +980,39 @@ const ComplexInquiryTable = ({
       dataIndex: "margin",
       key: "margin",
       width: 60 * zoomLevel,
-      render: (text: string, _: any, index: number) => (
-        <Input
-          type="number"
-          value={text}
-          className="custom-input"
-          addonAfter={"%"}
-          onFocus={(e) => {
-            e.target.select();
-            const newItems = [...items];
-            newItems[index] = {
-              ...newItems[index],
-              salesPriceGlobal: 0,
-              salesPriceKRW: 0,
-              salesAmountKRW: 0,
-              salesAmountGlobal: 0,
-            };
-            setItems(newItems);
-          }}
-          onChange={(e) =>
-            handleInputChange(index, "margin", Number(e.target.value))
-          }
-          ref={(el) => {
-            if (!inputRefs.current[index]) {
-              inputRefs.current[index] = [];
+      render: (text: string, _: any, index: number) =>
+        (items[index].itemType === "ITEM" ||
+          items[index].itemType === "DASH") &&
+        !items[index].itemRemark ? (
+          <Input
+            type="number"
+            value={text}
+            className="custom-input"
+            addonAfter={"%"}
+            onFocus={(e) => {
+              e.target.select();
+              const newItems = [...items];
+              newItems[index] = {
+                ...newItems[index],
+                salesPriceGlobal: 0,
+                salesPriceKRW: 0,
+                salesAmountKRW: 0,
+                salesAmountGlobal: 0,
+              };
+              setItems(newItems);
+            }}
+            onChange={(e) =>
+              handleInputChange(index, "margin", Number(e.target.value))
             }
-            inputRefs.current[index][12] = el;
-          }}
-          onKeyDown={(e) => handleKeyDown(e, index, 12)}
-        />
-      ),
+            ref={(el) => {
+              if (!inputRefs.current[index]) {
+                inputRefs.current[index] = [];
+              }
+              inputRefs.current[index][12] = el;
+            }}
+            onKeyDown={(e) => handleKeyDown(e, index, 12)}
+          />
+        ) : null,
     },
     {
       title: () => (

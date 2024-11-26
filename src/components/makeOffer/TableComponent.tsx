@@ -528,17 +528,24 @@ const TableComponent = ({
     columnIndex: number
   ) => {
     if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-      e.preventDefault(); // ���향키 기본 동작을 막음
-      if (
-        e.key === "ArrowDown" &&
-        inputRefs.current[rowIndex + 1]?.[columnIndex]
-      ) {
-        inputRefs.current[rowIndex + 1][columnIndex]?.focus(); // 다음 행의 Input으로 포커스 이동
-      } else if (
-        e.key === "ArrowUp" &&
-        inputRefs.current[rowIndex - 1]?.[columnIndex]
-      ) {
-        inputRefs.current[rowIndex - 1][columnIndex]?.focus(); // 이전 행의 Input으로 포커스 이동
+      e.preventDefault();
+
+      if (e.key === "ArrowDown") {
+        // 다음 행부터 순차적으로 검색하여 포커스 가능한 입력 요소 찾기
+        for (let i = rowIndex + 1; i < inputRefs.current.length; i++) {
+          if (inputRefs.current[i]?.[columnIndex]) {
+            inputRefs.current[i][columnIndex]?.focus();
+            break;
+          }
+        }
+      } else if (e.key === "ArrowUp") {
+        // 이전 행부터 역순으로 검색하여 포커스 가능한 입력 요소 찾기
+        for (let i = rowIndex - 1; i >= 0; i--) {
+          if (inputRefs.current[i]?.[columnIndex]) {
+            inputRefs.current[i][columnIndex]?.focus();
+            break;
+          }
+        }
       }
     }
   };
