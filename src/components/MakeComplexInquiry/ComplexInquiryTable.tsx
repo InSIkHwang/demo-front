@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import {
   Table,
   Input,
@@ -240,6 +240,43 @@ const ComplexInquiryTable = ({
     setZoomLevel((prev) => Math.max(prev - ZOOM_STEP, MIN_ZOOM));
   };
 
+  const IndexNoCell = React.memo(
+    ({ record, index, items, handleInputChange }: any) => {
+      useEffect(() => {
+        if (record.itemType === "ITEM") {
+          const filteredIndex = items
+            .filter((item: any) => item.itemType === "ITEM")
+            .indexOf(record);
+          const itemNo = (filteredIndex + 1).toString();
+
+          if (record.indexNo !== itemNo) {
+            handleInputChange(index, "indexNo", itemNo);
+          }
+        }
+      }, [record, index, items, handleInputChange]);
+
+      if (record.itemType === "DASH") {
+        return (
+          <Input
+            value={record.indexNo}
+            onChange={(e) => {
+              handleInputChange(index, "indexNo", e.target.value);
+            }}
+            ref={(el) => {
+              if (!inputRefs.current[index]) {
+                inputRefs.current[index] = [];
+              }
+              inputRefs.current[index][1] = el;
+            }}
+            onKeyDown={(e) => handleKeyDown(e, index, 1)}
+          />
+        );
+      }
+
+      return <span>{record.indexNo}</span>;
+    }
+  );
+
   // 공통 데이터 처리 함수
   const updateDataSource = (
     mappedItems: ComplexInquiryItemDetail[],
@@ -330,41 +367,39 @@ const ComplexInquiryTable = ({
     setItems(updatedItems);
   };
 
-  const handleInputChange = (
-    index: number,
-    key: keyof ComplexInquiryItemDetail,
-    value: any
-  ) => {
-    const newItems = [...items];
+  const handleInputChange = useCallback(
+    (index: number, key: keyof ComplexInquiryItemDetail, value: any) => {
+      const newItems = [...items];
 
-    if (
-      (key === "itemType" && value !== "ITEM" && value !== "DASH") ||
-      (key === "itemRemark" && value)
-    ) {
-      // itemType이 ITEM 또는 DASH가 아닌 경우 가격 관련 필드 초기화
-      newItems[index] = {
-        ...newItems[index],
-        [key]: value,
-        purchasePriceKRW: 0,
-        purchasePriceGlobal: 0,
-        purchaseAmountKRW: 0,
-        purchaseAmountGlobal: 0,
-        salesPriceKRW: 0,
-        salesPriceGlobal: 0,
-        salesAmountKRW: 0,
-        salesAmountGlobal: 0,
-        margin: 0,
-        qty: 0,
-      };
-    } else {
-      newItems[index] = {
-        ...newItems[index],
-        [key]: value,
-      };
-    }
+      if (
+        (key === "itemType" && value !== "ITEM" && value !== "DASH") ||
+        (key === "itemRemark" && value)
+      ) {
+        newItems[index] = {
+          ...newItems[index],
+          [key]: value,
+          purchasePriceKRW: 0,
+          purchasePriceGlobal: 0,
+          purchaseAmountKRW: 0,
+          purchaseAmountGlobal: 0,
+          salesPriceKRW: 0,
+          salesPriceGlobal: 0,
+          salesAmountKRW: 0,
+          salesAmountGlobal: 0,
+          margin: 0,
+          qty: 0,
+        };
+      } else {
+        newItems[index] = {
+          ...newItems[index],
+          [key]: value,
+        };
+      }
 
-    setItems(newItems);
-  };
+      setItems(newItems);
+    },
+    [items, setItems]
+  );
 
   const handleAddItem = useCallback(
     (index: number) => {
@@ -570,40 +605,14 @@ const ComplexInquiryTable = ({
       key: "indexNo",
       width: 70 * zoomLevel,
       fixed: "left",
-      render: (text: string, record: any, index: number) => {
-        if (record.itemType === "DASH") {
-          return (
-            <Input
-              value={text}
-              onChange={(e) => {
-                handleInputChange(index, "indexNo", e.target.value);
-              }}
-              ref={(el) => {
-                if (!inputRefs.current[index]) {
-                  inputRefs.current[index] = [];
-                }
-                inputRefs.current[index][1] = el;
-              }}
-              onKeyDown={(e) => handleKeyDown(e, index, 1)}
-            />
-          );
-        }
-
-        const filteredIndex = items
-          .filter((item: any) => item.itemType === "ITEM")
-          .indexOf(record);
-
-        // ITEM 타입일 때 자동으로 번호 저장
-        if (record.itemType === "ITEM") {
-          const itemNo = (filteredIndex + 1).toString();
-          if (record.indexNo !== itemNo) {
-            handleInputChange(index, "indexNo", itemNo);
-          }
-          return <span>{itemNo}</span>;
-        }
-
-        return null;
-      },
+      render: (text: string, record: any, index: number) => (
+        <IndexNoCell
+          record={record}
+          index={index}
+          items={items}
+          handleInputChange={handleInputChange}
+        />
+      ),
     },
     {
       title: "Type",

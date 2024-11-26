@@ -583,9 +583,11 @@ const MakeComplexInquiry = () => {
     const isVesselInfoValid = await validateVesselInfo(selectedVessel);
     if (!isVesselInfoValid) return null;
 
-    await applyDcAndCharge();
+    // applyDcAndCharge의 결과를 기다리고 업데이트된 items를 반환받음
+    const updatedItems = await applyDcAndCharge();
+    if (!updatedItems) return null;
 
-    return await saveInquiry();
+    return await saveInquiry(updatedItems);
   };
 
   // 선박 검증 모달
@@ -625,7 +627,9 @@ const MakeComplexInquiry = () => {
   };
 
   // 저장 로직
-  const saveInquiry = async (): Promise<number | null> => {
+  const saveInquiry = async (
+    updatedItems: ComplexInquiryItemDetail[]
+  ): Promise<number | null> => {
     try {
       const selectedVessel = vesselList.find(
         (v) => v.vesselName === formValues.vesselName
@@ -653,7 +657,7 @@ const MakeComplexInquiry = () => {
           vesselId: selectedVessel.id,
           customerId: selectedCustomerId,
         },
-        inquiryItemDetails: items.map((item) => ({
+        inquiryItemDetails: updatedItems.map((item) => ({
           itemDetailId: item.itemDetailId || null,
           itemId: item.itemId || null,
           itemType: item.itemType,
@@ -916,17 +920,16 @@ const MakeComplexInquiry = () => {
   );
 
   // applyDcAndCharge를 async 함수로 변경
-  const applyDcAndCharge = async () => {
+  const applyDcAndCharge = async (): Promise<
+    ComplexInquiryItemDetail[] | null
+  > => {
     if (items.length === 0) {
       message.warning("No items to calculate");
-      return;
+      return null;
     }
 
     try {
-      // ID 매핑 후 업데이트된 아이템 받기
       const mappedItems = await handleItemIdMapping();
-
-      // 매핑된 아이템으로 계산 수행
       const updatedItems = mappedItems.map((item) => {
         if (item.itemType !== "ITEM" && item.itemType !== "DASH") return item;
 
@@ -1032,7 +1035,7 @@ const MakeComplexInquiry = () => {
         return newItem;
       });
 
-      // 상태 업데이트를 Promise로 래핑
+      // 상태 업데이트를 기다림
       await new Promise<void>((resolve) => {
         setItems(updatedItems);
         requestAnimationFrame(() => resolve());
@@ -1101,9 +1104,13 @@ const MakeComplexInquiry = () => {
         totalProfit: Math.round(updatedTotalProfit),
         totalProfitPercent: updatedTotalProfitPercent,
       });
+
+      // 업데이트된 items 반환
+      return updatedItems;
     } catch (error) {
       console.error("Error in applyDcAndCharge:", error);
       message.error("There was an error in calculating the total amounts");
+      return null;
     }
   };
 
