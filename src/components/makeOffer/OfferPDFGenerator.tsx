@@ -135,6 +135,8 @@ Thanks & Best Regards`,
 
     // 최종 파일 및 메일 데이터 상태 업데이트
     setPdfFileData(newFile);
+    console.log(mailData);
+
     setMailData(mailData);
   }, [
     customerInfo,
@@ -162,7 +164,7 @@ Thanks & Best Regards`,
 
       return () => clearTimeout(timer);
     }
-  }, [customerInfo.id, pdfHeader]);
+  }, [customerInfo.id, pdfHeader, info]);
 
   return null;
 };

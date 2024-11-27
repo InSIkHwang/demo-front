@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Form,
   Input,
@@ -13,7 +13,11 @@ import {
 import { SendOutlined, MailOutlined, UploadOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 import { sendQuotationMail } from "../../api/api";
-import { HeaderFormData, offerEmailSendData } from "../../types/types";
+import {
+  FormValuesType,
+  HeaderFormData,
+  offerEmailSendData,
+} from "../../types/types";
 import { useNavigate } from "react-router-dom";
 import LoadingSpinner from "../LoadingSpinner";
 
@@ -56,13 +60,6 @@ const StyledButton = styled(Button)`
   margin-top: 24px;
 `;
 
-interface FormValue {
-  documentNumber: string;
-  customer: string;
-  refNumber: string;
-  vesselName: string;
-}
-
 const OfferMailSender = ({
   inquiryFormValues,
   pdfFileData,
@@ -70,7 +67,7 @@ const OfferMailSender = ({
   pdfHeader,
   selectedSupplierIds,
 }: {
-  inquiryFormValues: FormValue;
+  inquiryFormValues: FormValuesType;
   handleSubmit: () => Promise<unknown>;
   pdfFileData: File | null;
   mailData: offerEmailSendData | null;
@@ -84,13 +81,27 @@ const OfferMailSender = ({
   const navigate = useNavigate();
   const INITIAL_DATA = {
     documentNumber: inquiryFormValues.documentNumber ?? "",
-    customer: inquiryFormValues.customer ?? "",
+    customer: inquiryFormValues.companyName ?? "",
     refNumber: inquiryFormValues.refNumber ?? "",
     vesselName: inquiryFormValues.vesselName ?? "",
     toRecipient: mailData?.toRecipient ?? "",
     subject: mailData?.subject ?? "",
     content: mailData?.content ?? "",
   };
+
+  useEffect(() => {
+    if (inquiryFormValues) {
+      form.setFieldsValue({
+        documentNumber: inquiryFormValues.documentNumber ?? "",
+        customer: inquiryFormValues.companyName ?? "",
+        refNumber: inquiryFormValues.refNumber ?? "",
+        vesselName: inquiryFormValues.vesselName ?? "",
+        toRecipient: mailData?.toRecipient ?? "",
+        subject: mailData?.subject ?? "",
+        content: mailData?.content ?? "",
+      });
+    }
+  }, [inquiryFormValues, mailData, form]);
 
   const onFinish = async (values: any) => {
     setLoading(true);
