@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   Button,
+  Checkbox,
   Divider,
   Input,
   message,
@@ -15,7 +16,7 @@ import styled from "styled-components";
 import dayjs from "dayjs";
 import FormComponent from "../components/makeOffer/FormComponent";
 import TableComponent from "../components/makeOffer/TableComponent";
-import { editOffer, fetchOfferDetail } from "../api/api";
+import { changeOfferStatus, editOffer, fetchOfferDetail } from "../api/api";
 import {
   FormValuesType,
   HeaderFormData,
@@ -32,6 +33,7 @@ import OfferMailSender from "../components/makeOffer/OfferSendMail";
 import { InvCharge } from "./../types/types";
 import TotalCardsComponent from "../components/makeOffer/TotalCardsComponent";
 import { pdf } from "@react-pdf/renderer";
+import { CheckboxChangeEvent } from "antd/es/checkbox";
 
 const FormContainer = styled.div`
   position: relative;
@@ -111,7 +113,6 @@ const MakeOffer = () => {
   const [combinedItemDetails, setCombinedItemDetails] = useState<
     ItemDetailType[]
   >([]);
-
   const [tableTotals, setTableTotals] = useState({
     totalSalesAmountKRW: 0,
     totalSalesAmountGlobal: 0,
@@ -241,7 +242,6 @@ const MakeOffer = () => {
           documentInfo: response.documentInfo,
           response: response.response,
         });
-
         setCurrentDetailItems(response.response[0].itemDetail);
         setCurrentSupplierInfo(response.response[0].supplierInfo);
         setCurrentInquiryId(response.response[0].inquiryId);
@@ -975,20 +975,49 @@ const MakeOffer = () => {
       const defaultFileName = `${formValues.refNumber}(QTN).pdf`;
 
       let modalInstance: any;
+      let localSendMailState = true; // 모달 내부에서 사용할 로컬 상태
 
-      // 파일명 입력을 위한 모달 표시
       modalInstance = Modal.confirm({
-        title: "Quotation File Name",
+        title: "Quotation PDF File",
+        width: 500,
         content: (
-          <Input
-            defaultValue={defaultFileName}
-            id="fileNameInput"
-            onPressEnter={() => {
-              modalInstance.destroy();
-            }}
-          />
+          <div style={{ marginBottom: 20 }}>
+            <span>File name: </span>
+            <Input
+              defaultValue={defaultFileName}
+              id="fileNameInput"
+              onPressEnter={() => {
+                modalInstance.destroy();
+              }}
+            />
+            <Divider variant="dashed" style={{ borderColor: "#007bff" }}>
+              Send mail or not
+            </Divider>
+            <Checkbox
+              defaultChecked={true}
+              onChange={(e) => {
+                localSendMailState = e.target.checked;
+              }}
+            >
+              I will send customer an e-mail immediately
+            </Checkbox>
+          </div>
         ),
         onOk: async () => {
+          if (localSendMailState && currentInquiryId) {
+            try {
+              await changeOfferStatus(currentInquiryId);
+            } catch (error) {
+              message.error(
+                "Failed to update offer status. Please try again later."
+              );
+              return;
+            }
+          } else if (localSendMailState && !currentInquiryId) {
+            message.error("Please select supplier.");
+            return;
+          }
+
           const inputElement = document.getElementById(
             "fileNameInput"
           ) as HTMLInputElement;
