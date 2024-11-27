@@ -632,6 +632,15 @@ export const editMurgedOffer = async (supplierInquiryIds: number[]) => {
   return response.data;
 };
 
+//OFFER 상태 변경 (메일 전송 체크)
+export const changeOfferStatus = async (supplierInquiryId: number) => {
+  const response = await axios.put(
+    `/api/supplier-inquiries/update-status/${supplierInquiryId}`
+  );
+
+  return response.data;
+};
+
 // Offer 메일 전송
 export const sendQuotationMail = async (
   files: File[], // `file`의 타입에 맞게 구체화된 파일 배열
