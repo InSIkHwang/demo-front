@@ -1334,12 +1334,7 @@ const MakeComplexInquiry = () => {
         )}
         {documentInfo && documentType === "quotation" ? (
           <OfferMailSender
-            inquiryFormValues={{
-              documentNumber: documentInfo.documentNumber,
-              customer: documentInfo.companyName,
-              refNumber: documentInfo.refNumber,
-              vesselName: documentInfo.vesselName,
-            }}
+            inquiryFormValues={documentInfo}
             handleSubmit={handleSubmit}
             pdfFileData={pdfFileData}
             mailData={mailData}
