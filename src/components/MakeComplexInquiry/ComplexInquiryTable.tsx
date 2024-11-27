@@ -35,164 +35,99 @@ interface TableProps {
 }
 
 const CustomTable = styled(Table<ComplexInquiryItemDetail>)<TableProps>`
+  // 기본 스타일
   .ant-table * {
-    font-size: ${(props) =>
-      props.$zoomLevel ? `${11 * props.$zoomLevel}px` : "11px"};
+    font-size: ${(props) => `${11 * (props.$zoomLevel || 1)}px`};
   }
 
+  // 기존 트랜지션 스타일 제거 (중복 방지)
   .ant-table-row,
   .ant-table-row *,
   .ant-table-cell *,
   .ant-table-cell-row-hover {
-    transition: all 0.3s ease !important;
+    transition: none;
   }
 
+  // 모든 테이블 셀 관련 요소에 동일한 트랜지션 적용
+  .ant-table-cell,
+  .ant-table-cell *,
+  .ant-table-cell-fix-left,
+  .ant-table-cell-fix-left-last,
+  .ant-table-cell-row-hover,
+  .ant-table-row,
+  .ant-table-row * {
+    transition: all 0.2s ease !important;
+  }
+
+  // 셀 스타일
   .ant-table-cell {
     padding: ${(props) =>
-      props.$zoomLevel
-        ? `${12 * props.$zoomLevel}px ${2 * props.$zoomLevel}px`
-        : "12px 2px"} !important;
+      `${12 * (props.$zoomLevel || 1)}px ${
+        2 * (props.$zoomLevel || 1)
+      }px`} !important;
     text-align: center !important;
     align-self: center;
     border: none !important;
   }
 
+  // 하이라이트 셀
   .highlight-cell {
     font-weight: bold !important;
-
     .ant-input-group-addon,
     .ant-input-outlined {
       border-color: #007bff !important;
       font-weight: bold !important;
     }
   }
-  .ant-input-group-addon {
-    padding: 0 2px !important;
-  }
+
+  // 애드온 패딩
+  .ant-input-group-addon,
   .ant-input-number-group-addon {
     padding: 0 2px !important;
   }
 
-  .ant-table-row {
-    &:hover {
-      background-color: #f0f0f0 !important;
-    }
-    .ant-table-cell-row-hover {
-      background-color: #f0f0f0 !important;
-    }
-  }
-
+  // 고정 셀 스타일
   .ant-table-cell-fix-left {
-    background: none !important;
-    background-color: inherit !important;
+    background: inherit !important;
     z-index: 2 !important;
-  }
-
-  .ant-table-cell-fix-left-last {
-    box-shadow: 14px 0 10px -10px rgba(0, 0, 0, 0.05) !important;
+    transition: background-color 0.2s ease !important;
+    &-last {
+      box-shadow: 14px 0 10px -10px rgba(0, 0, 0, 0.05) !important;
+    }
   }
 
   tr .ant-table-cell-fix-left {
-    background-color: #fafafa !important;
+    background: #fafafa !important;
   }
 
-  .item-row .ant-table-cell-fix-left {
-    background: none !important;
-    background-color: #ffffff !important;
-  }
-  .maker-row .ant-table-cell-fix-left {
-    background: none !important;
-    background-color: #e3f2ff !important;
-  }
-  .type-row .ant-table-cell-fix-left {
-    background: none !important;
-    background-color: #fffef0 !important;
-  }
-  .desc-row .ant-table-cell-fix-left {
-    background: none !important;
-    background-color: #fff5e0 !important;
-  }
-  .remark-row .ant-table-cell-fix-left {
-    background: none !important;
-    background-color: #eaffe6 !important;
-  }
+  // 행 타입별 스타일 믹스인
+  ${(["item", "maker", "type", "desc", "remark"] as const).map((type) => {
+    const colors: Record<typeof type, [string, string]> = {
+      item: ["#ffffff", "#f0f0f0"],
+      maker: ["#e3f2ff", "#c8e4ff"],
+      type: ["#fffef0", "#fffdde"],
+      desc: ["#fff5e0", "#ffe9bb"],
+      remark: ["#eaffe6", "#dcffd1"],
+    };
 
-  .item-row:hover .ant-table-cell-fix-left {
-    background: none !important;
-    background-color: #f0f0f0 !important;
-  }
-  .maker-row:hover .ant-table-cell-fix-left {
-    background: none !important;
-    background-color: #c8e4ff !important;
-  }
-  .type-row:hover .ant-table-cell-fix-left {
-    background: none !important;
-    background-color: #fffdde !important;
-  }
-  .desc-row:hover .ant-table-cell-fix-left {
-    background: none !important;
-    background-color: #ffe9bb !important;
-  }
-  .remark-row:hover .ant-table-cell-fix-left {
-    background: none !important;
-    background-color: #dcffd1 !important;
-  }
+    return `
+      .${type}-row {
+          background-color: ${colors[type][0]} !important;
+        &:hover, .ant-table-cell-row-hover {
+          background-color: ${colors[type][1]} !important;
+        }
+      }
+    `;
+  })}
 
-  .item-row {
-    background-color: #ffffff !important;
-    &:hover {
-      background-color: #f0f0f0 !important;
+  // 커스텀 인풋 스타일
+  .custom-input {
+    .ant-input {
+      background-color: #ffffe0 !important;
     }
-    .ant-table-cell-row-hover {
-      background-color: #f0f0f0 !important;
+    .ant-input-group-addon {
+      background-color: #dff4ff !important;
     }
-  }
-
-  .maker-row {
-    background-color: #e3f2ff !important; /* 기본 색상 */
-    &:hover {
-      background-color: #c8e4ff !important; /* 호버 시 더 진한 색상 */
-    }
-    .ant-table-cell-row-hover {
-      background-color: #c8e4ff !important;
-    }
-  }
-
-  .type-row {
-    background-color: #fffef0 !important; /* 기본 색상 */
-    &:hover {
-      background-color: #fffdde !important; /* 호버 시 더 진한 색상 */
-    }
-    .ant-table-cell-row-hover {
-      background-color: #fffdde !important;
-    }
-  }
-
-  .desc-row {
-    background-color: #fff5e0 !important; /* 기본 색상 */
-    &:hover {
-      background-color: #ffe9bb !important; /* 호버 시 더 진한 색상 */
-    }
-    .ant-table-cell-row-hover {
-      background-color: #ffe9bb !important;
-    }
-  }
-
-  .remark-row {
-    background-color: #eaffe6 !important; /* 기본 색상 */
-    &:hover {
-      background-color: #dcffd1 !important; /* 호버 시 더 진한 색상 */
-    }
-    .ant-table-cell-row-hover {
-      background-color: #dcffd1 !important;
-    }
-  }
-
-  .custom-input .ant-input {
-    background-color: #ffffe0 !important;
-  }
-  .custom-input .ant-input-group-addon {
-    background-color: #dff4ff !important;
   }
 `;
 
@@ -1122,12 +1057,17 @@ const ComplexInquiryTable = ({
           [] as any[]
         );
 
+        // allOptions 배열에서 중복 제거
+        const uniqueAllOptions = Array.from(
+          new Map(allOptions.map((item) => [item.id, item])).values()
+        );
+
         return (
           <Select
             mode="multiple"
             style={{ width: "100%" }}
             placeholder="Select suppliers"
-            value={suppliers.map((s) => s.supplierId)}
+            value={Array.from(new Set(suppliers.map((s) => s.supplierId)))}
             optionLabelProp="label"
             onChange={(selectedIds: number[]) => {
               const newItems = [...items];
@@ -1136,24 +1076,26 @@ const ComplexInquiryTable = ({
                 suppliers: selectedIds.map((id) => ({
                   supplierId: id,
                   inquiryItemDetailId: null,
-                  code: allOptions.find((s) => s.id === id)?.code || "",
-                  companyName: allOptions.find((s) => s.id === id)?.name || "",
+                  code: uniqueAllOptions.find((s) => s.id === id)?.code || "",
+                  companyName:
+                    uniqueAllOptions.find((s) => s.id === id)?.name || "",
                   korCompanyName:
-                    allOptions.find((s) => s.id === id)?.korName || "",
+                    uniqueAllOptions.find((s) => s.id === id)?.korName || "",
                   representative: null,
-                  email: allOptions.find((s) => s.id === id)?.email || "",
+                  email: uniqueAllOptions.find((s) => s.id === id)?.email || "",
                   communicationLanguage:
-                    allOptions.find((s) => s.id === id)
+                    uniqueAllOptions.find((s) => s.id === id)
                       ?.communicationLanguage || "",
                   supplierRemark:
-                    allOptions.find((s) => s.id === id)?.supplierRemark || "",
+                    uniqueAllOptions.find((s) => s.id === id)?.supplierRemark ||
+                    "",
                 })),
               };
               setItems(newItems);
             }}
             optionFilterProp="children"
           >
-            {allOptions.map((supplier) => (
+            {uniqueAllOptions.map((supplier) => (
               <Option
                 key={supplier.id}
                 value={supplier.id}
