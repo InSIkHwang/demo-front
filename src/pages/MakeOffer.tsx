@@ -1,6 +1,15 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { Button, Divider, message, Modal, Select, Tabs, Tooltip } from "antd";
+import {
+  Button,
+  Divider,
+  Input,
+  message,
+  Modal,
+  Select,
+  Tabs,
+  Tooltip,
+} from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 import dayjs from "dayjs";
@@ -963,22 +972,45 @@ const MakeOffer = () => {
       );
 
       const pdfBlob = await pdf(doc).toBlob();
-      const fileName =
-        language === "ENG"
-          ? `${formValues.companyName} QUOTATION ${formValues.refNumber}.pdf`
-          : `${formValues.companyName} QUOTATION ${formValues.refNumber}.pdf`;
+      const defaultFileName = `${formValues.refNumber}(QTN).pdf`;
 
-      const url = URL.createObjectURL(pdfBlob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      let modalInstance: any;
+
+      // 파일명 입력을 위한 모달 표시
+      modalInstance = Modal.confirm({
+        title: "Quotation File Name",
+        content: (
+          <Input
+            defaultValue={defaultFileName}
+            id="fileNameInput"
+            onPressEnter={() => {
+              modalInstance.destroy();
+            }}
+          />
+        ),
+        onOk: async () => {
+          const inputElement = document.getElementById(
+            "fileNameInput"
+          ) as HTMLInputElement;
+          const fileName = inputElement.value || defaultFileName;
+
+          const url = URL.createObjectURL(pdfBlob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = fileName.endsWith(".pdf")
+            ? fileName
+            : `${fileName}.pdf`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        },
+        okText: "Download",
+        cancelText: "Cancel",
+      });
     } catch (error) {
       console.error("PDF Download Error:", error);
-      message.error("PDF Download Error.");
+      message.error("PDF Download Error");
     }
   };
 

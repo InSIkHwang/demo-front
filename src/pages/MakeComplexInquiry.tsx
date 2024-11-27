@@ -5,6 +5,7 @@ import {
   Button,
   Divider,
   FloatButton,
+  Input,
   message,
   Modal,
   Select,
@@ -14,7 +15,6 @@ import dayjs, { Dayjs } from "dayjs";
 import {
   fetchDocData,
   fetchCompanyNames,
-  fetchItemData,
   searchInquiryWithMaker,
   chkDuplicateDocNum,
   fetchComplexInquiryDetail,
@@ -884,43 +884,43 @@ const MakeComplexInquiry = () => {
   );
 
   // 아이템 매핑 함수 최적화
-  const handleItemIdMapping = useCallback(async (): Promise<
-    ComplexInquiryItemDetail[]
-  > => {
-    const updatedItems = await Promise.all(
-      items.map(async (item) => {
-        if (item.itemType !== "ITEM" && item.itemType !== "DASH") return item;
+  // const handleItemIdMapping = useCallback(async (): Promise<
+  //   ComplexInquiryItemDetail[]
+  // > => {
+  //   const updatedItems = await Promise.all(
+  //     items.map(async (item) => {
+  //       if (item.itemType !== "ITEM" && item.itemType !== "DASH") return item;
 
-        const trimmedCode = item.itemCode.trim();
-        const trimmedName = item.itemName.trim();
-        if (!trimmedCode) return item;
+  //       const trimmedCode = item.itemCode.trim();
+  //       const trimmedName = item.itemName.trim();
+  //       if (!trimmedCode) return item;
 
-        try {
-          const { items: searchResult } = await fetchItemData(trimmedCode);
-          const foundItem = Array.isArray(searchResult)
-            ? searchResult.find(
-                (result) =>
-                  result.itemCode.trim() === trimmedCode &&
-                  result.itemName.trim() === trimmedName
-              )
-            : searchResult?.itemCode.trim() === trimmedCode &&
-              searchResult?.itemName.trim() === trimmedName
-            ? searchResult
-            : null;
+  //       try {
+  //         const { items: searchResult } = await fetchItemData(trimmedCode);
+  //         const foundItem = Array.isArray(searchResult)
+  //           ? searchResult.find(
+  //               (result) =>
+  //                 result.itemCode.trim() === trimmedCode &&
+  //                 result.itemName.trim() === trimmedName
+  //             )
+  //           : searchResult?.itemCode.trim() === trimmedCode &&
+  //             searchResult?.itemName.trim() === trimmedName
+  //           ? searchResult
+  //           : null;
 
-          return foundItem?.itemId
-            ? { ...item, itemId: foundItem.itemId }
-            : item;
-        } catch (error) {
-          console.error(`Error mapping item code ${trimmedCode}:`, error);
-          return item;
-        }
-      })
-    );
+  //         return foundItem?.itemId
+  //           ? { ...item, itemId: foundItem.itemId }
+  //           : item;
+  //       } catch (error) {
+  //         console.error(`Error mapping item code ${trimmedCode}:`, error);
+  //         return item;
+  //       }
+  //     })
+  //   );
 
-    setItems(updatedItems);
-    return updatedItems;
-  }, [items]);
+  //   setItems(updatedItems);
+  //   return updatedItems;
+  // }, [items]);
 
   // 총액 계산 함수 메모이제이션
   const calculateTotal = useCallback(
@@ -953,7 +953,9 @@ const MakeComplexInquiry = () => {
     }
 
     try {
-      const mappedItems = await handleItemIdMapping();
+      // const mappedItems = await handleItemIdMapping();
+      const mappedItems = items;
+
       const updatedItems = mappedItems.map((item) => {
         if (item.itemType !== "ITEM" && item.itemType !== "DASH") return item;
 
@@ -1184,20 +1186,45 @@ const MakeComplexInquiry = () => {
         );
 
         const pdfBlob = await pdf(doc).toBlob();
-        const fileName = `${documentInfo.companyName} QUOTATION ${documentInfo.refNumber}.pdf`;
+        const defaultFileName = `${formValues.refNumber}(QTN).pdf`;
 
-        // Blob URL 대신 직접 다운로드
-        const reader = new FileReader();
-        reader.onload = () => {
-          const link = document.createElement("a");
-          link.href = reader.result as string;
-          link.download = fileName;
-          link.click();
-        };
-        reader.readAsDataURL(pdfBlob);
+        let modalInstance: any;
+
+        // 파일명 입력을 위한 모달 표시
+        modalInstance = Modal.confirm({
+          title: "Quotation File Name",
+          content: (
+            <Input
+              defaultValue={defaultFileName}
+              id="fileNameInput"
+              onPressEnter={() => {
+                modalInstance.destroy();
+              }}
+            />
+          ),
+          onOk: async () => {
+            const inputElement = document.getElementById(
+              "fileNameInput"
+            ) as HTMLInputElement;
+            const fileName = inputElement.value || defaultFileName;
+
+            const url = URL.createObjectURL(pdfBlob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = fileName.endsWith(".pdf")
+              ? fileName
+              : `${fileName}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+          },
+          okText: "Download",
+          cancelText: "Cancel",
+        });
       } catch (error) {
         console.error("PDF Download Error:", error);
-        message.error("PDF Download Error.");
+        message.error("PDF Download Error");
       }
     }
   };
