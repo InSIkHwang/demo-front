@@ -67,6 +67,8 @@ const MakeOffer = () => {
   const [currentDetailItems, setCurrentDetailItems] = useState<
     ItemDetailType[]
   >([]);
+  const [currentSupplierInquiryName, setCurrentSupplierInquiryName] =
+    useState("");
   const [formValues, setFormValues] = useState<FormValuesType>({
     documentId: 0,
     documentNumber: "",
@@ -245,6 +247,7 @@ const MakeOffer = () => {
         setCurrentDetailItems(response.response[0].itemDetail);
         setCurrentSupplierInfo(response.response[0].supplierInfo);
         setCurrentInquiryId(response.response[0].inquiryId);
+        setCurrentSupplierInquiryName(response.response[0].supplierInquiryName);
 
         setFormValues({
           documentId: response.documentInfo.documentId,
@@ -508,6 +511,7 @@ const MakeOffer = () => {
             id: response.documentInfo.customerId,
             name: response.documentInfo.companyName,
           });
+          setCurrentSupplierInquiryName(currentSupplier.supplierInquiryName);
         }
       } catch (error) {
         console.error("Error saving data:", error);
@@ -764,6 +768,7 @@ const MakeOffer = () => {
       setCurrentDetailItems(selectedSupplier.itemDetail);
       setCurrentSupplierInfo(selectedSupplier.supplierInfo);
       setCurrentInquiryId(selectedSupplier.inquiryId);
+      setCurrentSupplierInquiryName(selectedSupplier.supplierInquiryName);
       setTableTotals({
         totalSalesAmountKRW: 0,
         totalSalesAmountGlobal: 0,
@@ -915,6 +920,7 @@ const MakeOffer = () => {
             setDcInfo={setDcInfo}
             invChargeList={invChargeList}
             setInvChargeList={setInvChargeList}
+            supplierInquiryName={currentSupplierInquiryName}
           />
           <Button
             type="primary"

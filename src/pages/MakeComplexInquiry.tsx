@@ -1192,15 +1192,18 @@ const MakeComplexInquiry = () => {
 
         // 파일명 입력을 위한 모달 표시
         modalInstance = Modal.confirm({
-          title: "Quotation File Name",
+          title: "Quotation PDF File",
           content: (
-            <Input
-              defaultValue={defaultFileName}
-              id="fileNameInput"
-              onPressEnter={() => {
-                modalInstance.destroy();
-              }}
-            />
+            <>
+              <span>File name: </span>
+              <Input
+                defaultValue={defaultFileName}
+                id="fileNameInput"
+                onPressEnter={() => {
+                  modalInstance.destroy();
+                }}
+              />
+            </>
           ),
           onOk: async () => {
             const inputElement = document.getElementById(
