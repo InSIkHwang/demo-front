@@ -456,6 +456,7 @@ export interface OfferResponse {
     supplierInfo: SupplierInfo;
     itemDetail: ItemDetailType[];
     pdfUrl: string | null;
+    supplierInquiryName: string;
   }[];
 }
 

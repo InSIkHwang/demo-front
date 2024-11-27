@@ -140,6 +140,38 @@ const CustomTable = styled(Table)<TableProps>`
   }
 `;
 
+const DocumentContainer = styled.div`
+  padding: 15px 20px;
+  margin-bottom: 20px;
+  background: linear-gradient(to right, #f8f9fa, #ffffff);
+  border-left: 4px solid #1890ff;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const DocumentLabel = styled.span`
+  color: #8c8c8c;
+  font-size: 16px;
+  font-weight: 500;
+  margin-right: 10px;
+`;
+
+const DocumentNumber = styled.span`
+  color: #262626;
+  font-size: 18px;
+  font-weight: 600;
+`;
+
+const ButtonGroup = styled.div`
+  float: right;
+  .ant-btn {
+    margin: 0 5px;
+  }
+`;
+
 interface DisplayInputProps extends Omit<InputProps, "value" | "onChange"> {
   value: string | number | null;
   onChange?: (value: string) => void;
@@ -192,6 +224,7 @@ interface TableComponentProps {
   >;
   invChargeList: InvCharge[] | null;
   setInvChargeList: Dispatch<SetStateAction<InvCharge[] | null>>;
+  supplierInquiryName: string;
 }
 
 // DisplayInput 컴포넌트를 TableComponent 외부로 이동
@@ -271,6 +304,7 @@ const TableComponent = ({
   pdfUrl,
   supplierName,
   documentNumber,
+  supplierInquiryName,
 }: TableComponentProps) => {
   const inputRefs = useRef<(TextAreaRef | null)[][]>([]);
   const [itemCodeOptions, setItemCodeOptions] = useState<
@@ -1219,40 +1253,43 @@ const TableComponent = ({
 
   return (
     <div style={{ overflowX: "auto" }}>
-      <Tooltip title="Load excel file on your local">
-        <Button
-          type="dashed"
-          style={{ margin: "20px 5px" }}
-          onClick={() => setIsModalVisible(true)}
-          icon={<FileExcelOutlined />}
-        >
-          Load Excel File
-        </Button>
-      </Tooltip>
-      <Tooltip title="Export excel file on your table">
-        <Button
-          type="dashed"
-          style={{ margin: "20px 5px" }}
-          icon={<ExportOutlined />}
-          onClick={handleExportButtonClick}
-        >
-          Export Excel
-        </Button>
-      </Tooltip>
-      <div style={{ float: "right" }}>
-        <Tooltip title="Download PDF file before you send">
-          <Button
-            type="dashed"
-            style={{ margin: "20px 5px" }}
-            onClick={() =>
-              handleDownloadPdf(pdfUrl || "", supplierName, documentNumber)
-            }
-            icon={<FileExcelOutlined />}
-          >
-            Download PDF File
-          </Button>
-        </Tooltip>
-      </div>
+      <DocumentContainer>
+        <div>
+          <DocumentLabel>Document No.</DocumentLabel>
+          <DocumentNumber>{supplierInquiryName}</DocumentNumber>
+        </div>
+        <ButtonGroup>
+          <Tooltip title="Load excel file on your local">
+            <Button
+              type="dashed"
+              onClick={() => setIsModalVisible(true)}
+              icon={<FileExcelOutlined />}
+            >
+              Load Excel File
+            </Button>
+          </Tooltip>
+          <Tooltip title="Export excel file on your table">
+            <Button
+              type="dashed"
+              icon={<ExportOutlined />}
+              onClick={handleExportButtonClick}
+            >
+              Export Excel
+            </Button>
+          </Tooltip>
+          <Tooltip title="Download PDF file before you send">
+            <Button
+              type="dashed"
+              onClick={() =>
+                handleDownloadPdf(pdfUrl || "", supplierName, documentNumber)
+              }
+              icon={<FileExcelOutlined />}
+            >
+              Download PDF File
+            </Button>
+          </Tooltip>
+        </ButtonGroup>
+      </DocumentContainer>
       <TotalCardsComponent
         finalTotals={tableTotals}
         applyDcAndCharge={applyDcAndCharge}
