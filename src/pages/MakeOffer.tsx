@@ -16,7 +16,12 @@ import styled from "styled-components";
 import dayjs from "dayjs";
 import FormComponent from "../components/makeOffer/FormComponent";
 import TableComponent from "../components/makeOffer/TableComponent";
-import { changeOfferStatus, editOffer, fetchOfferDetail } from "../api/api";
+import {
+  changeOfferStatus,
+  checkOfferPdfDocNumber,
+  editOffer,
+  fetchOfferDetail,
+} from "../api/api";
 import {
   FormValuesType,
   HeaderFormData,
@@ -973,6 +978,7 @@ const MakeOffer = () => {
             invChargeList={invChargeList}
             setInvChargeList={setInvChargeList}
             supplierInquiryName={currentSupplierInquiryName}
+            setSupplierInquiryName={setCurrentSupplierInquiryName}
           />
           <Button
             type="primary"
@@ -1011,6 +1017,28 @@ const MakeOffer = () => {
         }}
       />
     );
+  };
+
+  const clickPdfDownload = async () => {
+    try {
+      const checkDuplicate = await checkOfferPdfDocNumber(
+        currentInquiryId!,
+        currentSupplierInquiryName,
+        loadDocumentId.documentId
+      );
+      if (checkDuplicate) {
+        Modal.error({
+          title: "This document number is already used.",
+          content: "Please change document number.",
+        });
+        return;
+      } else {
+        handlePDFDownload();
+      }
+    } catch (error) {
+      console.error("Update PDF Document Number Error:", error);
+      message.error("Update PDF Document Number Error");
+    }
   };
 
   const handlePDFDownload = async () => {
@@ -1208,7 +1236,7 @@ const MakeOffer = () => {
         </Select>
         <Button
           style={{ marginLeft: 10 }}
-          onClick={handlePDFDownload}
+          onClick={clickPdfDownload}
           type="default"
           disabled={selectedSupplierIds.length === 0}
         >

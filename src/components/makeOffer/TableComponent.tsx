@@ -153,16 +153,39 @@ const DocumentContainer = styled.div`
 `;
 
 const DocumentLabel = styled.span`
-  color: #8c8c8c;
+  color: #1890ff;
   font-size: 16px;
-  font-weight: 500;
-  margin-right: 10px;
+  font-weight: 600;
+  margin-right: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: relative;
 `;
 
 const DocumentNumber = styled.span`
-  color: #262626;
-  font-size: 18px;
-  font-weight: 600;
+  position: relative;
+
+  .ant-input {
+    color: #262626;
+    font-size: 18px;
+    font-weight: 600;
+    border: none;
+    border-bottom: 2px solid #d9d9d9;
+    border-radius: 0;
+    padding: 4px 8px;
+    transition: all 0.3s ease;
+    box-shadow: none;
+
+    &:hover,
+    &:focus {
+      border-bottom-color: #1890ff;
+      box-shadow: 0 1px 0 0 #1890ff;
+    }
+
+    &::placeholder {
+      color: #bfbfbf;
+    }
+  }
 `;
 
 const ButtonGroup = styled.div`
@@ -225,6 +248,7 @@ interface TableComponentProps {
   invChargeList: InvCharge[] | null;
   setInvChargeList: Dispatch<SetStateAction<InvCharge[] | null>>;
   supplierInquiryName: string;
+  setSupplierInquiryName: Dispatch<SetStateAction<string>>;
 }
 
 // DisplayInput 컴포넌트를 TableComponent 외부로 이동
@@ -305,6 +329,7 @@ const TableComponent = ({
   supplierName,
   documentNumber,
   supplierInquiryName,
+  setSupplierInquiryName,
 }: TableComponentProps) => {
   const inputRefs = useRef<(TextAreaRef | null)[][]>([]);
   const [itemCodeOptions, setItemCodeOptions] = useState<
@@ -393,17 +418,17 @@ const TableComponent = ({
     }
   };
 
-  const updateItemId = useCallback(
-    (index: number, itemId: number | null) => {
-      const updatedItems = [...itemDetails];
-      updatedItems[index] = {
-        ...updatedItems[index],
-        itemId,
-      };
-      setItemDetails(updatedItems);
-    },
-    [itemDetails, setItemDetails]
-  );
+  // const updateItemId = useCallback(
+  //   (index: number, itemId: number | null) => {
+  //     const updatedItems = [...itemDetails];
+  //     updatedItems[index] = {
+  //       ...updatedItems[index],
+  //       itemId,
+  //     };
+  //     setItemDetails(updatedItems);
+  //   },
+  //   [itemDetails, setItemDetails]
+  // );
 
   const debouncedFetchItemData = useMemo(
     () =>
@@ -1254,9 +1279,14 @@ const TableComponent = ({
   return (
     <div style={{ overflowX: "auto" }}>
       <DocumentContainer>
-        <div>
+        <div style={{ display: "flex", alignItems: "center" }}>
           <DocumentLabel>Document No.</DocumentLabel>
-          <DocumentNumber>{supplierInquiryName}</DocumentNumber>
+          <DocumentNumber>
+            <Input
+              value={supplierInquiryName}
+              onChange={(e) => setSupplierInquiryName(e.target.value)}
+            />
+          </DocumentNumber>
         </div>
         <ButtonGroup>
           <Tooltip title="Load excel file on your local">
