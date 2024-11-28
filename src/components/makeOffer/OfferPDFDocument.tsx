@@ -246,7 +246,7 @@ const getDisplayNo = (itemType: string, itemIndex: number, indexNo: string) => {
 };
 
 // 테이블 행을 렌더링하는 함수
-const renderTableRows = (items: ItemDetailType[]) => {
+const renderTableRows = (items: ItemDetailType[], language: string) => {
   let itemIndex = 0;
   return items.map((item) => {
     const isItemType = item.itemType === "ITEM";
@@ -285,6 +285,8 @@ const renderTableRows = (items: ItemDetailType[]) => {
               <Text style={styles.tableCell}>
                 {item.itemRemark !== ""
                   ? ""
+                  : language === "KOR"
+                  ? item.salesPriceKRW?.toLocaleString("ko-KR")
                   : item.salesPriceGlobal?.toLocaleString("en-US", {
                       minimumFractionDigits: 2,
                     })}
@@ -294,6 +296,8 @@ const renderTableRows = (items: ItemDetailType[]) => {
               <Text style={styles.tableCell}>
                 {item.itemRemark !== ""
                   ? item.itemRemark
+                  : language === "KOR"
+                  ? item.salesAmountKRW?.toLocaleString("ko-KR")
                   : item.salesAmountGlobal?.toLocaleString("en-US", {
                       minimumFractionDigits: 2,
                     })}
@@ -350,7 +354,7 @@ const renderHeader = (
     </View>
     <View>
       <Text style={styles.title}>
-        {language === "KOR" ? "Q U O T A T I O N" : "Q U O T A T I O N"}
+        {language === "KOR" ? "견 적 서" : "Q U O T A T I O N"}
       </Text>
     </View>
     <View style={styles.inquiryInfoWrap}>
@@ -380,7 +384,7 @@ const renderHeader = (
           <Text style={styles.inquiryInfoValue}>
             :{" "}
             {language === "KOR"
-              ? dayjs(registerDate).format("DD MMM, YYYY").toUpperCase()
+              ? dayjs(registerDate).format("YYYY-MM-DD")
               : dayjs(registerDate).format("DD MMM, YYYY").toUpperCase()}
           </Text>
         </View>
@@ -441,10 +445,16 @@ const OfferPDFDocument = ({
 }: PDFDocumentProps) => {
   const headerMessage = pdfHeader;
   const calculateTotalSalesAmount = (items: ItemDetailType[]) => {
-    return items.reduce((total, item) => total + item.salesAmountGlobal, 0);
+    if (language === "KOR") {
+      return items.reduce((total, item) => total + item.salesAmountKRW, 0);
+    } else {
+      return items.reduce((total, item) => total + item.salesAmountGlobal, 0);
+    }
   };
-  const totalSalesAmountGlobal = calculateTotalSalesAmount(items);
-  const dcAmountGlobal = totalSalesAmountGlobal * (dcInfo.dcPercent / 100);
+  const totalSalesAmount = calculateTotalSalesAmount(items);
+  const dcAmountGlobal = totalSalesAmount * (dcInfo.dcPercent / 100);
+
+  console.log(info);
 
   const pdfBody = (
     <Document>
@@ -481,17 +491,21 @@ const OfferPDFDocument = ({
               <View style={{ display: "flex", flexDirection: "row" }}>
                 <Text
                   render={() => {
-                    switch (info.currencyType) {
-                      case "USD":
-                        return `UNIT USD $`;
-                      case "EUR":
-                        return `UNIT EUR €`;
-                      case "INR":
-                        return `UNIT INR ₹`;
-                      case "JPY":
-                        return `UNIT JPY ¥`;
-                      default:
-                        return ``;
+                    if (language === "KOR") {
+                      return `UNIT KRW ₩`;
+                    } else {
+                      switch (info.currencyType) {
+                        case "USD":
+                          return `UNIT USD $`;
+                        case "EUR":
+                          return `UNIT EUR €`;
+                        case "INR":
+                          return `UNIT INR ₹`;
+                        case "JPY":
+                          return `UNIT JPY ¥`;
+                        default:
+                          return ``;
+                      }
                     }
                   }}
                   fixed
@@ -542,7 +556,7 @@ const OfferPDFDocument = ({
               <Text style={styles.tableCell}>AMOUNT</Text>
             </View>
           </View>
-          {renderTableRows(items)}
+          {renderTableRows(items, language)}
           <View
             wrap={false}
             style={[
@@ -554,14 +568,21 @@ const OfferPDFDocument = ({
               },
             ]}
           >
-            <Text wrap>T O T A L ({info.currencyType})</Text>
+            <Text wrap>
+              T O T A L ({language === "KOR" ? "₩" : info.currencyType})
+            </Text>
             <Text style={{ fontFamily: "NotoSansRegular" }} wrap>
-              {totalSalesAmountGlobal?.toLocaleString("en-US", {
-                style: "currency",
-                currency: info.currencyType,
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
+              {language === "KOR"
+                ? totalSalesAmount?.toLocaleString("ko-KR", {
+                    style: "currency",
+                    currency: "KRW",
+                  })
+                : totalSalesAmount?.toLocaleString("en-US", {
+                    style: "currency",
+                    currency: info.currencyType,
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
             </Text>
           </View>
           {dcInfo.dcPercent && dcInfo.dcPercent !== 0 && (
@@ -569,12 +590,17 @@ const OfferPDFDocument = ({
               <Text wrap>DC AMT({dcInfo.dcPercent}%)</Text>
               <Text style={styles.tableTotalAmount} wrap>
                 -
-                {dcAmountGlobal?.toLocaleString("en-US", {
-                  style: "currency",
-                  currency: info.currencyType,
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
+                {language === "KOR"
+                  ? dcAmountGlobal?.toLocaleString("ko-KR", {
+                      style: "currency",
+                      currency: "KRW",
+                    })
+                  : dcAmountGlobal?.toLocaleString("en-US", {
+                      style: "currency",
+                      currency: info.currencyType,
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
               </Text>
             </View>
           )}
@@ -584,12 +610,20 @@ const OfferPDFDocument = ({
                 <View key={charge.invChargeId} style={styles.tableDCAmount}>
                   <Text wrap>{charge.customCharge}</Text>
                   <Text style={styles.tableTotalAmount} wrap>
-                    {Number(charge.chargePriceGlobal)?.toLocaleString("en-US", {
-                      style: "currency",
-                      currency: info.currencyType,
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
+                    {language === "KOR"
+                      ? Number(charge.chargePriceKRW)?.toLocaleString("ko-KR", {
+                          style: "currency",
+                          currency: "KRW",
+                        })
+                      : Number(charge.chargePriceGlobal)?.toLocaleString(
+                          "en-US",
+                          {
+                            style: "currency",
+                            currency: info.currencyType,
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          }
+                        )}
                   </Text>
                 </View>
               ))}
@@ -617,12 +651,20 @@ const OfferPDFDocument = ({
                 }}
                 wrap
               >
-                {finalTotals.totalSalesAmountGlobal?.toLocaleString("en-US", {
-                  style: "currency",
-                  currency: info.currencyType,
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
+                {language === "KOR"
+                  ? finalTotals.totalSalesAmountKRW?.toLocaleString("ko-KR", {
+                      style: "currency",
+                      currency: "KRW",
+                    })
+                  : finalTotals.totalSalesAmountGlobal?.toLocaleString(
+                      "en-US",
+                      {
+                        style: "currency",
+                        currency: info.currencyType,
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      }
+                    )}
               </Text>
             </View>
           )}

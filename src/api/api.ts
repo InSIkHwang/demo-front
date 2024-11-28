@@ -784,8 +784,8 @@ export const deleteQutation = async (quotationId: number) => {
 };
 
 //QUOTATION 확정
-export const confirmQutation = async (quotationId: number) => {
-  await axios.post(`/api/quotations/confirm/${quotationId}`);
+export const confirmQutation = async (supplierInquiryId: number) => {
+  await axios.post(`/api/quotation/confirm/${supplierInquiryId}`);
 };
 
 //----------------------------------------------------------------------------------

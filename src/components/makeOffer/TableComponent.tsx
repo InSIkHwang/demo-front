@@ -25,7 +25,12 @@ import {
 } from "antd";
 import { ColumnsType } from "antd/es/table";
 import styled from "styled-components";
-import { InvCharge, ItemDetailType } from "../../types/types";
+import {
+  FormValuesType,
+  InvCharge,
+  ItemDetailType,
+  OfferResponse,
+} from "../../types/types";
 import {
   DeleteOutlined,
   PlusCircleOutlined,
@@ -249,6 +254,8 @@ interface TableComponentProps {
   setInvChargeList: Dispatch<SetStateAction<InvCharge[] | null>>;
   supplierInquiryName: string;
   setSupplierInquiryName: Dispatch<SetStateAction<string>>;
+  setNewDocumentInfo: Dispatch<SetStateAction<FormValuesType | null>>;
+  setDataSource: Dispatch<SetStateAction<OfferResponse | null>>;
 }
 
 // DisplayInput 컴포넌트를 TableComponent 외부로 이동
@@ -330,6 +337,8 @@ const TableComponent = ({
   documentNumber,
   supplierInquiryName,
   setSupplierInquiryName,
+  setNewDocumentInfo,
+  setDataSource,
 }: TableComponentProps) => {
   const inputRefs = useRef<(TextAreaRef | null)[][]>([]);
   const [itemCodeOptions, setItemCodeOptions] = useState<
@@ -577,7 +586,7 @@ const TableComponent = ({
     setItemDetails(updatedData); // 상태 업데이트
   };
 
-  // 마진에 따라 매출가격을 계산하는 함수 예시
+  // ���진에 따라 ��출가격을 계산하는 함수 예시
   const calculateSalesPrice = (purchasePrice: number, margin: number) => {
     return purchasePrice * (1 + margin / 100); // 마진을 백분율로 적용
   };
@@ -593,7 +602,7 @@ const TableComponent = ({
       e.preventDefault();
 
       if (e.key === "ArrowDown") {
-        // 다음 행부터 순차적으로 검색하여 포커스 가능한 입력 요소 찾기
+        // 다음 행부터 순차적으로 검색하여 포커�� 가능한 입력 요소 ���기
         for (let i = rowIndex + 1; i < inputRefs.current.length; i++) {
           if (inputRefs.current[i]?.[columnIndex]) {
             inputRefs.current[i][columnIndex]?.focus();
@@ -1276,6 +1285,39 @@ const TableComponent = ({
     },
   ];
 
+  const handleSupplierInquiryNameChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    currentOfferId: number
+  ) => {
+    const newValue = e.target.value;
+    setSupplierInquiryName(newValue);
+
+    setDataSource((prevDataSource) => {
+      if (!prevDataSource) return prevDataSource;
+
+      return {
+        ...prevDataSource,
+        response: prevDataSource.response.map((item) => {
+          if (item.inquiryId === currentOfferId) {
+            return {
+              ...item,
+              supplierInquiryName: newValue,
+            };
+          }
+          return item;
+        }),
+      };
+    });
+
+    setNewDocumentInfo((prev) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        documentNumber: newValue,
+      };
+    });
+  };
+
   return (
     <div style={{ overflowX: "auto" }}>
       <DocumentContainer>
@@ -1284,7 +1326,7 @@ const TableComponent = ({
           <DocumentNumber>
             <Input
               value={supplierInquiryName}
-              onChange={(e) => setSupplierInquiryName(e.target.value)}
+              onChange={(e) => handleSupplierInquiryNameChange(e, offerId)}
             />
           </DocumentNumber>
         </div>

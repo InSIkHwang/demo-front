@@ -95,7 +95,7 @@ const MakeOffer = () => {
     discount: 0,
   });
   const [showPDFPreview, setShowPDFPreview] = useState(false);
-  const [language, setLanguage] = useState<string>("KOR");
+  const [language, setLanguage] = useState<string>("ENG");
   const [headerEditModalVisible, setHeaderEditModalVisible] =
     useState<boolean>(false);
   const [pdfHeader, setPdfHeader] = useState<HeaderFormData>({
@@ -455,6 +455,8 @@ const MakeOffer = () => {
       return;
     }
 
+    applyDcAndCharge("single");
+
     const formattedData = currentDetailItems.map((item: ItemDetailType) => ({
       position: item.position,
       itemDetailId: item.itemDetailId,
@@ -697,12 +699,14 @@ const MakeOffer = () => {
     const updatedTotalSalesAmountGlobal =
       newTotalSalesAmountGlobal + chargePriceGlobalTotal;
 
-    const totalProfit = totalSalesAmountKRW - totalPurchaseAmountKRW;
+    const totalProfit =
+      totalSalesAmountGlobal * formValues.currency - totalPurchaseAmountKRW;
     const totalProfitPercent = Number(
       ((totalProfit / totalPurchaseAmountKRW) * 100).toFixed(2)
     );
     const updatedTotalProfit =
-      updatedTotalSalesAmountKRW - totalPurchaseAmountKRW;
+      updatedTotalSalesAmountGlobal * formValues.currency -
+      totalPurchaseAmountKRW;
     const updatedTotalProfitPercent = Number(
       ((updatedTotalProfit / totalPurchaseAmountKRW) * 100).toFixed(2)
     );
@@ -805,7 +809,9 @@ const MakeOffer = () => {
           ? {
               ...prev,
               documentNumber:
-                selectedSupplier.supplierInquiryName || prev.documentNumber,
+                currentSupplierInquiryName ||
+                selectedSupplier.supplierInquiryName ||
+                prev.documentNumber,
             }
           : null
       );
@@ -835,6 +841,8 @@ const MakeOffer = () => {
     const selectedSupplierInquiryName = dataSource?.response.find(
       (supplier) => supplier.inquiryId === values[0].inquiryId
     )?.supplierInquiryName;
+
+    console.log(dataSource);
 
     setNewDocumentInfo((prev) =>
       prev
@@ -979,6 +987,8 @@ const MakeOffer = () => {
             setInvChargeList={setInvChargeList}
             supplierInquiryName={currentSupplierInquiryName}
             setSupplierInquiryName={setCurrentSupplierInquiryName}
+            setNewDocumentInfo={setNewDocumentInfo}
+            setDataSource={setDataSource}
           />
           <Button
             type="primary"
@@ -1119,6 +1129,8 @@ const MakeOffer = () => {
           link.click();
           document.body.removeChild(link);
           URL.revokeObjectURL(url);
+
+          loadOfferDetail();
         },
         okText: "Download",
         cancelText: "Cancel",
