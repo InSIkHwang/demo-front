@@ -180,11 +180,28 @@ const MakeOffer = () => {
         if (prevItems[index][key] === value) return prevItems;
 
         const newItems = [...prevItems];
+        const shouldResetPrices =
+          (key === "itemType" && value !== "ITEM" && value !== "DASH") ||
+          (key === "itemRemark" && value);
+
         newItems[index] = {
           ...newItems[index],
           [key]: value,
           ...(["itemName", "itemCode"].includes(key) && newItems[index].itemId
             ? { itemId: null }
+            : {}),
+          ...(shouldResetPrices
+            ? {
+                purchasePriceKRW: 0,
+                purchasePriceGlobal: 0,
+                purchaseAmountKRW: 0,
+                purchaseAmountGlobal: 0,
+                salesPriceKRW: 0,
+                salesPriceGlobal: 0,
+                salesAmountKRW: 0,
+                salesAmountGlobal: 0,
+                margin: 0,
+              }
             : {}),
         };
 

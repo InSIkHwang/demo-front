@@ -838,32 +838,20 @@ const TableComponent = ({
       dataIndex: "unit",
       key: "unit",
       width: 75 * zoomLevel,
-      render: (text: string, record: any, index: number) =>
-        record.itemType === "ITEM" || record.itemType === "DASH" ? (
-          <MemoizedDisplayInput
-            value={text}
-            ref={(el) => {
-              if (!inputRefs.current[index]) {
-                inputRefs.current[index] = [];
-              }
-              inputRefs.current[index][4] = el;
-            }}
-            onKeyDown={(e) => handleNextRowKeyDown(e, index, 4)}
-            onBlur={(e) => handleUnitBlur(index, e.target.value)}
-            onChange={(value) => handleInputChange(index, "unit", value)}
-          />
-        ) : (
-          <MemoizedDisplayInput
-            value={text}
-            ref={(el) => {
-              if (!inputRefs.current[index]) {
-                inputRefs.current[index] = [];
-              }
-              inputRefs.current[index][4] = el;
-            }}
-            onKeyDown={(e) => handleNextRowKeyDown(e, index, 4)}
-          ></MemoizedDisplayInput>
-        ),
+      render: (text: string, record: any, index: number) => (
+        <MemoizedDisplayInput
+          value={text}
+          ref={(el) => {
+            if (!inputRefs.current[index]) {
+              inputRefs.current[index] = [];
+            }
+            inputRefs.current[index][4] = el;
+          }}
+          onKeyDown={(e) => handleNextRowKeyDown(e, index, 4)}
+          onBlur={(e) => handleUnitBlur(index, e.target.value)}
+          onChange={(value) => handleInputChange(index, "unit", value)}
+        />
+      ),
     },
     {
       title: "Remark",
@@ -882,9 +870,9 @@ const TableComponent = ({
             inputRefs.current[index][5] = el;
           }}
           onKeyDown={(e) => handleNextRowKeyDown(e, index, 5)}
-          onChange={(e) =>
-            handleInputChange(index, "itemRemark", e.target.value)
-          }
+          onChange={(e) => {
+            handleInputChange(index, "itemRemark", e.target.value);
+          }}
           style={{ borderRadius: "4px", width: "100%" }}
         />
       ),

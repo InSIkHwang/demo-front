@@ -322,7 +322,6 @@ const ComplexInquiryTable = ({
           salesAmountKRW: 0,
           salesAmountGlobal: 0,
           margin: 0,
-          qty: 0,
         };
       } else {
         newItems[index] = {
