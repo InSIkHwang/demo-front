@@ -504,7 +504,6 @@ const MakeInquiry = () => {
         ...item,
         [field]: value,
       });
-
       setItems((prevItems) => {
         const updatedItems = [...prevItems];
         const itemToUpdate = updatedItems.find(

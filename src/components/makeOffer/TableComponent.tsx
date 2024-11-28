@@ -846,7 +846,6 @@ const TableComponent = ({
       key: "qty",
       width: 60 * zoomLevel,
       render: (text: number, record: any, index: number) => {
-        // itemType이 ITEM이 아닐 경우 qty 값을 0으로 설정
         if (record.itemType !== "ITEM" && record.itemType !== "DASH") {
           return (
             <MemoizedDisplayInput
@@ -859,7 +858,7 @@ const TableComponent = ({
               }}
               onKeyDown={(e) => handleNextRowKeyDown(e, index, 3)}
             ></MemoizedDisplayInput>
-          ); // 화면에는 0을 표시
+          );
         }
 
         return (
@@ -874,6 +873,10 @@ const TableComponent = ({
             }}
             onKeyDown={(e) => handleNextRowKeyDown(e, index, 3)}
             onChange={(value) => {
+              handleInputChange(index, "qty", value);
+            }}
+            onBlur={(e) => {
+              const value = e.target.value;
               const unformattedValue = value.replace(/,/g, "");
               const updatedValue = isNaN(Number(unformattedValue))
                 ? 0
@@ -881,8 +884,6 @@ const TableComponent = ({
               handleInputChange(index, "qty", updatedValue);
             }}
             style={{ width: "100%" }}
-            min={0}
-            step={1}
           />
         );
       },
