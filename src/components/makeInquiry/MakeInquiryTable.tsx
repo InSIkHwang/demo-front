@@ -1075,7 +1075,7 @@ function MakeInquiryTable({
         const tableIndex = record.tableNo - 1;
         return record.itemType === "ITEM" ? (
           <Input
-            type="number"
+            type="text" // type을 text로 변경
             value={text}
             ref={(el) => {
               if (!inputRefs.current[tableIndex]) {
@@ -1088,8 +1088,15 @@ function MakeInquiryTable({
             }}
             onKeyDown={(e) => handleNextRowKeyDown(e, tableIndex, index, 4)}
             onChange={(e) => {
-              const value = parseInt(e.target.value, 10);
-              handleInputChange(index, "qty", isNaN(value) ? 0 : value);
+              handleInputChange(index, "qty", e.target.value);
+            }}
+            onBlur={(e) => {
+              const value = e.target.value;
+              const unformattedValue = value.replace(/,/g, "");
+              const updatedValue = isNaN(Number(unformattedValue))
+                ? 0
+                : Number(unformattedValue);
+              handleInputChange(index, "qty", updatedValue);
             }}
           />
         ) : (
