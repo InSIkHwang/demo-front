@@ -2,17 +2,19 @@ import React, { useState, useEffect } from "react";
 import {
   Table,
   Input,
-  Button as AntButton,
+  Button,
   Select,
   Pagination,
   DatePicker,
   message,
   Tag,
   Divider,
+  Tooltip,
+  Modal,
 } from "antd";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import styled from "styled-components";
-import { fetchOfferList, searchOfferList } from "../api/api";
+import { confirmQutation, fetchOfferList, searchOfferList } from "../api/api";
 import { useNavigate } from "react-router-dom";
 import type { ColumnsType } from "antd/es/table";
 import type { OfferSearchParams, SupplierInquiryListIF } from "../types/types";
@@ -95,16 +97,6 @@ const commonInputStyles = {
   borderRadius: "4px",
   height: "32px",
 };
-
-const Button = styled(AntButton)`
-  background-color: ${(props) => props.theme.blue};
-  color: white;
-  transition: background-color 0.3s;
-
-  &:hover {
-    background-color: ${(props) => props.theme.darkBlue} !important;
-  }
-`;
 
 const PaginationWrapper = styled(Pagination)`
   margin-top: 20px;
@@ -346,6 +338,25 @@ const OfferList = () => {
     setViewMyOfferOnly(e.target.checked);
   };
 
+  const handleConfirmClick = (supplierInquiryId: number) => {
+    Modal.confirm({
+      title: "Confirm Quotation",
+      content: "Are you sure you want to confirm this quotation?",
+      okText: "Confirm",
+      cancelText: "Cancel",
+      onOk: async () => {
+        try {
+          await confirmQutation(supplierInquiryId);
+          message.success("Quotation confirmed successfully.");
+          fetchData();
+        } catch (error) {
+          console.error("Error confirming the quotation:", error);
+          message.error("Failed to confirm the quotation. Please try again.");
+        }
+      },
+    });
+  };
+
   useEffect(() => {
     fetchFilteredData(); // 상태가 변경되면 데이터 재요청
   }, [viewMyOfferOnly]);
@@ -428,6 +439,27 @@ const OfferList = () => {
                   >
                     {profitRate.toFixed(2)}%
                   </Value>
+                </div>
+                <Divider />
+                <div className="info-row">
+                  <span></span>
+                  <Tooltip
+                    title={
+                      supplier.isSendEmail
+                        ? ""
+                        : "Please send Email before confirming"
+                    }
+                  >
+                    <Button
+                      type="primary"
+                      disabled={!supplier.isSendEmail}
+                      onClick={() => {
+                        handleConfirmClick(supplier.supplierInquiryId);
+                      }}
+                    >
+                      Confirm
+                    </Button>
+                  </Tooltip>
                 </div>
               </Card>
             );

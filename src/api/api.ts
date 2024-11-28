@@ -641,6 +641,19 @@ export const changeOfferStatus = async (supplierInquiryId: number) => {
   return response.data;
 };
 
+// Offer PDF 문서번호 체크
+export const checkOfferPdfDocNumber = async (
+  inquiryId: number,
+  supplierInquiryName: string,
+  documentId: number
+) => {
+  const response = await axios.put(
+    `/api/supplier-inquiries/update-name/${inquiryId}?supplierInquiryName=${supplierInquiryName}&documentId=${documentId}`
+  );
+
+  return response.data;
+};
+
 // Offer 메일 전송
 export const sendQuotationMail = async (
   files: File[], // `file`의 타입에 맞게 구체화된 파일 배열
@@ -771,8 +784,8 @@ export const deleteQutation = async (quotationId: number) => {
 };
 
 //QUOTATION 확정
-export const confirmQutation = async (quotationId: number) => {
-  await axios.post(`/api/quotations/confirm/${quotationId}`);
+export const confirmQutation = async (supplierInquiryId: number) => {
+  await axios.post(`/api/quotation/confirm/${supplierInquiryId}`);
 };
 
 //----------------------------------------------------------------------------------

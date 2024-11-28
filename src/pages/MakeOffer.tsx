@@ -16,7 +16,12 @@ import styled from "styled-components";
 import dayjs from "dayjs";
 import FormComponent from "../components/makeOffer/FormComponent";
 import TableComponent from "../components/makeOffer/TableComponent";
-import { changeOfferStatus, editOffer, fetchOfferDetail } from "../api/api";
+import {
+  changeOfferStatus,
+  checkOfferPdfDocNumber,
+  editOffer,
+  fetchOfferDetail,
+} from "../api/api";
 import {
   FormValuesType,
   HeaderFormData,
@@ -33,7 +38,6 @@ import OfferMailSender from "../components/makeOffer/OfferSendMail";
 import { InvCharge } from "./../types/types";
 import TotalCardsComponent from "../components/makeOffer/TotalCardsComponent";
 import { pdf } from "@react-pdf/renderer";
-import { CheckboxChangeEvent } from "antd/es/checkbox";
 
 const FormContainer = styled.div`
   position: relative;
@@ -59,7 +63,6 @@ const MakeOffer = () => {
   const loadDocumentId = {
     documentId: state?.info.documentId || Number(urlDocumentId) || [],
   };
-  const [info, setInfo] = useState<any>(null);
   const [dataSource, setDataSource] = useState<OfferResponse | null>(null);
   const [currentInquiryId, setCurrentInquiryId] = useState<number | null>(null);
   const [currentSupplierInfo, setCurrentSupplierInfo] =
@@ -67,6 +70,11 @@ const MakeOffer = () => {
   const [currentDetailItems, setCurrentDetailItems] = useState<
     ItemDetailType[]
   >([]);
+  const [currentSupplierInquiryName, setCurrentSupplierInquiryName] =
+    useState("");
+  const [newDocumentInfo, setNewDocumentInfo] = useState<FormValuesType | null>(
+    null
+  );
   const [formValues, setFormValues] = useState<FormValuesType>({
     documentId: 0,
     documentNumber: "",
@@ -87,7 +95,7 @@ const MakeOffer = () => {
     discount: 0,
   });
   const [showPDFPreview, setShowPDFPreview] = useState(false);
-  const [language, setLanguage] = useState<string>("KOR");
+  const [language, setLanguage] = useState<string>("ENG");
   const [headerEditModalVisible, setHeaderEditModalVisible] =
     useState<boolean>(false);
   const [pdfHeader, setPdfHeader] = useState<HeaderFormData>({
@@ -254,14 +262,22 @@ const MakeOffer = () => {
           loadDocumentId.documentId
         );
 
-        setInfo(response);
         setDataSource({
           documentInfo: response.documentInfo,
           response: response.response,
         });
+
+        setNewDocumentInfo({
+          ...response.documentInfo,
+          documentNumber:
+            response.response[0].supplierInquiryName ||
+            response.documentInfo.documentNumber,
+        });
+
         setCurrentDetailItems(response.response[0].itemDetail);
         setCurrentSupplierInfo(response.response[0].supplierInfo);
         setCurrentInquiryId(response.response[0].inquiryId);
+        setCurrentSupplierInquiryName(response.response[0].supplierInquiryName);
 
         setFormValues({
           documentId: response.documentInfo.documentId,
@@ -439,6 +455,8 @@ const MakeOffer = () => {
       return;
     }
 
+    applyDcAndCharge("single");
+
     const formattedData = currentDetailItems.map((item: ItemDetailType) => ({
       position: item.position,
       itemDetailId: item.itemDetailId,
@@ -512,10 +530,15 @@ const MakeOffer = () => {
         );
 
         if (currentSupplier) {
-          setInfo(response);
           setDataSource({
             documentInfo: response.documentInfo,
             response: response.response,
+          });
+          setNewDocumentInfo({
+            ...response.documentInfo,
+            documentNumber:
+              response.response[0].supplierInquiryName ||
+              response.documentInfo.documentNumber,
           });
           // 현재 선택된 공급업체의 데이터로 설정
           setCurrentDetailItems(currentSupplier.itemDetail);
@@ -525,6 +548,7 @@ const MakeOffer = () => {
             id: response.documentInfo.customerId,
             name: response.documentInfo.companyName,
           });
+          setCurrentSupplierInquiryName(currentSupplier.supplierInquiryName);
         }
       } catch (error) {
         console.error("Error saving data:", error);
@@ -675,12 +699,14 @@ const MakeOffer = () => {
     const updatedTotalSalesAmountGlobal =
       newTotalSalesAmountGlobal + chargePriceGlobalTotal;
 
-    const totalProfit = totalSalesAmountKRW - totalPurchaseAmountKRW;
+    const totalProfit =
+      totalSalesAmountGlobal * formValues.currency - totalPurchaseAmountKRW;
     const totalProfitPercent = Number(
       ((totalProfit / totalPurchaseAmountKRW) * 100).toFixed(2)
     );
     const updatedTotalProfit =
-      updatedTotalSalesAmountKRW - totalPurchaseAmountKRW;
+      updatedTotalSalesAmountGlobal * formValues.currency -
+      totalPurchaseAmountKRW;
     const updatedTotalProfitPercent = Number(
       ((updatedTotalProfit / totalPurchaseAmountKRW) * 100).toFixed(2)
     );
@@ -778,9 +804,21 @@ const MakeOffer = () => {
         }
       }
 
+      setNewDocumentInfo((prev) =>
+        prev
+          ? {
+              ...prev,
+              documentNumber:
+                currentSupplierInquiryName ||
+                selectedSupplier.supplierInquiryName ||
+                prev.documentNumber,
+            }
+          : null
+      );
       setCurrentDetailItems(selectedSupplier.itemDetail);
       setCurrentSupplierInfo(selectedSupplier.supplierInfo);
       setCurrentInquiryId(selectedSupplier.inquiryId);
+      setCurrentSupplierInquiryName(selectedSupplier.supplierInquiryName);
       setTableTotals({
         totalSalesAmountKRW: 0,
         totalSalesAmountGlobal: 0,
@@ -800,6 +838,21 @@ const MakeOffer = () => {
   const handleSupplierSelect = async (
     values: Array<{ supplierId: number; inquiryId: number }>
   ) => {
+    const selectedSupplierInquiryName = dataSource?.response.find(
+      (supplier) => supplier.inquiryId === values[0].inquiryId
+    )?.supplierInquiryName;
+
+    console.log(dataSource);
+
+    setNewDocumentInfo((prev) =>
+      prev
+        ? {
+            ...prev,
+            documentNumber: selectedSupplierInquiryName || prev.documentNumber,
+          }
+        : null
+    );
+
     // 현재 아이템과 저장된 아이템 비교
     const currentSupplierData = dataSource?.response.find(
       (supplier) => supplier.inquiryId === currentInquiryId
@@ -932,6 +985,10 @@ const MakeOffer = () => {
             setDcInfo={setDcInfo}
             invChargeList={invChargeList}
             setInvChargeList={setInvChargeList}
+            supplierInquiryName={currentSupplierInquiryName}
+            setSupplierInquiryName={setCurrentSupplierInquiryName}
+            setNewDocumentInfo={setNewDocumentInfo}
+            setDataSource={setDataSource}
           />
           <Button
             type="primary"
@@ -972,11 +1029,33 @@ const MakeOffer = () => {
     );
   };
 
+  const clickPdfDownload = async () => {
+    try {
+      const checkDuplicate = await checkOfferPdfDocNumber(
+        currentInquiryId!,
+        currentSupplierInquiryName,
+        loadDocumentId.documentId
+      );
+      if (checkDuplicate) {
+        Modal.error({
+          title: "This document number is already used.",
+          content: "Please change document number.",
+        });
+        return;
+      } else {
+        handlePDFDownload();
+      }
+    } catch (error) {
+      console.error("Update PDF Document Number Error:", error);
+      message.error("Update PDF Document Number Error");
+    }
+  };
+
   const handlePDFDownload = async () => {
     try {
       const doc = (
         <OfferPDFDocument
-          info={formValues}
+          info={newDocumentInfo!}
           items={combinedItemDetails}
           pdfHeader={pdfHeader}
           pdfFooter={pdfFooter}
@@ -1050,6 +1129,8 @@ const MakeOffer = () => {
           link.click();
           document.body.removeChild(link);
           URL.revokeObjectURL(url);
+
+          loadOfferDetail();
         },
         okText: "Download",
         cancelText: "Cancel",
@@ -1167,7 +1248,7 @@ const MakeOffer = () => {
         </Select>
         <Button
           style={{ marginLeft: 10 }}
-          onClick={handlePDFDownload}
+          onClick={clickPdfDownload}
           type="default"
           disabled={selectedSupplierIds.length === 0}
         >
@@ -1182,16 +1263,20 @@ const MakeOffer = () => {
         footer={null}
         width={1200}
       >
-        <OfferMailSender
-          inquiryFormValues={info.documentInfo}
-          handleSubmit={handleSave}
-          pdfFileData={pdfFileData}
-          mailData={mailData}
-          pdfHeader={pdfHeader}
-          selectedSupplierIds={selectedSupplierIds.map(
-            (item) => item.inquiryId
-          )}
-        />
+        {newDocumentInfo ? (
+          <OfferMailSender
+            inquiryFormValues={newDocumentInfo}
+            handleSubmit={handleSave}
+            pdfFileData={pdfFileData}
+            mailData={mailData}
+            pdfHeader={pdfHeader}
+            selectedSupplierIds={selectedSupplierIds.map(
+              (item) => item.inquiryId
+            )}
+          />
+        ) : (
+          <span>Something went wrong.</span>
+        )}
       </Modal>
       <div style={{ marginTop: 50 }}>
         <TotalCardsComponent
@@ -1205,9 +1290,9 @@ const MakeOffer = () => {
           setInvChargeList={setInvChargeList}
         />
       </div>
-      {pdfCustomerTag && isMailSenderVisible && dataSource && (
+      {pdfCustomerTag && isMailSenderVisible && newDocumentInfo && (
         <OfferPDFGenerator
-          info={dataSource.documentInfo}
+          info={newDocumentInfo}
           items={combinedItemDetails}
           pdfHeader={pdfHeader}
           pdfFooter={pdfFooter}
@@ -1220,9 +1305,9 @@ const MakeOffer = () => {
           invChargeList={invChargeList}
         />
       )}
-      {showPDFPreview && dataSource && (
+      {showPDFPreview && newDocumentInfo && (
         <OfferPDFDocument
-          info={formValues}
+          info={newDocumentInfo}
           items={combinedItemDetails}
           pdfHeader={pdfHeader}
           pdfFooter={pdfFooter}

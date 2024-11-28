@@ -165,6 +165,7 @@ export interface SupplierInquiryListIF {
     supplierName: string;
     totalSalesAmountGlobal: number;
     totalPurchaseAmountGlobal: number;
+    isSendEmail: boolean;
   }[];
 }
 
@@ -456,6 +457,7 @@ export interface OfferResponse {
     supplierInfo: SupplierInfo;
     itemDetail: ItemDetailType[];
     pdfUrl: string | null;
+    supplierInquiryName: string;
   }[];
 }
 

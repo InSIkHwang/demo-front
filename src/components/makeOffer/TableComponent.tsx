@@ -25,7 +25,12 @@ import {
 } from "antd";
 import { ColumnsType } from "antd/es/table";
 import styled from "styled-components";
-import { InvCharge, ItemDetailType } from "../../types/types";
+import {
+  FormValuesType,
+  InvCharge,
+  ItemDetailType,
+  OfferResponse,
+} from "../../types/types";
 import {
   DeleteOutlined,
   PlusCircleOutlined,
@@ -140,6 +145,61 @@ const CustomTable = styled(Table)<TableProps>`
   }
 `;
 
+const DocumentContainer = styled.div`
+  padding: 15px 20px;
+  margin-bottom: 20px;
+  background: linear-gradient(to right, #f8f9fa, #ffffff);
+  border-left: 4px solid #1890ff;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const DocumentLabel = styled.span`
+  color: #1890ff;
+  font-size: 16px;
+  font-weight: 600;
+  margin-right: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: relative;
+`;
+
+const DocumentNumber = styled.span`
+  position: relative;
+
+  .ant-input {
+    color: #262626;
+    font-size: 18px;
+    font-weight: 600;
+    border: none;
+    border-bottom: 2px solid #d9d9d9;
+    border-radius: 0;
+    padding: 4px 8px;
+    transition: all 0.3s ease;
+    box-shadow: none;
+
+    &:hover,
+    &:focus {
+      border-bottom-color: #1890ff;
+      box-shadow: 0 1px 0 0 #1890ff;
+    }
+
+    &::placeholder {
+      color: #bfbfbf;
+    }
+  }
+`;
+
+const ButtonGroup = styled.div`
+  float: right;
+  .ant-btn {
+    margin: 0 5px;
+  }
+`;
+
 interface DisplayInputProps extends Omit<InputProps, "value" | "onChange"> {
   value: string | number | null;
   onChange?: (value: string) => void;
@@ -192,6 +252,10 @@ interface TableComponentProps {
   >;
   invChargeList: InvCharge[] | null;
   setInvChargeList: Dispatch<SetStateAction<InvCharge[] | null>>;
+  supplierInquiryName: string;
+  setSupplierInquiryName: Dispatch<SetStateAction<string>>;
+  setNewDocumentInfo: Dispatch<SetStateAction<FormValuesType | null>>;
+  setDataSource: Dispatch<SetStateAction<OfferResponse | null>>;
 }
 
 // DisplayInput 컴포넌트를 TableComponent 외부로 이동
@@ -271,6 +335,10 @@ const TableComponent = ({
   pdfUrl,
   supplierName,
   documentNumber,
+  supplierInquiryName,
+  setSupplierInquiryName,
+  setNewDocumentInfo,
+  setDataSource,
 }: TableComponentProps) => {
   const inputRefs = useRef<(TextAreaRef | null)[][]>([]);
   const [itemCodeOptions, setItemCodeOptions] = useState<
@@ -359,17 +427,17 @@ const TableComponent = ({
     }
   };
 
-  const updateItemId = useCallback(
-    (index: number, itemId: number | null) => {
-      const updatedItems = [...itemDetails];
-      updatedItems[index] = {
-        ...updatedItems[index],
-        itemId,
-      };
-      setItemDetails(updatedItems);
-    },
-    [itemDetails, setItemDetails]
-  );
+  // const updateItemId = useCallback(
+  //   (index: number, itemId: number | null) => {
+  //     const updatedItems = [...itemDetails];
+  //     updatedItems[index] = {
+  //       ...updatedItems[index],
+  //       itemId,
+  //     };
+  //     setItemDetails(updatedItems);
+  //   },
+  //   [itemDetails, setItemDetails]
+  // );
 
   const debouncedFetchItemData = useMemo(
     () =>
@@ -518,7 +586,7 @@ const TableComponent = ({
     setItemDetails(updatedData); // 상태 업데이트
   };
 
-  // 마진에 따라 매출가격을 계산하는 함수 예시
+  // ���진에 따라 ��출가격을 계산하는 함수 예시
   const calculateSalesPrice = (purchasePrice: number, margin: number) => {
     return purchasePrice * (1 + margin / 100); // 마진을 백분율로 적용
   };
@@ -534,7 +602,7 @@ const TableComponent = ({
       e.preventDefault();
 
       if (e.key === "ArrowDown") {
-        // 다음 행부터 순차적으로 검색하여 포커스 가능한 입력 요소 찾기
+        // 다음 행부터 순차적으로 검색하여 포커�� 가능한 입력 요소 ���기
         for (let i = rowIndex + 1; i < inputRefs.current.length; i++) {
           if (inputRefs.current[i]?.[columnIndex]) {
             inputRefs.current[i][columnIndex]?.focus();
@@ -1217,42 +1285,83 @@ const TableComponent = ({
     },
   ];
 
+  const handleSupplierInquiryNameChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    currentOfferId: number
+  ) => {
+    const newValue = e.target.value;
+    setSupplierInquiryName(newValue);
+
+    setDataSource((prevDataSource) => {
+      if (!prevDataSource) return prevDataSource;
+
+      return {
+        ...prevDataSource,
+        response: prevDataSource.response.map((item) => {
+          if (item.inquiryId === currentOfferId) {
+            return {
+              ...item,
+              supplierInquiryName: newValue,
+            };
+          }
+          return item;
+        }),
+      };
+    });
+
+    setNewDocumentInfo((prev) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        documentNumber: newValue,
+      };
+    });
+  };
+
   return (
     <div style={{ overflowX: "auto" }}>
-      <Tooltip title="Load excel file on your local">
-        <Button
-          type="dashed"
-          style={{ margin: "20px 5px" }}
-          onClick={() => setIsModalVisible(true)}
-          icon={<FileExcelOutlined />}
-        >
-          Load Excel File
-        </Button>
-      </Tooltip>
-      <Tooltip title="Export excel file on your table">
-        <Button
-          type="dashed"
-          style={{ margin: "20px 5px" }}
-          icon={<ExportOutlined />}
-          onClick={handleExportButtonClick}
-        >
-          Export Excel
-        </Button>
-      </Tooltip>
-      <div style={{ float: "right" }}>
-        <Tooltip title="Download PDF file before you send">
-          <Button
-            type="dashed"
-            style={{ margin: "20px 5px" }}
-            onClick={() =>
-              handleDownloadPdf(pdfUrl || "", supplierName, documentNumber)
-            }
-            icon={<FileExcelOutlined />}
-          >
-            Download PDF File
-          </Button>
-        </Tooltip>
-      </div>
+      <DocumentContainer>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <DocumentLabel>Document No.</DocumentLabel>
+          <DocumentNumber>
+            <Input
+              value={supplierInquiryName}
+              onChange={(e) => handleSupplierInquiryNameChange(e, offerId)}
+            />
+          </DocumentNumber>
+        </div>
+        <ButtonGroup>
+          <Tooltip title="Load excel file on your local">
+            <Button
+              type="dashed"
+              onClick={() => setIsModalVisible(true)}
+              icon={<FileExcelOutlined />}
+            >
+              Load Excel File
+            </Button>
+          </Tooltip>
+          <Tooltip title="Export excel file on your table">
+            <Button
+              type="dashed"
+              icon={<ExportOutlined />}
+              onClick={handleExportButtonClick}
+            >
+              Export Excel
+            </Button>
+          </Tooltip>
+          <Tooltip title="Download PDF file before you send">
+            <Button
+              type="dashed"
+              onClick={() =>
+                handleDownloadPdf(pdfUrl || "", supplierName, documentNumber)
+              }
+              icon={<FileExcelOutlined />}
+            >
+              Download PDF File
+            </Button>
+          </Tooltip>
+        </ButtonGroup>
+      </DocumentContainer>
       <TotalCardsComponent
         finalTotals={tableTotals}
         applyDcAndCharge={applyDcAndCharge}

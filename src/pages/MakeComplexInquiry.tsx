@@ -1113,7 +1113,8 @@ const MakeComplexInquiry = () => {
 
       // 이익 계산
       const updatedTotalProfit =
-        updatedTotalSalesAmountKRW - totalPurchaseAmountKRW;
+        updatedTotalSalesAmountGlobal * formValues.currency -
+        totalPurchaseAmountKRW;
       const updatedTotalProfitPercent = Number(
         ((updatedTotalProfit / totalPurchaseAmountKRW) * 100).toFixed(2)
       );
@@ -1192,15 +1193,18 @@ const MakeComplexInquiry = () => {
 
         // 파일명 입력을 위한 모달 표시
         modalInstance = Modal.confirm({
-          title: "Quotation File Name",
+          title: "Quotation PDF File",
           content: (
-            <Input
-              defaultValue={defaultFileName}
-              id="fileNameInput"
-              onPressEnter={() => {
-                modalInstance.destroy();
-              }}
-            />
+            <>
+              <span>File name: </span>
+              <Input
+                defaultValue={defaultFileName}
+                id="fileNameInput"
+                onPressEnter={() => {
+                  modalInstance.destroy();
+                }}
+              />
+            </>
           ),
           onOk: async () => {
             const inputElement = document.getElementById(
@@ -1331,12 +1335,7 @@ const MakeComplexInquiry = () => {
         )}
         {documentInfo && documentType === "quotation" ? (
           <OfferMailSender
-            inquiryFormValues={{
-              documentNumber: documentInfo.documentNumber,
-              customer: documentInfo.companyName,
-              refNumber: documentInfo.refNumber,
-              vesselName: documentInfo.vesselName,
-            }}
+            inquiryFormValues={documentInfo}
             handleSubmit={handleSubmit}
             pdfFileData={pdfFileData}
             mailData={mailData}

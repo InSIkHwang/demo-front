@@ -98,6 +98,8 @@ const AddSupplierOnInquiry = () => {
   const [isInquirySearchModalVisible, setIsInquirySearchModalVisible] =
     useState(false);
 
+  console.log(data);
+
   const setModalVisibility = (
     modalType: "header" | "mail" | "inquirySearch",
     isVisible: boolean
@@ -178,7 +180,7 @@ const AddSupplierOnInquiry = () => {
         refNumber: data.documentInfo.refNumber, // 참조 번호
         currencyType: data.documentInfo.currencyType, // 통화 유형
         currency: data.documentInfo.currency, // 통화 금액
-        remark: data.documentInfo.remark, // 비고
+        remark: data.documentInfo.docRemark, // 비고
         supplierName: "", // 공급자 이름은 초기값으로 설정
       });
 
