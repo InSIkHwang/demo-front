@@ -156,10 +156,17 @@ const MakeOffer = () => {
     vesselId: number | null;
   }>({ customerId: null, vesselId: null });
   const navigate = useNavigate();
+  const [activeKey, setActiveKey] = useState<string>("");
 
   useEffect(() => {
     loadOfferDetail();
   }, []);
+
+  useEffect(() => {
+    if (dataSource?.response && dataSource.response.length > 0) {
+      setActiveKey(dataSource.response[0].inquiryId.toString());
+    }
+  }, [dataSource]);
 
   // 소수점 둘째자리까지 반올림하는 함수
   const roundToTwoDecimalPlaces = useCallback((value: number) => {
@@ -783,6 +790,8 @@ const MakeOffer = () => {
   const handleTabChange = async (activeKey: string) => {
     if (!dataSource?.response) return;
 
+    setActiveKey(activeKey);
+
     const selectedSupplier = dataSource.response.find(
       (supplier) => supplier.inquiryId.toString() === activeKey
     );
@@ -841,8 +850,6 @@ const MakeOffer = () => {
     const selectedSupplierInquiryName = dataSource?.response.find(
       (supplier) => supplier.inquiryId === values[0].inquiryId
     )?.supplierInquiryName;
-
-    console.log(dataSource);
 
     setNewDocumentInfo((prev) =>
       prev
@@ -1012,6 +1019,7 @@ const MakeOffer = () => {
       <Tabs
         items={items}
         type="card"
+        activeKey={activeKey}
         onChange={handleTabChange}
         tabBarExtraContent={{
           right: (
@@ -1223,9 +1231,10 @@ const MakeOffer = () => {
           }}
           status={!selectedSupplierIds.length ? "error" : undefined}
           onChange={(value: string) => {
-            // 단일 값을 처리하도록 수정
             const selectedId = JSON.parse(value);
-            handleSupplierSelect([selectedId]); // 배열 호환성을 위해 배열로 감싸서 전달
+            setActiveKey(selectedId.inquiryId.toString());
+            handleTabChange(selectedId.inquiryId.toString());
+            handleSupplierSelect([selectedId]);
           }}
           value={
             selectedSupplierIds.length
