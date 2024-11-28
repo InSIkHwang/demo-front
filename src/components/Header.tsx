@@ -260,13 +260,13 @@ const Header = ({ isAuthenticated, onLogout }: HeaderProps) => {
           >
             견적 제안 - Offer
           </MenuItem>
-          <MenuItem
+          {/* <MenuItem
             onClick={() =>
               handleMenuItemClick(() => navigate("/quotationlist"))
             }
           >
             최종 견적 - FInal Quotations
-          </MenuItem>
+          </MenuItem> */}
           <MenuItem
             onClick={() =>
               handleMenuItemClick(() => navigate("/makecomplexinquiry"))
