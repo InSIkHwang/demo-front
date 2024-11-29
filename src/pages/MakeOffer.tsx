@@ -489,7 +489,7 @@ const MakeOffer = () => {
     try {
       // 중복이 없을 경우 바로 저장
       await saveData(formattedData);
-      loadOfferDetail();
+      // loadOfferDetail();
     } catch (error) {
       message.error("An error occurred while saving data.");
     }
