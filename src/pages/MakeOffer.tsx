@@ -707,14 +707,17 @@ const MakeOffer = () => {
     const updatedTotalSalesAmountGlobal =
       newTotalSalesAmountGlobal + chargePriceGlobalTotal;
 
-    const totalProfit = totalSalesAmountKRW - totalPurchaseAmountKRW;
+    const totalProfit = totalSalesAmountGlobal * 1350 - totalPurchaseAmountKRW;
     const totalProfitPercent = Number(
-      ((totalProfit / totalPurchaseAmountKRW) * 100).toFixed(2)
+      ((totalProfit / (totalSalesAmountGlobal * 1350)) * 100).toFixed(2)
     );
     const updatedTotalProfit =
-      updatedTotalSalesAmountKRW - totalPurchaseAmountKRW;
+      updatedTotalSalesAmountGlobal * 1350 - totalPurchaseAmountKRW;
     const updatedTotalProfitPercent = Number(
-      ((updatedTotalProfit / totalPurchaseAmountKRW) * 100).toFixed(2)
+      (
+        (updatedTotalProfit / (updatedTotalSalesAmountGlobal * 1350)) *
+        100
+      ).toFixed(2)
     );
 
     mode === "multiple"
@@ -865,26 +868,6 @@ const MakeOffer = () => {
           }
         : null
     );
-
-    // 현재 아이템과 저장된 아이템 비교
-    const currentSupplierData = dataSource?.response.find(
-      (supplier) => supplier.inquiryId === currentInquiryId
-    );
-
-    if (currentSupplierData && currentDetailItems) {
-      const isDataEqual = compareItemDetails(
-        currentDetailItems,
-        currentSupplierData.itemDetail
-      );
-
-      if (!isDataEqual) {
-        const shouldSave = await showSaveConfirmModal();
-        if (!shouldSave) {
-          // 저장하지 않기로 했다면 이전 선택 상태 유지
-          return;
-        }
-      }
-    }
 
     setSelectedSupplierIds(values);
 
@@ -1057,7 +1040,8 @@ const MakeOffer = () => {
         });
         return;
       } else {
-        handlePDFDownload();
+        await handlePDFDownload();
+        await handleSave();
       }
     } catch (error) {
       console.error("Update PDF Document Number Error:", error);
@@ -1238,8 +1222,8 @@ const MakeOffer = () => {
           status={!selectedSupplierIds.length ? "error" : undefined}
           onChange={(value: string) => {
             const selectedId = JSON.parse(value);
-            setActiveKey(selectedId.inquiryId.toString());
-            handleTabChange(selectedId.inquiryId.toString());
+            // setActiveKey(selectedId.inquiryId.toString());
+            // handleTabChange(selectedId.inquiryId.toString());
             handleSupplierSelect([selectedId]);
           }}
           value={
