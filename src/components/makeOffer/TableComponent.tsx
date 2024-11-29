@@ -366,6 +366,7 @@ const TableComponent = ({
     setZoomLevel((prev) => Math.max(prev - ZOOM_STEP, MIN_ZOOM));
   };
 
+
   // 공통 데이터 처리 함수
   const updateDataSource = (
     mappedItems: ItemDetailType[],
