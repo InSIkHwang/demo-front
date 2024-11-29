@@ -129,17 +129,16 @@ const styles = StyleSheet.create({
     flexDirection: "column",
   },
   inquiryInfoText: {
-    fontSize: 10,
+    fontSize: 9,
     marginBottom: 5,
     display: "flex",
     flexDirection: "row",
   },
   inquiryInfoLabel: {
-    width: 80, // 라벨의 고정 너비
+    width: 70,
     textAlign: "left",
   },
   inquiryInfoValue: {
-    width: 120,
     textAlign: "left",
   },
   page: {
@@ -374,15 +373,33 @@ const renderHeader = (
           <Text style={styles.inquiryInfoValue}>: {refNumber?.split("")}</Text>
         </View>
       </View>
-      <View style={[styles.inquiryInfoColumn, { alignItems: "flex-end" }]}>
+      <View
+        style={[
+          styles.inquiryInfoColumn,
+          { alignItems: "flex-end", textAlign: "right", flex: 0.5 },
+        ]}
+      >
         <View style={styles.inquiryInfoText}>
-          <Text style={styles.inquiryInfoLabel}>REF No.</Text>
-          <Text style={styles.inquiryInfoValue}>: {docNumber?.split("")}</Text>
+          <Text
+            style={[styles.inquiryInfoLabel, { textAlign: "right", width: 50 }]}
+          >
+            REF No. {"   "}:
+          </Text>
+          <Text
+            style={[styles.inquiryInfoValue, { textAlign: "right", width: 80 }]}
+          >
+            {docNumber?.split("")}
+          </Text>
         </View>
         <View style={styles.inquiryInfoText}>
-          <Text style={styles.inquiryInfoLabel}>DATE</Text>
-          <Text style={styles.inquiryInfoValue}>
-            :{" "}
+          <Text
+            style={[styles.inquiryInfoLabel, { textAlign: "right", width: 50 }]}
+          >
+            DATE {"   "}:
+          </Text>
+          <Text
+            style={[styles.inquiryInfoValue, { textAlign: "right", width: 80 }]}
+          >
             {language === "KOR"
               ? dayjs(registerDate).format("YYYY-MM-DD")
               : dayjs(registerDate).format("DD MMM, YYYY").toUpperCase()}

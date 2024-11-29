@@ -65,7 +65,7 @@ const OfferHeaderEditModal = ({
   onClose,
   onSave,
 }: HeaderEditModalProps) => {
-  const [headerChk, setHeaderChk] = useState<boolean>(false);
+  const [headerChk, setHeaderChk] = useState<boolean>(true);
   const [footerChk, setFooterChk] = useState<boolean>(false);
   const [form] = Form.useForm<HeaderFormData>();
   const [footerText, setFooterText] = useState<string[]>([""]);
@@ -148,7 +148,11 @@ const OfferHeaderEditModal = ({
       >
         Header
       </Checkbox>
-      <Form form={form} disabled={!headerChk}>
+      <Form
+        form={form}
+        disabled={!headerChk}
+        initialValues={defaultHeaderValues}
+      >
         <FormRow>
           <div style={{ display: "flex", gap: "5px", flex: 2 }}>
             <Select
