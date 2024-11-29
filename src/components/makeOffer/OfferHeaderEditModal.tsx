@@ -78,7 +78,7 @@ const OfferHeaderEditModal = ({
     exWork: shipmentTitle === "EX-WORK" ? "JAPAN" : "",
     deliveryTime: "DAYS AFTER ORDER",
     termsOfPayment: "",
-    offerValidity: "DAYS",
+    offerValidity: "30 DAYS",
     partCondition: "",
   };
 

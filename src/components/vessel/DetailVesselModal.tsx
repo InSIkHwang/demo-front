@@ -120,6 +120,8 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
 
   const [form] = Form.useForm();
 
+  const originalImoNumber = vessel.imoNumber;
+
   useEffect(() => {
     const checkUnique = async (
       type: string,
@@ -322,8 +324,8 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
           validateStatus={
             formData.vesselName?.trim().toUpperCase() === "UNKNOWN"
               ? "success"
-              : !isImoUnique
-              ? "warning"
+              : !isImoUnique && originalImoNumber !== Number(formData.imoNumber)
+              ? "error"
               : !formData.imoNumber ||
                 (formData.imoNumber + "").toString().length !== 7
               ? "error"
@@ -332,7 +334,7 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
           help={
             formData.vesselName?.trim().toUpperCase() === "UNKNOWN"
               ? ""
-              : !isImoUnique
+              : !isImoUnique && originalImoNumber !== Number(formData.imoNumber)
               ? "It's a duplicate Imo No."
               : !formData.imoNumber
               ? "Enter IMO number!"
@@ -467,6 +469,8 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
                     : !formData.vesselName ||
                       !formData.hullNumber ||
                       !formData.imoNumber ||
+                      (!isImoUnique &&
+                        originalImoNumber !== Number(formData.imoNumber)) ||
                       (formData.imoNumber + "").toString().length !== 7 ||
                       (customerCompanyName &&
                         selectedCustomer?.companyName !== customerCompanyName)

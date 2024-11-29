@@ -129,10 +129,11 @@ const Card = styled.div`
   width: 280px;
 
   .supplier-name {
-    font-size: 16px;
-    font-weight: 600;
-    color: #1890ff;
+    display: flex;
+    flex-direction: column;
     margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px dotted #e6e6e6;
   }
 
   .info-row {
@@ -144,6 +145,17 @@ const Card = styled.div`
       color: #666;
     }
   }
+`;
+
+const SupplierCode = styled.span`
+  font-size: 18px;
+  font-weight: 600;
+  color: #1890ff;
+`;
+const SupplierName = styled.span`
+  color: #666;
+  font-size: 12px;
+  font-weight: 500;
 `;
 
 const Value = styled.span<{ isZero: boolean }>`
@@ -397,7 +409,10 @@ const OfferList = () => {
 
             return (
               <Card key={supplier.supplierInquiryId}>
-                <div className="supplier-name">{supplier.supplierName}</div>
+                <div className="supplier-name">
+                  <SupplierCode>{supplier.supplierCode}</SupplierCode>
+                  <SupplierName>{supplier.supplierName}</SupplierName>
+                </div>
                 <div className="info-row">
                   <span className="label">Sales Amount:</span>
                   <Value isZero={isSalesZero}>

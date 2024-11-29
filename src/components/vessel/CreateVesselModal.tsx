@@ -267,7 +267,7 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
             formData.vesselName?.trim().toUpperCase() === "UNKNOWN"
               ? "success"
               : !isImoUnique
-              ? "warning"
+              ? "error"
               : !formData.imoNumber ||
                 (formData.imoNumber + "").toString().length !== 7
               ? "error"
@@ -390,6 +390,7 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
                 !formData.imoNumber ||
                 !formData.hullNumber ||
                 !selectedCustomer ||
+                !isImoUnique ||
                 (formData.imoNumber + "").toString().length !== 7
               : !formData.vesselName || !selectedCustomer
           }
