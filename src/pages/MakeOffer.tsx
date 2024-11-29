@@ -706,14 +706,12 @@ const MakeOffer = () => {
     const updatedTotalSalesAmountGlobal =
       newTotalSalesAmountGlobal + chargePriceGlobalTotal;
 
-    const totalProfit =
-      totalSalesAmountGlobal * formValues.currency - totalPurchaseAmountKRW;
+    const totalProfit = totalSalesAmountKRW - totalPurchaseAmountKRW;
     const totalProfitPercent = Number(
       ((totalProfit / totalPurchaseAmountKRW) * 100).toFixed(2)
     );
     const updatedTotalProfit =
-      updatedTotalSalesAmountGlobal * formValues.currency -
-      totalPurchaseAmountKRW;
+      updatedTotalSalesAmountKRW - totalPurchaseAmountKRW;
     const updatedTotalProfitPercent = Number(
       ((updatedTotalProfit / totalPurchaseAmountKRW) * 100).toFixed(2)
     );

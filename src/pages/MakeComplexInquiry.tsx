@@ -1113,8 +1113,7 @@ const MakeComplexInquiry = () => {
 
       // 이익 계산
       const updatedTotalProfit =
-        updatedTotalSalesAmountGlobal * formValues.currency -
-        totalPurchaseAmountKRW;
+        updatedTotalSalesAmountKRW - totalPurchaseAmountKRW;
       const updatedTotalProfitPercent = Number(
         ((updatedTotalProfit / totalPurchaseAmountKRW) * 100).toFixed(2)
       );

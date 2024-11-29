@@ -392,7 +392,7 @@ const OfferList = () => {
             const profitRate =
               supplier.totalSalesAmountGlobal === 0
                 ? 0
-                : (profit / supplier.totalSalesAmountGlobal) * 100;
+                : (profit / supplier.totalPurchaseAmountGlobal) * 100;
             const isProfitNegative = profit < 0;
 
             return (
