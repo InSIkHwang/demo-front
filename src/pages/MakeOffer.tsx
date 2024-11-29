@@ -568,6 +568,7 @@ const MakeOffer = () => {
 
   const handlePDFPreview = () => {
     setShowPDFPreview((prevState) => !prevState);
+    applyDcAndCharge("multiple");
   };
 
   const handleLanguageChange = (value: string) => {
@@ -838,6 +839,13 @@ const MakeOffer = () => {
         totalProfit: 0,
         totalProfitPercent: 0,
       });
+      handleSupplierSelect([
+        {
+          supplierId: selectedSupplier.supplierInfo.supplierId,
+          inquiryId: selectedSupplier.inquiryId,
+        },
+      ]);
+      setShowPDFPreview(false);
     }
   };
 
