@@ -238,6 +238,7 @@ const MakeComplexInquiry = () => {
   const [isMailSenderVisible, setIsMailSenderVisible] = useState(false);
   const [isInquirySearchModalVisible, setIsInquirySearchModalVisible] =
     useState(false);
+  const [language, setLanguage] = useState<string>("ENG");
   const [finalTotals, setFinalTotals] = useState({
     totalSalesAmountKRW: 0,
     totalSalesAmountGlobal: 0,
@@ -729,19 +730,9 @@ const MakeComplexInquiry = () => {
     setShowPDFPreview((prevState) => !prevState);
   };
 
-  const handleLanguageChange = useCallback((value: string, id: number) => {
-    // PDF 생성용 태그만 별도 업데이트
-    setPdfSupplierTag((prevTags) =>
-      prevTags.map((tag) =>
-        tag.id === id ? { ...tag, communicationLanguage: value } : tag
-      )
-    );
-    setSupplierTags((prevTags) =>
-      prevTags.map((tag) =>
-        tag.id === id ? { ...tag, communicationLanguage: value } : tag
-      )
-    );
-  }, []);
+  const handleLanguageChange = (value: string) => {
+    setLanguage(value);
+  };
 
   const fetchInquirySearchResults = async () => {
     if (!inquirySearchMakerName) return;
@@ -1113,9 +1104,12 @@ const MakeComplexInquiry = () => {
 
       // 이익 계산
       const updatedTotalProfit =
-        updatedTotalSalesAmountKRW - totalPurchaseAmountKRW;
+        updatedTotalSalesAmountGlobal * 1350 - totalPurchaseAmountKRW;
       const updatedTotalProfitPercent = Number(
-        ((updatedTotalProfit / totalPurchaseAmountKRW) * 100).toFixed(2)
+        (
+          (updatedTotalProfit / (updatedTotalSalesAmountGlobal * 1350)) *
+          100
+        ).toFixed(2)
       );
 
       setFinalTotals({
@@ -1178,7 +1172,7 @@ const MakeComplexInquiry = () => {
             pdfHeader={quotationPdfHeader}
             pdfFooter={quotationPdfFooter}
             viewMode={false} // viewMode를 false로 변경
-            language={"ENG"}
+            language={language}
             finalTotals={finalTotals}
             dcInfo={dcInfo}
             invChargeList={invChargeList}
@@ -1397,11 +1391,9 @@ const MakeComplexInquiry = () => {
         </Button>
         <span style={{ marginLeft: 20 }}>LANGUAGE: </span>
         <Select
-          style={{ width: 100, float: "left", marginLeft: 10 }}
-          value={pdfSupplierTag[0]?.communicationLanguage}
-          onChange={(value) =>
-            handleLanguageChange(value, pdfSupplierTag[0]?.id)
-          }
+          style={{ width: 100, marginLeft: 10 }}
+          value={language}
+          onChange={handleLanguageChange}
         >
           <Select.Option value="KOR">KOR</Select.Option>
           <Select.Option value="ENG">ENG</Select.Option>
@@ -1470,7 +1462,7 @@ const MakeComplexInquiry = () => {
           items={getSelectedSupplierItems()}
           pdfHeader={quotationPdfHeader}
           pdfFooter={quotationPdfFooter}
-          language={"ENG"}
+          language={language}
           setMailData={setMailData}
           setPdfFileData={setPdfFileData}
           customerTag={pdfCustomerTag}
@@ -1486,7 +1478,7 @@ const MakeComplexInquiry = () => {
           pdfHeader={quotationPdfHeader}
           pdfFooter={quotationPdfFooter}
           viewMode={true}
-          language={"ENG"}
+          language={language}
           finalTotals={finalTotals}
           dcInfo={dcInfo}
           invChargeList={invChargeList}

@@ -185,10 +185,6 @@ const DetailOrderModal = ({
       ? ((totalMarginAmountKrw / purchaseMarginAmount) * 100).toFixed(2)
       : 0;
 
-  const handleEditClick = () => {
-    console.log("Edit");
-  };
-
   const handleDeleteClick = () => {
     Modal.confirm({
       title: "Delete Confirmation",
@@ -258,6 +254,15 @@ const DetailOrderModal = ({
       },
     },
     {
+      title: "Remark",
+      dataIndex: "itemRemark",
+      key: "itemRemark",
+      width: 100,
+      render: (text: string, record: any) => {
+        return text;
+      },
+    },
+    {
       title: "Sales Amount",
       dataIndex: "salesAmountKRW",
       key: "salesAmountKRW",
@@ -314,7 +319,12 @@ const DetailOrderModal = ({
       open={open}
       onCancel={onClose}
       footer={[
-        <Button type="default" key="edit" onClick={handleEditClick}>
+        <Button
+          type="primary"
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+        >
           Edit
         </Button>,
         <Button key="delete" danger onClick={handleDeleteClick}>
