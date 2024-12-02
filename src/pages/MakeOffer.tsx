@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   Button,
@@ -157,6 +163,7 @@ const MakeOffer = () => {
   }>({ customerId: null, vesselId: null });
   const navigate = useNavigate();
   const [activeKey, setActiveKey] = useState<string>("");
+  const prevCombinedItemDetails = useRef<typeof combinedItemDetails>([]);
 
   useEffect(() => {
     loadOfferDetail();
@@ -783,7 +790,16 @@ const MakeOffer = () => {
 
   useEffect(() => {
     if (combinedItemDetails.length > 0 && !showPDFPreview) {
-      applyDcAndCharge("multiple");
+      // 이전 상태와 현재 상태를 비교하여 실제 변경이 있을 때만 실행
+      const hasChanged =
+        JSON.stringify(combinedItemDetails) !==
+        JSON.stringify(prevCombinedItemDetails.current);
+
+      if (hasChanged) {
+        console.log("combinedItemDetails", combinedItemDetails);
+        prevCombinedItemDetails.current = combinedItemDetails;
+        applyDcAndCharge("multiple");
+      }
     }
   }, [combinedItemDetails, activeKey, showPDFPreview]);
 
