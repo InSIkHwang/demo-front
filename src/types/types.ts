@@ -556,9 +556,9 @@ export interface ComplexInquiry {
 
 export interface HeaderFormData {
   portOfShipment: string | "";
-  exWork: string | "";
   deliveryTime: string | "";
   termsOfPayment: string | "";
+  incoterms: string | "";
   offerValidity: string | "";
   partCondition: string | "";
 }
