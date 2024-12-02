@@ -21,7 +21,10 @@ interface PDFGeneratorProps {
   info: FormValuesType;
   items: ItemDetailType[];
   pdfHeader: HeaderFormData;
-  pdfFooter: string[];
+  pdfFooter: {
+    quotationRemarkId: number | null;
+    quotationRemark: string;
+  }[];
   setMailData: Dispatch<SetStateAction<offerEmailSendData | null>>;
   language: string;
   setPdfFileData: Dispatch<SetStateAction<File | null>>;

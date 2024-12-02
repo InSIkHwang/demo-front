@@ -47,7 +47,10 @@ interface PDFDocumentProps {
   pdfHeader: HeaderFormData;
   viewMode: boolean;
   language: string;
-  pdfFooter: string[];
+  pdfFooter: {
+    quotationRemarkId: number | null;
+    quotationRemark: string;
+  }[];
   finalTotals: {
     totalSalesAmountKRW: number;
     totalSalesAmountGlobal: number;
@@ -710,7 +713,7 @@ const OfferPDFDocument = ({
                   },
                 ]}
               >
-                {index + 1}. {footer}
+                {index + 1}. {footer.quotationRemark}
               </Text>
             ))}
           </View>

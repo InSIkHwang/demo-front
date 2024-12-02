@@ -215,6 +215,7 @@ const MakeComplexInquiry = () => {
   >([]);
   const [inquiryPdfHeader, setInquiryPdfHeader] = useState<string>("");
   const [quotationPdfHeader, setQuotationPdfHeader] = useState<HeaderFormData>({
+    quotationHeaderId: null,
     portOfShipment: "",
     deliveryTime: "",
     termsOfPayment: "",
@@ -222,7 +223,9 @@ const MakeComplexInquiry = () => {
     offerValidity: "",
     partCondition: "",
   });
-  const [quotationPdfFooter, setQuotationPdfFooter] = useState<string[]>([]);
+  const [quotationPdfFooter, setQuotationPdfFooter] = useState<
+    { quotationRemarkId: number | null; quotationRemark: string }[]
+  >([]);
   const [formValues, setFormValues] = useState(INITIAL_FORM_VALUES);
   const [mailDataList, setMailDataList] = useState<emailSendData[]>([]);
   const [isLoading, setIsLoading] = useState(true); // 로딩 상태 변수 추가
@@ -453,6 +456,8 @@ const MakeComplexInquiry = () => {
       dcKrw: 0,
       dcGlobal: 0,
     });
+    setQuotationPdfHeader(inquiryDetail.quotationHeader);
+    setQuotationPdfFooter(inquiryDetail.quotationRemark);
 
     setInvChargeList(invChargeList || []);
   }, [docDataloading, complexInquiryId, inquiryDetail]);
@@ -720,7 +725,7 @@ const MakeComplexInquiry = () => {
 
   const handleQuotationHeaderSave = (
     header: HeaderFormData,
-    footer: string[]
+    footer: { quotationRemarkId: number | null; quotationRemark: string }[]
   ) => {
     setQuotationPdfHeader(header);
     setQuotationPdfFooter(footer);
@@ -1430,6 +1435,8 @@ const MakeComplexInquiry = () => {
         )}
         {documentType === "quotation" && (
           <OfferHeaderEditModal
+            pdfHeader={quotationPdfHeader}
+            pdfFooter={quotationPdfFooter}
             open={headerEditModalVisible}
             onClose={() => toggleModal("header", false)}
             onSave={handleQuotationHeaderSave}

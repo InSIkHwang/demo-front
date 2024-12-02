@@ -147,6 +147,7 @@ export interface offerEmailSendData {
 
 export interface SupplierInquiryListIF {
   supplierInquiryId: number;
+  color: string | "#FFFFFF";
   documentId: number;
   documentNumber: string;
   registerDate: string;
@@ -459,6 +460,11 @@ export interface OfferResponse {
     itemDetail: ItemDetailType[];
     pdfUrl: string | null;
     supplierInquiryName: string;
+    quotationHeader: HeaderFormData;
+    quotationRemark: {
+      quotationRemarkId: number | null;
+      quotationRemark: string;
+    }[];
   }[];
 }
 
@@ -553,9 +559,15 @@ export interface ComplexInquiry {
   discount?: number;
   invChargeList?: InvCharge[];
   inquiryItemDetails: ComplexInquiryItemDetail[];
+  quotationHeader: HeaderFormData;
+  quotationRemark: {
+    quotationRemarkId: number | null;
+    quotationRemark: string;
+  }[];
 }
 
 export interface HeaderFormData {
+  quotationHeaderId: number | null;
   portOfShipment: string | "";
   deliveryTime: string | "";
   termsOfPayment: string | "";

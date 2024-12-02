@@ -715,6 +715,25 @@ export const handleOfferExport = async (inquiryId: number) => {
   return response.data;
 };
 
+//Offer 헤더 저장
+export const saveOfferHeader = async (
+  inquiryId: number,
+  request: {
+    quotationHeader: HeaderFormData;
+    quotationRemark: {
+      quotationRemarkId: number | null;
+      quotationRemark: string;
+    }[];
+  }
+) => {
+  const response = await axios.put(
+    `/api/supplier-inquiries/quotation-headers/${inquiryId}`,
+    request
+  );
+
+  return response.data;
+};
+
 //----------------------------------------------------------------------------------
 // QUOTATION 조회 관련
 

@@ -16,7 +16,7 @@ import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 import { confirmQutation, fetchOfferList, searchOfferList } from "../api/api";
 import { useNavigate } from "react-router-dom";
-import type { ColumnsType } from "antd/es/table";
+import type { ColumnsType, TableProps } from "antd/es/table";
 import type { OfferSearchParams, SupplierInquiryListIF } from "../types/types";
 import Checkbox, { CheckboxChangeEvent } from "antd/es/checkbox";
 import dayjs from "dayjs";
@@ -38,7 +38,10 @@ const Title = styled.h1`
   color: #333;
 `;
 
-const StyledTable = styled(Table<SupplierInquiryListIF>)`
+// StyledTable 컴포넌트 정의 수정
+const StyledTable = styled(Table)<
+  { color?: string } & TableProps<SupplierInquiryListIF>
+>`
   .ant-table-tbody {
     tr {
       &.complex-row {
@@ -49,8 +52,13 @@ const StyledTable = styled(Table<SupplierInquiryListIF>)`
         }
       }
 
+      background-color: ${(props) => props.color || "#FFFFFF"};
+
       &:hover > td {
-        background-color: #fafafa !important;
+        background-color: ${(props) =>
+          props.color === "#FFFFFF"
+            ? "#fafafa"
+            : `${props.color}dd`} !important;
       }
     }
   }
@@ -596,6 +604,7 @@ const OfferList = () => {
                 style: { cursor: "pointer" },
                 className:
                   record.documentType === "COMPLEX" ? "complex-row" : "",
+                color: record.color || "#FFFFFF",
               })}
             />
             <PaginationWrapper

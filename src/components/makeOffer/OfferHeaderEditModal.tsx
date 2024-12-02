@@ -44,7 +44,15 @@ const StyledFormItem = styled(Form.Item)`
 interface HeaderEditModalProps {
   open: boolean;
   onClose: () => void;
-  onSave: (header: HeaderFormData, footer: string[]) => void;
+  onSave: (
+    header: HeaderFormData,
+    footer: { quotationRemarkId: number | null; quotationRemark: string }[]
+  ) => void;
+  pdfHeader: HeaderFormData;
+  pdfFooter: {
+    quotationRemarkId: number | null;
+    quotationRemark: string;
+  }[];
 }
 
 const PART_CONDITION_OPTIONS = [
@@ -83,16 +91,22 @@ const OfferHeaderEditModal = ({
   open,
   onClose,
   onSave,
+  pdfHeader,
+  pdfFooter,
 }: HeaderEditModalProps) => {
   const [headerChk, setHeaderChk] = useState<boolean>(true);
-  const [footerChk, setFooterChk] = useState<boolean>(false);
+  const [footerChk, setFooterChk] = useState<boolean>(pdfFooter.length > 0);
   const [form] = Form.useForm<HeaderFormData>();
-  const [footerText, setFooterText] = useState<string[]>([""]);
-  const [shipmentTitle, setShipmentTitle] = useState<
-    "PORT OF SHIPMENT" | "EX-WORK"
-  >("PORT OF SHIPMENT");
+  const [footerText, setFooterText] = useState<
+    { quotationRemarkId: number | null; quotationRemark: string }[]
+  >(
+    Array.isArray(pdfFooter) && pdfFooter.length > 0
+      ? pdfFooter.map((item) => item || [])
+      : []
+  );
 
-  const defaultHeaderValues = {
+  const INITIAL_HEADER_VALUES = {
+    quotationHeaderId: null,
     portOfShipment: "BUSAN, KOREA",
     deliveryTime: "DAYS AFTER ORDER",
     termsOfPayment: "",
@@ -102,7 +116,10 @@ const OfferHeaderEditModal = ({
   };
 
   const handleAddFooterLine = () => {
-    setFooterText([...footerText, ""]);
+    setFooterText([
+      ...footerText,
+      { quotationRemarkId: null, quotationRemark: "" },
+    ]);
   };
 
   const handleRemoveFooterLine = (index: number) => {
@@ -111,7 +128,10 @@ const OfferHeaderEditModal = ({
 
   const handleFooterChange = (index: number, value: string) => {
     const newFooterText = [...footerText];
-    newFooterText[index] = value;
+    newFooterText[index] = {
+      quotationRemarkId: footerText[index].quotationRemarkId || null,
+      quotationRemark: value,
+    };
     setFooterText(newFooterText);
   };
 
@@ -119,14 +139,22 @@ const OfferHeaderEditModal = ({
     if (!footerChk) {
       setFooterText([]);
     } else {
-      setFooterText([""]);
+      setFooterText(pdfFooter);
     }
-  }, [footerChk]);
+  }, [footerChk, pdfFooter]);
+
+  useEffect(() => {
+    form.setFieldsValue(pdfHeader);
+  }, [form, pdfHeader]);
 
   const handleSave = () => {
     const headerData = headerChk
-      ? form.getFieldsValue()
+      ? {
+          ...form.getFieldsValue(),
+          quotationHeaderId: pdfHeader.quotationHeaderId || null,
+        }
       : {
+          quotationHeaderId: pdfHeader.quotationHeaderId || null,
           portOfShipment: "",
           deliveryTime: "",
           termsOfPayment: "",
@@ -158,20 +186,22 @@ const OfferHeaderEditModal = ({
         checked={headerChk}
         onChange={(e) => {
           setHeaderChk(e.target.checked);
+
           if (!e.target.checked) {
             form.resetFields();
           } else {
-            form.setFieldsValue(defaultHeaderValues);
+            //pdfHeader의 데이터가 모두 빈 배열일 경우 초기값으로 설정
+            if (Object.values(pdfHeader).every((value) => value === "")) {
+              form.setFieldsValue(INITIAL_HEADER_VALUES);
+            } else {
+              form.setFieldsValue(pdfHeader);
+            }
           }
         }}
       >
         Header
       </Checkbox>
-      <Form
-        form={form}
-        disabled={!headerChk}
-        initialValues={defaultHeaderValues}
-      >
+      <Form form={form} disabled={!headerChk} initialValues={pdfHeader}>
         <FormRow>
           <div style={{ display: "flex", gap: "5px", flex: 2 }}>
             <StyledFormItem name="portOfShipment" label="PORT OF SHIPMENT">
@@ -280,7 +310,7 @@ const OfferHeaderEditModal = ({
               {index + 1}.
             </div>
             <Input.TextArea
-              value={text}
+              value={text.quotationRemark}
               onChange={(e) => handleFooterChange(index, e.target.value)}
               autoSize={{ minRows: 1 }}
               disabled={!footerChk}
