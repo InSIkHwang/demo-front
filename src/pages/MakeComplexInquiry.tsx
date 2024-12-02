@@ -216,9 +216,9 @@ const MakeComplexInquiry = () => {
   const [inquiryPdfHeader, setInquiryPdfHeader] = useState<string>("");
   const [quotationPdfHeader, setQuotationPdfHeader] = useState<HeaderFormData>({
     portOfShipment: "",
-    exWork: "",
     deliveryTime: "",
     termsOfPayment: "",
+    incoterms: "",
     offerValidity: "",
     partCondition: "",
   });

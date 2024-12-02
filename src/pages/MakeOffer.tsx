@@ -100,9 +100,9 @@ const MakeOffer = () => {
     useState<boolean>(false);
   const [pdfHeader, setPdfHeader] = useState<HeaderFormData>({
     portOfShipment: "",
-    exWork: "",
     deliveryTime: "",
     termsOfPayment: "",
+    incoterms: "",
     offerValidity: "",
     partCondition: "",
   });
@@ -161,12 +161,6 @@ const MakeOffer = () => {
   useEffect(() => {
     loadOfferDetail();
   }, []);
-
-  useEffect(() => {
-    if (dataSource?.response && dataSource.response.length > 0) {
-      setActiveKey(dataSource.response[0].inquiryId.toString());
-    }
-  }, [dataSource]);
 
   // 소수점 둘째자리까지 반올림하는 함수
   const roundToTwoDecimalPlaces = useCallback((value: number) => {
@@ -274,17 +268,47 @@ const MakeOffer = () => {
           response: response.response,
         });
 
-        setNewDocumentInfo({
-          ...response.documentInfo,
-          documentNumber:
-            response.response[0].supplierInquiryName ||
-            response.documentInfo.documentNumber,
-        });
+        // 현재 선택된 공급업체 찾기
+        const currentSupplier = response.response.find(
+          (supplier: { inquiryId: number }) =>
+            supplier.inquiryId === currentInquiryId
+        );
 
-        setCurrentDetailItems(response.response[0].itemDetail);
-        setCurrentSupplierInfo(response.response[0].supplierInfo);
-        setCurrentInquiryId(response.response[0].inquiryId);
-        setCurrentSupplierInquiryName(response.response[0].supplierInquiryName);
+        if (currentSupplier) {
+          setNewDocumentInfo({
+            ...response.documentInfo,
+            documentNumber:
+              currentSupplier.supplierInquiryName ||
+              response.documentInfo.documentNumber,
+          });
+          // 현재 선택된 공급업체의 데이터로 설정
+          setCurrentDetailItems(currentSupplier.itemDetail);
+          setCurrentSupplierInfo(currentSupplier.supplierInfo);
+          setCurrentInquiryId(currentSupplier.inquiryId);
+          setPdfCustomerTag({
+            id: response.documentInfo.customerId,
+            name: response.documentInfo.companyName,
+          });
+          setCurrentSupplierInquiryName(currentSupplier.supplierInquiryName);
+        } else {
+          // 현재 선택된 공급업체가 없는 경우 (초기 로드)
+          setNewDocumentInfo({
+            ...response.documentInfo,
+            documentNumber:
+              response.response[0].supplierInquiryName ||
+              response.documentInfo.documentNumber,
+          });
+          setCurrentDetailItems(response.response[0].itemDetail);
+          setCurrentSupplierInfo(response.response[0].supplierInfo);
+          setCurrentInquiryId(response.response[0].inquiryId);
+          setCurrentSupplierInquiryName(
+            response.response[0].supplierInquiryName
+          );
+          // 초기 로드시에만 activeKey 설정
+          if (!activeKey) {
+            setActiveKey(response.response[0].inquiryId.toString());
+          }
+        }
 
         setFormValues({
           documentId: response.documentInfo.documentId,
@@ -305,14 +329,18 @@ const MakeOffer = () => {
           imoNo: response.documentInfo.imoNo || 0,
           discount: response.documentInfo.discount || 0,
         });
-        setPdfCustomerTag({
-          id: response.documentInfo.customerId,
-          name: response.documentInfo.companyName,
-        });
+
         setCusVesIdList({
           customerId: response.documentInfo.customerId,
           vesselId: response.documentInfo.vesselId,
         });
+
+        handleSupplierSelect([
+          {
+            supplierId: response.response[0].supplierInfo.supplierId,
+            inquiryId: response.response[0].inquiryId,
+          },
+        ]);
 
         if (response.documentInfo.discount) {
           setDcInfo({
@@ -326,7 +354,6 @@ const MakeOffer = () => {
         message.error("An error occurred while importing data.");
       }
     }
-
     setIsLoading(false);
   };
 
@@ -456,7 +483,7 @@ const MakeOffer = () => {
     setCurrentDetailItems(updatedItems);
   };
 
-  const handleSave = async () => {
+  const handleSave = async (tabChange: boolean, activeKeyParam: string) => {
     if (!currentDetailItems || currentDetailItems.length === 0) {
       message.error("Please add an item");
       return;
@@ -487,9 +514,16 @@ const MakeOffer = () => {
     }));
 
     try {
-      // 중복이 없을 경우 바로 저장
       await saveData(formattedData);
-      // loadOfferDetail();
+      await loadOfferDetail();
+
+      if (tabChange) {
+        // 탭 변경 시에만 새로운 탭으로 이동
+        handleTabChangeWithoutSave(activeKeyParam);
+      } else {
+        // 일반 저장 시에는 현재 탭 유지
+        setActiveKey(activeKeyParam);
+      }
     } catch (error) {
       message.error("An error occurred while saving data.");
     }
@@ -567,8 +601,8 @@ const MakeOffer = () => {
   };
 
   const handlePDFPreview = () => {
-    setShowPDFPreview((prevState) => !prevState);
     applyDcAndCharge("multiple");
+    setShowPDFPreview((prevState) => !prevState);
   };
 
   const handleLanguageChange = (value: string) => {
@@ -747,6 +781,12 @@ const MakeOffer = () => {
         });
   };
 
+  useEffect(() => {
+    if (combinedItemDetails.length > 0 && !showPDFPreview) {
+      applyDcAndCharge("multiple");
+    }
+  }, [combinedItemDetails, activeKey, showPDFPreview]);
+
   /**********************************************************************/
 
   // 아이템 데이터 비교 함수
@@ -772,60 +812,30 @@ const MakeOffer = () => {
   };
 
   // 저장 확인 모달을 보여주는 함수
-  const showSaveConfirmModal = async (): Promise<boolean> => {
-    return new Promise((resolve) => {
-      Modal.confirm({
-        title: "Unsaved Changes",
-        content: "Do you want to save the current changes?",
-        okText: "Save",
-        cancelText: "Cancel",
-        onOk: async () => {
-          await handleSave();
-          resolve(true);
-        },
-        onCancel: () => resolve(false),
-      });
+  const showSaveConfirmModal = async (newActiveKey: string): Promise<void> => {
+    Modal.confirm({
+      title: "Unsaved Changes",
+      content: "Do you want to save the current changes?",
+      okText: "Save",
+      cancelText: "Cancel",
+      onOk: async () => {
+        await handleSave(true, newActiveKey);
+      },
+      onCancel: () => {
+        // 저장하지 않고 탭 변경
+        handleTabChangeWithoutSave(newActiveKey);
+      },
     });
   };
 
-  // 탭 변경 핸들러 수정
-  const handleTabChange = async (activeKey: string) => {
-    if (!dataSource?.response) return;
-
-    setActiveKey(activeKey);
-
-    const selectedSupplier = dataSource.response.find(
-      (supplier) => supplier.inquiryId.toString() === activeKey
+  // 저장하지 않고 탭 변경하는 함수
+  const handleTabChangeWithoutSave = (newActiveKey: string) => {
+    const selectedSupplier = dataSource?.response.find(
+      (supplier) => supplier.inquiryId.toString() === newActiveKey
     );
 
     if (selectedSupplier) {
-      // 현재 아이템과 저장된 아이템 비교
-      const currentSupplierData = dataSource.response.find(
-        (supplier) => supplier.inquiryId === currentInquiryId
-      );
-
-      if (currentSupplierData && currentDetailItems) {
-        const isDataEqual = compareItemDetails(
-          currentDetailItems,
-          currentSupplierData.itemDetail
-        );
-
-        if (!isDataEqual) {
-          await showSaveConfirmModal();
-        }
-      }
-
-      setNewDocumentInfo((prev) =>
-        prev
-          ? {
-              ...prev,
-              documentNumber:
-                currentSupplierInquiryName ||
-                selectedSupplier.supplierInquiryName ||
-                prev.documentNumber,
-            }
-          : null
-      );
+      setActiveKey(newActiveKey);
       setCurrentDetailItems(selectedSupplier.itemDetail);
       setCurrentSupplierInfo(selectedSupplier.supplierInfo);
       setCurrentInquiryId(selectedSupplier.inquiryId);
@@ -849,6 +859,34 @@ const MakeOffer = () => {
         },
       ]);
       setShowPDFPreview(false);
+    }
+  };
+
+  // 탭 변경 핸들러 수정
+  const handleTabChange = async (newActiveKey: string) => {
+    if (!dataSource?.response) return;
+
+    // 현재 탭과 새로운 탭이 같으면 아무 작업도 하지 않음
+    if (activeKey === newActiveKey) return;
+
+    const currentSupplierData = dataSource.response.find(
+      (supplier) => supplier.inquiryId.toString() === activeKey
+    );
+
+    if (currentSupplierData && currentDetailItems) {
+      const isDataEqual = compareItemDetails(
+        currentDetailItems,
+        currentSupplierData.itemDetail
+      );
+
+      if (!isDataEqual) {
+        await showSaveConfirmModal(newActiveKey);
+      } else {
+        // 변경사항이 없으면 바로 탭 변경
+        handleTabChangeWithoutSave(newActiveKey);
+      }
+    } else {
+      handleTabChangeWithoutSave(newActiveKey);
     }
   };
 
@@ -990,7 +1028,7 @@ const MakeOffer = () => {
             type="primary"
             htmlType="submit"
             style={{ float: "right", width: 100, marginBottom: 20 }}
-            onClick={handleSave}
+            onClick={() => handleSave(false, activeKey)}
             disabled={
               !formValues.refNumber || formValues.refNumber.trim() === ""
             }
@@ -1027,6 +1065,8 @@ const MakeOffer = () => {
   };
 
   const clickPdfDownload = async () => {
+    applyDcAndCharge("multiple");
+
     try {
       const checkDuplicate = await checkOfferPdfDocNumber(
         currentInquiryId!,
@@ -1041,7 +1081,7 @@ const MakeOffer = () => {
         return;
       } else {
         await handlePDFDownload();
-        await handleSave();
+        await handleSave(false, activeKey);
       }
     } catch (error) {
       console.error("Update PDF Document Number Error:", error);
@@ -1212,39 +1252,6 @@ const MakeOffer = () => {
         >
           {showPDFPreview ? "Close Preview" : "PDF Preview"}
         </Button>
-        <span style={{ marginLeft: 20 }}>SUPPLIER: </span>
-        <Select
-          // mode="multiple" 제거
-          style={{
-            minWidth: 500,
-            marginLeft: 10,
-          }}
-          status={!selectedSupplierIds.length ? "error" : undefined}
-          onChange={(value: string) => {
-            const selectedId = JSON.parse(value);
-            // setActiveKey(selectedId.inquiryId.toString());
-            // handleTabChange(selectedId.inquiryId.toString());
-            handleSupplierSelect([selectedId]);
-          }}
-          value={
-            selectedSupplierIds.length
-              ? JSON.stringify(selectedSupplierIds[0])
-              : undefined
-          }
-          placeholder="Please select supplier."
-        >
-          {dataSource?.response.map((item) => (
-            <Select.Option
-              key={item.supplierInfo.supplierId}
-              value={JSON.stringify({
-                supplierId: item.supplierInfo.supplierId,
-                inquiryId: item.inquiryId,
-              })}
-            >
-              {item.supplierInfo.supplierCode}
-            </Select.Option>
-          ))}
-        </Select>
         <Button
           style={{ marginLeft: 10 }}
           onClick={clickPdfDownload}
@@ -1265,7 +1272,7 @@ const MakeOffer = () => {
         {newDocumentInfo ? (
           <OfferMailSender
             inquiryFormValues={newDocumentInfo}
-            handleSubmit={handleSave}
+            handleSubmit={() => handleSave(false, activeKey)}
             pdfFileData={pdfFileData}
             mailData={mailData}
             pdfHeader={pdfHeader}

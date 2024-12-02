@@ -414,10 +414,10 @@ const renderHeader = (
           <Text style={styles.headerValue}>: {pdfHeader.portOfShipment}</Text>
         </View>
       )}
-      {pdfHeader?.exWork && (
+      {pdfHeader?.incoterms && (
         <View style={styles.headerMessage}>
-          <Text style={styles.headerLabel}>EX-WORK</Text>
-          <Text style={styles.headerValue}>: {pdfHeader.exWork}</Text>
+          <Text style={styles.headerLabel}>INCOTERMS</Text>
+          <Text style={styles.headerValue}>: {pdfHeader.incoterms}</Text>
         </View>
       )}
       {pdfHeader?.deliveryTime && (

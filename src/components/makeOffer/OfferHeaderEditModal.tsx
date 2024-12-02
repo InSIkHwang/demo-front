@@ -55,9 +55,28 @@ const PART_CONDITION_OPTIONS = [
   "EQUIVALENT",
 ];
 
+const DELIVERY_TIME_OPTIONS = [
+  "DAYS AFTER ORDER",
+  "DAYS AFTER ORDER IN STOCK (Subject to prior sale)",
+];
+
 const TERMS_OF_PAYMENT_OPTIONS = [
   "T/T IN ADVANCE",
   "T/T BASE WITHIN ONE MONTH AFTER DELIVERY",
+];
+
+const INCOTERMS_OPTIONS = [
+  { code: "EXW", name: "EX WORKS" },
+  { code: "FOB", name: "FREE ON BOARD" },
+  { code: "CIF", name: "COST, INSURANCE AND FREIGHT" },
+  { code: "CFR", name: "COST AND FREIGHT" },
+  { code: "DAP", name: "DELIVERED AT PLACE" },
+  { code: "DDP", name: "DELIVERED DUTY PAID" },
+  { code: "FCA", name: "FREE CARRIER" },
+  { code: "FAS", name: "FREE ALONGSIDE SHIP" },
+  { code: "CPT", name: "CARRIAGE PAID TO" },
+  { code: "CIP", name: "CARRIAGE AND INSURANCE PAID TO" },
+  { code: "DPU", name: "DELIVERED PLACE UNLOADED" },
 ];
 
 const OfferHeaderEditModal = ({
@@ -74,10 +93,10 @@ const OfferHeaderEditModal = ({
   >("PORT OF SHIPMENT");
 
   const defaultHeaderValues = {
-    portOfShipment: shipmentTitle === "PORT OF SHIPMENT" ? "BUSAN, KOREA" : "",
-    exWork: shipmentTitle === "EX-WORK" ? "JAPAN" : "",
+    portOfShipment: "BUSAN, KOREA",
     deliveryTime: "DAYS AFTER ORDER",
     termsOfPayment: "",
+    incoterms: "EX WORKS",
     offerValidity: "30 DAYS",
     partCondition: "",
   };
@@ -109,9 +128,9 @@ const OfferHeaderEditModal = ({
       ? form.getFieldsValue()
       : {
           portOfShipment: "",
-          exWork: "",
           deliveryTime: "",
           termsOfPayment: "",
+          incoterms: "",
           offerValidity: "",
           partCondition: "",
         };
@@ -155,48 +174,23 @@ const OfferHeaderEditModal = ({
       >
         <FormRow>
           <div style={{ display: "flex", gap: "5px", flex: 2 }}>
-            <Select
-              value={shipmentTitle}
-              onChange={(value: "PORT OF SHIPMENT" | "EX-WORK") => {
-                setShipmentTitle(value);
-                if (value === "PORT OF SHIPMENT") {
-                  form.setFieldsValue({
-                    portOfShipment: "BUSAN, KOREA",
-                    exWork: "",
-                  });
-                } else {
-                  form.setFieldsValue({
-                    portOfShipment: "",
-                    exWork: "JAPAN",
-                  });
-                }
-              }}
-              style={{ width: 180 }}
-            >
-              <Select.Option value="PORT OF SHIPMENT">
-                PORT OF SHIPMENT
-              </Select.Option>
-              <Select.Option value="EX-WORK">EX-WORK</Select.Option>
-            </Select>
-            <StyledFormItem
-              name={
-                shipmentTitle === "PORT OF SHIPMENT"
-                  ? "portOfShipment"
-                  : "exWork"
-              }
-              style={{ flex: 1 }}
-            >
-              <Input.TextArea
-                placeholder={
-                  shipmentTitle === "PORT OF SHIPMENT"
-                    ? "BUSAN, KOREA"
-                    : "JAPAN"
-                }
-              />
+            <StyledFormItem name="portOfShipment" label="PORT OF SHIPMENT">
+              <Input.TextArea placeholder="BUSAN, KOREA" />
             </StyledFormItem>
           </div>
           <StyledFormItem name="deliveryTime" label="DELIVERY TIME">
-            <Input.TextArea placeholder="DAYS AFTER ORDER" />
+            <AutoComplete
+              value={form.getFieldValue("deliveryTime")}
+              onChange={(value) => form.setFieldsValue({ deliveryTime: value })}
+              style={{ width: "100%" }}
+              options={DELIVERY_TIME_OPTIONS.map((option) => ({
+                value: option,
+                label: option,
+              }))}
+              placeholder="DAYS AFTER ORDER"
+            >
+              <Input.TextArea />
+            </AutoComplete>
           </StyledFormItem>
         </FormRow>
         <FormRow>
@@ -248,6 +242,23 @@ const OfferHeaderEditModal = ({
             >
               <Input.TextArea />
             </AutoComplete>
+          </StyledFormItem>
+          <StyledFormItem name="incoterms" label="INCOTERMS">
+            <Select
+              value={form.getFieldValue("incoterms")}
+              onChange={(value) => form.setFieldsValue({ incoterms: value })}
+              style={{ width: "100%" }}
+              options={INCOTERMS_OPTIONS.map((option) => ({
+                value: option.name,
+                label: `[${option.code}] ${option.name}`,
+              }))}
+              placeholder="Select Incoterms"
+              showSearch
+              filterOption={(input, option) => {
+                const optionValue = option?.label?.toLowerCase() || "";
+                return optionValue.includes(input.toLowerCase());
+              }}
+            />
           </StyledFormItem>
         </FormRow>
       </Form>
