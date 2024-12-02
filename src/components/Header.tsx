@@ -327,7 +327,7 @@ const Header = ({ isAuthenticated, onLogout }: HeaderProps) => {
           <MenuItem
             onClick={() => handleMenuItemClick(() => navigate("/trashlist"))}
           >
-            Trash
+            Trash.
           </MenuItem>
         </SubMenu>
       </SideMenu>
