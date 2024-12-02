@@ -99,6 +99,7 @@ const MakeOffer = () => {
     vesselHullNo: "",
     imoNo: 0,
     discount: 0,
+    color: "#fff",
   });
   const [showPDFPreview, setShowPDFPreview] = useState(false);
   const [language, setLanguage] = useState<string>("ENG");
@@ -555,6 +556,7 @@ const MakeOffer = () => {
           veeselHullNo: formValues.vesselHullNo,
           docRemark: formValues.docRemark,
           customerId: cusVesIdList.customerId,
+          color: formValues.color || "#fff",
         };
 
         await editOffer(

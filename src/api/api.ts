@@ -599,6 +599,7 @@ export const editOffer = async (
     customerId: number;
     veeselHullNo: string | null;
     docRemark: string;
+    color: string;
   },
   itemCostEditList: ItemDataType[],
   discount: number,

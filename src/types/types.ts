@@ -226,6 +226,7 @@ export interface FormValuesType {
   imoNo?: number;
   discount?: number;
   invChargeList?: invCharge[];
+  color?: string;
 }
 
 export interface ItemDataType {

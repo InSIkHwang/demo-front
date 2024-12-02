@@ -7,17 +7,33 @@ import {
   InputNumber,
   Button,
   AutoComplete,
+  ColorPickerProps,
+  ColorPicker,
+  Col,
+  Divider,
+  theme,
+  Row,
 } from "antd";
+import { blue, yellow, presetPalettes, red } from "@ant-design/colors";
 import styled from "styled-components";
 import { FormValuesType, VesselList } from "../../types/types";
 import { chkDuplicateRefNum, fetchCompanyNames } from "../../api/api";
 import CreateCompanyModal from "../company/CreateCompanyModal";
 import { debounce } from "lodash";
 import CreateVesselModal from "../vessel/CreateVesselModal";
+import { Color } from "antd/es/color-picker";
 
 const { Option } = Select;
 
-const Row = styled.div`
+type Presets = Required<ColorPickerProps>["presets"][number];
+
+const genPresets = (presets = presetPalettes) =>
+  Object.entries(presets).map<Presets>(([label, colors]) => ({
+    label,
+    colors,
+  }));
+
+const StyledRow = styled.div`
   display: flex;
   margin-bottom: 5px;
 `;
@@ -27,6 +43,53 @@ const FormItem = styled(Form.Item)`
   margin-right: 10px;
   flex: auto;
 `;
+
+interface ColorPickerComponentProps {
+  onChange: (color: string) => void;
+  defaultValue?: string;
+}
+
+const ColorPickerComponent = ({
+  onChange,
+  defaultValue,
+}: ColorPickerComponentProps) => {
+  const { token } = theme.useToken();
+
+  const presets = genPresets({
+    blue,
+    red,
+    yellow,
+  });
+
+  const customPanelRender: ColorPickerProps["panelRender"] = (
+    _,
+    { components: { Picker, Presets } }
+  ) => (
+    <Row justify="space-between" wrap={false}>
+      <Col span={12}>
+        <Presets />
+      </Col>
+      <Divider type="vertical" style={{ height: "auto" }} />
+      <Col flex="auto">
+        <Picker />
+      </Col>
+    </Row>
+  );
+
+  const handleColorChange = (value: Color) => {
+    onChange(value.toHexString());
+  };
+
+  return (
+    <ColorPicker
+      defaultValue={defaultValue || token.colorPrimary}
+      styles={{ popupOverlayInner: { width: 480 } }}
+      presets={presets}
+      panelRender={customPanelRender}
+      onChange={handleColorChange}
+    />
+  );
+};
 
 interface FormComponentProps {
   formValues: any;
@@ -191,7 +254,7 @@ const FormComponent = ({
   return (
     <>
       <Form form={form} layout="vertical" initialValues={formValues}>
-        <Row>
+        <StyledRow>
           <FormItem
             label="문서번호(Document No.)"
             name="documentNumber"
@@ -306,9 +369,9 @@ const FormComponent = ({
               style={{ width: "100%" }}
             />
           </FormItem>
-        </Row>
+        </StyledRow>
 
-        <Row>
+        <StyledRow>
           <FormItem
             label="매출처(Customer)"
             name="companyName"
@@ -396,8 +459,8 @@ const FormComponent = ({
               onChange={(e) => handleFormChange("vesselHullNo", e.target.value)}
             />
           </FormItem>
-        </Row>
-        <Row>
+        </StyledRow>
+        <StyledRow>
           <FormItem
             label="담당자(Document Manager)"
             name="docManager"
@@ -412,14 +475,27 @@ const FormComponent = ({
           >
             <Input disabled />
           </FormItem>
-          <FormItem label="비고(Remark)" name="docRemark" style={{ flex: 2 }}>
+          <FormItem label="색상(Color)" name="color" style={{ flex: 0.5 }}>
+            <div style={{ width: "100%", display: "flex" }}>
+              <ColorPickerComponent
+                onChange={(color) => handleFormChange("color", color)}
+                defaultValue={formValues.color || "#fff"}
+              />
+              <Input
+                style={{ marginLeft: "10px" }}
+                value={formValues.color || "#fff"}
+                readOnly
+              />
+            </div>
+          </FormItem>
+          <FormItem label="비고(Remark)" name="docRemark" style={{ flex: 1.5 }}>
             <Input.TextArea
               value={formValues.docRemark}
               onChange={(e) => handleFormChange("docRemark", e.target.value)}
               rows={1}
             />
           </FormItem>
-        </Row>
+        </StyledRow>
       </Form>
       {isCustomerModalOpen && (
         <CreateCompanyModal
