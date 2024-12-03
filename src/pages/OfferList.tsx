@@ -627,9 +627,6 @@ const OfferList = () => {
 
                 return {
                   ...rowProps,
-                  onClick: () => {
-                    console.log(record.color);
-                  },
                 };
               }}
             />

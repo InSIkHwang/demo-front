@@ -94,14 +94,14 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   headerMessage: {
-    fontSize: 10,
+    fontSize: 9,
     textAlign: "left",
     padding: "2px 0",
     display: "flex",
     flexDirection: "row",
   },
   headerValue: {
-    fontSize: 10,
+    fontSize: 9,
     textAlign: "left",
     width: "100%",
   },
@@ -114,12 +114,12 @@ const styles = StyleSheet.create({
     margin: "15px 0",
   },
   footerTitle: {
-    fontSize: 10,
+    fontSize: 9,
     textAlign: "left",
     padding: "10px 0",
   },
   footerMessage: {
-    fontSize: 10,
+    fontSize: 9,
     textAlign: "left",
     padding: "2px 0",
   },
@@ -473,8 +473,6 @@ const OfferPDFDocument = ({
   };
   const totalSalesAmount = calculateTotalSalesAmount(items);
   const dcAmountGlobal = totalSalesAmount * (dcInfo.dcPercent / 100);
-
-  console.log(info);
 
   const pdfBody = (
     <Document>

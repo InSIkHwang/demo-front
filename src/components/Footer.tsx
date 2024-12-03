@@ -13,9 +13,7 @@ const FooterDiv = styled.div`
 `;
 
 const Footer = () => {
-  return (
-    <FooterDiv>© Copyright 2024. BAS KOREA All rights reserved.</FooterDiv>
-  );
+  return <FooterDiv>© Copyright 2024. FlowMate All rights reserved.</FooterDiv>;
 };
 
 export default Footer;

@@ -246,7 +246,7 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
             name="vesselName"
             value={formData.vesselName}
             onChange={handleChange}
-            placeholder="BAS VESSEL1"
+            placeholder="FlowMate VESSEL1"
           />
         </StyledFormItem>
         <StyledFormItem

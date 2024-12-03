@@ -103,6 +103,16 @@ const INITIAL_FORM_VALUES: FormValues = {
   documentStatus: "",
 };
 
+const INITIAL_HEADER_VALUES: HeaderFormData = {
+  quotationHeaderId: null,
+  portOfShipment: "BUSAN, KOREA",
+  deliveryTime: "DAYS AFTER ORDER",
+  termsOfPayment: "",
+  incoterms: "EX WORKS",
+  offerValidity: "30 DAYS",
+  partCondition: "",
+};
+
 const INITIAL_ITEM_VALUES: ComplexInquiryItemDetail[] = [
   {
     itemCode: "",
@@ -214,15 +224,9 @@ const MakeComplexInquiry = () => {
     }[]
   >([]);
   const [inquiryPdfHeader, setInquiryPdfHeader] = useState<string>("");
-  const [quotationPdfHeader, setQuotationPdfHeader] = useState<HeaderFormData>({
-    quotationHeaderId: null,
-    portOfShipment: "",
-    deliveryTime: "",
-    termsOfPayment: "",
-    incoterms: "",
-    offerValidity: "",
-    partCondition: "",
-  });
+  const [quotationPdfHeader, setQuotationPdfHeader] = useState<HeaderFormData>(
+    INITIAL_HEADER_VALUES
+  );
   const [quotationPdfFooter, setQuotationPdfFooter] = useState<
     { quotationRemarkId: number | null; quotationRemark: string }[]
   >([]);
@@ -404,7 +408,13 @@ const MakeComplexInquiry = () => {
 
     setIsEditMode(true);
 
-    const { documentInfo, discount, invChargeList } = inquiryDetail;
+    const {
+      documentInfo,
+      discount,
+      invChargeList,
+      quotationHeader,
+      quotationRemark,
+    } = inquiryDetail;
 
     setDocumentInfo({
       documentId: documentInfo.documentId,
@@ -456,8 +466,14 @@ const MakeComplexInquiry = () => {
       dcKrw: 0,
       dcGlobal: 0,
     });
-    setQuotationPdfHeader(inquiryDetail.quotationHeader);
-    setQuotationPdfFooter(inquiryDetail.quotationRemark);
+    setQuotationPdfHeader(quotationHeader || INITIAL_HEADER_VALUES);
+    setQuotationPdfFooter(
+      Array.isArray(quotationRemark) &&
+        quotationRemark.length === 1 &&
+        quotationRemark[0] === null
+        ? []
+        : quotationRemark || []
+    );
 
     setInvChargeList(invChargeList || []);
   }, [docDataloading, complexInquiryId, inquiryDetail]);
@@ -1230,6 +1246,8 @@ const MakeComplexInquiry = () => {
       }
     }
   };
+
+  console.log(quotationPdfHeader);
 
   if (docDataloading || isLoading) {
     return <LoadingSpinner />;
