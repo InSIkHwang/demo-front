@@ -633,6 +633,25 @@ export const editMurgedOffer = async (supplierInquiryIds: number[]) => {
   return response.data;
 };
 
+//Offer 헤더 저장
+export const saveComplexOfferHeader = async (
+  inquiryId: number,
+  request: {
+    quotationHeader: HeaderFormData;
+    quotationRemark: {
+      quotationRemarkId: number | null;
+      quotationRemark: string;
+    }[];
+  }
+) => {
+  const response = await axios.put(
+    `/api/supplier-inquiries/quotation-headers/${inquiryId}`,
+    request
+  );
+
+  return response.data;
+};
+
 //OFFER 상태 변경 (메일 전송 체크)
 export const changeOfferStatus = async (supplierInquiryId: number) => {
   const response = await axios.put(

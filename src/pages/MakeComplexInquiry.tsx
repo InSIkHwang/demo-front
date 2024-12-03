@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import {
   Alert,
@@ -802,13 +802,6 @@ const MakeComplexInquiry = () => {
         supplierTags.length > 0
       ) {
         message.error("Please select supplier.");
-        console.log(
-          pdfSupplierTag[0],
-          selectedSuppliers,
-          documentType,
-          supplierTags.length,
-          supplierTags.length
-        );
 
         return [];
       }
@@ -1246,8 +1239,6 @@ const MakeComplexInquiry = () => {
       }
     }
   };
-
-  console.log(quotationPdfHeader);
 
   if (docDataloading || isLoading) {
     return <LoadingSpinner />;

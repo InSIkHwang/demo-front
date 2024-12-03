@@ -78,6 +78,29 @@ const HeaderTitleWrapper = styled.div`
   }
 `;
 
+const AnimatedSpan = styled.span<{ $delay: number }>`
+  display: inline-block;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition-delay: ${(props) => props.$delay}s;
+
+  ${HeaderTitleWrapper}:hover & {
+    animation: waveFloat 1s ${(props) => props.$delay}s
+      cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+
+  @keyframes waveFloat {
+    0% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-4px);
+    }
+    100% {
+      transform: translateY(-2px);
+    }
+  }
+`;
+
 const HeaderWrapper = styled.div`
   display: flex;
   align-items: center;
@@ -252,6 +275,14 @@ const Header = ({ isAuthenticated, onLogout }: HeaderProps) => {
     setMenuOpen(false);
   };
 
+  const renderAnimatedTitle = (text: string) => {
+    return text.split("").map((char, index) => (
+      <AnimatedSpan key={index} $delay={index * 0.05}>
+        {char}
+      </AnimatedSpan>
+    ));
+  };
+
   return (
     <>
       <StyledHeader>
@@ -261,7 +292,7 @@ const Header = ({ isAuthenticated, onLogout }: HeaderProps) => {
         <HeaderWrapper>
           <HeaderTitleWrapper onClick={() => navigate("/customerInquirylist")}>
             <HeaderLogo src={flowmateLogo} alt="FlowMate Logo" />
-            <HeaderTitle>FlowMate</HeaderTitle>
+            <HeaderTitle>{renderAnimatedTitle("FlowMate")}</HeaderTitle>
           </HeaderTitleWrapper>
         </HeaderWrapper>
         <UserBox>
