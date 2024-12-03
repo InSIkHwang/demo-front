@@ -316,6 +316,13 @@ const MakeOffer = () => {
               ? []
               : currentSupplier.quotationRemark || []
           );
+
+          handleSupplierSelect([
+            {
+              supplierId: currentSupplier.supplierInfo.supplierId,
+              inquiryId: currentSupplier.inquiryId,
+            },
+          ]);
         } else {
           // 현재 선택된 공급업체가 없는 경우 (초기 로드)
           setNewDocumentInfo({
@@ -340,6 +347,13 @@ const MakeOffer = () => {
               ? []
               : response.response[0].quotationRemark || []
           );
+
+          handleSupplierSelect([
+            {
+              supplierId: response.response[0].supplierInfo.supplierId,
+              inquiryId: response.response[0].inquiryId,
+            },
+          ]);
           // 초기 로드시에만 activeKey 설정
           if (!activeKey) {
             setActiveKey(response.response[0].inquiryId.toString());
@@ -371,13 +385,6 @@ const MakeOffer = () => {
           customerId: response.documentInfo.customerId,
           vesselId: response.documentInfo.vesselId,
         });
-
-        handleSupplierSelect([
-          {
-            supplierId: response.response[0].supplierInfo.supplierId,
-            inquiryId: response.response[0].inquiryId,
-          },
-        ]);
 
         if (response.documentInfo.discount) {
           setDcInfo({
