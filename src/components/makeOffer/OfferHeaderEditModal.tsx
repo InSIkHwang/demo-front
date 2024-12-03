@@ -136,6 +136,14 @@ const OfferHeaderEditModal = ({
   };
 
   useEffect(() => {
+    if (pdfFooter.length > 0) {
+      setFooterChk(true);
+    } else {
+      setFooterChk(false);
+    }
+  }, [pdfFooter]);
+
+  useEffect(() => {
     if (!footerChk) {
       setFooterText([]);
     } else {

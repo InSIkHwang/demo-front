@@ -44,21 +44,31 @@ const StyledTable = styled(Table)<
 >`
   .ant-table-tbody {
     tr {
+      // complex-row 스타일을 custom-color-row보다 나중에 선언
+      &.custom-color-row {
+        background-color: var(--row-color) !important;
+
+        &:hover > td {
+          background-color: var(--row-hover-color) !important;
+          filter: brightness(0.95) !important;
+        }
+      }
+
       &.complex-row {
-        background-color: #f5fff0;
+        background-color: #f5fff0 !important;
 
         &:hover > td {
           background-color: #e5f7d3 !important;
         }
       }
 
-      background-color: ${(props) => props.color || "#FFFFFF"};
+      // complex-row가 custom-color-row보다 우선하도록 추가
+      &.complex-row.custom-color-row {
+        background-color: #f5fff0 !important;
 
-      &:hover > td {
-        background-color: ${(props) =>
-          props.color === "#FFFFFF"
-            ? "#fafafa"
-            : `${props.color}dd`} !important;
+        &:hover > td {
+          background-color: #e5f7d3 !important;
+        }
       }
     }
   }
@@ -600,12 +610,28 @@ const OfferList = () => {
                 expandedRowRender,
                 expandRowByClick: true,
               }}
-              onRow={(record) => ({
-                style: { cursor: "pointer" },
-                className:
-                  record.documentType === "COMPLEX" ? "complex-row" : "",
-                color: record.color || "#FFFFFF",
-              })}
+              onRow={(record) => {
+                const rowProps = {
+                  style: {
+                    cursor: "pointer",
+                    // CSS 변수로 색상 설정
+                    ...(record.color && {
+                      "--row-color": record.color,
+                      "--row-hover-color": record.color, // hover 색상도 같이 설정
+                    }),
+                  } as React.CSSProperties,
+                  className: `${
+                    record.documentType === "COMPLEX" ? "complex-row" : ""
+                  } ${record.color ? "custom-color-row" : ""}`,
+                };
+
+                return {
+                  ...rowProps,
+                  onClick: () => {
+                    console.log(record.color);
+                  },
+                };
+              }}
             />
             <PaginationWrapper
               current={currentPage}
