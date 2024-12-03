@@ -645,7 +645,7 @@ export const saveComplexOfferHeader = async (
   }
 ) => {
   const response = await axios.put(
-    `/api/supplier-inquiries/quotation-headers/${inquiryId}`,
+    `/api/complex/inquiry/quotation-headers/${inquiryId}`,
     request
   );
 

@@ -19,6 +19,7 @@ import {
   chkDuplicateDocNum,
   fetchComplexInquiryDetail,
   submitComplexInquiry,
+  saveComplexOfferHeader,
 } from "../api/api";
 import InquiryForm from "../components/MakeComplexInquiry/InquiryForm";
 import PDFDocument from "../components/makeInquiry/PDFDocument";
@@ -265,6 +266,8 @@ const MakeComplexInquiry = () => {
   });
   const [invChargeList, setInvChargeList] = useState<InvCharge[] | null>([]);
   const [documentType, setDocumentType] = useState<string>("inquiry");
+  const [originalDocumentType, setOriginalDocumentType] =
+    useState<string>("inquiry");
   const [documentInfo, setDocumentInfo] = useState<FormValuesType | null>(null);
   const [mailData, setMailData] = useState<offerEmailSendData | null>(null);
   const [pdfFileData, setPdfFileData] = useState<File | null>(null);
@@ -460,6 +463,17 @@ const MakeComplexInquiry = () => {
     });
 
     setItems(inquiryDetail.inquiryItemDetails);
+
+    if (
+      documentInfo.documentStatus === "WAITING_TO_SEND_INQUIRY" ||
+      documentInfo.documentStatus === "WRITING_INQUIRY"
+    ) {
+      setDocumentType("inquiry");
+      setOriginalDocumentType("inquiry");
+    } else {
+      setDocumentType("quotation");
+      setOriginalDocumentType("quotation");
+    }
 
     setDcInfo({
       dcPercent: discount || 0,
@@ -739,12 +753,22 @@ const MakeComplexInquiry = () => {
     setInquiryPdfHeader(text);
   };
 
-  const handleQuotationHeaderSave = (
+  const handleQuotationHeaderSave = async (
     header: HeaderFormData,
     footer: { quotationRemarkId: number | null; quotationRemark: string }[]
   ) => {
     setQuotationPdfHeader(header);
     setQuotationPdfFooter(footer);
+
+    try {
+      await saveComplexOfferHeader(Number(complexInquiryId), {
+        quotationHeader: header,
+        quotationRemark: footer,
+      });
+    } catch (error) {
+      message.error("An error occurred while saving header.");
+      console.error("An error occurred while saving header:", error);
+    }
   };
 
   const handlePDFPreview = () => {
@@ -1423,7 +1447,11 @@ const MakeComplexInquiry = () => {
           }}
         >
           <Select.Option value="inquiry">INQUIRY TO SUPPLIER</Select.Option>
-          <Select.Option value="quotation">QUOTATION TO CUSTOMER</Select.Option>
+          {originalDocumentType === "quotation" && (
+            <Select.Option value="quotation">
+              QUOTATION TO CUSTOMER
+            </Select.Option>
+          )}
         </Select>
         {documentType === "quotation" && (
           <Button
