@@ -63,6 +63,21 @@ interface PDFDocumentProps {
   invChargeList: InvCharge[] | null;
 }
 
+const baseTableCol = {
+  borderRightWidth: 0.5,
+  borderColor: "#000",
+  padding: 5,
+  alignItems: "flex-start" as const,
+};
+
+const baseDashTableCol = {
+  borderRightWidth: 0.5,
+  borderColor: "#000",
+  padding: 5,
+  alignItems: "flex-start" as const,
+  backgroundColor: "#dbdbdb",
+};
+
 // 스타일 정의
 const styles = StyleSheet.create({
   header: {
@@ -164,23 +179,28 @@ const styles = StyleSheet.create({
     borderColor: "#000",
   },
   tableBigCol: {
+    ...baseTableCol,
     flex: 3,
-    borderRightWidth: 0.5,
-    borderColor: "#000",
-    padding: 5,
-    alignItems: "flex-start",
   },
   tableMedCol: {
+    ...baseTableCol,
     flex: 1.5,
-    borderRightWidth: 0.5,
-    borderColor: "#000",
-    padding: 5,
   },
   tableSmallCol: {
+    ...baseTableCol,
     flex: 0.5,
-    borderRightWidth: 0.5,
-    borderColor: "#000",
-    padding: 5,
+  },
+  tableDashBigCol: {
+    ...baseDashTableCol,
+    flex: 3,
+  },
+  tableDashMedCol: {
+    ...baseDashTableCol,
+    flex: 1.5,
+  },
+  tableDashSmallCol: {
+    ...baseDashTableCol,
+    flex: 0.5,
   },
   tableCell: {
     fontSize: 8,
@@ -260,7 +280,7 @@ const renderTableRows = (items: ItemDetailType[], language: string) => {
 
     return (
       <View style={[styles.tableRow]} key={item.position} wrap={false}>
-        {(isItemType || isDashType) && (
+        {isItemType ? (
           <View
             style={[styles.tableSmallCol, { borderLeft: "0.5px solid #000" }]}
           >
@@ -268,8 +288,19 @@ const renderTableRows = (items: ItemDetailType[], language: string) => {
               {getDisplayNo(item.itemType, itemIndex - 1, item.indexNo + "")}
             </Text>
           </View>
-        )}
-        {isItemType || isDashType ? (
+        ) : isDashType ? (
+          <View
+            style={[
+              styles.tableDashSmallCol,
+              { borderLeft: "0.5px solid #000" },
+            ]}
+          >
+            <Text style={styles.tableCell}>
+              {getDisplayNo(item.itemType, itemIndex - 1, item.indexNo + "")}
+            </Text>
+          </View>
+        ) : null}
+        {isItemType ? (
           <>
             <View style={styles.tableMedCol}>
               <Text style={styles.tableCell}>{item.itemCode?.split("")}</Text>
@@ -295,6 +326,43 @@ const renderTableRows = (items: ItemDetailType[], language: string) => {
               </Text>
             </View>
             <View style={styles.tableMedCol}>
+              <Text style={styles.tableCell}>
+                {item.itemRemark !== ""
+                  ? item.itemRemark
+                  : language === "KOR"
+                  ? item.salesAmountKRW?.toLocaleString("ko-KR")
+                  : item.salesAmountGlobal?.toLocaleString("en-US", {
+                      minimumFractionDigits: 2,
+                    })}
+              </Text>
+            </View>
+          </>
+        ) : isDashType ? (
+          <>
+            <View style={styles.tableDashMedCol}>
+              <Text style={styles.tableCell}>{item.itemCode?.split("")}</Text>
+            </View>
+            <View style={styles.tableDashBigCol}>
+              <Text style={styles.tableCell}>{item.itemName?.split("")}</Text>
+            </View>
+            <View style={styles.tableDashSmallCol}>
+              <Text style={styles.tableCell}>{item.qty}</Text>
+            </View>
+            <View style={styles.tableDashSmallCol}>
+              <Text style={styles.tableCell}>{item.unit}</Text>
+            </View>
+            <View style={styles.tableDashMedCol}>
+              <Text style={styles.tableCell}>
+                {item.itemRemark !== ""
+                  ? ""
+                  : language === "KOR"
+                  ? item.salesPriceKRW?.toLocaleString("ko-KR")
+                  : item.salesPriceGlobal?.toLocaleString("en-US", {
+                      minimumFractionDigits: 2,
+                    })}
+              </Text>
+            </View>
+            <View style={styles.tableDashMedCol}>
               <Text style={styles.tableCell}>
                 {item.itemRemark !== ""
                   ? item.itemRemark
