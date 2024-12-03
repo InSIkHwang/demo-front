@@ -267,7 +267,7 @@ const DisplayInput = memo(
         onChange,
         onBlur,
         formatter = (val: number | null | undefined) =>
-          val?.toLocaleString() ?? "",
+          val?.toLocaleString('en-US') ?? "",
         parser = (val: string) => val.replace(/[^a-zA-Z0-9.-]/g, ""),
         ...props
       },
@@ -864,7 +864,7 @@ const TableComponent = ({
         return (
           <MemoizedDisplayInput
             type="text"
-            value={text?.toLocaleString()}
+            value={text?.toLocaleString("ko-KR")}
             ref={(el) => {
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
@@ -963,7 +963,7 @@ const TableComponent = ({
           !record.itemRemark ? (
           <MemoizedDisplayInput
             type="text" // Change to "text" to handle formatted input
-            value={value?.toLocaleString()} // Display formatted value
+            value={value?.toLocaleString("ko-KR")} // Display formatted value
             ref={(el) => {
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
@@ -1011,7 +1011,7 @@ const TableComponent = ({
           !record.itemRemark ? (
           <MemoizedDisplayInput
             type="text" // Change to "text" to handle formatted input
-            value={value?.toLocaleString()} // Display formatted value
+            value={value?.toLocaleString('en-US')} // Display formatted value
             ref={(el) => {
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
@@ -1055,7 +1055,7 @@ const TableComponent = ({
             value={calculateTotalAmount(
               record.purchasePriceKRW,
               record.qty
-            )?.toLocaleString()} // Display formatted value
+            )?.toLocaleString("ko-KR")} // Display formatted value
             onChange={(value) =>
               handleInputChange(index, "purchaseAmountKRW", value)
             }
@@ -1078,7 +1078,7 @@ const TableComponent = ({
             value={calculateTotalAmount(
               record.purchasePriceGlobal,
               record.qty
-            )?.toLocaleString()} // Display formatted value
+            )?.toLocaleString('en-US')} // Display formatted value
             onChange={(value) =>
               handleInputChange(index, "purchaseAmountGlobal", value)
             }
@@ -1104,7 +1104,7 @@ const TableComponent = ({
           !record.itemRemark ? (
           <MemoizedDisplayInput
             type="text" // Change to "text" to handle formatted input
-            value={value?.toLocaleString()} // Display formatted value
+            value={value?.toLocaleString("ko-KR")} // Display formatted value
             ref={(el) => {
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
@@ -1151,7 +1151,7 @@ const TableComponent = ({
           !record.itemRemark ? (
           <MemoizedDisplayInput
             type="text" // Change to "text" to handle formatted input
-            value={value?.toLocaleString()} // Display formatted value
+            value={value?.toLocaleString('en-US')} // Display formatted value
             ref={(el) => {
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
@@ -1195,7 +1195,7 @@ const TableComponent = ({
             value={calculateTotalAmount(
               record.salesPriceKRW,
               record.qty
-            )?.toLocaleString()}
+            )?.toLocaleString("ko-KR")}
             style={{ width: "100%" }}
             readOnly
             addonBefore="₩"
@@ -1215,7 +1215,7 @@ const TableComponent = ({
             value={calculateTotalAmount(
               record.salesPriceGlobal,
               record.qty
-            )?.toLocaleString()}
+            )?.toLocaleString('en-US')}
             style={{ width: "100%" }}
             readOnly
             addonBefore="F"

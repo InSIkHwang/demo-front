@@ -155,31 +155,31 @@ const TotalCardsComponent = ({
         <TotalCard>
           <span>Sales Amount(KRW)</span>
           <span className="value">
-            ₩ {finalTotals.totalSalesAmountKRW?.toLocaleString()}
+            ₩ {finalTotals.totalSalesAmountKRW?.toLocaleString("ko-KR")}
           </span>
         </TotalCard>
         <TotalCard>
           <span>Sales Amount(F)</span>
           <span className="value">
-            F {finalTotals.totalSalesAmountGlobal?.toLocaleString()}
+            F {finalTotals.totalSalesAmountGlobal?.toLocaleString("en-US")}
           </span>
         </TotalCard>
         <TotalCard>
           <span>Purchase Amount(KRW)</span>
           <span className="value">
-            ₩ {finalTotals.totalPurchaseAmountKRW?.toLocaleString()}
+            ₩ {finalTotals.totalPurchaseAmountKRW?.toLocaleString("ko-KR")}
           </span>
         </TotalCard>
         <TotalCard>
           <span>Purchase Amount(F)</span>
           <span className="value">
-            F {finalTotals.totalPurchaseAmountGlobal?.toLocaleString()}
+            F {finalTotals.totalPurchaseAmountGlobal?.toLocaleString("en-US")}
           </span>
         </TotalCard>
         <TotalCard $isHighlight $isPositive={finalTotals.totalProfit >= 0}>
           <span>Profit Amount</span>
           <span className="value">
-            ₩ {finalTotals.totalProfit?.toLocaleString()}
+            ₩ {finalTotals.totalProfit?.toLocaleString("ko-KR")}
           </span>
         </TotalCard>
         <TotalCard

@@ -272,7 +272,7 @@ const DetailOrderModal = ({
           return null;
         }
         const amount = text ?? 0; // 값이 null일 경우 0으로 처리
-        return `₩ ${amount?.toLocaleString()}`;
+        return `₩ ${amount?.toLocaleString('ko-KR')}`;
       },
     },
     {
@@ -285,7 +285,7 @@ const DetailOrderModal = ({
           return null;
         }
         const amount = text ?? 0; // 값이 null일 경우 0으로 처리
-        return `₩ ${amount?.toLocaleString()}`;
+        return `₩ ${amount?.toLocaleString('ko-KR')}`;
       },
     },
     {
@@ -388,32 +388,38 @@ const DetailOrderModal = ({
               </Descriptions.Item>
               <Descriptions.Item label="Total Sales Amount">
                 <AmountTotal>
-                  <span>{`₩ ${totalSalesAmountKrw?.toLocaleString()}`}</span>
+                  <span>{`₩ ${totalSalesAmountKrw?.toLocaleString('ko-KR')}`}</span>
                   <DividerStyled
                     style={{ borderColor: "#ccc" }}
                     type="vertical"
                   />
-                  <span>{`${currencySymbol} ${totalSalesAmountGlobal?.toLocaleString()}`}</span>
+                  <span>{`${currencySymbol} ${totalSalesAmountGlobal?.toLocaleString(
+                    "en-US"
+                  )}`}</span>
                 </AmountTotal>
               </Descriptions.Item>
               <Descriptions.Item label="Total Purchase Amount">
                 <AmountTotal>
-                  <span>{`₩ ${totalPurchaseAmountKrw?.toLocaleString()}`}</span>
+                  <span>{`₩ ${totalPurchaseAmountKrw?.toLocaleString('ko-KR')}`}</span>
                   <DividerStyled
                     style={{ borderColor: "#ccc" }}
                     type="vertical"
                   />
-                  <span>{`${currencySymbol} ${totalPurchaseAmountGlobal?.toLocaleString()}`}</span>
+                  <span>{`${currencySymbol} ${totalPurchaseAmountGlobal?.toLocaleString(
+                    "en-US"
+                  )}`}</span>
                 </AmountTotal>
               </Descriptions.Item>
               <Descriptions.Item label="Total Margin Amount">
                 <AmountTotal>
-                  <span>{`₩ ${totalMarginAmountKrw?.toLocaleString()}`}</span>
+                  <span>{`₩ ${totalMarginAmountKrw?.toLocaleString('ko-KR')}`}</span>
                   <DividerStyled
                     style={{ borderColor: "#ccc" }}
                     type="vertical"
                   />
-                  <span>{`${currencySymbol} ${totalMarginAmountGlobal?.toLocaleString()}`}</span>
+                  <span>{`${currencySymbol} ${totalMarginAmountGlobal?.toLocaleString(
+                    "en-US"
+                  )}`}</span>
                 </AmountTotal>
               </Descriptions.Item>
               <Descriptions.Item label="Purchase Margin Rate">
