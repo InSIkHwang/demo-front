@@ -103,6 +103,16 @@ const INITIAL_FORM_VALUES: FormValues = {
   documentStatus: "",
 };
 
+const INITIAL_HEADER_VALUES: HeaderFormData = {
+  quotationHeaderId: null,
+  portOfShipment: "BUSAN, KOREA",
+  deliveryTime: "DAYS AFTER ORDER",
+  termsOfPayment: "",
+  incoterms: "EX WORKS",
+  offerValidity: "30 DAYS",
+  partCondition: "",
+};
+
 const INITIAL_ITEM_VALUES: ComplexInquiryItemDetail[] = [
   {
     itemCode: "",
@@ -214,15 +224,12 @@ const MakeComplexInquiry = () => {
     }[]
   >([]);
   const [inquiryPdfHeader, setInquiryPdfHeader] = useState<string>("");
-  const [quotationPdfHeader, setQuotationPdfHeader] = useState<HeaderFormData>({
-    portOfShipment: "",
-    deliveryTime: "",
-    termsOfPayment: "",
-    incoterms: "",
-    offerValidity: "",
-    partCondition: "",
-  });
-  const [quotationPdfFooter, setQuotationPdfFooter] = useState<string[]>([]);
+  const [quotationPdfHeader, setQuotationPdfHeader] = useState<HeaderFormData>(
+    INITIAL_HEADER_VALUES
+  );
+  const [quotationPdfFooter, setQuotationPdfFooter] = useState<
+    { quotationRemarkId: number | null; quotationRemark: string }[]
+  >([]);
   const [formValues, setFormValues] = useState(INITIAL_FORM_VALUES);
   const [mailDataList, setMailDataList] = useState<emailSendData[]>([]);
   const [isLoading, setIsLoading] = useState(true); // 로딩 상태 변수 추가
@@ -401,7 +408,13 @@ const MakeComplexInquiry = () => {
 
     setIsEditMode(true);
 
-    const { documentInfo, discount, invChargeList } = inquiryDetail;
+    const {
+      documentInfo,
+      discount,
+      invChargeList,
+      quotationHeader,
+      quotationRemark,
+    } = inquiryDetail;
 
     setDocumentInfo({
       documentId: documentInfo.documentId,
@@ -453,6 +466,14 @@ const MakeComplexInquiry = () => {
       dcKrw: 0,
       dcGlobal: 0,
     });
+    setQuotationPdfHeader(quotationHeader || INITIAL_HEADER_VALUES);
+    setQuotationPdfFooter(
+      Array.isArray(quotationRemark) &&
+        quotationRemark.length === 1 &&
+        quotationRemark[0] === null
+        ? []
+        : quotationRemark || []
+    );
 
     setInvChargeList(invChargeList || []);
   }, [docDataloading, complexInquiryId, inquiryDetail]);
@@ -720,7 +741,7 @@ const MakeComplexInquiry = () => {
 
   const handleQuotationHeaderSave = (
     header: HeaderFormData,
-    footer: string[]
+    footer: { quotationRemarkId: number | null; quotationRemark: string }[]
   ) => {
     setQuotationPdfHeader(header);
     setQuotationPdfFooter(footer);
@@ -1226,6 +1247,8 @@ const MakeComplexInquiry = () => {
     }
   };
 
+  console.log(quotationPdfHeader);
+
   if (docDataloading || isLoading) {
     return <LoadingSpinner />;
   }
@@ -1430,6 +1453,8 @@ const MakeComplexInquiry = () => {
         )}
         {documentType === "quotation" && (
           <OfferHeaderEditModal
+            pdfHeader={quotationPdfHeader}
+            pdfFooter={quotationPdfFooter}
             open={headerEditModalVisible}
             onClose={() => toggleModal("header", false)}
             onSave={handleQuotationHeaderSave}

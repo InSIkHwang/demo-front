@@ -27,6 +27,7 @@ import {
   checkOfferPdfDocNumber,
   editOffer,
   fetchOfferDetail,
+  saveOfferHeader,
 } from "../api/api";
 import {
   FormValuesType,
@@ -62,6 +63,16 @@ const Title = styled.h1`
   margin-bottom: 30px;
   color: #333;
 `;
+
+const INITIAL_HEADER_VALUES: HeaderFormData = {
+  quotationHeaderId: null,
+  portOfShipment: "BUSAN, KOREA",
+  deliveryTime: "DAYS AFTER ORDER",
+  termsOfPayment: "",
+  incoterms: "EX WORKS",
+  offerValidity: "30 DAYS",
+  partCondition: "",
+};
 
 const MakeOffer = () => {
   const { state } = useLocation();
@@ -105,15 +116,12 @@ const MakeOffer = () => {
   const [language, setLanguage] = useState<string>("ENG");
   const [headerEditModalVisible, setHeaderEditModalVisible] =
     useState<boolean>(false);
-  const [pdfHeader, setPdfHeader] = useState<HeaderFormData>({
-    portOfShipment: "",
-    deliveryTime: "",
-    termsOfPayment: "",
-    incoterms: "",
-    offerValidity: "",
-    partCondition: "",
-  });
-  const [pdfFooter, setPdfFooter] = useState<string[]>([]);
+  const [pdfHeader, setPdfHeader] = useState<HeaderFormData>(
+    INITIAL_HEADER_VALUES
+  );
+  const [pdfFooter, setPdfFooter] = useState<
+    { quotationRemarkId: number | null; quotationRemark: string }[]
+  >([]);
   const [pdfCustomerTag, setPdfCustomerTag] = useState<{
     id: number;
     name: string;
@@ -298,6 +306,16 @@ const MakeOffer = () => {
             name: response.documentInfo.companyName,
           });
           setCurrentSupplierInquiryName(currentSupplier.supplierInquiryName);
+          setPdfHeader(
+            currentSupplier.quotationHeader || INITIAL_HEADER_VALUES
+          );
+          setPdfFooter(
+            Array.isArray(currentSupplier.quotationRemark) &&
+              currentSupplier.quotationRemark.length === 1 &&
+              currentSupplier.quotationRemark[0] === null
+              ? []
+              : currentSupplier.quotationRemark || []
+          );
         } else {
           // 현재 선택된 공급업체가 없는 경우 (초기 로드)
           setNewDocumentInfo({
@@ -311,6 +329,16 @@ const MakeOffer = () => {
           setCurrentInquiryId(response.response[0].inquiryId);
           setCurrentSupplierInquiryName(
             response.response[0].supplierInquiryName
+          );
+          setPdfHeader(
+            response.response[0].quotationHeader || INITIAL_HEADER_VALUES
+          );
+          setPdfFooter(
+            Array.isArray(response.response[0].quotationRemark) &&
+              response.response[0].quotationRemark.length === 1 &&
+              response.response[0].quotationRemark[0] === null
+              ? []
+              : response.response[0].quotationRemark || []
           );
           // 초기 로드시에만 activeKey 설정
           if (!activeKey) {
@@ -336,6 +364,7 @@ const MakeOffer = () => {
           vesselHullNo: response.documentInfo.vesselHullNo,
           imoNo: response.documentInfo.imoNo || 0,
           discount: response.documentInfo.discount || 0,
+          color: response.documentInfo.color || "#fff",
         });
 
         setCusVesIdList({
@@ -626,9 +655,41 @@ const MakeOffer = () => {
     setHeaderEditModalVisible(false);
   };
 
-  const handleHeaderSave = (header: HeaderFormData, footer: string[]) => {
+  const handleHeaderSave = async (
+    header: HeaderFormData,
+    footer: { quotationRemarkId: number | null; quotationRemark: string }[]
+  ) => {
+    const selectedSupplier = dataSource?.response.find(
+      (supplier) => supplier.inquiryId.toString() === activeKey
+    );
+
+    if (dataSource && selectedSupplier) {
+      //해당 공급업체의 데이터를 수정
+      const updatedResponse = dataSource.response.map((supplier) =>
+        supplier.inquiryId === selectedSupplier.inquiryId
+          ? {
+              ...supplier,
+              quotationHeader: header,
+              quotationRemark: footer,
+            }
+          : supplier
+      );
+      setDataSource({ ...dataSource, response: updatedResponse });
+    }
+
     setPdfHeader(header);
     setPdfFooter(footer);
+
+    try {
+      const request = {
+        quotationHeader: header,
+        quotationRemark: footer,
+      };
+      await saveOfferHeader(Number(activeKey), request);
+    } catch (error) {
+      message.error("An error occurred while saving header.");
+      console.log(error);
+    }
   };
 
   const showMailSenderModal = () => {
@@ -798,7 +859,6 @@ const MakeOffer = () => {
         JSON.stringify(prevCombinedItemDetails.current);
 
       if (hasChanged) {
-        console.log("combinedItemDetails", combinedItemDetails);
         prevCombinedItemDetails.current = combinedItemDetails;
         applyDcAndCharge("multiple");
       }
@@ -870,6 +930,15 @@ const MakeOffer = () => {
         totalProfit: 0,
         totalProfitPercent: 0,
       });
+
+      setPdfHeader(selectedSupplier.quotationHeader || INITIAL_HEADER_VALUES);
+      setPdfFooter(
+        Array.isArray(selectedSupplier.quotationRemark) &&
+          selectedSupplier.quotationRemark.length === 1 &&
+          selectedSupplier.quotationRemark[0] === null
+          ? []
+          : selectedSupplier.quotationRemark || []
+      );
       handleSupplierSelect([
         {
           supplierId: selectedSupplier.supplierInfo.supplierId,
@@ -1259,6 +1328,8 @@ const MakeOffer = () => {
           <Select.Option value="ENG">ENG</Select.Option>
         </Select>
         <OfferHeaderEditModal
+          pdfHeader={pdfHeader}
+          pdfFooter={pdfFooter}
           open={headerEditModalVisible}
           onClose={handleCloseHeaderModal}
           onSave={handleHeaderSave}

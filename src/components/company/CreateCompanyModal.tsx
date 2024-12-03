@@ -408,7 +408,7 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
             name="code"
             value={formData.code}
             onChange={handleChange}
-            placeholder="BAS"
+            placeholder="FlowMate"
           />
         </StyledFormItem>
         <StyledFormItem
@@ -420,7 +420,7 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
             name="name"
             value={formData.name}
             onChange={handleChange}
-            placeholder="BAS KOREA"
+            placeholder="FlowMate"
           />
         </StyledFormItem>
         {category === "supplier" && (

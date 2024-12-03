@@ -14,6 +14,75 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import flowmateLogo from "../assets/logo/flowmate.png";
+
+const HeaderLogo = styled.img`
+  width: 70px;
+  height: 70px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  filter: drop-shadow(0 0 0 rgba(255, 255, 255, 0));
+`;
+
+const HeaderTitle = styled.div`
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: #ffffff;
+  position: relative;
+
+  &::after {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -4px;
+    left: 0;
+    background: linear-gradient(
+      90deg,
+      #ffffff 0%,
+      rgba(255, 255, 255, 0.5) 100%
+    );
+    transition: width 0.3s ease, transform 0.3s ease;
+    transform-origin: left;
+  }
+`;
+
+const HeaderTitleWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  margin-left: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    ${HeaderLogo} {
+      transform: scale(1.1) rotate(5deg);
+      filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.6));
+    }
+
+    ${HeaderTitle} {
+      text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+      transform: translateY(-1px);
+
+      &::after {
+        width: 100%;
+        transform: scaleX(1);
+      }
+    }
+  }
+
+  &:active {
+    ${HeaderLogo} {
+      transform: scale(0.95);
+    }
+  }
+`;
+
+const HeaderWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  width: 100%;
+`;
 
 const StyledHeader = styled.header`
   display: flex;
@@ -28,36 +97,29 @@ const StyledHeader = styled.header`
   z-index: 2000;
 `;
 
-const HeaderTitle = styled.div`
-  font-size: 26px;
-  font-weight: 700;
-  margin-left: 20px;
-  flex-grow: 1;
-`;
-
 const HeaderMenuBtnWrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background-color: #ffffff;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.1);
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
 
   &:hover {
-    background-color: #f0f0f0;
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
   }
 `;
 
 const HeaderMenuBtnIcon = styled(FontAwesomeIcon)`
-  color: #333;
-  font-size: 24px;
+  color: #ffffff;
+  font-size: 20px;
 
   ${HeaderMenuBtnWrapper}:hover & {
-    color: ${(props) => props.theme.darkBlue};
-    transition: color 0.3s ease;
+    color: #ffffff;
   }
 `;
 
@@ -196,7 +258,12 @@ const Header = ({ isAuthenticated, onLogout }: HeaderProps) => {
         <HeaderMenuBtnWrapper onClick={toggleMenu}>
           <HeaderMenuBtnIcon icon={faBars} />
         </HeaderMenuBtnWrapper>
-        <HeaderTitle>BAS KOREA</HeaderTitle>
+        <HeaderWrapper>
+          <HeaderTitleWrapper onClick={() => navigate("/customerInquirylist")}>
+            <HeaderLogo src={flowmateLogo} alt="FlowMate Logo" />
+            <HeaderTitle>FlowMate</HeaderTitle>
+          </HeaderTitleWrapper>
+        </HeaderWrapper>
         <UserBox>
           {isAuthenticated ? (
             <LogoutButton onClick={onLogout}>
@@ -327,7 +394,7 @@ const Header = ({ isAuthenticated, onLogout }: HeaderProps) => {
           <MenuItem
             onClick={() => handleMenuItemClick(() => navigate("/trashlist"))}
           >
-            Trash.
+            Trash
           </MenuItem>
         </SubMenu>
       </SideMenu>

@@ -21,7 +21,10 @@ interface PDFGeneratorProps {
   info: FormValuesType;
   items: ItemDetailType[];
   pdfHeader: HeaderFormData;
-  pdfFooter: string[];
+  pdfFooter: {
+    quotationRemarkId: number | null;
+    quotationRemark: string;
+  }[];
   setMailData: Dispatch<SetStateAction<offerEmailSendData | null>>;
   language: string;
   setPdfFileData: Dispatch<SetStateAction<File | null>>;
@@ -135,7 +138,6 @@ Thanks & Best Regards`,
 
     // 최종 파일 및 메일 데이터 상태 업데이트
     setPdfFileData(newFile);
-    console.log(mailData);
 
     setMailData(mailData);
   }, [

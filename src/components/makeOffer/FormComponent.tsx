@@ -14,7 +14,7 @@ import {
   theme,
   Row,
 } from "antd";
-import { blue, yellow, presetPalettes, red } from "@ant-design/colors";
+import { presetPalettes } from "@ant-design/colors";
 import styled from "styled-components";
 import { FormValuesType, VesselList } from "../../types/types";
 import { chkDuplicateRefNum, fetchCompanyNames } from "../../api/api";
@@ -26,6 +26,27 @@ import { Color } from "antd/es/color-picker";
 const { Option } = Select;
 
 type Presets = Required<ColorPickerProps>["presets"][number];
+
+const customPresets = {
+  rainbow: [
+    "#FF3333",
+    "#FFA366",
+    "#FFFF99",
+    "#66FF66",
+    "#6699FF",
+    "#9966CC",
+    "#CC99FF",
+  ],
+  pastel: [
+    "#FFB3BA",
+    "#BAFFC9",
+    "#BAE1FF",
+    "#FFFFBA",
+    "#FFB3F7",
+    "#B3FFF7",
+    "#C4C4C4",
+  ],
+};
 
 const genPresets = (presets = presetPalettes) =>
   Object.entries(presets).map<Presets>(([label, colors]) => ({
@@ -55,11 +76,7 @@ const ColorPickerComponent = ({
 }: ColorPickerComponentProps) => {
   const { token } = theme.useToken();
 
-  const presets = genPresets({
-    blue,
-    red,
-    yellow,
-  });
+  const presets = genPresets(customPresets);
 
   const customPanelRender: ColorPickerProps["panelRender"] = (
     _,

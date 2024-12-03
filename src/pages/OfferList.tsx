@@ -16,7 +16,7 @@ import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 import { confirmQutation, fetchOfferList, searchOfferList } from "../api/api";
 import { useNavigate } from "react-router-dom";
-import type { ColumnsType } from "antd/es/table";
+import type { ColumnsType, TableProps } from "antd/es/table";
 import type { OfferSearchParams, SupplierInquiryListIF } from "../types/types";
 import Checkbox, { CheckboxChangeEvent } from "antd/es/checkbox";
 import dayjs from "dayjs";
@@ -38,19 +38,37 @@ const Title = styled.h1`
   color: #333;
 `;
 
-const StyledTable = styled(Table<SupplierInquiryListIF>)`
+// StyledTable 컴포넌트 정의 수정
+const StyledTable = styled(Table)<
+  { color?: string } & TableProps<SupplierInquiryListIF>
+>`
   .ant-table-tbody {
     tr {
+      // complex-row 스타일을 custom-color-row보다 나중에 선언
+      &.custom-color-row {
+        background-color: var(--row-color) !important;
+
+        &:hover > td {
+          background-color: var(--row-hover-color) !important;
+          filter: brightness(0.95) !important;
+        }
+      }
+
       &.complex-row {
-        background-color: #f5fff0;
+        background-color: #f5fff0 !important;
 
         &:hover > td {
           background-color: #e5f7d3 !important;
         }
       }
 
-      &:hover > td {
-        background-color: #fafafa !important;
+      // complex-row가 custom-color-row보다 우선하도록 추가
+      &.complex-row.custom-color-row {
+        background-color: #f5fff0 !important;
+
+        &:hover > td {
+          background-color: #e5f7d3 !important;
+        }
       }
     }
   }
@@ -592,11 +610,25 @@ const OfferList = () => {
                 expandedRowRender,
                 expandRowByClick: true,
               }}
-              onRow={(record) => ({
-                style: { cursor: "pointer" },
-                className:
-                  record.documentType === "COMPLEX" ? "complex-row" : "",
-              })}
+              onRow={(record) => {
+                const rowProps = {
+                  style: {
+                    cursor: "pointer",
+                    // CSS 변수로 색상 설정
+                    ...(record.color && {
+                      "--row-color": record.color,
+                      "--row-hover-color": record.color, // hover 색상도 같이 설정
+                    }),
+                  } as React.CSSProperties,
+                  className: `${
+                    record.documentType === "COMPLEX" ? "complex-row" : ""
+                  } ${record.color ? "custom-color-row" : ""}`,
+                };
+
+                return {
+                  ...rowProps,
+                };
+              }}
             />
             <PaginationWrapper
               current={currentPage}
