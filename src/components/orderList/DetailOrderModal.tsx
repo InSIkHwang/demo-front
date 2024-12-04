@@ -114,7 +114,7 @@ const DetailOrderModal = ({
           setOrderDetail(null);
           const data = await fetchOrderDetail(orderId);
           setOrderDetail(data);
-          const currencyType = orderDetail?.orderDocumentDetail.currencyType;
+          const currencyType = orderDetail?.documentInfo.currencyType;
           if (
             currencyType &&
             currencySymbols[currencyType as keyof typeof currencySymbols]
@@ -137,33 +137,30 @@ const DetailOrderModal = ({
   }, [open, orderId]);
 
   // 총합 계산
-  const totalItem = orderDetail?.orderItemDetailResponseList.reduce(
+  const totalItem = orderDetail?.itemDetailList.reduce(
     (acc, item) => (item.itemType === "ITEM" ? acc + 1 : acc),
     0
   );
 
-  const totalSalesAmountKrw = orderDetail?.orderItemDetailResponseList.reduce(
+  const totalSalesAmountKrw = orderDetail?.itemDetailList.reduce(
     (acc, item) => acc + (item.salesAmountKRW || 0),
     0
   );
 
-  const totalPurchaseAmountKrw =
-    orderDetail?.orderItemDetailResponseList.reduce(
-      (acc, item) => acc + (item.purchaseAmountKRW || 0),
-      0
-    );
+  const totalPurchaseAmountKrw = orderDetail?.itemDetailList.reduce(
+    (acc, item) => acc + (item.purchaseAmountKRW || 0),
+    0
+  );
 
-  const totalSalesAmountGlobal =
-    orderDetail?.orderItemDetailResponseList.reduce(
-      (acc, item) => acc + (item.salesAmountGlobal || 0),
-      0
-    );
+  const totalSalesAmountGlobal = orderDetail?.itemDetailList.reduce(
+    (acc, item) => acc + (item.salesAmountGlobal || 0),
+    0
+  );
 
-  const totalPurchaseAmountGlobal =
-    orderDetail?.orderItemDetailResponseList.reduce(
-      (acc, item) => acc + (item.purchaseAmountGlobal || 0),
-      0
-    );
+  const totalPurchaseAmountGlobal = orderDetail?.itemDetailList.reduce(
+    (acc, item) => acc + (item.purchaseAmountGlobal || 0),
+    0
+  );
 
   // 총 마진 계산
   const totalMarginAmountKrw =
@@ -272,7 +269,7 @@ const DetailOrderModal = ({
           return null;
         }
         const amount = text ?? 0; // 값이 null일 경우 0으로 처리
-        return `₩ ${amount?.toLocaleString('ko-KR')}`;
+        return `₩ ${amount?.toLocaleString("ko-KR")}`;
       },
     },
     {
@@ -285,7 +282,7 @@ const DetailOrderModal = ({
           return null;
         }
         const amount = text ?? 0; // 값이 null일 경우 0으로 처리
-        return `₩ ${amount?.toLocaleString('ko-KR')}`;
+        return `₩ ${amount?.toLocaleString("ko-KR")}`;
       },
     },
     {
@@ -343,36 +340,36 @@ const DetailOrderModal = ({
           <>
             <Descriptions bordered column={2} size="small">
               <Descriptions.Item label="Document Number">
-                {orderDetail.orderDocumentDetail.documentNumber}
+                {orderDetail.documentInfo.documentNumber}
               </Descriptions.Item>
               <Descriptions.Item label="Registration Date">
-                {orderDetail.orderDocumentDetail.registerDate}
+                {orderDetail.documentInfo.registerDate}
               </Descriptions.Item>
               <Descriptions.Item label="Costomer Name">
-                {orderDetail.orderDocumentDetail.companyName}
+                {orderDetail.documentInfo.companyName}
               </Descriptions.Item>
               <Descriptions.Item label="REF NO.">
-                {orderDetail.orderDocumentDetail.refNumber}
+                {orderDetail.documentInfo.refNumber}
               </Descriptions.Item>
               <Descriptions.Item label="Currency">
-                {orderDetail.orderDocumentDetail.currencyType}
+                {orderDetail.documentInfo.currencyType}
               </Descriptions.Item>
               <Descriptions.Item label="Exchange Rate">
-                {`$${orderDetail.orderDocumentDetail.currency?.toFixed(0)}`}
+                {`$${orderDetail.documentInfo.currency?.toFixed(0)}`}
               </Descriptions.Item>
               <Descriptions.Item label="Vessel Name">
-                {orderDetail.orderDocumentDetail.vesselName}
+                {orderDetail.documentInfo.vesselName}
               </Descriptions.Item>
               <Descriptions.Item label="Document Manager">
-                {orderDetail.orderDocumentDetail.docManager}
+                {orderDetail.documentInfo.docManager}
               </Descriptions.Item>
               <Descriptions.Item label="Document Status">
                 <TagStyled color="blue">
-                  {orderDetail.orderDocumentDetail.documentStatus}
+                  {orderDetail.documentInfo.documentStatus}
                 </TagStyled>
               </Descriptions.Item>
               <Descriptions.Item label="Remark">
-                {orderDetail.orderDocumentDetail.docRemark}
+                {orderDetail.documentInfo.docRemark}
               </Descriptions.Item>
             </Descriptions>
             <Descriptions
@@ -388,7 +385,9 @@ const DetailOrderModal = ({
               </Descriptions.Item>
               <Descriptions.Item label="Total Sales Amount">
                 <AmountTotal>
-                  <span>{`₩ ${totalSalesAmountKrw?.toLocaleString('ko-KR')}`}</span>
+                  <span>{`₩ ${totalSalesAmountKrw?.toLocaleString(
+                    "ko-KR"
+                  )}`}</span>
                   <DividerStyled
                     style={{ borderColor: "#ccc" }}
                     type="vertical"
@@ -400,7 +399,9 @@ const DetailOrderModal = ({
               </Descriptions.Item>
               <Descriptions.Item label="Total Purchase Amount">
                 <AmountTotal>
-                  <span>{`₩ ${totalPurchaseAmountKrw?.toLocaleString('ko-KR')}`}</span>
+                  <span>{`₩ ${totalPurchaseAmountKrw?.toLocaleString(
+                    "ko-KR"
+                  )}`}</span>
                   <DividerStyled
                     style={{ borderColor: "#ccc" }}
                     type="vertical"
@@ -412,7 +413,9 @@ const DetailOrderModal = ({
               </Descriptions.Item>
               <Descriptions.Item label="Total Margin Amount">
                 <AmountTotal>
-                  <span>{`₩ ${totalMarginAmountKrw?.toLocaleString('ko-KR')}`}</span>
+                  <span>{`₩ ${totalMarginAmountKrw?.toLocaleString(
+                    "ko-KR"
+                  )}`}</span>
                   <DividerStyled
                     style={{ borderColor: "#ccc" }}
                     type="vertical"
@@ -434,7 +437,7 @@ const DetailOrderModal = ({
             </Divider>
             <TableStyled
               columns={columns}
-              dataSource={orderDetail.orderItemDetailResponseList}
+              dataSource={orderDetail.itemDetailList}
               pagination={false}
               rowKey="position"
               scroll={{ y: 300 }}

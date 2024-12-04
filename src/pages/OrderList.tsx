@@ -11,7 +11,7 @@ import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 import { fetchOrderList } from "../api/api";
 import type { ColumnsType } from "antd/es/table";
-import { orderAllResponses } from "../types/types";
+import { Order, orderAllResponses } from "../types/types";
 import { useNavigate } from "react-router-dom";
 import DetailOrderModal from "../components/orderList/DetailOrderModal";
 
@@ -66,7 +66,7 @@ const StyledTag = styled(Tag)`
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
 `;
 
-const columns: ColumnsType<orderAllResponses> = [
+const columns: ColumnsType<Order> = [
   {
     title: "Document Number",
     dataIndex: "documentNumber",
@@ -125,7 +125,7 @@ const columns: ColumnsType<orderAllResponses> = [
 
 const OrderList = () => {
   const navigate = useNavigate();
-  const [data, setData] = useState<orderAllResponses[]>([]);
+  const [data, setData] = useState<Order[]>([]);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [searchText, setSearchText] = useState<string>("");
@@ -149,7 +149,7 @@ const OrderList = () => {
   const fetchData = async () => {
     try {
       const response = await fetchOrderList(currentPage, itemsPerPage);
-      setData(response.orderAllResponses);
+      setData(response.orderList);
       setTotalCount(response.totalCount);
     } catch (error) {
       console.error("데이터를 가져오는 중 오류가 발생했습니다:", error);
@@ -192,8 +192,8 @@ const OrderList = () => {
   //   }
   // };
 
-  const handleRowClick = (record: orderAllResponses) => {
-    setSelectedOrderId(record.orderId);
+  const handleRowClick = (record: Order) => {
+    setSelectedOrderId(record.orderId ?? null);
     setIsDetailModalOpen(true);
   };
 

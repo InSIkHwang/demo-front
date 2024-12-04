@@ -9,6 +9,7 @@ import {
   Item,
   ItemDataType,
   OfferSearchParams,
+  Order,
   orderAllResponses,
   Quotation,
   Supplier,
@@ -834,7 +835,7 @@ export const confirmQutation = async (supplierInquiryId: number) => {
 export const fetchOrderList = async (page: number, pageSize: number) => {
   const response = await axios.get<{
     totalCount: number;
-    orderAllResponses: orderAllResponses[];
+    orderList: Order[];
   }>("/api/orders", {
     params: {
       page: page - 1, // 페이지는 0부터 시작

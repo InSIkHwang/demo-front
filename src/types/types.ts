@@ -338,19 +338,32 @@ export interface QuotationDetail {
   }>;
 }
 
-export interface orderAllResponses {
-  orderId: number;
+export interface Order {
+  companyName: string;
+  currency: number;
+  currencyType: string;
+  customerId?: number; // optional
+  discount?: number | null;
+  docManager: string;
+  docRemark: string;
+  documentId: number;
   documentNumber: string;
+  documentStatus: string;
+  imoNo?: number; // optional
+  invChargeList?: InvCharge[]; // optional
+  orderId?: number;
+  quotationId?: number;
+  refNumber: string;
   registerDate: string;
   shippingDate: string;
-  companyName: string;
-  refNumber: string;
-  currencyType: string;
-  currency: number;
+  vesselHullNo?: string;
+  vesselId?: number;
   vesselName: string;
-  docRemark: string;
-  docManager: string;
-  documentStatus: string;
+}
+
+export interface orderAllResponses {
+  orderList: Order[];
+  totalCount: number;
 }
 export interface OrderItemDetail {
   itemType: string;
@@ -372,8 +385,10 @@ export interface OrderItemDetail {
 }
 
 export interface OrderResponse {
-  orderDocumentDetail: orderAllResponses;
-  orderItemDetailResponseList: OrderItemDetail[];
+  documentInfo: Order;
+  invChargeList: InvCharge[];
+  itemDetailList: OrderItemDetail[];
+  suppliers: Supplier[];
 }
 
 export interface InvCharge {
