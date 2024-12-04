@@ -117,16 +117,14 @@ interface InquiryFormProps {
       }[]
     >
   >;
-  tagColors: { [id: number]: string };
-  setTagColors: Dispatch<SetStateAction<{ [id: number]: string }>>;
+  mode: string;
 }
 
 const FormComponent = ({
   formValues,
   selectedSuppliers,
   setSelectedSuppliers,
-  tagColors,
-  setTagColors,
+  mode,
 }: InquiryFormProps) => {
   const [supplierSearch, setSupplierSearch] = useState("");
   const [categoryList, setCategoryList] = useState<string[]>([]);
@@ -134,9 +132,6 @@ const FormComponent = ({
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedType, setSelectedType] = useState("");
   const [checkedSuppliers, setCheckedSuppliers] = useState<any[]>([]);
-  const [supplierList, setSupplierList] = useState<
-    { name: string; korName: string; id: number; code: string; email: string }[]
-  >([]);
 
   const [autoSearchSupCompleteOptions, setAutoSearchSupCompleteOptions] =
     useState<{ value: string }[]>([]);
@@ -157,7 +152,6 @@ const FormComponent = ({
       }[];
     }[]
   >([]);
-  const [isFromAutoComplete, setIsFromAutoComplete] = useState(false);
 
   useEffect(() => {
     const fetchCategoryList = async () => {
@@ -172,22 +166,10 @@ const FormComponent = ({
     fetchCategoryList();
   }, []);
 
-  useEffect(() => {
-    if (selectedSuppliers.length > 0) {
-      const initialColors = selectedSuppliers.reduce((colors, supplier) => {
-        colors[supplier.id] = "#007bff";
-        return colors;
-      }, {} as { [id: number]: string });
-
-      setTagColors(initialColors);
-    }
-  }, []);
-
   const showModal = (type: string) => {
     setSelectedType(type);
     setSupplierSearch("");
     setCategoryWord("");
-    setSupplierList([]);
     setMakerSupplierList([]);
     setCheckedSuppliers([]);
     setIsModalVisible(true);
@@ -234,7 +216,6 @@ const FormComponent = ({
           communicationLanguage: supplier.communicationLanguage || "KOR",
           supplierRemark: supplier.supplierRemark || "",
         }));
-        setSupplierList(options);
 
         // 공급자 객체를 포함하여 자동완성 옵션 설정
         setAutoSearchSupCompleteOptions(
@@ -247,8 +228,6 @@ const FormComponent = ({
       } catch (error) {
         message.error("An error occurred while searching.");
       }
-    } else {
-      setSupplierList([]);
     }
   };
 
@@ -390,133 +369,144 @@ const FormComponent = ({
           </InquiryItemForm>
         </FormRow>
         <FormRow>
-          <SearchBox>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                marginRight: 20,
-                width: 400,
-              }}
-            >
-              <AutoComplete
-                value={supplierSearch}
-                onFocus={() => {
-                  setSelectedType("SUPPLIER");
+          {mode === "add" ? (
+            <SearchBox>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  marginRight: 20,
+                  width: 400,
                 }}
-                onChange={(value) => {
-                  handleSearch(value, null);
-                }}
-                onSelect={(value: string, option: any) => {
-                  const selectedSupplier = option.supplier;
-                  if (selectedSupplier) {
-                    setSelectedSuppliers((prevSuppliers) => {
-                      // 중복 제거를 위한 Set 생성
-                      const uniqueIds = new Set(
-                        prevSuppliers.map((supplier) => supplier.id)
-                      );
+              >
+                <AutoComplete
+                  value={supplierSearch}
+                  onFocus={() => {
+                    setSelectedType("SUPPLIER");
+                  }}
+                  onChange={(value) => {
+                    handleSearch(value, null);
+                  }}
+                  onSelect={(value: string, option: any) => {
+                    const selectedSupplier = option.supplier;
+                    if (selectedSupplier) {
+                      setSelectedSuppliers((prevSuppliers) => {
+                        // 중복 제거를 위한 Set 생성
+                        const uniqueIds = new Set(
+                          prevSuppliers.map((supplier) => supplier.id)
+                        );
 
-                      // 이미 존재하는 supplier가 아닌 경우에만 추가
-                      if (!uniqueIds.has(selectedSupplier.id)) {
-                        return [...prevSuppliers, selectedSupplier];
-                      }
-                      return prevSuppliers;
-                    });
-                    setIsFromAutoComplete(true);
-                  }
-                  setSupplierSearch("");
-                }}
-                options={autoSearchSupCompleteOptions} // supplier 객체 포함된 옵션 사용
-                placeholder="Search SUPPLIER ex) TECHLOG"
-              >
-                <Input style={{ width: "100%" }} />
-              </AutoComplete>
-              <Button
-                onClick={() => showModal("MAKER")}
-                style={{ marginTop: 10, width: 250 }}
-              >
-                Search supplier by category & maker
-              </Button>
-            </div>
-            {selectedType === "MAKER" && (
-              <Modal
-                title={"Search MAKER"}
-                open={isModalVisible}
-                onCancel={handleModalClose}
-                onOk={handleAddSelectedSuppliers}
-                okText="Add"
-                cancelText="Cancel"
-                width={800}
-              >
-                <AutoComplete
-                  value={categoryWord}
-                  options={categoryOptions}
-                  style={{ width: "100%", marginBottom: 10 }}
-                  onChange={handleCategorySearch}
-                  placeholder="Search Category ex) ENGINE"
+                        // 이미 존재하는 supplier가 아닌 경우에만 추가
+                        if (!uniqueIds.has(selectedSupplier.id)) {
+                          return [...prevSuppliers, selectedSupplier];
+                        }
+                        return prevSuppliers;
+                      });
+                    }
+                    setSupplierSearch("");
+                  }}
+                  options={autoSearchSupCompleteOptions} // supplier 객체 포함된 옵션 사용
+                  placeholder="Search SUPPLIER ex) TECHLOG"
                 >
-                  <Input />
+                  <Input style={{ width: "100%" }} />
                 </AutoComplete>
-                <AutoComplete
-                  value={makerSearch}
-                  onChange={(value) => handleSearch(value, categoryWord)}
-                  options={makerOptions}
-                  style={{ width: "100%", marginBottom: 10 }}
-                  placeholder="Search MAKER ex) HYUNDAI"
+                <Button
+                  onClick={() => showModal("MAKER")}
+                  style={{ marginTop: 10, width: 250 }}
                 >
-                  <Input />
-                </AutoComplete>
-                <List
-                  dataSource={removeListDuplicates(makerSupplierList)}
-                  renderItem={(item) => (
-                    <StyledListItem>
-                      <MakerTitle>{item.maker}</MakerTitle>
-                      <SupplierContainer>
-                        {item.supplierList.map(
-                          (supplier: { id: any; name?: any; code?: any }) => (
-                            <SupplierItem key={supplier.id}>
-                              <StyledCheckbox
-                                onChange={() => handleCheckboxChange(supplier)}
-                                checked={checkedSuppliers.some(
-                                  (checkedItem) =>
-                                    checkedItem.id === supplier.id
-                                )}
-                              >
-                                {supplier.name || ""} ({supplier.code})
-                              </StyledCheckbox>
-                            </SupplierItem>
-                          )
-                        )}
-                      </SupplierContainer>
-                    </StyledListItem>
-                  )}
-                />
-              </Modal>
-            )}
-            <span style={{ marginRight: 10 }}>Searched Suppliers: </span>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              {selectedSuppliers.map((supplier) => (
-                <Tooltip title={supplier.supplierRemark} color="red">
-                  <StyledTag
-                    key={supplier.id}
-                    closable
-                    color={supplier.supplierRemark ? "#f5222d" : "default"}
-                    style={{
-                      borderColor: tagColors[supplier.id] || "default",
-                      cursor: "pointer",
-                      transition: "all 0.3s",
-                    }}
-                    onClose={(e) => {
-                      e.preventDefault();
-                      handleClose(supplier);
-                    }}
+                  Search supplier by category & maker
+                </Button>
+              </div>
+              {selectedType === "MAKER" && (
+                <Modal
+                  title={"Search MAKER"}
+                  open={isModalVisible}
+                  onCancel={handleModalClose}
+                  onOk={handleAddSelectedSuppliers}
+                  okText="Add"
+                  cancelText="Cancel"
+                  width={800}
+                >
+                  <AutoComplete
+                    value={categoryWord}
+                    options={categoryOptions}
+                    style={{ width: "100%", marginBottom: 10 }}
+                    onChange={handleCategorySearch}
+                    placeholder="Search Category ex) ENGINE"
                   >
-                    {supplier.code}
-                  </StyledTag>
-                </Tooltip>
-              ))}
+                    <Input />
+                  </AutoComplete>
+                  <AutoComplete
+                    value={makerSearch}
+                    onChange={(value) => handleSearch(value, categoryWord)}
+                    options={makerOptions}
+                    style={{ width: "100%", marginBottom: 10 }}
+                    placeholder="Search MAKER ex) HYUNDAI"
+                  >
+                    <Input />
+                  </AutoComplete>
+                  <List
+                    dataSource={removeListDuplicates(makerSupplierList)}
+                    renderItem={(item) => (
+                      <StyledListItem>
+                        <MakerTitle>{item.maker}</MakerTitle>
+                        <SupplierContainer>
+                          {item.supplierList.map(
+                            (supplier: { id: any; name?: any; code?: any }) => (
+                              <SupplierItem key={supplier.id}>
+                                <StyledCheckbox
+                                  onChange={() =>
+                                    handleCheckboxChange(supplier)
+                                  }
+                                  checked={checkedSuppliers.some(
+                                    (checkedItem) =>
+                                      checkedItem.id === supplier.id
+                                  )}
+                                >
+                                  {supplier.name || ""} ({supplier.code})
+                                </StyledCheckbox>
+                              </SupplierItem>
+                            )
+                          )}
+                        </SupplierContainer>
+                      </StyledListItem>
+                    )}
+                  />
+                </Modal>
+              )}
+              <span style={{ marginRight: 10 }}>Searched Suppliers: </span>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                {selectedSuppliers.map((supplier) => (
+                  <Tooltip title={supplier.supplierRemark} color="red">
+                    <StyledTag
+                      key={supplier.id}
+                      closable
+                      color={supplier.supplierRemark ? "#f5222d" : "default"}
+                      style={{
+                        cursor: "pointer",
+                        transition: "all 0.3s",
+                      }}
+                      onClose={(e) => {
+                        e.preventDefault();
+                        handleClose(supplier);
+                      }}
+                    >
+                      {supplier.code}
+                    </StyledTag>
+                  </Tooltip>
+                ))}
+              </div>
+            </SearchBox>
+          ) : (
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <h3 style={{ marginRight: 10 }}>Selected Suppliers: </h3>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                {selectedSuppliers.map((supplier) => (
+                  <StyledTag>{supplier.code}</StyledTag>
+                ))}
+              </div>
             </div>
-          </SearchBox>
+          )}
         </FormRow>
       </Form>
     </>

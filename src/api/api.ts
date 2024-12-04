@@ -377,6 +377,18 @@ export const sendInquiryMail = async (
   }
 };
 
+//Supplier Inquiry 이미 발송한 매입처 재발송 **수정 필요!!(API 경로, itemCostEditList)
+export const editSupplierInquiryToSend = async (
+  inquiryId: number,
+  itemCostEditList: any
+) => {
+  const response = await axios.put(
+    `/api/supplier-inquiries/update-status/${inquiryId}`
+  );
+
+  return response.data;
+};
+
 //엑셀 내보내기
 export const handleExport = async (inquiryId: number) => {
   const response = await axios.post(
