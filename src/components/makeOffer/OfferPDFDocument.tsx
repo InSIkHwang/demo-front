@@ -769,19 +769,25 @@ const OfferPDFDocument = ({
             >
               ** REMARK
             </Text>
-            {pdfFooter.map((footer, index) => (
-              <Text
-                key={index}
-                style={[
-                  styles.footerMessage,
-                  {
-                    borderTop: "none",
-                  },
-                ]}
-              >
-                {index + 1}. {footer.quotationRemark}
-              </Text>
-            ))}
+            {pdfFooter.map((footer, index) => {
+              const formattedText = footer.quotationRemark
+                .split("\n")
+                .map((line) => line.replace(/ /g, "\u00A0"))
+                .join("\n");
+
+              return (
+                <Text
+                  key={index}
+                  style={[
+                    styles.footerMessage,
+                    {
+                      borderTop: "none",
+                    },
+                  ]}
+                  render={() => `${index + 1}. ${formattedText}`}
+                />
+              );
+            })}
           </View>
         )}
       </Page>
