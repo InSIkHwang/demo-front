@@ -126,7 +126,7 @@ const DetailOrderModal = ({
             setCurrencySymbol(""); // currencyType이 undefined일 경우 빈 문자열 설정
           }
         } catch (error) {
-          message.error("상세 정보를 가져오는 중 오류가 발생했습니다:");
+          message.error("There was an error fetching the data.");
         } finally {
           setLoading(false);
         }
@@ -320,6 +320,7 @@ const DetailOrderModal = ({
           type="primary"
           onClick={(e) => {
             e.stopPropagation();
+            navigate(`/order/${orderId}`);
           }}
         >
           Edit
