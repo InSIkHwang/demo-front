@@ -380,10 +380,37 @@ export const sendInquiryMail = async (
 //Supplier Inquiry 이미 발송한 매입처 재발송 **수정 필요!!(API 경로, itemCostEditList)
 export const editSupplierInquiryToSend = async (
   inquiryId: number,
+  supplierId: number,
   itemCostEditList: any
 ) => {
+  // 데이터 구조 변환
+  const transformedItemCostEditList = itemCostEditList.map((item: any) => ({
+    itemCostDetailId: item.itemDetailId, // itemDetailId를 itemCostDetailId로 변환
+    itemCode: item.itemCode,
+    itemName: item.itemName,
+    itemRemark: item.itemRemark,
+    qty: item.qty,
+    unit: item.unit,
+    position: item.position,
+    indexNo: item.indexNo,
+    itemType: item.itemType,
+    salesPriceKRW: item.salesPriceKRW,
+    salesPriceGlobal: item.salesPriceGlobal,
+    salesAmountKRW: item.salesAmountKRW,
+    salesAmountGlobal: item.salesAmountGlobal,
+    margin: item.margin,
+    purchasePriceKRW: item.purchasePriceKRW,
+    purchasePriceGlobal: item.purchasePriceGlobal,
+    purchaseAmountKRW: item.purchaseAmountKRW,
+    purchaseAmountGlobal: item.purchaseAmountGlobal,
+  }));
+
   const response = await axios.put(
-    `/api/supplier-inquiries/update-status/${inquiryId}`
+    `/api/supplier-inquiries/suppliers/${inquiryId}`,
+    {
+      supplierId,
+      itemCostEditList: transformedItemCostEditList,
+    }
   );
 
   return response.data;

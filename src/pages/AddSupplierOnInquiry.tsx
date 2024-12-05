@@ -300,13 +300,19 @@ const AddSupplierOnInquiry = () => {
   const handleSubmit = async (): Promise<unknown> => {
     if (data.mode === "resend") {
       try {
-        await editSupplierInquiryToSend(data.inquiryId, items);
+        await editSupplierInquiryToSend(
+          data.inquiryId,
+          currentSupplierId,
+          items
+        );
+        return Promise.resolve(); // 성공 시 resolve
       } catch (error) {
         message.error("Error editing supplier inquiry to send");
         console.error("Error editing supplier inquiry to send:", error);
+        return Promise.reject(error); // 실패 시 reject
       }
     }
-    return Promise.resolve(); // 빈 Promise를 반환
+    return Promise.resolve(); // resend 모드가 아닐 경우 resolve
   };
 
   return (
