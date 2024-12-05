@@ -323,6 +323,7 @@ const OfferList = () => {
         ...(searchCategory === "refNumber" && { refNumber: searchText }),
         ...(searchCategory === "customerName" && { customerName: searchText }),
         ...(searchCategory === "supplierName" && { supplierName: searchText }),
+        ...(searchCategory === "vesselName" && { vesselName: searchText }),
         page: currentPage,
         pageSize: itemsPerPage,
         writer: viewMyOfferOnly ? "MY" : ("ALL" as const),
@@ -525,6 +526,7 @@ const OfferList = () => {
                 <Select.Option value="supplierName">
                   Supplier Name
                 </Select.Option>
+                <Select.Option value="vesselName">Vessel Name</Select.Option>
               </Select>
               <Input
                 placeholder="Search..."

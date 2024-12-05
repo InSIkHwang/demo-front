@@ -580,6 +580,7 @@ export const searchOfferList = async ({
   writer,
   itemName = "",
   itemCode = "",
+  vesselName = "",
 }: OfferSearchParams): Promise<{
   totalCount: number;
   supplierInquiryList: SupplierInquiryListIF[];
@@ -597,6 +598,7 @@ export const searchOfferList = async ({
     writer,
     itemName,
     itemCode,
+    vesselName,
   };
 
   const queryString = new URLSearchParams(

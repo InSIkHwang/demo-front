@@ -524,6 +524,7 @@ export interface OfferSearchParams {
   writer: "MY" | "ALL";
   itemName?: string;
   itemCode?: string;
+  vesselName?: string;
 }
 
 export interface ComplexInquirySupplier {
