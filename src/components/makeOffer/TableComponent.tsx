@@ -267,7 +267,7 @@ const DisplayInput = memo(
         onChange,
         onBlur,
         formatter = (val: number | null | undefined) =>
-          val?.toLocaleString('en-US') ?? "",
+          val?.toLocaleString("en-US") ?? "",
         parser = (val: string) => val.replace(/[^a-zA-Z0-9.-]/g, ""),
         ...props
       },
@@ -586,7 +586,7 @@ const TableComponent = ({
     setItemDetails(updatedData); // 상태 업데이트
   };
 
-  // ���진에 따라 ��출가격을 계산하는 함수 예시
+  // 마진에 따라 매출가격을 계산하는 함수 예시
   const calculateSalesPrice = (purchasePrice: number, margin: number) => {
     return purchasePrice * (1 + margin / 100); // 마진을 백분율로 적용
   };
@@ -1011,7 +1011,7 @@ const TableComponent = ({
           !record.itemRemark ? (
           <MemoizedDisplayInput
             type="text" // Change to "text" to handle formatted input
-            value={value?.toLocaleString('en-US')} // Display formatted value
+            value={value?.toLocaleString("en-US")} // Display formatted value
             ref={(el) => {
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
@@ -1078,7 +1078,7 @@ const TableComponent = ({
             value={calculateTotalAmount(
               record.purchasePriceGlobal,
               record.qty
-            )?.toLocaleString('en-US')} // Display formatted value
+            )?.toLocaleString("en-US")} // Display formatted value
             onChange={(value) =>
               handleInputChange(index, "purchaseAmountGlobal", value)
             }
@@ -1151,7 +1151,7 @@ const TableComponent = ({
           !record.itemRemark ? (
           <MemoizedDisplayInput
             type="text" // Change to "text" to handle formatted input
-            value={value?.toLocaleString('en-US')} // Display formatted value
+            value={value?.toLocaleString("en-US")} // Display formatted value
             ref={(el) => {
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
@@ -1215,7 +1215,7 @@ const TableComponent = ({
             value={calculateTotalAmount(
               record.salesPriceGlobal,
               record.qty
-            )?.toLocaleString('en-US')}
+            )?.toLocaleString("en-US")}
             style={{ width: "100%" }}
             readOnly
             addonBefore="F"

@@ -374,6 +374,18 @@ export const sendInquiryMail = async (
     );
 
     return response.data;
+  } else if (mode === "resendSupplier") {
+    const response = await axios.post(
+      `/api/supplier-inquiries/add/suppliers/${inquiryId}/send-email`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    return response.data;
   }
 };
 

@@ -303,7 +303,7 @@ const AddSupplierOnInquiry = () => {
           currentSupplierId,
           items
         );
-        return Promise.resolve(); // 성공 시 resolve
+        return Promise.resolve(data.inquiryId); // 성공 시 resolve
       } catch (error) {
         message.error("Error editing supplier inquiry to send");
         console.error("Error editing supplier inquiry to send:", error);
@@ -354,7 +354,7 @@ const AddSupplierOnInquiry = () => {
       >
         {mailDataList.length > 0 && (
           <MailSenderModal
-            mode="addSupplier"
+            mode={data.mode === "resend" ? "resendSupplier" : "addSupplier"}
             mailDataList={mailDataList}
             inquiryFormValues={formValues}
             handleSubmit={handleSubmit}
