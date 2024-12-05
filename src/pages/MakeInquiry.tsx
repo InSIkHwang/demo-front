@@ -68,6 +68,7 @@ interface FormValues {
   currency: number;
   remark: string;
   supplierName: string;
+  color: string;
 }
 
 const INITIAL_FORM_VALUES: FormValues = {
@@ -82,6 +83,7 @@ const INITIAL_FORM_VALUES: FormValues = {
   currency: 0,
   remark: "",
   supplierName: "",
+  color: "#fff",
 };
 
 const INITIAL_TABLE_VALUES: InquiryItem[] = [
@@ -344,6 +346,7 @@ const MakeInquiry = () => {
       currency,
       vesselName,
       remark,
+      color,
     } = inquiryDetail.documentInfo;
 
     // Form 값 업데이트
@@ -359,6 +362,7 @@ const MakeInquiry = () => {
       currency,
       remark: remark || "",
       supplierName: "",
+      color: color || "#fff",
     });
 
     // 아이템 데이터 처리
@@ -651,6 +655,7 @@ const MakeInquiry = () => {
         remark: formValues.remark,
         currencyType: formValues.currencyType,
         currency: parseFloat(formValues.currency as any),
+        color: formValues.color,
       };
 
       const table = tables.map((table, index) => ({

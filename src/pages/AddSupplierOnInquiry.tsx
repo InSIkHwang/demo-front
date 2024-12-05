@@ -102,8 +102,6 @@ const AddSupplierOnInquiry = () => {
   const [isInquirySearchModalVisible, setIsInquirySearchModalVisible] =
     useState(false);
 
-  console.log(data);
-
   const setModalVisibility = (
     modalType: "header" | "mail" | "inquirySearch",
     isVisible: boolean

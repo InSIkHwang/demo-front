@@ -12,7 +12,15 @@ import {
   Modal,
   Checkbox,
   Tooltip,
+  ColorPicker,
+  Row,
+  Col,
+  Divider,
+  ColorPickerProps,
+  theme,
 } from "antd";
+import { presetPalettes } from "@ant-design/colors";
+import { Color } from "antd/es/color-picker";
 import styled from "styled-components";
 import CreateCompanyModal from "../company/CreateCompanyModal";
 import CreateVesselModal from "../vessel/CreateVesselModal";
@@ -96,6 +104,7 @@ interface FormValues {
   currency: number;
   remark: string;
   supplierName: string;
+  color: string;
 }
 
 interface InquiryFormProps {
@@ -147,6 +156,79 @@ interface InquiryFormProps {
       }[]
     | undefined;
 }
+
+type Presets = Required<ColorPickerProps>["presets"][number];
+
+const customPresets = {
+  rainbow: [
+    "#FF3333",
+    "#FFA366",
+    "#FFFF99",
+    "#66FF66",
+    "#6699FF",
+    "#9966CC",
+    "#CC99FF",
+  ],
+  pastel: [
+    "#FFB3BA",
+    "#BAFFC9",
+    "#BAE1FF",
+    "#FFFFBA",
+    "#FFB3F7",
+    "#B3FFF7",
+    "#C4C4C4",
+  ],
+  default: ["#ffffff"],
+};
+
+const genPresets = (presets = presetPalettes) =>
+  Object.entries(presets).map<Presets>(([label, colors]) => ({
+    label,
+    colors,
+  }));
+
+interface ColorPickerComponentProps {
+  onChange: (color: string) => void;
+  defaultValue?: string;
+}
+
+const ColorPickerComponent = ({
+  onChange,
+  defaultValue,
+}: ColorPickerComponentProps) => {
+  const { token } = theme.useToken();
+
+  const presets = genPresets(customPresets);
+
+  const customPanelRender: ColorPickerProps["panelRender"] = (
+    _,
+    { components: { Picker, Presets } }
+  ) => (
+    <Row justify="space-between" wrap={false}>
+      <Col span={12}>
+        <Presets />
+      </Col>
+      <Divider type="vertical" style={{ height: "auto" }} />
+      <Col flex="auto">
+        <Picker />
+      </Col>
+    </Row>
+  );
+
+  const handleColorChange = (value: Color) => {
+    onChange(value.toHexString());
+  };
+
+  return (
+    <ColorPicker
+      defaultValue={defaultValue || token.colorPrimary}
+      styles={{ popupOverlayInner: { width: 480 } }}
+      presets={presets}
+      panelRender={customPanelRender}
+      onChange={handleColorChange}
+    />
+  );
+};
 
 const InquiryForm = ({
   formValues,
@@ -529,6 +611,7 @@ const InquiryForm = ({
             }
             help={validateCustomer().message}
             rules={[{ required: true, message: "Please enter customer" }]}
+            style={{ flex: 1 }}
           >
             <Button
               type="primary"
@@ -560,6 +643,7 @@ const InquiryForm = ({
             }
             help={validateVessel().message}
             rules={[{ required: true, message: "Please enter vessel name" }]}
+            style={{ flex: 1 }}
           >
             <Button
               type="primary"
@@ -589,9 +673,26 @@ const InquiryForm = ({
             </AutoComplete>
           </InquiryItemForm>
           <InquiryItemForm
+            label="색상(Color)"
+            name="color"
+            style={{ flex: 0.5 }}
+          >
+            <div style={{ width: "100%", display: "flex" }}>
+              <ColorPickerComponent
+                onChange={(color) => handleFormChange("color", color)}
+                defaultValue={formValues.color || "#fff"}
+              />
+              <Input
+                style={{ marginLeft: "10px" }}
+                value={formValues.color || "#fff"}
+                readOnly
+              />
+            </div>
+          </InquiryItemForm>
+          <InquiryItemForm
             label="비고(Remark)"
             name="remark"
-            style={{ flex: "30%" }}
+            style={{ flex: 1.5 }}
           >
             <Input
               value={formValues.remark}

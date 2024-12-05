@@ -125,6 +125,7 @@ export interface Inquiry {
   pdfUrl: string | null;
   inquiryType: string;
   inquiryItemDetails: InquiryItem[];
+  color: string | "#FFFFFF";
 }
 
 export interface emailSendData {
@@ -460,6 +461,7 @@ export interface DocumentInfo {
   documentStatus: string;
   inquiryType: string;
   imoNo?: number;
+  color?: string;
 }
 
 export interface InquiryTable {

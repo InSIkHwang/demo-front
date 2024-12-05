@@ -38,7 +38,6 @@ const Title = styled.h1`
   color: #333;
 `;
 
-// StyledTable 컴포넌트 정의 수정
 const StyledTable = styled(Table)<
   { color?: string } & TableProps<SupplierInquiryListIF>
 >`
