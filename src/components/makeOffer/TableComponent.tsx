@@ -143,6 +143,28 @@ const CustomTable = styled(Table)<TableProps>`
       background-color: #dff4ff !important;
     }
   }
+
+  .ant-table-row {
+    border: 2px solid transparent;
+    border-width: 2px 0;
+    will-change: border-color;
+  }
+
+  // 포커스된 행 스타일 - transition 제거하고 즉시 변경
+  .ant-table-row:focus-within {
+    border-color: #1890ff;
+    position: relative;
+    z-index: 1;
+    transition: border-color 0.2s ease-out;
+  }
+
+  // 불필요한 transition과 animation 제거
+  .ant-input:focus,
+  .ant-input-focused,
+  .ant-select-focused .ant-select-selector,
+  .ant-input-number-focused {
+    position: relative;
+  }
 `;
 
 const DocumentContainer = styled.div`
@@ -198,6 +220,20 @@ const ButtonGroup = styled.div`
   .ant-btn {
     margin: 0 5px;
   }
+`;
+
+const RowNumberIndicator = styled.div`
+  position: absolute;
+  top: -23px;
+  left: 0;
+  font-size: 11px;
+  color: #888;
+  opacity: 0;
+  transition: opacity 0.2s;
+  background-color: #f0f0f0;
+  padding: 2px 4px;
+  border-radius: 3px;
+  z-index: 1;
 `;
 
 interface DisplayInputProps extends Omit<InputProps, "value" | "onChange"> {
@@ -602,7 +638,7 @@ const TableComponent = ({
       e.preventDefault();
 
       if (e.key === "ArrowDown") {
-        // 다음 행부터 순차적으로 검색하여 포커�� 가능한 입력 요소 ���기
+        // 다음 행부터 순차적으로 검색하여 포커 가능한 입력 요소 기
         for (let i = rowIndex + 1; i < inputRefs.current.length; i++) {
           if (inputRefs.current[i]?.[columnIndex]) {
             inputRefs.current[i][columnIndex]?.focus();
@@ -959,38 +995,71 @@ const TableComponent = ({
             ? 0
             : text;
 
+        const filteredIndex = itemDetails
+          .filter((item: any) => item.itemType === "ITEM")
+          .indexOf(record);
+
+        const rowNumber =
+          record.itemType === "ITEM"
+            ? filteredIndex + 1
+            : record.itemType === "DASH"
+            ? record.indexNo
+            : null;
+
         return (record.itemType === "ITEM" || record.itemType === "DASH") &&
           !record.itemRemark ? (
-          <MemoizedDisplayInput
-            type="text" // Change to "text" to handle formatted input
-            value={value?.toLocaleString("ko-KR")} // Display formatted value
-            ref={(el) => {
-              if (!inputRefs.current[index]) {
-                inputRefs.current[index] = [];
-              }
-              inputRefs.current[index][9] = el;
-            }}
-            onKeyDown={(e) => handleNextRowKeyDown(e, index, 9)}
-            onChange={(value) => {
-              handleInputChange(index, "purchasePriceKRW", value);
-            }}
-            onBlur={(e) => {
-              const value = e.target.value;
-              const unformattedValue = value.replace(/,/g, "");
-              const updatedValue = isNaN(Number(unformattedValue))
-                ? 0
-                : Number(unformattedValue);
-              handlePriceInputChange(
-                index,
-                "purchasePriceKRW",
-                roundToTwoDecimalPlaces(updatedValue),
-                currency
-              );
-            }}
-            style={{ width: "100%" }}
-            addonBefore="₩"
-            className="custom-input"
-          />
+          <div style={{ position: "relative" }}>
+            <RowNumberIndicator className="row-number-indicator">
+              No.{rowNumber}
+            </RowNumberIndicator>
+            <MemoizedDisplayInput
+              type="text"
+              value={value?.toLocaleString("ko-KR")}
+              ref={(el) => {
+                if (!inputRefs.current[index]) {
+                  inputRefs.current[index] = [];
+                }
+                inputRefs.current[index][9] = el;
+              }}
+              onKeyDown={(e) => handleNextRowKeyDown(e, index, 9)}
+              onChange={(value) => {
+                handleInputChange(index, "purchasePriceKRW", value);
+              }}
+              onFocus={(e) => {
+                const parent = e.target.closest("div");
+                const indicator = parent?.querySelector(
+                  ".row-number-indicator"
+                );
+                if (indicator) {
+                  (indicator as HTMLElement).style.opacity = "1";
+                }
+              }}
+              onBlur={(e) => {
+                const parent = e.target.closest("div");
+                const indicator = parent?.querySelector(
+                  ".row-number-indicator"
+                );
+                if (indicator) {
+                  (indicator as HTMLElement).style.opacity = "0";
+                }
+
+                const value = e.target.value;
+                const unformattedValue = value.replace(/,/g, "");
+                const updatedValue = isNaN(Number(unformattedValue))
+                  ? 0
+                  : Number(unformattedValue);
+                handlePriceInputChange(
+                  index,
+                  "purchasePriceKRW",
+                  roundToTwoDecimalPlaces(updatedValue),
+                  currency
+                );
+              }}
+              style={{ width: "100%" }}
+              addonBefore="₩"
+              className="custom-input"
+            />
+          </div>
         ) : null;
       },
     },
