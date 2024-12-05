@@ -1108,8 +1108,8 @@ const ComplexInquiryTable = ({
       },
     },
     {
-      ...(documentStatus !== "WRITING_INQUIRY" &&
-      documentStatus !== "WAITING_TO_SEND_INQUIRY" &&
+      ...(documentStatus !== "VENDOR_PENDING" &&
+      documentStatus !== "VENDOR_SELECTED" &&
       documentStatus !== ""
         ? {
             title: () => (

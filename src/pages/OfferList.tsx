@@ -250,14 +250,14 @@ const columns: ColumnsType<SupplierInquiryListIF> = [
     render: (status) => {
       let color;
       switch (status) {
-        case "INQUIRY_SENT":
-          color = "cornflowerblue";
-          break;
-        case "WAITING_TO_SEND_QUOTATION":
+        case "PRICE_PENDING":
           color = "blue";
           break;
-        default:
+        case "PRICE_ENTERED":
           color = "steelblue";
+          break;
+        default:
+          color = "cornflowerblue";
       }
       return <StyledTag color={color}>{status}</StyledTag>;
     },

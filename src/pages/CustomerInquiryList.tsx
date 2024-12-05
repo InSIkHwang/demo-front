@@ -182,13 +182,13 @@ const columns: ColumnsType<Inquiry> = [
     render: (status) => {
       let color;
       switch (status) {
-        case "WRITING_INQUIRY":
+        case "VENDOR_PENDING":
           color = "orange";
           break;
-        case "WAITING_TO_SEND_INQUIRY":
+        case "VENDOR_SELECTED":
           color = "blue";
           break;
-        case "INQUIRY_SENT":
+        case "PRICE_PENDING":
           color = "cornflowerblue";
           break;
         default:
