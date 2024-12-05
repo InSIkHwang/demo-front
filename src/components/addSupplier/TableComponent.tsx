@@ -121,6 +121,7 @@ const TableComponent = ({ items, setItems }: TableComponentProps) => {
       // 새 아이템 생성
       const newItem: InquiryItem = {
         tableNo: 1,
+        itemDetailId: null,
         position: currentItem.position + 1,
         itemType: "ITEM",
         itemCode: "",

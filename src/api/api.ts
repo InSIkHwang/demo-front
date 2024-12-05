@@ -385,24 +385,24 @@ export const editSupplierInquiryToSend = async (
 ) => {
   // 데이터 구조 변환
   const transformedItemCostEditList = itemCostEditList.map((item: any) => ({
-    itemCostDetailId: item.itemDetailId, // itemDetailId를 itemCostDetailId로 변환
+    itemCostDetailId: item.itemDetailId || null, // itemDetailId를 itemCostDetailId로 변환
     itemCode: item.itemCode,
     itemName: item.itemName,
     itemRemark: item.itemRemark,
     qty: item.qty,
     unit: item.unit,
     position: item.position,
-    indexNo: item.indexNo,
+    indexNo: item.indexNo || "",
     itemType: item.itemType,
-    salesPriceKRW: item.salesPriceKRW,
-    salesPriceGlobal: item.salesPriceGlobal,
-    salesAmountKRW: item.salesAmountKRW,
-    salesAmountGlobal: item.salesAmountGlobal,
-    margin: item.margin,
-    purchasePriceKRW: item.purchasePriceKRW,
-    purchasePriceGlobal: item.purchasePriceGlobal,
-    purchaseAmountKRW: item.purchaseAmountKRW,
-    purchaseAmountGlobal: item.purchaseAmountGlobal,
+    salesPriceKRW: item.salesPriceKRW || 0,
+    salesPriceGlobal: item.salesPriceGlobal || 0,
+    salesAmountKRW: item.salesAmountKRW || 0,
+    salesAmountGlobal: item.salesAmountGlobal || 0,
+    margin: item.margin || 0,
+    purchasePriceKRW: item.purchasePriceKRW || 0,
+    purchasePriceGlobal: item.purchasePriceGlobal || 0,
+    purchaseAmountKRW: item.purchaseAmountKRW || 0,
+    purchaseAmountGlobal: item.purchaseAmountGlobal || 0,
   }));
 
   const response = await axios.put(

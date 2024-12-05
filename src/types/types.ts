@@ -62,7 +62,7 @@ export interface Vessel {
 }
 
 export interface InquiryItem {
-  itemDetailId?: number;
+  itemDetailId?: number | null;
   itemId?: number | null;
   position: number;
   itemType: "ITEM" | "MAKER" | "TYPE" | "DESC" | "DASH";
