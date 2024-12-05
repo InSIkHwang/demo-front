@@ -62,7 +62,7 @@ export interface Vessel {
 }
 
 export interface InquiryItem {
-  itemDetailId?: number;
+  itemDetailId?: number | null;
   itemId?: number | null;
   position: number;
   itemType: "ITEM" | "MAKER" | "TYPE" | "DESC" | "DASH";
@@ -125,6 +125,7 @@ export interface Inquiry {
   pdfUrl: string | null;
   inquiryType: string;
   inquiryItemDetails: InquiryItem[];
+  color: string | "#FFFFFF";
 }
 
 export interface emailSendData {
@@ -460,6 +461,7 @@ export interface DocumentInfo {
   documentStatus: string;
   inquiryType: string;
   imoNo?: number;
+  color?: string;
 }
 
 export interface InquiryTable {
@@ -524,6 +526,7 @@ export interface OfferSearchParams {
   writer: "MY" | "ALL";
   itemName?: string;
   itemCode?: string;
+  vesselName?: string;
 }
 
 export interface ComplexInquirySupplier {

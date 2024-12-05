@@ -364,7 +364,7 @@ const DetailInquiryModal = ({
             Copy to new document
           </Button>,
           inquiryDetail &&
-            inquiryDetail.documentInfo.documentStatus !== "INQUIRY_SENT" && (
+            inquiryDetail.documentInfo.documentStatus !== "PRICE_PENDING" && (
               <>
                 <Button type="primary" key="edit" onClick={handleEditClick}>
                   Edit
@@ -422,10 +422,10 @@ const DetailInquiryModal = ({
                   <TagStyled
                     color={
                       inquiryDetail.documentInfo.documentStatus ===
-                      "WRITING_INQUIRY"
+                      "VENDOR_PENDING"
                         ? "orange"
                         : inquiryDetail.documentInfo.documentStatus ===
-                          "WAITING_TO_SEND_INQUIRY"
+                          "VENDOR_SELECTED"
                         ? "blue"
                         : "steelblue"
                     }

@@ -46,6 +46,7 @@ const customPresets = {
     "#B3FFF7",
     "#C4C4C4",
   ],
+  default: ["#ffffff"],
 };
 
 const genPresets = (presets = presetPalettes) =>

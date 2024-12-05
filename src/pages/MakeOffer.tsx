@@ -1068,7 +1068,7 @@ const MakeOffer = () => {
     if (!dataSource?.response || !currentDetailItems || !currentSupplierInfo)
       return null;
 
-    const handleAddSupplierTab = () => {
+    const handleAddSupplierTab = (mode: string) => {
       if (!dataSource?.documentInfo?.documentNumber) {
         message.error("Document number is missing.");
         return;
@@ -1078,6 +1078,9 @@ const MakeOffer = () => {
         `/addsupplierininquiry/${dataSource.documentInfo.documentNumber}`,
         {
           state: {
+            mode: mode,
+            currentSupplierId: currentSupplierInfo.supplierId,
+            inquiryId: currentInquiryId,
             documentInfo: dataSource.documentInfo,
             itemDetails:
               currentDetailItems || dataSource.response[0].itemDetail, // 현재 선택된 공급업체의 아이템 데이터
@@ -1144,14 +1147,24 @@ const MakeOffer = () => {
         onChange={handleTabChange}
         tabBarExtraContent={{
           right: (
-            <Button
-              type="dashed"
-              icon={<PlusOutlined />}
-              onClick={handleAddSupplierTab}
-              style={{ marginLeft: 8 }}
-            >
-              Add Supplier on Inquiry
-            </Button>
+            <>
+              <Button
+                type="dashed"
+                icon={<PlusOutlined />}
+                onClick={() => handleAddSupplierTab("resend")}
+                style={{ marginLeft: 8 }}
+              >
+                Resend Email
+              </Button>
+              <Button
+                type="dashed"
+                icon={<PlusOutlined />}
+                onClick={() => handleAddSupplierTab("add")}
+                style={{ marginLeft: 8 }}
+              >
+                Add Supplier on Inquiry
+              </Button>
+            </>
           ),
         }}
       />

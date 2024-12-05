@@ -465,8 +465,8 @@ const MakeComplexInquiry = () => {
     setItems(inquiryDetail.inquiryItemDetails);
 
     if (
-      documentInfo.documentStatus === "WAITING_TO_SEND_INQUIRY" ||
-      documentInfo.documentStatus === "WRITING_INQUIRY"
+      documentInfo.documentStatus === "VENDOR_SELECTED" ||
+      documentInfo.documentStatus === "VENDOR_PENDING"
     ) {
       setDocumentType("inquiry");
       setOriginalDocumentType("inquiry");

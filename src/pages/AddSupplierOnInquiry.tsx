@@ -1,9 +1,14 @@
 import { useState, useEffect } from "react";
 import styled from "styled-components";
-import { Button, Divider, FloatButton, Modal, Select } from "antd";
+import { Button, Divider, FloatButton, message, Modal, Select } from "antd";
 import { FileSearchOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
-import { fetchVessel, searchInquiryWithMaker } from "../api/api";
+import {
+  editSupplierInquiryToSend,
+  fetchSupplierDetail,
+  fetchVessel,
+  searchInquiryWithMaker,
+} from "../api/api";
 import PDFDocument from "../components/makeInquiry/PDFDocument";
 import {
   InquiryItem,
@@ -63,6 +68,7 @@ const AddSupplierOnInquiry = () => {
   const navigate = useNavigate();
   const [items, setItems] = useState<InquiryItem[]>(data?.itemDetails || []);
   const [selectedVessel, setSelectedVessel] = useState<VesselList | null>(null);
+  const currentSupplierId = data?.currentSupplierId;
   const [selectedSuppliers, setSelectedSuppliers] = useState<
     {
       id: number;
@@ -90,8 +96,6 @@ const AddSupplierOnInquiry = () => {
   const [inquirySearchMakerName, setInquirySearchMakerName] = useState("");
   const [inquirySearchMakerNameResult, setInquirySearchMakerNameResult] =
     useState<InquirySearchMakerInquirySearchResult | null>(null);
-
-  const [tagColors, setTagColors] = useState<{ [id: number]: string }>({});
   const [headerEditModalVisible, setHeaderEditModalVisible] =
     useState<boolean>(false);
   const [isMailSenderVisible, setIsMailSenderVisible] = useState(false);
@@ -163,8 +167,30 @@ const AddSupplierOnInquiry = () => {
       }
     };
 
-    checkAlreadySentSuppliers();
+    if (data?.mode !== "resend") {
+      checkAlreadySentSuppliers();
+    }
   }, [selectedSuppliers, data?.sendSupplier]);
+
+  const loadSupplierDetail = async () => {
+    const supplierDetail = await fetchSupplierDetail(
+      currentSupplierId,
+      "supplier"
+    );
+
+    setSelectedSuppliers([
+      {
+        id: supplierDetail.id,
+        name: supplierDetail.companyName,
+        korName: supplierDetail.korCompanyName || supplierDetail.companyName,
+        code: supplierDetail.code,
+        email: supplierDetail.email,
+        communicationLanguage: supplierDetail.communicationLanguage || "KOR",
+        supplierRemark: supplierDetail.supplierRemark || "",
+      },
+    ]);
+    return supplierDetail;
+  };
 
   useEffect(() => {
     if (data?.documentInfo) {
@@ -184,9 +210,12 @@ const AddSupplierOnInquiry = () => {
 
       // inquiryItemDetails를 items로 설정
       setItems(data.itemDetails);
-      setIsLoading(false);
-
       fetchVesselInfo(data.documentInfo.vesselId);
+      if (data.mode === "resend") {
+        loadSupplierDetail();
+      }
+
+      setIsLoading(false);
     }
   }, []);
 
@@ -266,8 +295,22 @@ const AddSupplierOnInquiry = () => {
     return <LoadingSpinner />;
   }
 
-  const handleSubmit = (): Promise<unknown> => {
-    return Promise.resolve(); // 빈 Promise를 반환
+  const handleSubmit = async (): Promise<unknown> => {
+    if (data.mode === "resend") {
+      try {
+        await editSupplierInquiryToSend(
+          data.inquiryId,
+          currentSupplierId,
+          items
+        );
+        return Promise.resolve(data.inquiryId); // 성공 시 resolve
+      } catch (error) {
+        message.error("Error editing supplier inquiry to send");
+        console.error("Error editing supplier inquiry to send:", error);
+        return Promise.reject(error); // 실패 시 reject
+      }
+    }
+    return Promise.resolve(); // resend 모드가 아닐 경우 resolve
   };
 
   return (
@@ -275,12 +318,11 @@ const AddSupplierOnInquiry = () => {
       <Title>매입처 추가(ADD SUPPLIER)</Title>
       {formValues !== INITIAL_FORM_VALUES && (
         <FormComponent
+          mode={data.mode}
           formValues={formValues}
           selectedSuppliers={selectedSuppliers}
           handleFormChange={handleFormChange}
           setSelectedSuppliers={setSelectedSuppliers}
-          tagColors={tagColors}
-          setTagColors={setTagColors}
         />
       )}
       <Divider variant="dashed" style={{ borderColor: "#007bff" }}>
@@ -312,7 +354,7 @@ const AddSupplierOnInquiry = () => {
       >
         {mailDataList.length > 0 && (
           <MailSenderModal
-            mode="addSupplier"
+            mode={data.mode === "resend" ? "resendSupplier" : "addSupplier"}
             mailDataList={mailDataList}
             inquiryFormValues={formValues}
             handleSubmit={handleSubmit}

@@ -21,6 +21,7 @@ import OrderList from "./pages/OrderList";
 import AddSupplierOnInquiry from "./pages/AddSupplierOnInquiry";
 import UserSignUp from "./pages/UserSignUp";
 import MakeComplexInquiry from "./pages/MakeComplexInquiry";
+import OrderDetail from "./pages/OrderDetail";
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -157,6 +158,12 @@ const App = () => {
             path="/orderlist"
             element={
               isAuthenticated ? <OrderList /> : <Navigate to="/userlogin" />
+            }
+          />
+          <Route
+            path="/order/:orderId"
+            element={
+              isAuthenticated ? <OrderDetail /> : <Navigate to="/userlogin" />
             }
           />
           <Route

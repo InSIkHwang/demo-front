@@ -38,7 +38,6 @@ const Title = styled.h1`
   color: #333;
 `;
 
-// StyledTable 컴포넌트 정의 수정
 const StyledTable = styled(Table)<
   { color?: string } & TableProps<SupplierInquiryListIF>
 >`
@@ -251,14 +250,14 @@ const columns: ColumnsType<SupplierInquiryListIF> = [
     render: (status) => {
       let color;
       switch (status) {
-        case "INQUIRY_SENT":
-          color = "cornflowerblue";
-          break;
-        case "WAITING_TO_SEND_QUOTATION":
+        case "PRICE_PENDING":
           color = "blue";
           break;
-        default:
+        case "PRICE_ENTERED":
           color = "steelblue";
+          break;
+        default:
+          color = "cornflowerblue";
       }
       return <StyledTag color={color}>{status}</StyledTag>;
     },
@@ -323,6 +322,7 @@ const OfferList = () => {
         ...(searchCategory === "refNumber" && { refNumber: searchText }),
         ...(searchCategory === "customerName" && { customerName: searchText }),
         ...(searchCategory === "supplierName" && { supplierName: searchText }),
+        ...(searchCategory === "vesselName" && { vesselName: searchText }),
         page: currentPage,
         pageSize: itemsPerPage,
         writer: viewMyOfferOnly ? "MY" : ("ALL" as const),
@@ -525,6 +525,7 @@ const OfferList = () => {
                 <Select.Option value="supplierName">
                   Supplier Name
                 </Select.Option>
+                <Select.Option value="vesselName">Vessel Name</Select.Option>
               </Select>
               <Input
                 placeholder="Search..."

@@ -374,7 +374,58 @@ export const sendInquiryMail = async (
     );
 
     return response.data;
+  } else if (mode === "resendSupplier") {
+    const response = await axios.post(
+      `/api/supplier-inquiries/add/suppliers/${inquiryId}/send-email`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    return response.data;
   }
+};
+
+//Supplier Inquiry 이미 발송한 매입처 재발송 **수정 필요!!(API 경로, itemCostEditList)
+export const editSupplierInquiryToSend = async (
+  inquiryId: number,
+  supplierId: number,
+  itemCostEditList: any
+) => {
+  // 데이터 구조 변환
+  const transformedItemCostEditList = itemCostEditList.map((item: any) => ({
+    itemCostDetailId: item.itemDetailId || null, // itemDetailId를 itemCostDetailId로 변환
+    itemCode: item.itemCode,
+    itemName: item.itemName,
+    itemRemark: item.itemRemark,
+    qty: item.qty,
+    unit: item.unit,
+    position: item.position,
+    indexNo: item.indexNo || "",
+    itemType: item.itemType,
+    salesPriceKRW: item.salesPriceKRW || 0,
+    salesPriceGlobal: item.salesPriceGlobal || 0,
+    salesAmountKRW: item.salesAmountKRW || 0,
+    salesAmountGlobal: item.salesAmountGlobal || 0,
+    margin: item.margin || 0,
+    purchasePriceKRW: item.purchasePriceKRW || 0,
+    purchasePriceGlobal: item.purchasePriceGlobal || 0,
+    purchaseAmountKRW: item.purchaseAmountKRW || 0,
+    purchaseAmountGlobal: item.purchaseAmountGlobal || 0,
+  }));
+
+  const response = await axios.put(
+    `/api/supplier-inquiries/suppliers/${inquiryId}`,
+    {
+      supplierId,
+      itemCostEditList: transformedItemCostEditList,
+    }
+  );
+
+  return response.data;
 };
 
 //엑셀 내보내기
@@ -541,6 +592,7 @@ export const searchOfferList = async ({
   writer,
   itemName = "",
   itemCode = "",
+  vesselName = "",
 }: OfferSearchParams): Promise<{
   totalCount: number;
   supplierInquiryList: SupplierInquiryListIF[];
@@ -558,6 +610,7 @@ export const searchOfferList = async ({
     writer,
     itemName,
     itemCode,
+    vesselName,
   };
 
   const queryString = new URLSearchParams(
