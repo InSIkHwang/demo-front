@@ -246,6 +246,7 @@ const InquiryForm = ({
   isVesselModalOpen,
   isSupplierModalOpen,
   uniqueSuppliers,
+  isEditMode,
 }: InquiryFormProps) => {
   const [form] = Form.useForm();
   const [supplierSearch, setSupplierSearch] = useState("");
@@ -672,23 +673,25 @@ const InquiryForm = ({
               <Input />
             </AutoComplete>
           </InquiryItemForm>
-          <InquiryItemForm
-            label="색상(Color)"
-            name="color"
-            style={{ flex: 0.5 }}
-          >
-            <div style={{ width: "100%", display: "flex" }}>
-              <ColorPickerComponent
-                onChange={(color) => handleFormChange("color", color)}
-                defaultValue={formValues.color || "#fff"}
-              />
-              <Input
-                style={{ marginLeft: "10px" }}
-                value={formValues.color || "#fff"}
-                readOnly
-              />
-            </div>
-          </InquiryItemForm>
+          {isEditMode && (
+            <InquiryItemForm
+              label="색상(Color)"
+              name="color"
+              style={{ flex: 0.5 }}
+            >
+              <div style={{ width: "100%", display: "flex" }}>
+                <ColorPickerComponent
+                  onChange={(color) => handleFormChange("color", color)}
+                  defaultValue={formValues.color || "#fff"}
+                />
+                <Input
+                  style={{ marginLeft: "10px" }}
+                  value={formValues.color || "#fff"}
+                  readOnly
+                />
+              </div>
+            </InquiryItemForm>
+          )}
           <InquiryItemForm
             label="비고(Remark)"
             name="remark"
