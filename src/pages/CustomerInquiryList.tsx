@@ -409,6 +409,7 @@ const CustomerInquiryList = () => {
               style={{ cursor: "pointer" }}
               onRow={(record) => {
                 const rowProps = {
+                  onClick: () => handleRowClick(record),
                   style: {
                     cursor: "pointer",
                     // CSS 변수로 색상 설정
