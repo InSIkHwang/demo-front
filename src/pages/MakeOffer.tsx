@@ -178,8 +178,6 @@ const MakeOffer = () => {
     loadOfferDetail();
   }, []);
 
-  console.log(invChargeList);
-
   // 소수점 둘째자리까지 반올림하는 함수
   const roundToTwoDecimalPlaces = useCallback((value: number) => {
     return Math.round(value * 100) / 100;

@@ -549,7 +549,7 @@ const TableComponent = ({
     setItemDetails(newItems);
   };
 
-  const handleDeleteItem = (itemDetailId: number, position: number) => {
+  const handleDeleteItem = (itemDetailId: number | null, position: number) => {
     // 선택한 항목을 삭제한 새로운 데이터 소스를 생성
     const updatedItemDetails = itemDetails.filter(
       (item) =>
@@ -634,6 +634,31 @@ const TableComponent = ({
     rowIndex: number,
     columnIndex: number
   ) => {
+    if (e.ctrlKey && e.key === "Enter") {
+      e.preventDefault();
+      handleAddItem(rowIndex);
+      if (inputRefs.current[rowIndex + 1]?.[columnIndex]) {
+        inputRefs.current[rowIndex + 1][columnIndex]?.focus();
+      }
+
+      return;
+    }
+
+    // Ctrl + Backspace 키 감지
+    if (e.ctrlKey && e.key === "Backspace") {
+      e.preventDefault();
+      const currentItem = itemDetails[rowIndex];
+
+      // MAKER나 TYPE이 아닌 경우에만 삭제 가능
+      if (currentItem.itemType !== "MAKER" && currentItem.itemType !== "TYPE") {
+        handleDeleteItem(currentItem.itemDetailId, currentItem.position);
+        if (inputRefs.current[rowIndex - 1]?.[columnIndex]) {
+          inputRefs.current[rowIndex - 1][columnIndex]?.focus();
+        }
+      }
+      return;
+    }
+
     if (e.key === "ArrowDown" || e.key === "ArrowUp") {
       e.preventDefault();
 
@@ -678,6 +703,41 @@ const TableComponent = ({
         description: "Failed to export the PDF file.",
       });
     }
+  };
+
+  const handleAddDescRow = (index: number) => {
+    const newItem: ItemDetailType = {
+      position: index + 2,
+      indexNo: null,
+      itemDetailId: null,
+      itemId: null,
+      itemType: "DESC",
+      itemCode: "",
+      itemName: "",
+      itemRemark: "",
+      qty: 0,
+      unit: "",
+      salesPriceKRW: 0,
+      salesPriceGlobal: 0,
+      salesAmountKRW: 0,
+      salesAmountGlobal: 0,
+      margin: 0,
+      purchasePriceKRW: 0,
+      purchasePriceGlobal: 0,
+      purchaseAmountKRW: 0,
+      purchaseAmountGlobal: 0,
+    };
+
+    const newItems = [
+      ...itemDetails.slice(0, index + 1),
+      newItem,
+      ...itemDetails.slice(index + 1).map((item, idx) => ({
+        ...item,
+        position: index + 3 + idx,
+      })),
+    ];
+
+    setItemDetails(newItems);
   };
 
   const columns: ColumnsType<any> = [
@@ -858,7 +918,7 @@ const TableComponent = ({
       fixed: "left",
       width: 200 * zoomLevel,
       render: (text: string, record: any, index: number) => (
-        <>
+        <div style={{ position: "relative" }}>
           <Input.TextArea
             autoSize={{ minRows: 1, maxRows: 10 }}
             ref={(el) => {
@@ -875,9 +935,30 @@ const TableComponent = ({
             style={{
               borderRadius: "4px",
               width: "100%",
+              paddingRight: "32px", // 버튼 공간 확보
             }}
           />
-        </>
+          <Button
+            type="text"
+            icon={<PlusCircleOutlined />}
+            onClick={() => handleAddDescRow(index)}
+            style={{
+              position: "absolute",
+              right: "4px",
+              top: "50%",
+              transform: "translateY(-50%)",
+              width: "24px",
+              height: "24px",
+              padding: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "transparent",
+              border: "none",
+              zIndex: 1,
+            }}
+          />
+        </div>
       ),
     },
     {
