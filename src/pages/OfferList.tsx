@@ -336,7 +336,7 @@ const OfferList = () => {
       setData(response.supplierInquiryList);
       setTotalCount(response.totalCount);
     } catch (error) {
-      message.error("검색 중 오류가 발생했습니다");
+      message.error("Error occurred while searching");
     } finally {
       setLoading(false);
     }

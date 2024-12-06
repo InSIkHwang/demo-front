@@ -906,6 +906,55 @@ export const fetchOrderDetail = async (orderId: number) => {
   return response.data;
 };
 
+//ORDER 검색
+export const searchOrderList = async ({
+  registerStartDate = "",
+  registerEndDate = "",
+  query = "",
+  documentNumber = "",
+  refNumber = "",
+  customerName = "",
+  supplierName = "",
+  page,
+  pageSize,
+  writer,
+  itemName = "",
+  itemCode = "",
+  vesselName = "",
+}: OfferSearchParams): Promise<{
+  totalCount: number;
+  orderList: Order[];
+}> => {
+  const queryParams = {
+    registerStartDate,
+    registerEndDate,
+    query,
+    documentNumber,
+    refNumber,
+    customerName,
+    supplierName,
+    page: (page - 1).toString(),
+    pageSize: pageSize.toString(),
+    writer,
+    itemName,
+    itemCode,
+    vesselName,
+  };
+
+  const queryString = new URLSearchParams(
+    Object.entries(queryParams)
+      .filter(([_, value]) => value !== "")
+      .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {})
+  ).toString();
+
+  const response = await axios.post<{
+    totalCount: number;
+    orderList: Order[];
+  }>(`/api/orders/search?${queryString}`);
+
+  return response.data;
+};
+
 //----------------------------------------------------------------------------------
 //휴지통
 
