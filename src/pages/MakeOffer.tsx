@@ -178,6 +178,8 @@ const MakeOffer = () => {
     loadOfferDetail();
   }, []);
 
+  console.log(invChargeList);
+
   // 소수점 둘째자리까지 반올림하는 함수
   const roundToTwoDecimalPlaces = useCallback((value: number) => {
     return Math.round(value * 100) / 100;
@@ -385,15 +387,12 @@ const MakeOffer = () => {
           customerId: response.documentInfo.customerId,
           vesselId: response.documentInfo.vesselId,
         });
-
-        if (response.documentInfo.discount) {
-          setDcInfo({
-            dcPercent: response.documentInfo.discount || 0,
-            dcKrw: 0,
-            dcGlobal: 0,
-          });
-          setInvChargeList(response.documentInfo.invChargeList || []);
-        }
+        setDcInfo({
+          dcPercent: response.documentInfo.discount || 0,
+          dcKrw: 0,
+          dcGlobal: 0,
+        });
+        setInvChargeList(response.documentInfo.invChargeList || []);
       } catch (error) {
         message.error("An error occurred while importing data.");
       }
@@ -495,6 +494,7 @@ const MakeOffer = () => {
     value: (typeof formValues)[K]
   ) => {
     setFormValues((prev) => ({ ...prev, [key]: value }));
+    setNewDocumentInfo((prev) => (prev ? { ...prev, [key]: value } : null));
   };
 
   const handleMarginChange = (index: number, marginValue: number) => {
