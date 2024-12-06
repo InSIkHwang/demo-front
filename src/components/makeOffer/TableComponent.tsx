@@ -1076,38 +1076,70 @@ const TableComponent = ({
             ? 0
             : text;
 
+        const filteredIndex = itemDetails
+          .filter((item: any) => item.itemType === "ITEM")
+          .indexOf(record);
+
+        const rowNumber =
+          record.itemType === "ITEM"
+            ? filteredIndex + 1
+            : record.itemType === "DASH"
+            ? record.indexNo
+            : null;
+
         return (record.itemType === "ITEM" || record.itemType === "DASH") &&
           !record.itemRemark ? (
-          <MemoizedDisplayInput
-            type="text" // Change to "text" to handle formatted input
-            value={value?.toLocaleString("en-US")} // Display formatted value
-            ref={(el) => {
-              if (!inputRefs.current[index]) {
-                inputRefs.current[index] = [];
-              }
-              inputRefs.current[index][10] = el;
-            }}
-            onKeyDown={(e) => handleNextRowKeyDown(e, index, 10)}
-            onChange={(value) => {
-              handleInputChange(index, "purchasePriceGlobal", value);
-            }}
-            onBlur={(e) => {
-              const value = e.target.value;
-              const unformattedValue = value.replace(/,/g, "");
-              const updatedValue = isNaN(Number(unformattedValue))
-                ? 0
-                : Number(unformattedValue);
-              handlePriceInputChange(
-                index,
-                "purchasePriceGlobal",
-                roundToTwoDecimalPlaces(updatedValue),
-                currency
-              );
-            }}
-            style={{ width: "100%" }}
-            addonBefore="F"
-            className="custom-input"
-          />
+          <div style={{ position: "relative" }}>
+            <RowNumberIndicator className="row-number-indicator">
+              No.{rowNumber}
+            </RowNumberIndicator>
+            <MemoizedDisplayInput
+              type="text" // Change to "text" to handle formatted input
+              value={value?.toLocaleString("en-US")} // Display formatted value
+              ref={(el) => {
+                if (!inputRefs.current[index]) {
+                  inputRefs.current[index] = [];
+                }
+                inputRefs.current[index][10] = el;
+              }}
+              onKeyDown={(e) => handleNextRowKeyDown(e, index, 10)}
+              onChange={(value) => {
+                handleInputChange(index, "purchasePriceGlobal", value);
+              }}
+              onFocus={(e) => {
+                const parent = e.target.closest("div");
+                const indicator = parent?.querySelector(
+                  ".row-number-indicator"
+                );
+                if (indicator) {
+                  (indicator as HTMLElement).style.opacity = "1";
+                }
+              }}
+              onBlur={(e) => {
+                const value = e.target.value;
+                const unformattedValue = value.replace(/,/g, "");
+                const updatedValue = isNaN(Number(unformattedValue))
+                  ? 0
+                  : Number(unformattedValue);
+                handlePriceInputChange(
+                  index,
+                  "purchasePriceGlobal",
+                  roundToTwoDecimalPlaces(updatedValue),
+                  currency
+                );
+                const parent = e.target.closest("div");
+                const indicator = parent?.querySelector(
+                  ".row-number-indicator"
+                );
+                if (indicator) {
+                  (indicator as HTMLElement).style.opacity = "0";
+                }
+              }}
+              style={{ width: "100%" }}
+              addonBefore="F"
+              className="custom-input"
+            />
+          </div>
         ) : null;
       },
     },
