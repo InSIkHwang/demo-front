@@ -167,7 +167,7 @@ export interface SupplierInquiryListIF {
     supplierName: string;
     totalSalesAmountGlobal: number;
     totalPurchaseAmountGlobal: number;
-    isSendEmail: boolean;
+    status: string;
   }[];
 }
 

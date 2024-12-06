@@ -649,13 +649,11 @@ const TableComponent = ({
       e.preventDefault();
       const currentItem = itemDetails[rowIndex];
 
-      // MAKER나 TYPE이 아닌 경우에만 삭제 가능
-      if (currentItem.itemType !== "MAKER" && currentItem.itemType !== "TYPE") {
-        handleDeleteItem(currentItem.itemDetailId, currentItem.position);
-        if (inputRefs.current[rowIndex - 1]?.[columnIndex]) {
-          inputRefs.current[rowIndex - 1][columnIndex]?.focus();
-        }
+      handleDeleteItem(currentItem.itemDetailId, currentItem.position);
+      if (inputRefs.current[rowIndex - 1]?.[columnIndex]) {
+        inputRefs.current[rowIndex - 1][columnIndex]?.focus();
       }
+
       return;
     }
 
@@ -1549,16 +1547,6 @@ const TableComponent = ({
           </Tooltip>
         </ButtonGroup>
       </DocumentContainer>
-      <TotalCardsComponent
-        finalTotals={tableTotals}
-        applyDcAndCharge={applyDcAndCharge}
-        mode={"single"}
-        currency={currency}
-        dcInfo={dcInfo}
-        setDcInfo={setDcInfo}
-        invChargeList={invChargeList}
-        setInvChargeList={setInvChargeList}
-      />
       <Space style={{ marginBottom: 16 }}>
         <Button
           icon={<ZoomOutOutlined />}

@@ -707,9 +707,12 @@ export const saveComplexOfferHeader = async (
 };
 
 //OFFER 상태 변경 (메일 전송 체크)
-export const changeOfferStatus = async (supplierInquiryId: number) => {
+export const changeOfferStatus = async (
+  supplierInquiryId: number,
+  status: string
+) => {
   const response = await axios.put(
-    `/api/supplier-inquiries/update-status/${supplierInquiryId}`
+    `/api/supplier-inquiries/update-status/${supplierInquiryId}?status=${status}`
   );
 
   return response.data;

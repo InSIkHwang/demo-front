@@ -749,16 +749,14 @@ function MakeInquiryTable({
       e.preventDefault();
       const currentItem = tables[tableIndex].itemDetails[rowIndex];
 
-      // MAKER나 TYPE이 아닌 경우에만 삭제 가능
-      if (currentItem.itemType !== "MAKER" && currentItem.itemType !== "TYPE") {
-        handleDeleteItem(tableIndex, currentItem.position);
+      handleDeleteItem(tableIndex, currentItem.position);
 
-        // 삭제 후 이전 행으로 포커스 이동
-        const prevRowRefs = inputRefs.current[tableIndex]?.[rowIndex - 1];
-        if (prevRowRefs && prevRowRefs[columnIndex]) {
-          prevRowRefs[columnIndex]?.focus();
-        }
+      // 삭제 후 이전 행으로 포커스 이동
+      const prevRowRefs = inputRefs.current[tableIndex]?.[rowIndex - 1];
+      if (prevRowRefs && prevRowRefs[columnIndex]) {
+        prevRowRefs[columnIndex]?.focus();
       }
+
       return;
     }
 

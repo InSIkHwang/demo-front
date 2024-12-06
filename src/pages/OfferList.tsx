@@ -14,7 +14,12 @@ import {
 } from "antd";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import styled from "styled-components";
-import { confirmQutation, fetchOfferList, searchOfferList } from "../api/api";
+import {
+  changeOfferStatus,
+  confirmQutation,
+  fetchOfferList,
+  searchOfferList,
+} from "../api/api";
 import { useNavigate } from "react-router-dom";
 import type { ColumnsType, TableProps } from "antd/es/table";
 import type { OfferSearchParams, SupplierInquiryListIF } from "../types/types";
@@ -387,6 +392,25 @@ const OfferList = () => {
     });
   };
 
+  const handleNAClick = (supplierInquiryId: number) => {
+    Modal.confirm({
+      title: "Handle N/A",
+      content: "Are you sure you want to handle N/A?",
+      okText: "Ok",
+      cancelText: "Cancel",
+      onOk: async () => {
+        try {
+          await changeOfferStatus(supplierInquiryId, "NA");
+          message.success("N/A handled successfully.");
+          fetchData();
+        } catch (error) {
+          console.error("Error handling N/A:", error);
+          message.error("Failed to handle N/A. Please try again.");
+        }
+      },
+    });
+  };
+
   useEffect(() => {
     fetchFilteredData(); // 상태가 변경되면 데이터 재요청
   }, [viewMyOfferOnly]);
@@ -473,19 +497,37 @@ const OfferList = () => {
                     {profitRate.toFixed(2)}%
                   </Value>
                 </div>
+                <div className="info-row">
+                  <span className="label">Document Status:</span>
+                  <Value
+                    isZero={false}
+                    style={{
+                      color: supplier.status === "NA" ? "red" : "black",
+                    }}
+                  >
+                    {supplier.status}
+                  </Value>
+                </div>
                 <Divider />
                 <div className="info-row">
-                  <span></span>
+                  <Button
+                    onClick={() => {
+                      handleNAClick(supplier.supplierInquiryId);
+                    }}
+                    danger
+                  >
+                    N/A
+                  </Button>
                   <Tooltip
                     title={
-                      supplier.isSendEmail
+                      supplier.status === "QUOTATION_SENT"
                         ? ""
                         : "Please send Email before confirming"
                     }
                   >
                     <Button
                       type="primary"
-                      disabled={!supplier.isSendEmail}
+                      disabled={supplier.status !== "QUOTATION_SENT"}
                       onClick={() => {
                         handleConfirmClick(supplier.supplierInquiryId);
                       }}

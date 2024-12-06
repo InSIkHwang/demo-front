@@ -1253,7 +1253,7 @@ const MakeOffer = () => {
         onOk: async () => {
           if (localSendMailState && currentInquiryId) {
             try {
-              await changeOfferStatus(currentInquiryId);
+              await changeOfferStatus(currentInquiryId, "QUOTATION_SENT");
             } catch (error) {
               message.error(
                 "Failed to update offer status. Please try again later."

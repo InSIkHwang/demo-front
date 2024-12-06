@@ -784,8 +784,9 @@ const OfferPDFDocument = ({
                       borderTop: "none",
                     },
                   ]}
-                  render={() => `${index + 1}. ${formattedText}`}
-                />
+                >
+                  {`${index + 1}. ${formattedText}`}
+                </Text>
               );
             })}
           </View>
