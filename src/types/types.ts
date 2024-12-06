@@ -367,18 +367,20 @@ export interface orderAllResponses {
   totalCount: number;
 }
 export interface OrderItemDetail {
-  itemType: string;
+  ordersItemId: number | null;
+  itemType: "ITEM" | "MAKER" | "TYPE" | "DESC" | "DASH" | string;
   itemCode: string;
   itemName: string;
   itemRemark: string;
   qty: number;
   position: number;
   unit: string;
+  indexNo: string | null;
   salesPriceKRW: number;
   salesPriceGlobal: number;
   salesAmountKRW: number;
   salesAmountGlobal: number;
-  margin: number | null;
+  margin: number;
   purchasePriceKRW: number;
   purchasePriceGlobal: number;
   purchaseAmountKRW: number;
