@@ -1148,22 +1148,30 @@ const MakeOffer = () => {
         tabBarExtraContent={{
           right: (
             <>
-              <Button
-                type="dashed"
-                icon={<PlusOutlined />}
-                onClick={() => handleAddSupplierTab("resend")}
-                style={{ marginLeft: 8 }}
+              <Tooltip
+                title={
+                  "Modify and resend items to the already sent supplier (where of the selected tab)"
+                }
               >
-                Resend Email
-              </Button>
-              <Button
-                type="dashed"
-                icon={<PlusOutlined />}
-                onClick={() => handleAddSupplierTab("add")}
-                style={{ marginLeft: 8 }}
-              >
-                Add Supplier on Inquiry
-              </Button>
+                <Button
+                  type="dashed"
+                  icon={<PlusOutlined />}
+                  onClick={() => handleAddSupplierTab("resend")}
+                  style={{ marginLeft: 8 }}
+                >
+                  Resend Email
+                </Button>
+              </Tooltip>{" "}
+              <Tooltip title={"Send additional mail to new supplier"}>
+                <Button
+                  type="dashed"
+                  icon={<PlusOutlined />}
+                  onClick={() => handleAddSupplierTab("add")}
+                  style={{ marginLeft: 8 }}
+                >
+                  Add Supplier on Inquiry
+                </Button>
+              </Tooltip>
             </>
           ),
         }}
