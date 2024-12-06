@@ -931,7 +931,13 @@ function MakeInquiryTable({
           <div>
             <AutoComplete
               value={record.itemCode}
-              onChange={(value) => handleItemCodeChange(index, value)}
+              onBlur={(e) =>
+                handleItemCodeChange(
+                  index,
+                  (e.target as HTMLInputElement).value
+                )
+              }
+              onChange={(value) => handleInputChange(index, "itemCode", value)}
               options={itemCodeOptions.map((option) => ({
                 value: option.key,
                 label: option.label,

@@ -766,6 +766,10 @@ const TableComponent = ({
             <AutoComplete
               value={text}
               onChange={(value) => {
+                handleInputChange(index, "itemCode", value);
+              }}
+              onBlur={(e) => {
+                const value = (e.target as HTMLInputElement).value;
                 if (value === "") {
                   setItemDetails((prev) => {
                     const updated = [...prev];

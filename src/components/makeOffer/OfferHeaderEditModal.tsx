@@ -58,8 +58,8 @@ interface HeaderEditModalProps {
 const PART_CONDITION_OPTIONS = [
   "GENUINE",
   "OEM",
-  "PRODUCT",
-  "PRODUCT(RELIABLE)",
+  "KOREAN PRODUCT",
+  "KOREAN PRODUCT(RELIABLE)",
   "EQUIVALENT",
 ];
 
