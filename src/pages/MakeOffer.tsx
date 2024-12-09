@@ -816,15 +816,33 @@ const MakeOffer = () => {
     const updatedTotalSalesAmountGlobal =
       newTotalSalesAmountGlobal + chargePriceGlobalTotal;
 
-    const totalProfit = totalSalesAmountGlobal * 1350 - totalPurchaseAmountKRW;
+    const chargeCurrency = () => {
+      switch (formValues.currencyType) {
+        case "USD":
+          return 1400;
+        case "EUR":
+          return 1500;
+        case "INR":
+          return 16;
+        default:
+          return 1400;
+      }
+    };
+
+    const totalProfit =
+      totalSalesAmountGlobal * chargeCurrency() - totalPurchaseAmountKRW;
     const totalProfitPercent = Number(
-      ((totalProfit / (totalSalesAmountGlobal * 1350)) * 100).toFixed(2)
+      (
+        (totalProfit / (totalSalesAmountGlobal * chargeCurrency())) *
+        100
+      ).toFixed(2)
     );
     const updatedTotalProfit =
-      updatedTotalSalesAmountGlobal * 1350 - totalPurchaseAmountKRW;
+      updatedTotalSalesAmountGlobal * chargeCurrency() - totalPurchaseAmountKRW;
     const updatedTotalProfitPercent = Number(
       (
-        (updatedTotalProfit / (updatedTotalSalesAmountGlobal * 1350)) *
+        (updatedTotalProfit /
+          (updatedTotalSalesAmountGlobal * chargeCurrency())) *
         100
       ).toFixed(2)
     );

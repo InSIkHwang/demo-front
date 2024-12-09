@@ -191,7 +191,7 @@ const DocumentLabel = styled.span`
   position: relative;
 `;
 
-const DocumentNumber = styled.span`
+const SupplierName = styled.span`
   position: relative;
 
   .ant-input {
@@ -1350,9 +1350,9 @@ TableComponentProps) => {
       <DocumentContainer>
         <div style={{ display: "flex", alignItems: "center" }}>
           <DocumentLabel>Supplier</DocumentLabel>
-          <DocumentNumber>
+          <SupplierName>
             <Input value={supplier.companyName} readOnly />
-          </DocumentNumber>
+          </SupplierName>
         </div>
         <ButtonGroup>
           <Tooltip title="Load excel file on your local">
