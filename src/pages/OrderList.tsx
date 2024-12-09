@@ -16,7 +16,7 @@ import styled from "styled-components";
 import { fetchOrderList, searchOrderList } from "../api/api";
 import type { ColumnsType } from "antd/es/table";
 import { OfferSearchParams, Order, orderAllResponses } from "../types/types";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import dayjs from "dayjs";
 import DetailOrderModal from "../components/orderList/DetailOrderModal";
 import Checkbox, { CheckboxChangeEvent } from "antd/es/checkbox";
@@ -162,22 +162,50 @@ const columns: ColumnsType<Order> = [
 
 const OrderList = () => {
   const [data, setData] = useState<Order[]>([]);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [totalCount, setTotalCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
-  const [searchText, setSearchText] = useState<string>("");
-  const [searchCategory, setSearchCategory] =
-    useState<string>("documentNumber");
-  const [searchSubCategory, setSearchSubCategory] =
-    useState<string>("itemName");
-  const [searchSubText, setSearchSubText] = useState<string>("");
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [itemsPerPage, setItemsPerPage] = useState<number>(30);
+  const [searchText, setSearchText] = useState<string>(
+    searchParams.get("searchText") || ""
+  );
+  const [searchCategory, setSearchCategory] = useState<string>(
+    searchParams.get("searchCategory") || "documentNumber"
+  );
+  const [searchSubCategory, setSearchSubCategory] = useState<string>(
+    searchParams.get("searchSubCategory") || "itemName"
+  );
+  const [searchSubText, setSearchSubText] = useState<string>(
+    searchParams.get("searchSubText") || ""
+  );
+  const [currentPage, setCurrentPage] = useState<number>(
+    Number(searchParams.get("page")) || 1
+  );
+  const [itemsPerPage, setItemsPerPage] = useState<number>(
+    Number(searchParams.get("pageSize")) || 30
+  );
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
-  const [registerStartDate, setRegisterStartDate] = useState<string>("");
-  const [registerEndDate, setRegisterEndDate] = useState<string>("");
-  const [viewMyOfferOnly, setViewMyOfferOnly] = useState<boolean>(false);
-  const [showItemSearch, setShowItemSearch] = useState<boolean>(false);
+  const [registerStartDate, setRegisterStartDate] = useState<string>(
+    searchParams.get("startDate") ||
+      dayjs().subtract(1, "month").format("YYYY-MM-DD")
+  );
+  const [registerEndDate, setRegisterEndDate] = useState<string>(
+    searchParams.get("endDate") || dayjs().format("YYYY-MM-DD")
+  );
+  const [viewMyOfferOnly, setViewMyOfferOnly] = useState<boolean>(
+    searchParams.get("viewMyOfferOnly") === "true"
+  );
+  const [showItemSearch, setShowItemSearch] = useState<boolean>(
+    searchParams.get("showItemSearch") === "true"
+  );
+
+  useEffect(() => {
+    if (searchParams.toString()) {
+      handleSearch();
+    } else {
+      fetchData();
+    }
+  }, []);
 
   useEffect(() => {
     if ((searchText || searchSubText) && registerStartDate && registerEndDate) {
@@ -185,7 +213,7 @@ const OrderList = () => {
     } else {
       fetchData();
     }
-  }, [currentPage, itemsPerPage]);
+  }, [currentPage, itemsPerPage, viewMyOfferOnly, showItemSearch]);
 
   const fetchData = async () => {
     try {
@@ -211,8 +239,33 @@ const OrderList = () => {
     };
   }, [isDetailModalOpen]);
 
+  const updateSearchParams = (
+    params: Record<string, string | number | boolean>
+  ) => {
+    const newSearchParams = new URLSearchParams(searchParams);
+
+    Object.entries(params).forEach(([key, value]) => {
+      if (value === "" || value === null || value === undefined) {
+        newSearchParams.delete(key);
+      } else {
+        newSearchParams.set(key, String(value));
+      }
+    });
+
+    setSearchParams(newSearchParams);
+  };
+
   const handleSearch = async () => {
     setLoading(true);
+    updateSearchParams({
+      searchText,
+      searchCategory,
+      startDate: registerStartDate,
+      endDate: registerEndDate,
+      page: currentPage,
+      pageSize: itemsPerPage,
+      writer: viewMyOfferOnly ? "MY" : ("ALL" as const),
+    });
     try {
       const searchParams: OfferSearchParams = {
         registerStartDate,
@@ -246,6 +299,7 @@ const OrderList = () => {
 
   const handleViewMyOfferOnlyChange = (e: CheckboxChangeEvent) => {
     setViewMyOfferOnly(e.target.checked);
+    updateSearchParams({ viewMyOfferOnly: e.target.checked });
   };
 
   const handleItemSearchToggle = (e: CheckboxChangeEvent) => {
@@ -253,6 +307,9 @@ const OrderList = () => {
     if (!e.target.checked) {
       setSearchSubCategory("");
       setSearchSubText("");
+      updateSearchParams({ showItemSearch: false });
+    } else {
+      updateSearchParams({ showItemSearch: true });
     }
   };
 
@@ -263,11 +320,13 @@ const OrderList = () => {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+    updateSearchParams({ page });
   };
 
   const handlePageSizeChange = (current: number, size: number) => {
     setItemsPerPage(size);
     setCurrentPage(1);
+    updateSearchParams({ pageSize: size, page: 1 });
   };
 
   return (
@@ -298,7 +357,10 @@ const OrderList = () => {
               <Input
                 placeholder="Search..."
                 value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
+                onChange={(e) => {
+                  setSearchText(e.target.value);
+                  updateSearchParams({ searchText: e.target.value });
+                }}
                 onPressEnter={() => handleSearch()}
                 style={{ ...commonInputStyles, width: 280 }}
               />
@@ -334,14 +396,20 @@ const OrderList = () => {
               </Button>
             </SearchSection>
             <CheckboxWrapper>
-              <Checkbox onChange={handleViewMyOfferOnlyChange}>
+              <Checkbox
+                checked={viewMyOfferOnly}
+                onChange={handleViewMyOfferOnlyChange}
+              >
                 View My Offer Only
               </Checkbox>
             </CheckboxWrapper>
           </SearchBar>
           <SearchBar>
             <SearchSection>
-              <Checkbox onChange={handleItemSearchToggle}>
+              <Checkbox
+                checked={showItemSearch}
+                onChange={handleItemSearchToggle}
+              >
                 Item Search Option
               </Checkbox>
               {showItemSearch && (
@@ -357,7 +425,10 @@ const OrderList = () => {
                   <Input
                     placeholder="Search items..."
                     value={searchSubText}
-                    onChange={(e) => setSearchSubText(e.target.value)}
+                    onChange={(e) => {
+                      setSearchSubText(e.target.value);
+                      updateSearchParams({ searchSubText: e.target.value });
+                    }}
                     onPressEnter={() => handleSearch()}
                     style={{ ...commonInputStyles, width: 280 }}
                   />
