@@ -25,14 +25,7 @@ import {
 } from "antd";
 import { ColumnsType } from "antd/es/table";
 import styled from "styled-components";
-import {
-  FormValuesType,
-  InvCharge,
-  ItemDetailType,
-  OfferResponse,
-  OrderItemDetail,
-  Supplier,
-} from "../../types/types";
+import { ItemDetailType, OrderItemDetail, Supplier } from "../../types/types";
 import {
   DeleteOutlined,
   PlusCircleOutlined,
@@ -45,7 +38,6 @@ import { fetchItemData, handleOfferExport } from "../../api/api";
 import ExcelUploadModal from "../ExcelUploadModal";
 import { TextAreaRef } from "antd/es/input/TextArea";
 import { debounce } from "lodash";
-import TotalCardsComponent from "../makeOffer/TotalCardsComponent";
 
 interface TableProps {
   $zoomLevel?: number;

@@ -1,6 +1,14 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Button, Divider, message, Descriptions, Tag } from "antd";
+import {
+  Button,
+  Divider,
+  message,
+  Descriptions,
+  Tag,
+  Select,
+  Modal,
+} from "antd";
 import styled from "styled-components";
 import dayjs, { Dayjs } from "dayjs";
 import { fetchOrderDetail } from "../api/api";
@@ -16,6 +24,8 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import FormComponent from "../components/orderDetail/FormComponent";
 import TableComponent from "../components/orderDetail/TableComponent";
 import TotalCardsComponent from "../components/makeOffer/TotalCardsComponent";
+import PurchaseOrderPDFDocument from "../components/orderDetail/PurchaseOrder";
+import POHeaderEditModal from "../components/orderDetail/POHeaderEditModal";
 
 const Container = styled.div`
   position: relative;
@@ -60,8 +70,31 @@ const OrderDetail = () => {
     totalProfit: 0,
     totalProfitPercent: 0,
   });
+  const [showPDFPreview, setShowPDFPreview] = useState(false);
+  const [language, setLanguage] = useState<string>("ENG");
+  const [headerEditModalVisible, setHeaderEditModalVisible] =
+    useState<boolean>(false);
+  const [pdfType, setPdfType] = useState<string>("PO");
+  const [pdfPOHeader, setPdfPOHeader] = useState<string>(
+    "1. 귀사의 무궁한 발전을 기원합니다.\n2. 하기와 같이 발주하오니 업무에 참조하시기 바랍니다."
+  );
+  const [pdfPOFooter, setPdfPOFooter] = useState<string>(
+    "1. 세금 계산서 - 법인\n2. 희망 납기일 - \n3. 예정 납기일 포함된 발주서 접수 회신 메일 부탁 드립니다. 감사합니다."
+  );
 
-  console.log(orderData);
+  useEffect(() => {
+    if (language === "KOR") {
+      setPdfPOHeader(
+        "1. 귀사의 무궁한 발전을 기원합니다.\n2. 하기와 같이 발주하오니 업무에 참조하시기 바랍니다."
+      );
+      setPdfPOFooter(
+        "1. 세금 계산서 - 법인\n2. 희망 납기일 - \n3. 예정 납기일 포함된 발주서 접수 회신 메일 부탁 드립니다. 감사합니다."
+      );
+    } else {
+      setPdfPOHeader("EXPECTED DELIVERY DATE : ");
+      setPdfPOFooter("");
+    }
+  }, [language]);
 
   useEffect(() => {
     const loadOrderDetail = async () => {
@@ -379,6 +412,19 @@ const OrderDetail = () => {
     });
   };
 
+  const handlePDFPreview = () => {
+    applyDcAndCharge("multiple");
+    setShowPDFPreview((prevState) => !prevState);
+  };
+
+  const handleOpenHeaderModal = () => {
+    setHeaderEditModalVisible(true);
+  };
+
+  const handleCloseHeaderModal = () => {
+    setHeaderEditModalVisible(false);
+  };
+
   if (isLoading) {
     return <LoadingSpinner />;
   }
@@ -424,13 +470,65 @@ const OrderDetail = () => {
         invChargeList={invChargeList}
         setInvChargeList={setInvChargeList}
       />
-      <Button
-        type="default"
-        onClick={() => navigate(-1)}
-        style={{ float: "right" }}
-      >
-        Back
-      </Button>
+      <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+        <Button type="default" onClick={() => navigate(-1)}>
+          Back
+        </Button>
+        <Button type="primary">Save</Button>
+      </div>
+      <div style={{ marginTop: 20 }}>
+        <Button style={{ marginLeft: 10 }} onClick={handleOpenHeaderModal}>
+          Edit Header / Remark
+        </Button>
+        <span style={{ marginLeft: 20 }}>LANGUAGE: </span>
+        <Select
+          style={{ width: 100, marginLeft: 10 }}
+          value={language}
+          onChange={setLanguage}
+        >
+          <Select.Option value="KOR">KOR</Select.Option>
+          <Select.Option value="ENG">ENG</Select.Option>
+        </Select>
+        <span style={{ marginLeft: 20 }}>DOCUMENT TYPE: </span>
+        <Select
+          style={{ width: 230, marginLeft: 10 }}
+          value={pdfType}
+          onChange={setPdfType}
+        >
+          <Select.Option value="PO">PURCHASE ORDER</Select.Option>
+          <Select.Option value="OA">ORDER ACKNOWLEDGEMENT</Select.Option>
+        </Select>
+        <Button
+          style={{ marginLeft: 10 }}
+          onClick={handlePDFPreview}
+          type="default"
+        >
+          {showPDFPreview ? "Close Preview" : "PDF Preview"}
+        </Button>
+      </div>
+      {pdfType === "PO" && showPDFPreview && formValues && (
+        <PurchaseOrderPDFDocument
+          info={formValues}
+          items={items}
+          pdfHeader={pdfPOHeader}
+          viewMode={true}
+          language={language}
+          pdfFooter={pdfPOFooter}
+          finalTotals={finalTotals}
+        />
+      )}
+      {pdfType === "PO" && headerEditModalVisible && (
+        <POHeaderEditModal
+          visible={headerEditModalVisible}
+          onClose={handleCloseHeaderModal}
+          pdfPOHeader={pdfPOHeader}
+          pdfPOFooter={pdfPOFooter}
+          setPdfPOHeader={setPdfPOHeader}
+          setPdfPOFooter={setPdfPOFooter}
+          language={language}
+          setLanguage={setLanguage}
+        />
+      )}
     </Container>
   );
 };
