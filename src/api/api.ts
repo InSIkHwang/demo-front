@@ -888,7 +888,11 @@ export const confirmQutation = async (supplierInquiryId: number) => {
 // ORDER 조회 관련
 
 //ORDER 조회
-export const fetchOrderList = async (page: number, pageSize: number) => {
+export const fetchOrderList = async (
+  page: number,
+  pageSize: number,
+  viewMyOfferOnly: boolean
+) => {
   const response = await axios.get<{
     totalCount: number;
     orderList: Order[];
@@ -896,6 +900,7 @@ export const fetchOrderList = async (page: number, pageSize: number) => {
     params: {
       page: page - 1, // 페이지는 0부터 시작
       pageSize: pageSize, // 페이지당 아이템 수
+      writer: viewMyOfferOnly ? "MY" : "ALL",
     },
   });
 

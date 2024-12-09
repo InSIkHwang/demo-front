@@ -217,7 +217,11 @@ const OrderList = () => {
 
   const fetchData = async () => {
     try {
-      const response = await fetchOrderList(currentPage, itemsPerPage);
+      const response = await fetchOrderList(
+        currentPage,
+        itemsPerPage,
+        viewMyOfferOnly
+      );
       setData(response.orderList);
       setTotalCount(response.totalCount);
     } catch (error) {
