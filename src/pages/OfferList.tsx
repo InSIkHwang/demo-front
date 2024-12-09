@@ -14,8 +14,13 @@ import {
 } from "antd";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import styled from "styled-components";
-import { confirmQutation, fetchOfferList, searchOfferList } from "../api/api";
-import { useNavigate } from "react-router-dom";
+import {
+  changeOfferStatus,
+  confirmQutation,
+  fetchOfferList,
+  searchOfferList,
+} from "../api/api";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import type { ColumnsType, TableProps } from "antd/es/table";
 import type { OfferSearchParams, SupplierInquiryListIF } from "../types/types";
 import Checkbox, { CheckboxChangeEvent } from "antd/es/checkbox";
@@ -266,24 +271,49 @@ const columns: ColumnsType<SupplierInquiryListIF> = [
 
 const OfferList = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [data, setData] = useState<SupplierInquiryListIF[]>([]);
   const [totalCount, setTotalCount] = useState<number>();
   const [loading, setLoading] = useState<boolean>(true);
-  const [searchText, setSearchText] = useState<string>("");
-  const [searchCategory, setSearchCategory] = useState<string>("query");
-  const [searchSubCategory, setSearchSubCategory] =
-    useState<string>("itemName");
-  const [searchSubText, setSearchSubText] = useState<string>("");
+  const [searchText, setSearchText] = useState<string>(
+    searchParams.get("searchText") || ""
+  );
+  const [searchCategory, setSearchCategory] = useState<string>(
+    searchParams.get("searchCategory") || "query"
+  );
+  const [searchSubCategory, setSearchSubCategory] = useState<string>(
+    searchParams.get("searchSubCategory") || "itemName"
+  );
+  const [searchSubText, setSearchSubText] = useState<string>(
+    searchParams.get("searchSubText") || ""
+  );
   const [registerStartDate, setRegisterStartDate] = useState<string>(
-    dayjs().subtract(1, "month").format("YYYY-MM-DD")
+    searchParams.get("startDate") ||
+      dayjs().subtract(1, "month").format("YYYY-MM-DD")
   );
   const [registerEndDate, setRegisterEndDate] = useState<string>(
-    dayjs().format("YYYY-MM-DD")
+    searchParams.get("endDate") || dayjs().format("YYYY-MM-DD")
   );
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [itemsPerPage, setItemsPerPage] = useState<number>(30);
-  const [viewMyOfferOnly, setViewMyOfferOnly] = useState<boolean>(false);
-  const [showItemSearch, setShowItemSearch] = useState<boolean>(false);
+  const [currentPage, setCurrentPage] = useState<number>(
+    Number(searchParams.get("page")) || 1
+  );
+  const [itemsPerPage, setItemsPerPage] = useState<number>(
+    Number(searchParams.get("pageSize")) || 30
+  );
+  const [viewMyOfferOnly, setViewMyOfferOnly] = useState<boolean>(
+    searchParams.get("viewMyOfferOnly") === "true"
+  );
+  const [showItemSearch, setShowItemSearch] = useState<boolean>(
+    searchParams.get("showItemSearch") === "true"
+  );
+
+  useEffect(() => {
+    if (searchParams.toString()) {
+      handleSearch();
+    } else {
+      fetchData();
+    }
+  }, []);
 
   useEffect(() => {
     if ((searchText || searchSubText) && registerStartDate && registerEndDate) {
@@ -291,7 +321,7 @@ const OfferList = () => {
     } else {
       fetchData();
     }
-  }, [currentPage, itemsPerPage]);
+  }, [currentPage, itemsPerPage, viewMyOfferOnly]);
 
   const fetchData = async () => {
     try {
@@ -311,6 +341,21 @@ const OfferList = () => {
 
   const handleSearch = async () => {
     setLoading(true);
+
+    // URL 파라미터 업데이트
+    updateSearchParams({
+      searchText,
+      searchCategory,
+      searchSubCategory,
+      searchSubText,
+      startDate: registerStartDate,
+      endDate: registerEndDate,
+      page: currentPage,
+      pageSize: itemsPerPage,
+      viewMyOfferOnly,
+      showItemSearch,
+    });
+
     try {
       const searchParams: OfferSearchParams = {
         registerStartDate,
@@ -332,11 +377,10 @@ const OfferList = () => {
       };
 
       const response = await searchOfferList(searchParams);
-
       setData(response.supplierInquiryList);
       setTotalCount(response.totalCount);
     } catch (error) {
-      message.error("검색 중 오류가 발생했습니다");
+      message.error("An error occurred while searching");
     } finally {
       setLoading(false);
     }
@@ -347,25 +391,30 @@ const OfferList = () => {
     if (!e.target.checked) {
       setSearchSubCategory("");
       setSearchSubText("");
+      updateSearchParams({
+        showItemSearch: false,
+        searchSubCategory: "",
+        searchSubText: "",
+      });
+    } else {
+      updateSearchParams({ showItemSearch: true });
     }
   };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+    updateSearchParams({ page });
   };
 
   const handlePageSizeChange = (current: number, size: number) => {
     setItemsPerPage(size);
     setCurrentPage(1);
-  };
-
-  const fetchFilteredData = () => {
-    setCurrentPage(1); // 페이지를 1로 초기화
-    fetchData(); // 데이터 재요청
+    updateSearchParams({ pageSize: size, page: 1 });
   };
 
   const handleViewMyOfferOnlyChange = (e: CheckboxChangeEvent) => {
     setViewMyOfferOnly(e.target.checked);
+    updateSearchParams({ viewMyOfferOnly: e.target.checked });
   };
 
   const handleConfirmClick = (supplierInquiryId: number) => {
@@ -387,9 +436,24 @@ const OfferList = () => {
     });
   };
 
-  useEffect(() => {
-    fetchFilteredData(); // 상태가 변경되면 데이터 재요청
-  }, [viewMyOfferOnly]);
+  const handleNAClick = (supplierInquiryId: number) => {
+    Modal.confirm({
+      title: "Handle N/A",
+      content: "Are you sure you want to handle N/A?",
+      okText: "Ok",
+      cancelText: "Cancel",
+      onOk: async () => {
+        try {
+          await changeOfferStatus(supplierInquiryId, "NA");
+          message.success("N/A handled successfully.");
+          fetchData();
+        } catch (error) {
+          console.error("Error handling N/A:", error);
+          message.error("Failed to handle N/A. Please try again.");
+        }
+      },
+    });
+  };
 
   const expandedRowRender = (record: SupplierInquiryListIF) => {
     return (
@@ -473,19 +537,37 @@ const OfferList = () => {
                     {profitRate.toFixed(2)}%
                   </Value>
                 </div>
+                <div className="info-row">
+                  <span className="label">Document Status:</span>
+                  <Value
+                    isZero={false}
+                    style={{
+                      color: supplier.status === "NA" ? "red" : "black",
+                    }}
+                  >
+                    {supplier.status}
+                  </Value>
+                </div>
                 <Divider />
                 <div className="info-row">
-                  <span></span>
+                  <Button
+                    onClick={() => {
+                      handleNAClick(supplier.supplierInquiryId);
+                    }}
+                    danger
+                  >
+                    N/A
+                  </Button>
                   <Tooltip
                     title={
-                      supplier.isSendEmail
+                      supplier.status === "QUOTATION_SENT"
                         ? ""
                         : "Please send Email before confirming"
                     }
                   >
                     <Button
                       type="primary"
-                      disabled={!supplier.isSendEmail}
+                      disabled={supplier.status !== "QUOTATION_SENT"}
                       onClick={() => {
                         handleConfirmClick(supplier.supplierInquiryId);
                       }}
@@ -500,6 +582,22 @@ const OfferList = () => {
         </SupplierPreviewCard>
       </div>
     );
+  };
+
+  const updateSearchParams = (
+    params: Record<string, string | number | boolean>
+  ) => {
+    const newSearchParams = new URLSearchParams(searchParams);
+
+    Object.entries(params).forEach(([key, value]) => {
+      if (value === "" || value === null || value === undefined) {
+        newSearchParams.delete(key);
+      } else {
+        newSearchParams.set(key, String(value));
+      }
+    });
+
+    setSearchParams(newSearchParams);
   };
 
   return (
@@ -530,7 +628,10 @@ const OfferList = () => {
               <Input
                 placeholder="Search..."
                 value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
+                onChange={(e) => {
+                  setSearchText(e.target.value);
+                  updateSearchParams({ searchText: e.target.value });
+                }}
                 onPressEnter={() => handleSearch()}
                 style={{ ...commonInputStyles, width: 280 }}
               />
@@ -566,14 +667,20 @@ const OfferList = () => {
               </Button>
             </SearchSection>
             <CheckboxWrapper>
-              <Checkbox onChange={handleViewMyOfferOnlyChange}>
+              <Checkbox
+                checked={viewMyOfferOnly}
+                onChange={handleViewMyOfferOnlyChange}
+              >
                 View My Offer Only
               </Checkbox>
             </CheckboxWrapper>
           </SearchBar>
           <SearchBar>
             <SearchSection>
-              <Checkbox onChange={handleItemSearchToggle}>
+              <Checkbox
+                checked={showItemSearch}
+                onChange={handleItemSearchToggle}
+              >
                 Item Search Option
               </Checkbox>
               {showItemSearch && (
@@ -589,7 +696,10 @@ const OfferList = () => {
                   <Input
                     placeholder="Search items..."
                     value={searchSubText}
-                    onChange={(e) => setSearchSubText(e.target.value)}
+                    onChange={(e) => {
+                      setSearchSubText(e.target.value);
+                      updateSearchParams({ searchSubText: e.target.value });
+                    }}
                     onPressEnter={() => handleSearch()}
                     style={{ ...commonInputStyles, width: 280 }}
                   />

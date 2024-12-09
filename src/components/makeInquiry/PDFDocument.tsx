@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
     width: "50%",
   },
   inquiryInfoText: {
-    fontSize: 10,
+    fontSize: 9,
     marginBottom: 5,
     display: "flex",
     flexDirection: "row",
@@ -112,12 +112,17 @@ const styles = StyleSheet.create({
     textAlign: "left",
   },
   inquiryInfoValue: {
-    width: 120,
+    width: 80,
+    textAlign: "left",
+    paddingLeft: 5,
+  },
+  inquiryInfoName: {
+    width: 210,
     textAlign: "left",
     paddingLeft: 5,
   },
   inquiryInfoColon: {
-    width: 15,
+    width: 10,
     textAlign: "center",
   },
   page: {
@@ -297,7 +302,7 @@ const renderHeader = (
         <View style={styles.inquiryInfoText}>
           <Text style={styles.inquiryInfoLabel}>MESSRS</Text>
           <Text style={styles.inquiryInfoColon}>:</Text>
-          <Text style={styles.inquiryInfoValue}>
+          <Text style={styles.inquiryInfoName}>
             {supplier?.communicationLanguage === "KOR"
               ? supplier?.korName || ""
               : supplier?.name || ""}

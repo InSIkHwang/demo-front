@@ -30,6 +30,8 @@ import {
   InvCharge,
   ItemDetailType,
   OfferResponse,
+  OrderItemDetail,
+  Supplier,
 } from "../../types/types";
 import {
   DeleteOutlined,
@@ -43,7 +45,7 @@ import { fetchItemData, handleOfferExport } from "../../api/api";
 import ExcelUploadModal from "../ExcelUploadModal";
 import { TextAreaRef } from "antd/es/input/TextArea";
 import { debounce } from "lodash";
-import TotalCardsComponent from "./TotalCardsComponent";
+import TotalCardsComponent from "../makeOffer/TotalCardsComponent";
 
 interface TableProps {
   $zoomLevel?: number;
@@ -189,10 +191,11 @@ const DocumentLabel = styled.span`
   position: relative;
 `;
 
-const DocumentNumber = styled.span`
+const SupplierName = styled.span`
   position: relative;
 
   .ant-input {
+    width: 100%;
     color: #262626;
     font-size: 18px;
     font-weight: 600;
@@ -248,11 +251,11 @@ interface DisplayInputProps extends Omit<InputProps, "value" | "onChange"> {
 }
 
 interface TableComponentProps {
-  itemDetails: ItemDetailType[];
-  setItemDetails: Dispatch<SetStateAction<ItemDetailType[]>>;
+  itemDetails: OrderItemDetail[];
+  setItemDetails: Dispatch<SetStateAction<OrderItemDetail[]>>;
   handleInputChange: (
     index: number,
-    key: keyof ItemDetailType,
+    key: keyof OrderItemDetail,
     value: any
   ) => void;
   currency: number;
@@ -261,37 +264,13 @@ interface TableComponentProps {
   handleMarginChange: (index: number, marginValue: number) => void;
   handlePriceInputChange: (
     index: number,
-    key: keyof ItemDetailType,
+    key: keyof OrderItemDetail,
     value: any,
     currency: number
   ) => void;
-  offerId: number;
-  documentNumber: string;
-  supplierName: string;
-  pdfUrl: string | null;
-  tableTotals: {
-    totalSalesAmountKRW: number;
-    totalSalesAmountGlobal: number;
-    totalPurchaseAmountKRW: number;
-    totalPurchaseAmountGlobal: number;
-    totalSalesAmountUnDcKRW: number;
-    totalSalesAmountUnDcGlobal: number;
-    totalPurchaseAmountUnDcKRW: number;
-    totalPurchaseAmountUnDcGlobal: number;
-    totalProfit: number;
-    totalProfitPercent: number;
-  };
-  applyDcAndCharge: (mode: string) => void;
-  dcInfo: { dcPercent: number; dcKrw: number; dcGlobal: number };
-  setDcInfo: Dispatch<
-    SetStateAction<{ dcPercent: number; dcKrw: number; dcGlobal: number }>
-  >;
-  invChargeList: InvCharge[] | null;
-  setInvChargeList: Dispatch<SetStateAction<InvCharge[] | null>>;
-  supplierInquiryName: string;
-  setSupplierInquiryName: Dispatch<SetStateAction<string>>;
-  setNewDocumentInfo: Dispatch<SetStateAction<FormValuesType | null>>;
-  setDataSource: Dispatch<SetStateAction<OfferResponse | null>>;
+  orderId: number;
+  supplier: Supplier;
+  // pdfUrl: string | null;
 }
 
 // DisplayInput 컴포넌트를 TableComponent 외부로 이동
@@ -361,21 +340,10 @@ const TableComponent = ({
   calculateTotalAmount,
   handleMarginChange,
   handlePriceInputChange,
-  offerId,
-  tableTotals,
-  applyDcAndCharge,
-  dcInfo,
-  setDcInfo,
-  invChargeList,
-  setInvChargeList,
-  pdfUrl,
-  supplierName,
-  documentNumber,
-  supplierInquiryName,
-  setSupplierInquiryName,
-  setNewDocumentInfo,
-  setDataSource,
-}: TableComponentProps) => {
+  orderId,
+  supplier,
+}: // pdfUrl,
+TableComponentProps) => {
   const inputRefs = useRef<(TextAreaRef | null)[][]>([]);
   const [itemCodeOptions, setItemCodeOptions] = useState<
     {
@@ -417,12 +385,14 @@ const TableComponent = ({
         ? mappedItems.map((item, idx) => ({
             ...item,
             position: idx + 1,
+            ordersItemId: null,
           }))
         : [
             ...itemDetails,
             ...mappedItems.map((item, idx) => ({
               ...item,
               position: itemDetails.length + idx + 1,
+              ordersItemId: null,
             })),
           ]
     );
@@ -443,7 +413,7 @@ const TableComponent = ({
   const handleExportButtonClick = async () => {
     try {
       // 선택한 파일들의 름을 서버로 전송
-      const response = await handleOfferExport(offerId);
+      const response = await handleOfferExport(orderId);
 
       // 사용자가 경로를 설정하여 파일을 다운로드할 수 있도록 설정
       const link = document.createElement("a");
@@ -546,14 +516,14 @@ const TableComponent = ({
       })), // 기존 행 나머지의 position 업데이트
     ];
 
-    setItemDetails(newItems);
+    setItemDetails(newItems as OrderItemDetail[]);
   };
 
-  const handleDeleteItem = (itemDetailId: number | null, position: number) => {
+  const handleDeleteItem = (itemDetailId: number, position: number) => {
     // 선택한 항목을 삭제한 새로운 데이터 소스를 생성
     const updatedItemDetails = itemDetails.filter(
       (item) =>
-        !(item.itemDetailId === itemDetailId && item.position === position)
+        !(item.ordersItemId === itemDetailId && item.position === position)
     );
 
     // 남은 항목들의 position 값을 1부터 다시 정렬
@@ -576,7 +546,7 @@ const TableComponent = ({
   const applyUnitToAllRows = (selectedUnit: string) => {
     if (!itemDetails) return;
 
-    const updatedItems: ItemDetailType[] = itemDetails.map((item) => ({
+    const updatedItems: OrderItemDetail[] = itemDetails.map((item) => ({
       ...item,
       unit: selectedUnit,
     }));
@@ -634,29 +604,6 @@ const TableComponent = ({
     rowIndex: number,
     columnIndex: number
   ) => {
-    if (e.ctrlKey && e.key === "Enter") {
-      e.preventDefault();
-      handleAddItem(rowIndex);
-      if (inputRefs.current[rowIndex + 1]?.[columnIndex]) {
-        inputRefs.current[rowIndex + 1][columnIndex]?.focus();
-      }
-
-      return;
-    }
-
-    // Ctrl + Backspace 키 감지
-    if (e.ctrlKey && e.key === "Backspace") {
-      e.preventDefault();
-      const currentItem = itemDetails[rowIndex];
-
-      handleDeleteItem(currentItem.itemDetailId, currentItem.position);
-      if (inputRefs.current[rowIndex - 1]?.[columnIndex]) {
-        inputRefs.current[rowIndex - 1][columnIndex]?.focus();
-      }
-
-      return;
-    }
-
     if (e.key === "ArrowDown" || e.key === "ArrowUp") {
       e.preventDefault();
 
@@ -680,63 +627,28 @@ const TableComponent = ({
     }
   };
 
-  const handleDownloadPdf = (
-    pdfUrl: string,
-    supplierName: string,
-    documentNumber: string
-  ) => {
-    if (pdfUrl) {
-      const link = document.createElement("a");
-      link.href = pdfUrl;
-      link.download = `${supplierName}_REQUEST FOR QUOTATION_${documentNumber}.pdf`;
-      link.click();
+  // const handleDownloadPdf = (
+  //   pdfUrl: string,
+  //   supplierName: string,
+  //   documentNumber: string
+  // ) => {
+  //   if (pdfUrl) {
+  //     const link = document.createElement("a");
+  //     link.href = pdfUrl;
+  //     link.download = `${supplierName}_REQUEST FOR QUOTATION_${documentNumber}.pdf`;
+  //     link.click();
 
-      notification.success({
-        message: "Export Success",
-        description: "PDF file exported successfully.",
-      });
-    } else {
-      notification.error({
-        message: "Export Failed",
-        description: "Failed to export the PDF file.",
-      });
-    }
-  };
-
-  const handleAddDescRow = (index: number) => {
-    const newItem: ItemDetailType = {
-      position: index + 2,
-      indexNo: null,
-      itemDetailId: null,
-      itemId: null,
-      itemType: "DESC",
-      itemCode: "",
-      itemName: "",
-      itemRemark: "",
-      qty: 0,
-      unit: "",
-      salesPriceKRW: 0,
-      salesPriceGlobal: 0,
-      salesAmountKRW: 0,
-      salesAmountGlobal: 0,
-      margin: 0,
-      purchasePriceKRW: 0,
-      purchasePriceGlobal: 0,
-      purchaseAmountKRW: 0,
-      purchaseAmountGlobal: 0,
-    };
-
-    const newItems = [
-      ...itemDetails.slice(0, index + 1),
-      newItem,
-      ...itemDetails.slice(index + 1).map((item, idx) => ({
-        ...item,
-        position: index + 3 + idx,
-      })),
-    ];
-
-    setItemDetails(newItems);
-  };
+  //     notification.success({
+  //       message: "Export Success",
+  //       description: "PDF file exported successfully.",
+  //     });
+  //   } else {
+  //     notification.error({
+  //       message: "Export Failed",
+  //       description: "Failed to export the PDF file.",
+  //     });
+  //   }
+  // };
 
   const columns: ColumnsType<any> = [
     {
@@ -824,23 +736,7 @@ const TableComponent = ({
             <AutoComplete
               value={text}
               onChange={(value) => {
-                handleInputChange(index, "itemCode", value);
-              }}
-              onBlur={(e) => {
-                const value = (e.target as HTMLInputElement).value;
-                if (value === "") {
-                  setItemDetails((prev) => {
-                    const updated = [...prev];
-                    updated[index] = {
-                      ...updated[index],
-                      itemId: null,
-                      itemCode: "",
-                    };
-                    return updated;
-                  });
-                } else {
-                  handleItemCodeChange(index, value);
-                }
+                handleItemCodeChange(index, value);
               }}
               options={itemCodeOptions.map((option) => ({
                 ...option,
@@ -916,7 +812,7 @@ const TableComponent = ({
       fixed: "left",
       width: 200 * zoomLevel,
       render: (text: string, record: any, index: number) => (
-        <div style={{ position: "relative" }}>
+        <>
           <Input.TextArea
             autoSize={{ minRows: 1, maxRows: 10 }}
             ref={(el) => {
@@ -933,30 +829,9 @@ const TableComponent = ({
             style={{
               borderRadius: "4px",
               width: "100%",
-              paddingRight: "32px", // 버튼 공간 확보
             }}
           />
-          <Button
-            type="text"
-            icon={<PlusCircleOutlined />}
-            onClick={() => handleAddDescRow(index)}
-            style={{
-              position: "absolute",
-              right: "4px",
-              top: "50%",
-              transform: "translateY(-50%)",
-              width: "24px",
-              height: "24px",
-              padding: 0,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: "transparent",
-              border: "none",
-              zIndex: 1,
-            }}
-          />
-        </div>
+        </>
       ),
     },
     {
@@ -1470,50 +1345,14 @@ const TableComponent = ({
     },
   ];
 
-  const handleSupplierInquiryNameChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    currentOfferId: number
-  ) => {
-    const newValue = e.target.value;
-    setSupplierInquiryName(newValue);
-
-    setDataSource((prevDataSource) => {
-      if (!prevDataSource) return prevDataSource;
-
-      return {
-        ...prevDataSource,
-        response: prevDataSource.response.map((item) => {
-          if (item.inquiryId === currentOfferId) {
-            return {
-              ...item,
-              supplierInquiryName: newValue,
-            };
-          }
-          return item;
-        }),
-      };
-    });
-
-    setNewDocumentInfo((prev) => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        documentNumber: newValue,
-      };
-    });
-  };
-
   return (
     <div style={{ overflowX: "auto" }}>
       <DocumentContainer>
         <div style={{ display: "flex", alignItems: "center" }}>
-          <DocumentLabel>Document No.</DocumentLabel>
-          <DocumentNumber>
-            <Input
-              value={supplierInquiryName}
-              onChange={(e) => handleSupplierInquiryNameChange(e, offerId)}
-            />
-          </DocumentNumber>
+          <DocumentLabel>Supplier</DocumentLabel>
+          <SupplierName>
+            <Input value={supplier.companyName} readOnly />
+          </SupplierName>
         </div>
         <ButtonGroup>
           <Tooltip title="Load excel file on your local">
@@ -1534,7 +1373,7 @@ const TableComponent = ({
               Export Excel
             </Button>
           </Tooltip>
-          <Tooltip title="Download PDF file before you send">
+          {/* <Tooltip title="Download PDF file before you send">
             <Button
               type="dashed"
               onClick={() =>
@@ -1544,7 +1383,7 @@ const TableComponent = ({
             >
               Download PDF File
             </Button>
-          </Tooltip>
+          </Tooltip> */}
         </ButtonGroup>
       </DocumentContainer>
       <Space style={{ marginBottom: 16 }}>

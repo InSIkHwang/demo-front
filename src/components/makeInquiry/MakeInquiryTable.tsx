@@ -731,6 +731,35 @@ function MakeInquiryTable({
     rowIndex: number,
     columnIndex: number
   ) => {
+    if (e.ctrlKey && e.key === "Enter") {
+      e.preventDefault();
+      const currentItem = tables[tableIndex].itemDetails[rowIndex];
+      handleAddItem(tableIndex, currentItem.position);
+
+      // 새로운 행이 추가된 후 다음 행의 같은 컬럼으로 포커스 이동
+      const nextRowRefs = inputRefs.current[tableIndex]?.[rowIndex + 1];
+      if (nextRowRefs && nextRowRefs[columnIndex]) {
+        nextRowRefs[columnIndex]?.focus();
+      }
+      return;
+    }
+
+    // Ctrl + Backspace 키 감지
+    if (e.ctrlKey && e.key === "Backspace") {
+      e.preventDefault();
+      const currentItem = tables[tableIndex].itemDetails[rowIndex];
+
+      handleDeleteItem(tableIndex, currentItem.position);
+
+      // 삭제 후 이전 행으로 포커스 이동
+      const prevRowRefs = inputRefs.current[tableIndex]?.[rowIndex - 1];
+      if (prevRowRefs && prevRowRefs[columnIndex]) {
+        prevRowRefs[columnIndex]?.focus();
+      }
+
+      return;
+    }
+
     if (e.key === "ArrowDown" || e.key === "ArrowUp") {
       e.preventDefault();
 
@@ -931,7 +960,13 @@ function MakeInquiryTable({
           <div>
             <AutoComplete
               value={record.itemCode}
-              onChange={(value) => handleItemCodeChange(index, value)}
+              onBlur={(e) =>
+                handleItemCodeChange(
+                  index,
+                  (e.target as HTMLInputElement).value
+                )
+              }
+              onChange={(value) => handleInputChange(index, "itemCode", value)}
               options={itemCodeOptions.map((option) => ({
                 value: option.key,
                 label: option.label,

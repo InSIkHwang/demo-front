@@ -707,9 +707,12 @@ export const saveComplexOfferHeader = async (
 };
 
 //OFFER 상태 변경 (메일 전송 체크)
-export const changeOfferStatus = async (supplierInquiryId: number) => {
+export const changeOfferStatus = async (
+  supplierInquiryId: number,
+  status: string
+) => {
   const response = await axios.put(
-    `/api/supplier-inquiries/update-status/${supplierInquiryId}`
+    `/api/supplier-inquiries/update-status/${supplierInquiryId}?status=${status}`
   );
 
   return response.data;
@@ -902,6 +905,55 @@ export const fetchOrderList = async (page: number, pageSize: number) => {
 //ORDER 상세 정보 조회
 export const fetchOrderDetail = async (orderId: number) => {
   const response = await axios.get(`/api/orders/${orderId}`);
+
+  return response.data;
+};
+
+//ORDER 검색
+export const searchOrderList = async ({
+  registerStartDate = "",
+  registerEndDate = "",
+  query = "",
+  documentNumber = "",
+  refNumber = "",
+  customerName = "",
+  supplierName = "",
+  page,
+  pageSize,
+  writer,
+  itemName = "",
+  itemCode = "",
+  vesselName = "",
+}: OfferSearchParams): Promise<{
+  totalCount: number;
+  orderList: Order[];
+}> => {
+  const queryParams = {
+    registerStartDate,
+    registerEndDate,
+    query,
+    documentNumber,
+    refNumber,
+    customerName,
+    supplierName,
+    page: (page - 1).toString(),
+    pageSize: pageSize.toString(),
+    writer,
+    itemName,
+    itemCode,
+    vesselName,
+  };
+
+  const queryString = new URLSearchParams(
+    Object.entries(queryParams)
+      .filter(([_, value]) => value !== "")
+      .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {})
+  ).toString();
+
+  const response = await axios.post<{
+    totalCount: number;
+    orderList: Order[];
+  }>(`/api/orders/search?${queryString}`);
 
   return response.data;
 };

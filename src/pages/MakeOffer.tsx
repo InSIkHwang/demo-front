@@ -385,15 +385,12 @@ const MakeOffer = () => {
           customerId: response.documentInfo.customerId,
           vesselId: response.documentInfo.vesselId,
         });
-
-        if (response.documentInfo.discount) {
-          setDcInfo({
-            dcPercent: response.documentInfo.discount || 0,
-            dcKrw: 0,
-            dcGlobal: 0,
-          });
-          setInvChargeList(response.documentInfo.invChargeList || []);
-        }
+        setDcInfo({
+          dcPercent: response.documentInfo.discount || 0,
+          dcKrw: 0,
+          dcGlobal: 0,
+        });
+        setInvChargeList(response.documentInfo.invChargeList || []);
       } catch (error) {
         message.error("An error occurred while importing data.");
       }
@@ -495,6 +492,7 @@ const MakeOffer = () => {
     value: (typeof formValues)[K]
   ) => {
     setFormValues((prev) => ({ ...prev, [key]: value }));
+    setNewDocumentInfo((prev) => (prev ? { ...prev, [key]: value } : null));
   };
 
   const handleMarginChange = (index: number, marginValue: number) => {
@@ -818,15 +816,33 @@ const MakeOffer = () => {
     const updatedTotalSalesAmountGlobal =
       newTotalSalesAmountGlobal + chargePriceGlobalTotal;
 
-    const totalProfit = totalSalesAmountGlobal * 1350 - totalPurchaseAmountKRW;
+    const chargeCurrency = () => {
+      switch (formValues.currencyType) {
+        case "USD":
+          return 1400;
+        case "EUR":
+          return 1500;
+        case "INR":
+          return 16;
+        default:
+          return 1400;
+      }
+    };
+
+    const totalProfit =
+      totalSalesAmountGlobal * chargeCurrency() - totalPurchaseAmountKRW;
     const totalProfitPercent = Number(
-      ((totalProfit / (totalSalesAmountGlobal * 1350)) * 100).toFixed(2)
+      (
+        (totalProfit / (totalSalesAmountGlobal * chargeCurrency())) *
+        100
+      ).toFixed(2)
     );
     const updatedTotalProfit =
-      updatedTotalSalesAmountGlobal * 1350 - totalPurchaseAmountKRW;
+      updatedTotalSalesAmountGlobal * chargeCurrency() - totalPurchaseAmountKRW;
     const updatedTotalProfitPercent = Number(
       (
-        (updatedTotalProfit / (updatedTotalSalesAmountGlobal * 1350)) *
+        (updatedTotalProfit /
+          (updatedTotalSalesAmountGlobal * chargeCurrency())) *
         100
       ).toFixed(2)
     );
@@ -1148,22 +1164,30 @@ const MakeOffer = () => {
         tabBarExtraContent={{
           right: (
             <>
-              <Button
-                type="dashed"
-                icon={<PlusOutlined />}
-                onClick={() => handleAddSupplierTab("resend")}
-                style={{ marginLeft: 8 }}
+              <Tooltip
+                title={
+                  "Modify and resend items to the already sent supplier (where of the selected tab)"
+                }
               >
-                Resend Email
-              </Button>
-              <Button
-                type="dashed"
-                icon={<PlusOutlined />}
-                onClick={() => handleAddSupplierTab("add")}
-                style={{ marginLeft: 8 }}
-              >
-                Add Supplier on Inquiry
-              </Button>
+                <Button
+                  type="dashed"
+                  icon={<PlusOutlined />}
+                  onClick={() => handleAddSupplierTab("resend")}
+                  style={{ marginLeft: 8 }}
+                >
+                  Resend Email
+                </Button>
+              </Tooltip>{" "}
+              <Tooltip title={"Send additional mail to new supplier"}>
+                <Button
+                  type="dashed"
+                  icon={<PlusOutlined />}
+                  onClick={() => handleAddSupplierTab("add")}
+                  style={{ marginLeft: 8 }}
+                >
+                  Add Supplier on Inquiry
+                </Button>
+              </Tooltip>
             </>
           ),
         }}
@@ -1247,7 +1271,7 @@ const MakeOffer = () => {
         onOk: async () => {
           if (localSendMailState && currentInquiryId) {
             try {
-              await changeOfferStatus(currentInquiryId);
+              await changeOfferStatus(currentInquiryId, "QUOTATION_SENT");
             } catch (error) {
               message.error(
                 "Failed to update offer status. Please try again later."

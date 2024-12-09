@@ -1,8 +1,6 @@
-import { Form, Input, DatePicker } from "antd";
+import { Form, Input } from "antd";
 import styled from "styled-components";
-import { Order, Supplier } from "../../types/types";
-import dayjs from "dayjs";
-import { useState } from "react";
+import { Order } from "../../types/types";
 
 const InquiryItemForm = styled(Form.Item)`
   margin-bottom: 8px;

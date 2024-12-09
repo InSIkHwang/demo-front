@@ -16,7 +16,7 @@ import { fetchInquiryList, searchInquiryList } from "../api/api";
 import DetailInquiryModal from "../components/inquiryList/DetailInquiryModal";
 import type { ColumnsType, TableProps } from "antd/es/table";
 import { Inquiry } from "../types/types";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { CheckboxChangeEvent } from "antd/es/checkbox";
 import dayjs from "dayjs";
 
@@ -201,25 +201,47 @@ const columns: ColumnsType<Inquiry> = [
 
 const CustomerInquiryList = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [data, setData] = useState<Inquiry[]>([]);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
-  const [searchText, setSearchText] = useState<string>("");
-  const [searchCategory, setSearchCategory] = useState<string>("ALL");
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [itemsPerPage, setItemsPerPage] = useState<number>(30);
+  const [searchText, setSearchText] = useState<string>(
+    searchParams.get("searchText") || ""
+  );
+  const [searchCategory, setSearchCategory] = useState<string>(
+    searchParams.get("searchCategory") || "ALL"
+  );
+  const [currentPage, setCurrentPage] = useState<number>(
+    Number(searchParams.get("page")) || 1
+  );
+  const [itemsPerPage, setItemsPerPage] = useState<number>(
+    Number(searchParams.get("pageSize")) || 30
+  );
   const [selectedInquiryId, setSelectedInquiryId] = useState<number | null>(
     null
   );
   const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
   const [registerStartDate, setRegisterStartDate] = useState<string>(
-    dayjs().subtract(1, "month").format("YYYY-MM-DD")
+    searchParams.get("startDate") ||
+      dayjs().subtract(1, "month").format("YYYY-MM-DD")
   );
   const [registerEndDate, setRegisterEndDate] = useState<string>(
-    dayjs().format("YYYY-MM-DD")
+    searchParams.get("endDate") || dayjs().format("YYYY-MM-DD")
   );
-  const [viewMyInquiryOnly, setViewMyInquiryOnly] = useState<boolean>(false);
-  const [viewOnlySentEmails, setViewOnlySentEmails] = useState<boolean>(false);
+  const [viewMyInquiryOnly, setViewMyInquiryOnly] = useState<boolean>(
+    searchParams.get("viewMyInquiryOnly") === "true"
+  );
+  const [viewOnlySentEmails, setViewOnlySentEmails] = useState<boolean>(
+    searchParams.get("viewOnlySentEmails") === "true"
+  );
+
+  useEffect(() => {
+    if (searchParams.toString()) {
+      handleSearch();
+    } else {
+      fetchData();
+    }
+  }, []);
 
   useEffect(() => {
     if (searchText && registerStartDate && registerEndDate) {
@@ -227,7 +249,7 @@ const CustomerInquiryList = () => {
     } else {
       fetchData();
     }
-  }, [currentPage, itemsPerPage]);
+  }, [currentPage, itemsPerPage, viewMyInquiryOnly, viewOnlySentEmails]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -259,8 +281,34 @@ const CustomerInquiryList = () => {
     };
   }, [isDetailModalOpen]);
 
+  const updateSearchParams = (
+    params: Record<string, string | number | boolean>
+  ) => {
+    const newSearchParams = new URLSearchParams(searchParams);
+
+    Object.entries(params).forEach(([key, value]) => {
+      if (value === "" || value === null || value === undefined) {
+        newSearchParams.delete(key);
+      } else {
+        newSearchParams.set(key, String(value));
+      }
+    });
+
+    setSearchParams(newSearchParams);
+  };
+
   const handleSearch = async () => {
     setLoading(true);
+    updateSearchParams({
+      searchText,
+      searchCategory,
+      startDate: registerStartDate,
+      endDate: registerEndDate,
+      page: currentPage,
+      pageSize: itemsPerPage,
+      viewMyInquiryOnly,
+      viewOnlySentEmails,
+    });
     try {
       const response = await searchInquiryList(
         registerStartDate,
@@ -279,7 +327,7 @@ const CustomerInquiryList = () => {
       setData(response.customerInquiryList);
       setTotalCount(response.totalCount);
     } catch (error) {
-      console.error("검색 중 오류가 발생했습니다:", error);
+      console.error("An error occurred while searching:", error);
     } finally {
       setLoading(false);
     }
@@ -292,31 +340,25 @@ const CustomerInquiryList = () => {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+    updateSearchParams({ page });
   };
 
   const handlePageSizeChange = (current: number, size: number) => {
     setItemsPerPage(size);
     setCurrentPage(1);
-  };
-
-  const fetchFilteredData = () => {
-    setCurrentPage(1); // 페이지를 1로 초기화
-    fetchData(); // 데이터 재요청
+    updateSearchParams({ pageSize: size, page: 1 });
   };
 
   // 체크박스의 상태 변경 처리 함수
   const handleViewMyInquiryOnlyChange = (e: CheckboxChangeEvent) => {
     setViewMyInquiryOnly(e.target.checked);
+    updateSearchParams({ viewMyInquiryOnly: e.target.checked });
   };
 
   const handleViewOnlySentEmailsChange = (e: CheckboxChangeEvent) => {
     setViewOnlySentEmails(e.target.checked);
+    updateSearchParams({ viewOnlySentEmails: e.target.checked });
   };
-
-  // useEffect를 사용하여 상태 변화 감지
-  useEffect(() => {
-    fetchFilteredData(); // 상태가 변경되면 데이터 재요청
-  }, [viewMyInquiryOnly, viewOnlySentEmails]);
 
   return (
     <>
@@ -338,7 +380,10 @@ const CustomerInquiryList = () => {
             <Input
               placeholder="Search..."
               value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
+              onChange={(e) => {
+                setSearchText(e.target.value);
+                updateSearchParams({ searchText: e.target.value });
+              }}
               onPressEnter={() => handleSearch()}
               style={{ width: 300, marginRight: 10 }}
             />
@@ -373,10 +418,14 @@ const CustomerInquiryList = () => {
               Search
             </Button>
             <CheckboxWrapper>
-              <Checkbox onChange={handleViewMyInquiryOnlyChange}>
+              <Checkbox
+                checked={viewMyInquiryOnly}
+                onChange={handleViewMyInquiryOnlyChange}
+              >
                 View My Inquiry Only
               </Checkbox>
               <Checkbox
+                checked={viewOnlySentEmails}
                 style={{ marginLeft: 10 }}
                 onChange={handleViewOnlySentEmailsChange}
               >

@@ -6,14 +6,20 @@ import {
   Tag,
   Empty,
   Divider,
+  message,
+  Select,
+  Input,
+  DatePicker,
 } from "antd";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import styled from "styled-components";
-import { fetchOrderList } from "../api/api";
+import { fetchOrderList, searchOrderList } from "../api/api";
 import type { ColumnsType } from "antd/es/table";
-import { Order, orderAllResponses } from "../types/types";
-import { useNavigate } from "react-router-dom";
+import { OfferSearchParams, Order, orderAllResponses } from "../types/types";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import dayjs from "dayjs";
 import DetailOrderModal from "../components/orderList/DetailOrderModal";
+import Checkbox, { CheckboxChangeEvent } from "antd/es/checkbox";
 
 const Container = styled.div`
   position: relative;
@@ -34,14 +40,45 @@ const Title = styled.h1`
 
 const TableHeader = styled.div`
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 20px;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
 `;
 
 const SearchBar = styled.div`
   display: flex;
   align-items: center;
+  padding: 12px 16px;
+  background-color: white;
+  border-bottom: 1px solid #e6e6e6;
+  transition: all 0.2s ease;
+
+  &:focus-within {
+    border-color: #1890ff;
+    box-shadow: 0 2px 0 0 rgba(24, 144, 255, 0.1);
+  }
 `;
+
+const SearchSection = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+`;
+
+const CheckboxWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  margin-left: 16px;
+  padding-left: 16px;
+  border-left: 1px solid #f0f0f0;
+`;
+
+// Select, Input, DatePicker 등의 공통 스타일
+const commonInputStyles = {
+  borderRadius: "4px",
+  height: "32px",
+};
 
 const Button = styled(AntButton)`
   background-color: ${(props) => props.theme.blue};
@@ -124,27 +161,59 @@ const columns: ColumnsType<Order> = [
 ];
 
 const OrderList = () => {
-  const navigate = useNavigate();
   const [data, setData] = useState<Order[]>([]);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [totalCount, setTotalCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
-  const [searchText, setSearchText] = useState<string>("");
-  const [searchCategory, setSearchCategory] =
-    useState<string>("documentNumber");
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [itemsPerPage, setItemsPerPage] = useState<number>(30);
+  const [searchText, setSearchText] = useState<string>(
+    searchParams.get("searchText") || ""
+  );
+  const [searchCategory, setSearchCategory] = useState<string>(
+    searchParams.get("searchCategory") || "documentNumber"
+  );
+  const [searchSubCategory, setSearchSubCategory] = useState<string>(
+    searchParams.get("searchSubCategory") || "itemName"
+  );
+  const [searchSubText, setSearchSubText] = useState<string>(
+    searchParams.get("searchSubText") || ""
+  );
+  const [currentPage, setCurrentPage] = useState<number>(
+    Number(searchParams.get("page")) || 1
+  );
+  const [itemsPerPage, setItemsPerPage] = useState<number>(
+    Number(searchParams.get("pageSize")) || 30
+  );
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
-  const [registerStartDate, setRegisterStartDate] = useState<string>("");
-  const [registerEndDate, setRegisterEndDate] = useState<string>("");
+  const [registerStartDate, setRegisterStartDate] = useState<string>(
+    searchParams.get("startDate") ||
+      dayjs().subtract(1, "month").format("YYYY-MM-DD")
+  );
+  const [registerEndDate, setRegisterEndDate] = useState<string>(
+    searchParams.get("endDate") || dayjs().format("YYYY-MM-DD")
+  );
+  const [viewMyOfferOnly, setViewMyOfferOnly] = useState<boolean>(
+    searchParams.get("viewMyOfferOnly") === "true"
+  );
+  const [showItemSearch, setShowItemSearch] = useState<boolean>(
+    searchParams.get("showItemSearch") === "true"
+  );
 
   useEffect(() => {
-    if (searchText) {
-      // handleSearch();
+    if (searchParams.toString()) {
+      handleSearch();
     } else {
       fetchData();
     }
-  }, [currentPage, itemsPerPage]);
+  }, []);
+
+  useEffect(() => {
+    if ((searchText || searchSubText) && registerStartDate && registerEndDate) {
+      handleSearch();
+    } else {
+      fetchData();
+    }
+  }, [currentPage, itemsPerPage, viewMyOfferOnly, showItemSearch]);
 
   const fetchData = async () => {
     try {
@@ -152,7 +221,7 @@ const OrderList = () => {
       setData(response.orderList);
       setTotalCount(response.totalCount);
     } catch (error) {
-      console.error("데이터를 가져오는 중 오류가 발생했습니다:", error);
+      console.error("OrderList fetchData error", error);
     } finally {
       setLoading(false);
     }
@@ -170,27 +239,79 @@ const OrderList = () => {
     };
   }, [isDetailModalOpen]);
 
-  // const handleSearch = async () => {
-  //   setLoading(true);
-  //   try {
-  //     const response = await searchQutationList(
-  //       registerStartDate,
-  //       registerEndDate,
-  //       searchCategory === "documentNumber" ? searchText : "",
-  //       searchCategory === "refNumber" ? searchText : "",
-  //       searchCategory === "customerName" ? searchText : "",
-  //       currentPage,
-  //       itemsPerPage
-  //     );
+  const updateSearchParams = (
+    params: Record<string, string | number | boolean>
+  ) => {
+    const newSearchParams = new URLSearchParams(searchParams);
 
-  //     setData(response.quotationList);
-  //     setTotalCount(response.totalCount);
-  //   } catch (error) {
-  //     console.error("검색 중 오류가 발생했습니다:", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+    Object.entries(params).forEach(([key, value]) => {
+      if (value === "" || value === null || value === undefined) {
+        newSearchParams.delete(key);
+      } else {
+        newSearchParams.set(key, String(value));
+      }
+    });
+
+    setSearchParams(newSearchParams);
+  };
+
+  const handleSearch = async () => {
+    setLoading(true);
+    updateSearchParams({
+      searchText,
+      searchCategory,
+      startDate: registerStartDate,
+      endDate: registerEndDate,
+      page: currentPage,
+      pageSize: itemsPerPage,
+      writer: viewMyOfferOnly ? "MY" : ("ALL" as const),
+    });
+    try {
+      const searchParams: OfferSearchParams = {
+        registerStartDate,
+        registerEndDate,
+        ...(searchCategory === "query" && { query: searchText }),
+        ...(searchCategory === "documentNumber" && {
+          documentNumber: searchText,
+        }),
+        ...(searchCategory === "refNumber" && { refNumber: searchText }),
+        ...(searchCategory === "customerName" && { customerName: searchText }),
+        ...(searchCategory === "supplierName" && { supplierName: searchText }),
+        ...(searchCategory === "vesselName" && { vesselName: searchText }),
+        page: currentPage,
+        pageSize: itemsPerPage,
+        writer: viewMyOfferOnly ? "MY" : ("ALL" as const),
+        ...(showItemSearch && {
+          [searchSubCategory]: searchSubText,
+        }),
+      };
+
+      const response = await searchOrderList(searchParams);
+
+      setData(response.orderList);
+      setTotalCount(response.totalCount);
+    } catch (error) {
+      message.error("Error occurred while searching");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleViewMyOfferOnlyChange = (e: CheckboxChangeEvent) => {
+    setViewMyOfferOnly(e.target.checked);
+    updateSearchParams({ viewMyOfferOnly: e.target.checked });
+  };
+
+  const handleItemSearchToggle = (e: CheckboxChangeEvent) => {
+    setShowItemSearch(e.target.checked);
+    if (!e.target.checked) {
+      setSearchSubCategory("");
+      setSearchSubText("");
+      updateSearchParams({ showItemSearch: false });
+    } else {
+      updateSearchParams({ showItemSearch: true });
+    }
+  };
 
   const handleRowClick = (record: Order) => {
     setSelectedOrderId(record.orderId ?? null);
@@ -199,11 +320,13 @@ const OrderList = () => {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+    updateSearchParams({ page });
   };
 
   const handlePageSizeChange = (current: number, size: number) => {
     setItemsPerPage(size);
     setCurrentPage(1);
+    updateSearchParams({ pageSize: size, page: 1 });
   };
 
   return (
@@ -211,44 +334,108 @@ const OrderList = () => {
       <Container>
         <Title>수주 - Orders</Title>
         <TableHeader>
-          {/* <SearchBar>
-            <Select
-              defaultValue="documentNumber"
-              style={{ width: 140, marginRight: 10 }}
-              onChange={(value) => setSearchCategory(value)}
-            >
-              <Select.Option value="documentNumber">
-                Document Number
-              </Select.Option>
-              <Select.Option value="refNumber">REF NO.</Select.Option>
-              <Select.Option value="customerName">Costomer Name</Select.Option>
-            </Select>
-            <Input
-              placeholder="Search..."
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              style={{ width: 300, marginRight: 10 }}
-            />
-            <DatePicker
-              placeholder="Start Date"
-              format="YYYY-MM-DD"
-              onChange={(date) =>
-                setRegisterStartDate(date ? date.format("YYYY-MM-DD") : "")
-              }
-              style={{ marginRight: 10 }}
-            />
-            <DatePicker
-              placeholder="End Date"
-              format="YYYY-MM-DD"
-              onChange={(date) =>
-                setRegisterEndDate(date ? date.format("YYYY-MM-DD") : "")
-              }
-              style={{ marginRight: 10 }}
-            />
-            <Button type="primary" onClick={handleSearch}>
-              Search
-            </Button>
-          </SearchBar> */}
+          <SearchBar>
+            <SearchSection>
+              <Select
+                defaultValue="ALL"
+                style={{ ...commonInputStyles, width: 140 }}
+                onChange={(value) => setSearchCategory(value)}
+              >
+                <Select.Option value="query">ALL</Select.Option>
+                <Select.Option value="documentNumber">
+                  Document No.
+                </Select.Option>
+                <Select.Option value="refNumber">REF No.</Select.Option>
+                <Select.Option value="customerName">
+                  Customer Name
+                </Select.Option>
+                <Select.Option value="supplierName">
+                  Supplier Name
+                </Select.Option>
+                <Select.Option value="vesselName">Vessel Name</Select.Option>
+              </Select>
+              <Input
+                placeholder="Search..."
+                value={searchText}
+                onChange={(e) => {
+                  setSearchText(e.target.value);
+                  updateSearchParams({ searchText: e.target.value });
+                }}
+                onPressEnter={() => handleSearch()}
+                style={{ ...commonInputStyles, width: 280 }}
+              />
+              <DatePicker
+                placeholder="Start Date"
+                format="YYYY-MM-DD"
+                defaultValue={dayjs().subtract(1, "month")}
+                onChange={(date) =>
+                  setRegisterStartDate(date ? date.format("YYYY-MM-DD") : "")
+                }
+                style={commonInputStyles}
+              />
+              <DatePicker
+                placeholder="End Date"
+                format="YYYY-MM-DD"
+                defaultValue={dayjs()}
+                onChange={(date) =>
+                  setRegisterEndDate(date ? date.format("YYYY-MM-DD") : "")
+                }
+                style={commonInputStyles}
+              />
+              <Button
+                type="primary"
+                onClick={() => {
+                  if (currentPage === 1) {
+                    handleSearch();
+                  } else {
+                    setCurrentPage(1);
+                  }
+                }}
+              >
+                Search
+              </Button>
+            </SearchSection>
+            <CheckboxWrapper>
+              <Checkbox
+                checked={viewMyOfferOnly}
+                onChange={handleViewMyOfferOnlyChange}
+              >
+                View My Offer Only
+              </Checkbox>
+            </CheckboxWrapper>
+          </SearchBar>
+          <SearchBar>
+            <SearchSection>
+              <Checkbox
+                checked={showItemSearch}
+                onChange={handleItemSearchToggle}
+              >
+                Item Search Option
+              </Checkbox>
+              {showItemSearch && (
+                <>
+                  <Select
+                    defaultValue="Item Name"
+                    style={{ ...commonInputStyles, width: 140 }}
+                    onChange={(value) => setSearchSubCategory(value)}
+                  >
+                    <Select.Option value="itemName">Item Name</Select.Option>
+                    <Select.Option value="itemCode">Item Code</Select.Option>
+                  </Select>
+                  <Input
+                    placeholder="Search items..."
+                    value={searchSubText}
+                    onChange={(e) => {
+                      setSearchSubText(e.target.value);
+                      updateSearchParams({ searchSubText: e.target.value });
+                    }}
+                    onPressEnter={() => handleSearch()}
+                    style={{ ...commonInputStyles, width: 280 }}
+                  />
+                </>
+              )}
+            </SearchSection>
+          </SearchBar>
         </TableHeader>
         <Divider />
         {data.length > 0 ? ( // 데이터가 있을 때만 페이지네이션을 표시
