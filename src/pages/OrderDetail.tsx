@@ -1,23 +1,18 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import {
-  Button,
-  Divider,
-  message,
-  Descriptions,
-  Tag,
-  Select,
-  Modal,
-} from "antd";
+import { Button, Divider, message, Select } from "antd";
 import styled from "styled-components";
 import dayjs, { Dayjs } from "dayjs";
-import { fetchOrderDetail } from "../api/api";
+import { editOrder, fetchOrderDetail } from "../api/api";
 import {
+  HeaderFormData,
   InvCharge,
   Order,
+  OrderAckHeaderFormData,
   OrderItemDetail,
+  OrderRequest,
   OrderResponse,
-  Supplier,
+  OrderSupplier,
 } from "../types/types";
 // import TableComponent from "../components/order/TableComponent";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -26,6 +21,9 @@ import TableComponent from "../components/orderDetail/TableComponent";
 import TotalCardsComponent from "../components/makeOffer/TotalCardsComponent";
 import PurchaseOrderPDFDocument from "../components/orderDetail/PurchaseOrder";
 import POHeaderEditModal from "../components/orderDetail/POHeaderEditModal";
+import OrderAckHeaderEditModal from "../components/orderDetail/OrderAckHeaderEditModal";
+import OrderAckPDFDocument from "../components/orderDetail/OrderAckPDFDocument";
+import ChangeSupplierModal from "../components/orderDetail/ChangeSupplierModal";
 
 const Container = styled.div`
   position: relative;
@@ -44,11 +42,19 @@ const Title = styled.h1`
   color: #333;
 `;
 
+const INITIAL_HEADER_VALUES: OrderAckHeaderFormData = {
+  quotationHeaderId: null,
+  portOfShipment: "BUSAN, KOREA",
+  deliveryTime: dayjs().format("DD MMM, YYYY").toUpperCase(),
+  termsOfPayment: "",
+  incoterms: "EX WORKS",
+};
+
 const OrderDetail = () => {
   const { orderId } = useParams();
   const [formValues, setFormValues] = useState<Order>();
   const [items, setItems] = useState<OrderItemDetail[]>([]);
-  const [supplier, setSupplier] = useState<Supplier>();
+  const [supplier, setSupplier] = useState<OrderSupplier>();
   const navigate = useNavigate();
   const [orderData, setOrderData] = useState<OrderResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -58,6 +64,7 @@ const OrderDetail = () => {
     dcKrw: 0,
     dcGlobal: 0,
   });
+  const [supplierInfoList, setSupplierInfoList] = useState<OrderSupplier[]>([]);
   const [finalTotals, setFinalTotals] = useState({
     totalSalesAmountKRW: 0,
     totalSalesAmountGlobal: 0,
@@ -81,6 +88,13 @@ const OrderDetail = () => {
   const [pdfPOFooter, setPdfPOFooter] = useState<string>(
     "1. 세금 계산서 - 법인\n2. 희망 납기일 - \n3. 예정 납기일 포함된 발주서 접수 회신 메일 부탁 드립니다. 감사합니다."
   );
+  const [pdfOrderAckHeader, setPdfOrderAckHeader] =
+    useState<OrderAckHeaderFormData>(INITIAL_HEADER_VALUES);
+  const [pdfOrderAckFooter, setPdfOrderAckFooter] = useState<
+    { quotationRemarkId: number | null; quotationRemark: string }[]
+  >([]);
+  const [supplierInfoListModalVisible, setSupplierInfoListModalVisible] =
+    useState<boolean>(false);
 
   useEffect(() => {
     if (language === "KOR") {
@@ -96,6 +110,8 @@ const OrderDetail = () => {
     }
   }, [language]);
 
+  console.log(supplierInfoList);
+
   useEffect(() => {
     const loadOrderDetail = async () => {
       try {
@@ -110,6 +126,7 @@ const OrderDetail = () => {
           dcKrw: 0,
           dcGlobal: 0,
         });
+        setSupplierInfoList(data.supplierInfoList);
       } catch (error) {
         message.error("Failed to load order detail.");
       } finally {
@@ -119,6 +136,15 @@ const OrderDetail = () => {
 
     loadOrderDetail();
   }, [orderId]);
+
+  const handleOrderAckHeaderSave = async (
+    header: OrderAckHeaderFormData,
+    footer: { quotationRemarkId: number | null; quotationRemark: string }[]
+  ) => {
+    setPdfOrderAckHeader(header);
+    setPdfOrderAckFooter(footer);
+    setHeaderEditModalVisible(false);
+  };
 
   const handleInputChange = useCallback(
     (index: number, key: keyof OrderItemDetail, value: any) => {
@@ -425,6 +451,36 @@ const OrderDetail = () => {
     setHeaderEditModalVisible(false);
   };
 
+  const handleSave = async () => {
+    if (
+      !formValues ||
+      !supplier ||
+      !invChargeList ||
+      !items ||
+      !supplier.supplierId
+    ) {
+      message.error("Please fill in all fields.");
+      return;
+    }
+
+    const request: OrderRequest = {
+      orderId: Number(orderId),
+      supplierId: supplier?.supplierId || 0,
+      documentEditInfo: formValues,
+      invChargeList: invChargeList,
+      itemDetailList: items,
+    };
+    await editOrder(Number(orderId), request);
+  };
+
+  const handleChangeSupplier = () => {
+    setSupplierInfoListModalVisible(true);
+  };
+
+  const handleCloseSupplierInfoListModal = () => {
+    setSupplierInfoListModalVisible(false);
+  };
+
   if (isLoading) {
     return <LoadingSpinner />;
   }
@@ -440,6 +496,13 @@ const OrderDetail = () => {
       <Divider variant="dashed" style={{ borderColor: "#007bff" }}>
         Order Item List
       </Divider>
+      <Button
+        type="primary"
+        onClick={handleChangeSupplier}
+        style={{ marginBottom: 10 }}
+      >
+        Change Supplier
+      </Button>
       {items && supplier && (
         <TableComponent
           itemDetails={items}
@@ -474,7 +537,9 @@ const OrderDetail = () => {
         <Button type="default" onClick={() => navigate(-1)}>
           Back
         </Button>
-        <Button type="primary">Save</Button>
+        <Button type="primary" onClick={handleSave}>
+          Save
+        </Button>
       </div>
       <div style={{ marginTop: 20 }}>
         <Button style={{ marginLeft: 10 }} onClick={handleOpenHeaderModal}>
@@ -506,7 +571,7 @@ const OrderDetail = () => {
           {showPDFPreview ? "Close Preview" : "PDF Preview"}
         </Button>
       </div>
-      {pdfType === "PO" && showPDFPreview && formValues && (
+      {pdfType === "PO" && showPDFPreview && formValues && supplier && (
         <PurchaseOrderPDFDocument
           info={formValues}
           items={items}
@@ -515,6 +580,20 @@ const OrderDetail = () => {
           language={language}
           pdfFooter={pdfPOFooter}
           finalTotals={finalTotals}
+          supplier={supplier}
+        />
+      )}
+      {pdfType === "OA" && showPDFPreview && formValues && (
+        <OrderAckPDFDocument
+          info={formValues}
+          items={items}
+          pdfHeader={pdfOrderAckHeader}
+          viewMode={true}
+          language={language}
+          pdfFooter={pdfOrderAckFooter}
+          finalTotals={finalTotals}
+          dcInfo={dcInfo}
+          invChargeList={invChargeList}
         />
       )}
       {pdfType === "PO" && headerEditModalVisible && (
@@ -527,6 +606,23 @@ const OrderDetail = () => {
           setPdfPOFooter={setPdfPOFooter}
           language={language}
           setLanguage={setLanguage}
+        />
+      )}
+      {pdfType === "OA" && headerEditModalVisible && (
+        <OrderAckHeaderEditModal
+          open={headerEditModalVisible}
+          onSave={handleOrderAckHeaderSave}
+          onClose={handleCloseHeaderModal}
+          pdfHeader={pdfOrderAckHeader}
+          pdfFooter={pdfOrderAckFooter}
+        />
+      )}
+      {supplierInfoListModalVisible && (
+        <ChangeSupplierModal
+          visible={supplierInfoListModalVisible}
+          onClose={handleCloseSupplierInfoListModal}
+          supplierInfoList={supplierInfoList}
+          setItems={setItems}
         />
       )}
     </Container>

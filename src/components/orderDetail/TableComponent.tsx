@@ -25,7 +25,12 @@ import {
 } from "antd";
 import { ColumnsType } from "antd/es/table";
 import styled from "styled-components";
-import { ItemDetailType, OrderItemDetail, Supplier } from "../../types/types";
+import {
+  ItemDetailType,
+  OrderItemDetail,
+  OrderSupplier,
+  Supplier,
+} from "../../types/types";
 import {
   DeleteOutlined,
   PlusCircleOutlined,
@@ -187,7 +192,7 @@ const SupplierName = styled.span`
   position: relative;
 
   .ant-input {
-    width: 100%;
+    width: 400px;
     color: #262626;
     font-size: 18px;
     font-weight: 600;
@@ -261,7 +266,7 @@ interface TableComponentProps {
     currency: number
   ) => void;
   orderId: number;
-  supplier: Supplier;
+  supplier: OrderSupplier;
   // pdfUrl: string | null;
 }
 

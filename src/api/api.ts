@@ -11,6 +11,7 @@ import {
   OfferSearchParams,
   Order,
   orderAllResponses,
+  OrderRequest,
   Quotation,
   Supplier,
   SupplierInquiryListIF,
@@ -959,6 +960,20 @@ export const searchOrderList = async ({
     totalCount: number;
     orderList: Order[];
   }>(`/api/orders/search?${queryString}`);
+
+  return response.data;
+};
+
+//ORDER 수정
+export const editOrder = async (orderId: number, request: OrderRequest) => {
+  const response = await axios.put(`/api/orders/${orderId}`, request);
+
+  return response.data;
+};
+
+//ORDER 매입처 변경을 위한 가격 정보 조회
+export const fetchOrderSupplierInfo = async (inquiryId: number) => {
+  const response = await axios.get(`/api/orders/prices-info/${inquiryId}`);
 
   return response.data;
 };

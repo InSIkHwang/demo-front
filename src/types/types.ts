@@ -387,11 +387,32 @@ export interface OrderItemDetail {
   purchaseAmountGlobal: number;
 }
 
+export interface OrderSupplier {
+  code: string;
+  communicationLanguage: string;
+  companyName: string;
+  email: string;
+  korCompanyName: string;
+  supplierId: number;
+  supplierInquiryId?: number | null;
+  supplierRemark: string;
+  representative?: string | null;
+}
+
 export interface OrderResponse {
   documentInfo: Order;
   invChargeList: InvCharge[];
   itemDetailList: OrderItemDetail[];
-  suppliers: Supplier[];
+  suppliers: OrderSupplier[];
+  supplierInfoList: OrderSupplier[];
+}
+
+export interface OrderRequest {
+  orderId: number;
+  supplierId: number;
+  documentEditInfo: Order;
+  invChargeList: InvCharge[];
+  itemDetailList: OrderItemDetail[];
 }
 
 export interface InvCharge {
@@ -594,4 +615,12 @@ export interface HeaderFormData {
   incoterms: string | "";
   offerValidity: string | "";
   partCondition: string | "";
+}
+
+export interface OrderAckHeaderFormData {
+  quotationHeaderId: number | null;
+  portOfShipment: string | "";
+  deliveryTime: string | "";
+  termsOfPayment: string | "";
+  incoterms: string | "";
 }
