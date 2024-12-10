@@ -38,6 +38,9 @@ const Title = styled.h1`
 `;
 
 const StyledTable = styled(Table)<{ color?: string } & TableProps<Inquiry>>`
+  .ant-table-column-sort {
+    background-color: inherit !important;
+  }
   .ant-table-tbody {
     tr {
       // complex-row 스타일을 custom-color-row보다 나중에 선언
@@ -116,7 +119,12 @@ const columns: ColumnsType<Inquiry> = [
     title: "Document Number",
     dataIndex: "documentNumber",
     key: "documentNumber",
-    sorter: (a, b) => a.documentNumber.localeCompare(b.documentNumber),
+    sorter: (a, b) => {
+      if (!a.documentNumber && !b.documentNumber) return 0;
+      if (!a.documentNumber) return 1;
+      if (!b.documentNumber) return -1;
+      return a.documentNumber.localeCompare(b.documentNumber);
+    },
   },
   {
     title: "Registration Date",
@@ -148,6 +156,8 @@ const columns: ColumnsType<Inquiry> = [
     title: "Remark",
     dataIndex: "remark",
     key: "remark",
+    sorter: (a, b) => a.remark.localeCompare(b.remark),
+    sortDirections: ["ascend", "descend"],
   },
   {
     title: "Manager",
@@ -215,7 +225,7 @@ const CustomerInquiryList = () => {
     Number(searchParams.get("page")) || 1
   );
   const [itemsPerPage, setItemsPerPage] = useState<number>(
-    Number(searchParams.get("pageSize")) || 30
+    Number(searchParams.get("pageSize")) || 100
   );
   const [selectedInquiryId, setSelectedInquiryId] = useState<number | null>(
     null
@@ -484,7 +494,7 @@ const CustomerInquiryList = () => {
               onChange={handlePageChange}
               onShowSizeChange={handlePageSizeChange}
               showSizeChanger
-              pageSizeOptions={[30, 50, 100]}
+              pageSizeOptions={[50, 100, 200]}
               showQuickJumper
               itemRender={(page, type, originalElement) => {
                 if (type === "prev") {

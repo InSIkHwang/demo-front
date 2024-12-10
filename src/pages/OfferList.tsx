@@ -46,6 +46,9 @@ const Title = styled.h1`
 const StyledTable = styled(Table)<
   { color?: string } & TableProps<SupplierInquiryListIF>
 >`
+  .ant-table-column-sort {
+    background-color: inherit !important;
+  }
   .ant-table-tbody {
     tr {
       // complex-row 스타일을 custom-color-row보다 나중에 선언
@@ -252,6 +255,8 @@ const columns: ColumnsType<SupplierInquiryListIF> = [
     title: "Document Status",
     dataIndex: "documentStatus",
     key: "documentStatus",
+    sorter: (a, b) => a.documentStatus.localeCompare(b.documentStatus),
+    sortDirections: ["ascend", "descend"],
     render: (status) => {
       let color;
       switch (status) {
@@ -298,7 +303,7 @@ const OfferList = () => {
     Number(searchParams.get("page")) || 1
   );
   const [itemsPerPage, setItemsPerPage] = useState<number>(
-    Number(searchParams.get("pageSize")) || 30
+    Number(searchParams.get("pageSize")) || 100
   );
   const [viewMyOfferOnly, setViewMyOfferOnly] = useState<boolean>(
     searchParams.get("viewMyOfferOnly") === "true"
@@ -748,7 +753,7 @@ const OfferList = () => {
               onChange={handlePageChange}
               onShowSizeChange={handlePageSizeChange}
               showSizeChanger
-              pageSizeOptions={[30, 50, 100]}
+              pageSizeOptions={[50, 100, 200]}
               showQuickJumper
               itemRender={(page, type, originalElement) => {
                 if (type === "prev") {
