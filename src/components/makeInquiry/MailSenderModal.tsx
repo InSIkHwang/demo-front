@@ -125,6 +125,11 @@ interface MailSenderModalProps {
   isMailSenderVisible: boolean;
 }
 
+interface SelectedSupplier {
+  supplierId: number;
+  supplierName: string;
+}
+
 const MailSenderModal = ({
   mode,
   mailDataList,
@@ -140,9 +145,9 @@ const MailSenderModal = ({
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [currentMailDataList, setCurrentMailDataList] = useState(mailDataList);
-  const [selectedMailIndexes, setSelectedMailIndexes] = useState<Set<number>>(
-    new Set()
-  );
+  const [selectedSuppliers, setSelectedSuppliers] = useState<
+    Set<SelectedSupplier>
+  >(new Set());
   const [uploadFile, setUploadFile] = useState<File[]>([]);
   const [missingFieldsState, setMissingFieldsState] = useState<{
     [key: string]: string[];
@@ -160,12 +165,21 @@ const MailSenderModal = ({
         refNumber: inquiryFormValues.refNumber,
         customer: inquiryFormValues.customer,
         vesselName: inquiryFormValues.vesselName,
-        mails: selectedSupplierTag.map((supplier, index) => ({
-          toRecipient: mailDataList[index]?.toRecipient || supplier.email || "",
-          subject: mailDataList[index]?.subject || "",
-          content: mailDataList[index]?.content || "",
-          ccRecipient: mailDataList[index]?.ccRecipient || "",
-          bccRecipient: mailDataList[index]?.bccRecipient || "",
+        mails: selectedSupplierTag.map((supplier) => ({
+          supplierId: supplier.id,
+          toRecipient: supplier.email || "",
+          subject:
+            mailDataList.find((m) => m.supplierId === supplier.id)?.subject ||
+            "",
+          content:
+            mailDataList.find((m) => m.supplierId === supplier.id)?.content ||
+            "",
+          ccRecipient:
+            mailDataList.find((m) => m.supplierId === supplier.id)
+              ?.ccRecipient || "",
+          bccRecipient:
+            mailDataList.find((m) => m.supplierId === supplier.id)
+              ?.bccRecipient || "",
           communicationLanguage: supplier.communicationLanguage || "",
         })),
       };
@@ -173,7 +187,7 @@ const MailSenderModal = ({
       // 폼 초기화
       form.setFieldsValue(initialValues);
 
-      // 모든 탭의 필드를 한 번에 터치하여 유효성 검사 트리거
+      // 모든 탭의 필드를 한 번에 터치하여 유효성 검사 리거
       selectedSupplierTag.forEach((_, index) => {
         form
           .validateFields([
@@ -236,33 +250,44 @@ const MailSenderModal = ({
 
   const handleSelectAllChange = (e: CheckboxChangeEvent) => {
     if (e.target.checked) {
-      setSelectedMailIndexes(
-        new Set(currentMailDataList.map((_, index) => index))
+      setSelectedSuppliers(
+        new Set(
+          selectedSupplierTag.map((supplier) => ({
+            supplierId: supplier.id,
+            supplierName: supplier.name,
+          }))
+        )
       );
     } else {
-      setSelectedMailIndexes(new Set());
+      setSelectedSuppliers(new Set());
     }
   };
 
-  const handleMailSelectionChange = (index: number, checked: boolean) => {
-    setSelectedMailIndexes((prev) => {
+  const handleMailSelectionChange = (
+    supplier: SelectedSupplier,
+    checked: boolean
+  ) => {
+    setSelectedSuppliers((prev) => {
       const newSelection = new Set(prev);
       if (checked) {
-        newSelection.add(index);
+        newSelection.add(supplier);
       } else {
-        newSelection.delete(index);
+        // supplierId를 기준으로 제거
+        const updatedSelection = Array.from(newSelection).filter(
+          (s) => s.supplierId !== supplier.supplierId
+        );
+        return new Set(updatedSelection);
       }
       return newSelection;
     });
   };
 
   const onFinish = async (values: any) => {
-    if (selectedMailIndexes.size === 0) {
+    if (selectedSuppliers.size === 0) {
       return message.error("There is no selected mail destination");
     }
     setLoading(true);
 
-    // 진행 상황 모달 표시 (OK 버튼 숨김)
     const modal = Modal.confirm({
       title: "Sending Emails...",
       content: (
@@ -271,29 +296,101 @@ const MailSenderModal = ({
           Please wait while emails are being sent.
         </div>
       ),
-      maskClosable: false, // 모달 외부 클릭 시 닫히지 않도록 설정
-      closable: false, // X 버튼 비활성화
-      okButtonProps: { style: { display: "none" } }, // OK 버튼 숨기기
-      cancelButtonProps: { style: { display: "none" } }, // Cancel 버튼도 숨길 수 있음
+      maskClosable: false,
+      closable: false,
+      okButtonProps: { style: { display: "none" } },
+      cancelButtonProps: { style: { display: "none" } },
     });
 
     try {
-      const savedInquiryId = await handleSubmit(); // inquiryId 반환받기
+      const savedInquiryId = await handleSubmit();
       const inquiryId: number | null = savedInquiryId as number | null;
 
       if (inquiryId || mode === "addSupplier") {
         const results = [];
-        const selectedSuppliers = Array.from(selectedMailIndexes).map(
-          (index) => selectedSupplierTag[index]
-        );
-        for (let i = 0; i < selectedSuppliers.length; i++) {
-          console.log(`Processing email ${i + 1}/${selectedSuppliers.length}`);
-          const updatedFileData = [...uploadFile];
-          const currentSupplier = selectedSuppliers[i];
-          console.log(currentSupplier, "currentSupplier");
+        const selectedSuppliersArray = Array.from(selectedSuppliers);
 
+        // 선택된 공급처들의 메일 데이터 배열 생성
+        const selectedMailsData = selectedSuppliersArray
+          .map((selected) => {
+            // 현재 선택된 공급처 정보 찾기
+            const currentSupplier = selectedSupplierTag.find(
+              (s) => s.id === selected.supplierId
+            );
+
+            if (!currentSupplier) {
+              console.error(
+                `Supplier with ID ${selected.supplierId} not found.`
+              );
+              return null;
+            }
+
+            // values.mails에서 supplierId로 직접 메일 데이터 찾기
+            const formMailData = values.mails.find(
+              (mail: any) => mail.supplierId === currentSupplier.id
+            );
+
+            if (!formMailData) {
+              console.error(
+                `Mail data for supplier ID ${currentSupplier.id} not found.`
+              );
+              return null;
+            }
+
+            // mailDataList에서도 현재 supplier의 데이터를 찾습니다 (폴백용)
+            const fallbackMailData = mailDataList.find(
+              (mail) => mail.supplierId === currentSupplier.id
+            );
+
+            return {
+              supplier: currentSupplier,
+              mailData: {
+                toRecipient: currentSupplier.email,
+                subject:
+                  formMailData.subject || fallbackMailData?.subject || "",
+                content:
+                  formMailData.content || fallbackMailData?.content || "",
+                ccRecipient:
+                  formMailData.ccRecipient ||
+                  fallbackMailData?.ccRecipient ||
+                  "",
+                bccRecipient:
+                  formMailData.bccRecipient ||
+                  fallbackMailData?.bccRecipient ||
+                  "",
+                supplierName: currentSupplier.name,
+                supplierId: currentSupplier.id,
+              },
+            };
+          })
+          .filter((item) => item !== null);
+
+        // 선택된 공급처별로 메일 전송
+        for (const mailData of selectedMailsData) {
+          if (!mailData) continue;
+
+          console.log(
+            `Processing email for supplier ${mailData.supplier.name}:`,
+            {
+              supplier: mailData.supplier,
+              mailData: mailData.mailData,
+            }
+          );
+
+          if (
+            !validateFormData(
+              mailData.mailData,
+              selectedMailsData.indexOf(mailData)
+            )
+          ) {
+            throw new Error(
+              `Required input fields are missing for supplier ${mailData.supplier.name}`
+            );
+          }
+
+          const updatedFileData = [...uploadFile];
           const pdfFiles = await generatePDFs(
-            [currentSupplier],
+            [mailData.supplier],
             inquiryFormValues,
             getItemsForSupplier,
             vesselInfo,
@@ -304,36 +401,6 @@ const MailSenderModal = ({
             throw new Error("Failed to generate PDF files");
           }
 
-          const currentFormData = {
-            toRecipient:
-              values.mails?.[i]?.toRecipient ||
-              currentMailDataList[i]?.toRecipient ||
-              selectedSuppliers[i]?.email ||
-              "",
-            subject:
-              values.mails?.[i]?.subject ||
-              currentMailDataList[i]?.subject ||
-              "",
-            content:
-              values.mails?.[i]?.content ||
-              currentMailDataList[i]?.content ||
-              "",
-            ccRecipient:
-              values.mails?.[i]?.ccRecipient ||
-              currentMailDataList[i]?.ccRecipient ||
-              "",
-            bccRecipient: values.mails?.[i]?.bccRecipient || "",
-            supplierName: selectedSuppliers[i]?.name || "",
-            supplierId: selectedSuppliers[i]?.id,
-          };
-
-          console.log(currentFormData, "currentFormData");
-
-          // 유효성 검사 실행
-          if (!validateFormData(currentFormData, i)) {
-            throw new Error("Required input fields are missing.");
-          }
-
           const finalFileData = [...updatedFileData, ...pdfFiles];
 
           await sendInquiryMail(
@@ -341,12 +408,15 @@ const MailSenderModal = ({
             values.docNumber,
             inquiryId,
             finalFileData,
-            [currentFormData]
+            [mailData.mailData]
           );
-          results.push({ i, success: true });
+
+          results.push({
+            supplierId: mailData.supplier.id,
+            success: true,
+          });
         }
 
-        // 모든 이메일 전송 결과 확인
         const allSuccess = results.every((r) => r.success);
         if (allSuccess) {
           message.success("All emails sent successfully!");
@@ -360,27 +430,8 @@ const MailSenderModal = ({
         message.error("Save failed.");
       }
     } catch (error) {
-      if (error instanceof Error) {
-        console.error("Detailed error information:", {
-          message: error.message,
-          stack: error.stack,
-          name: error.name,
-        });
-
-        if (error.message === "Failed to generate PDF files") {
-          message.error("Failed to generate PDF files. Please try again.");
-        } else if (error.message === "404") {
-          message.error("PLEASE CHECK YOUR ATTACHED FILE");
-        } else {
-          // 구체적인 에러 메시지 표시
-          console.log("values(error)", values);
-
-          message.error(`Email sending failed: ${error.message}`);
-        }
-      } else {
-        console.error("Unknown error details:", error);
-        message.error("An unknown error occurred. Please try again.");
-      }
+      console.error("Error during email processing:", error);
+      message.error("An error occurred while sending emails.");
     } finally {
       setLoading(false);
       modal.destroy();
@@ -406,6 +457,13 @@ const MailSenderModal = ({
     label: `${selectedSupplierTag[index]?.name || ` ${index + 1}`}`,
     children: (
       <StyledCard>
+        <StyledFormItem
+          name={["mails", index, "supplierId"]}
+          initialValue={selectedSupplierTag[index]?.id}
+          style={{ display: "none" }}
+        >
+          <Input type="hidden" />
+        </StyledFormItem>
         <div style={{ display: "flex", gap: 20 }}>
           <StyledFormItem
             style={{ width: "30%" }}
@@ -413,7 +471,11 @@ const MailSenderModal = ({
             rules={[{ required: true, message: "Please enter the recipient" }]}
             label="Recipient"
           >
-            <Input prefix={<MailOutlined />} placeholder="Recipient" />
+            <Input
+              prefix={<MailOutlined />}
+              placeholder="Recipient"
+              disabled={true}
+            />
           </StyledFormItem>
           <StyledFormItem
             style={{ width: "50%" }}
@@ -467,6 +529,7 @@ const MailSenderModal = ({
           selectedSupplierTag[index]?.name || `${index + 1}th supplier`
         }.`
       );
+      console.log(data.toRecipient, "data.toRecipient");
       isValid = false;
     }
 
@@ -476,6 +539,7 @@ const MailSenderModal = ({
           selectedSupplierTag[index]?.name || `${index + 1}th supplier`
         }.`
       );
+      console.log(data.subject, "data.subject");
       isValid = false;
     }
 
@@ -485,16 +549,19 @@ const MailSenderModal = ({
           selectedSupplierTag[index]?.name || `${index + 1}th supplier`
         }.`
       );
+      console.log(data.content, "data.content");
       isValid = false;
     }
 
     if (!data.supplierName) {
       message.error(`Supplier information is missing for ${index + 1}th item.`);
+      console.log(data.supplierName, "data.supplierName");
       isValid = false;
     }
 
     if (!data.supplierId) {
       message.error(`Supplier ID is missing for ${index + 1}th item.`);
+      console.log(data.supplierId, "data.supplierId");
       isValid = false;
     }
 
@@ -504,7 +571,7 @@ const MailSenderModal = ({
   useEffect(() => {
     if (!isMailSenderVisible) {
       setMissingFieldsState(null);
-      setSelectedMailIndexes(new Set());
+      setSelectedSuppliers(new Set());
     }
   }, [isMailSenderVisible]);
 
@@ -567,27 +634,35 @@ const MailSenderModal = ({
             Email destination:
           </span>
           <Checkbox
-            checked={currentMailDataList.length === selectedMailIndexes.size}
+            checked={selectedSupplierTag.length === selectedSuppliers.size}
             indeterminate={
-              selectedMailIndexes.size > 0 &&
-              selectedMailIndexes.size < currentMailDataList.length
+              selectedSuppliers.size > 0 &&
+              selectedSuppliers.size < selectedSupplierTag.length
             }
             onChange={handleSelectAllChange}
             style={{ marginRight: 20 }}
           >
             All
           </Checkbox>
-          {currentMailDataList.map((_, index) => (
-            <Checkbox
-              key={index}
-              checked={selectedMailIndexes.has(index)}
-              onChange={(e: CheckboxChangeEvent) =>
-                handleMailSelectionChange(index, e.target.checked)
-              }
-            >
-              {selectedSupplierTag[index]?.name || ` ${index + 1}`}
-            </Checkbox>
-          ))}
+          {selectedSupplierTag.map((supplier) => {
+            const selectedSupplier = {
+              supplierId: supplier.id,
+              supplierName: supplier.name,
+            };
+            return (
+              <Checkbox
+                key={supplier.id}
+                checked={Array.from(selectedSuppliers).some(
+                  (s) => s.supplierId === supplier.id
+                )}
+                onChange={(e: CheckboxChangeEvent) =>
+                  handleMailSelectionChange(selectedSupplier, e.target.checked)
+                }
+              >
+                {supplier.name}
+              </Checkbox>
+            );
+          })}
         </div>
         <StyledFormItem>
           <Title level={5}>
@@ -632,7 +707,7 @@ const MailSenderModal = ({
             <div className="missing-items">
               {Object.entries(missingFieldsState).map(([supplier, fields]) => (
                 <div key={supplier} className="supplier-item">
-                  • {supplier}: {fields.join(", ")}
+                  {supplier}: {fields.join(", ")}
                 </div>
               ))}
             </div>
@@ -645,7 +720,7 @@ const MailSenderModal = ({
           icon={<SendOutlined />}
           size="large"
           block
-          disabled={!!missingFieldsState || selectedMailIndexes.size === 0}
+          disabled={!!missingFieldsState || selectedSuppliers.size === 0}
         >
           {missingFieldsState
             ? "Required information is missing"

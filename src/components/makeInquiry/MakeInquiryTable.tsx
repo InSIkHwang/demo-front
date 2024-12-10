@@ -960,22 +960,14 @@ function MakeInquiryTable({
           <div>
             <AutoComplete
               value={record.itemCode}
-              onBlur={(e) =>
-                handleItemCodeChange(
-                  index,
-                  (e.target as HTMLInputElement).value
-                )
-              }
-              onChange={(value) => handleInputChange(index, "itemCode", value)}
+              onChange={(value) => handleItemCodeChange(index, value)}
+              onBlur={() => setItemCodeOptions([])}
               options={itemCodeOptions.map((option) => ({
                 value: option.key,
                 label: option.label,
                 name: option.name,
                 itemId: option.itemId,
               }))}
-              onFocus={() => {
-                setItemCodeOptions([]);
-              }}
               onSelect={(key: string, option: any) => {
                 const selectedOption = itemCodeOptions.find(
                   (opt) => opt.key === key

@@ -365,14 +365,14 @@ const DetailInquiryModal = ({
           </Button>,
           inquiryDetail &&
             inquiryDetail.documentInfo.documentStatus !== "PRICE_PENDING" && (
-              <>
+              <React.Fragment key="edit-delete-group">
                 <Button type="primary" key="edit" onClick={handleEditClick}>
                   Edit
                 </Button>
                 <Button key="delete" danger onClick={handleDeleteClick}>
                   Delete
                 </Button>
-              </>
+              </React.Fragment>
             ),
           <Button key="close" onClick={onClose}>
             Close

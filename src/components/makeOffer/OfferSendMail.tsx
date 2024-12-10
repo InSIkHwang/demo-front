@@ -206,7 +206,7 @@ const OfferMailSender = ({
           label="Recipient"
           rules={[{ required: true, message: "Please enter the recipient" }]}
         >
-          <Input prefix={<MailOutlined />} placeholder="Recipient" />
+          <Input prefix={<MailOutlined />} placeholder="Recipient" disabled />
         </StyledFormItem>
         <StyledFormItem
           name="subject"
