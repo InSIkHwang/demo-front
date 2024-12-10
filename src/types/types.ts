@@ -550,6 +550,7 @@ export interface OfferSearchParams {
   itemName?: string;
   itemCode?: string;
   vesselName?: string;
+  documentStatus?: string;
 }
 
 export interface ComplexInquirySupplier {

@@ -106,7 +106,6 @@ const SearchSection = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  flex: 1;
 `;
 
 const CheckboxWrapper = styled.div`
@@ -311,6 +310,9 @@ const OfferList = () => {
   const [showItemSearch, setShowItemSearch] = useState<boolean>(
     searchParams.get("showItemSearch") === "true"
   );
+  const [viewDocumentStatus, setViewDocumentStatus] = useState<string>(
+    searchParams.get("viewDocumentStatus") || "ALL"
+  );
 
   useEffect(() => {
     if (searchParams.toString()) {
@@ -326,14 +328,15 @@ const OfferList = () => {
     } else {
       fetchData();
     }
-  }, [currentPage, itemsPerPage, viewMyOfferOnly]);
+  }, [currentPage, itemsPerPage, viewMyOfferOnly, viewDocumentStatus]);
 
   const fetchData = async () => {
     try {
       const response = await fetchOfferList(
         currentPage,
         itemsPerPage,
-        viewMyOfferOnly
+        viewMyOfferOnly,
+        viewDocumentStatus === "ALL" ? "" : viewDocumentStatus
       );
       setData(response.supplierInquiryList);
       setTotalCount(response.totalCount);
@@ -359,6 +362,7 @@ const OfferList = () => {
       pageSize: itemsPerPage,
       viewMyOfferOnly,
       showItemSearch,
+      viewDocumentStatus,
     });
 
     try {
@@ -378,6 +382,9 @@ const OfferList = () => {
         writer: viewMyOfferOnly ? "MY" : ("ALL" as const),
         ...(showItemSearch && {
           [searchSubCategory]: searchSubText,
+        }),
+        ...(viewDocumentStatus !== "ALL" && {
+          documentStatus: viewDocumentStatus,
         }),
       };
 
@@ -672,6 +679,19 @@ const OfferList = () => {
               </Button>
             </SearchSection>
             <CheckboxWrapper>
+              <Select
+                defaultValue="ALL"
+                style={{ width: 150, marginRight: 10 }}
+                onChange={(value) => setViewDocumentStatus(value)}
+              >
+                <Select.Option value="ALL">ALL</Select.Option>
+                <Select.Option value="PRICE_PENDING">
+                  PRICE_PENDING
+                </Select.Option>
+                <Select.Option value="PRICE_ENTERED">
+                  PRICE_ENTERED
+                </Select.Option>
+              </Select>
               <Checkbox
                 checked={viewMyOfferOnly}
                 onChange={handleViewMyOfferOnlyChange}

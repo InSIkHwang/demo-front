@@ -152,6 +152,9 @@ const columns: ColumnsType<Order> = [
     render: (status) => {
       let color;
       switch (status) {
+        case "QUOTATION_CONFIRM":
+          color = "tomato";
+          break;
         default:
           color = "cornflowerblue";
       }

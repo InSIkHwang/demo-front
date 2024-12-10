@@ -189,6 +189,8 @@ const columns: ColumnsType<Inquiry> = [
     title: "Document Status",
     dataIndex: "documentStatus",
     key: "documentStatus",
+    sorter: (a, b) => a.documentStatus.localeCompare(b.documentStatus),
+    sortDirections: ["ascend", "descend"],
     render: (status) => {
       let color;
       switch (status) {
@@ -244,6 +246,9 @@ const CustomerInquiryList = () => {
   const [viewOnlySentEmails, setViewOnlySentEmails] = useState<boolean>(
     searchParams.get("viewOnlySentEmails") === "true"
   );
+  const [viewDocumentStatus, setViewDocumentStatus] = useState<string>(
+    searchParams.get("viewDocumentStatus") || "ALL"
+  );
 
   useEffect(() => {
     if (searchParams.toString()) {
@@ -259,7 +264,13 @@ const CustomerInquiryList = () => {
     } else {
       fetchData();
     }
-  }, [currentPage, itemsPerPage, viewMyInquiryOnly, viewOnlySentEmails]);
+  }, [
+    currentPage,
+    itemsPerPage,
+    viewMyInquiryOnly,
+    viewOnlySentEmails,
+    viewDocumentStatus,
+  ]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -268,7 +279,8 @@ const CustomerInquiryList = () => {
         currentPage,
         itemsPerPage,
         viewMyInquiryOnly,
-        viewOnlySentEmails
+        viewOnlySentEmails,
+        viewDocumentStatus === "ALL" ? "" : viewDocumentStatus
       );
       setData(response.customerInquiryList);
       setTotalCount(response.totalCount);
@@ -318,6 +330,7 @@ const CustomerInquiryList = () => {
       pageSize: itemsPerPage,
       viewMyInquiryOnly,
       viewOnlySentEmails,
+      viewDocumentStatus,
     });
     try {
       const response = await searchInquiryList(
@@ -331,7 +344,8 @@ const CustomerInquiryList = () => {
         currentPage,
         itemsPerPage,
         viewMyInquiryOnly,
-        viewOnlySentEmails
+        viewOnlySentEmails,
+        viewDocumentStatus === "ALL" ? "" : viewDocumentStatus
       );
 
       setData(response.customerInquiryList);
@@ -428,6 +442,19 @@ const CustomerInquiryList = () => {
               Search
             </Button>
             <CheckboxWrapper>
+              <Select
+                defaultValue="ALL"
+                style={{ width: 170, marginRight: 10 }}
+                onChange={(value) => setViewDocumentStatus(value)}
+              >
+                <Select.Option value="">ALL</Select.Option>
+                <Select.Option value="VENDOR_PENDING">
+                  VENDOR_PENDING
+                </Select.Option>
+                <Select.Option value="VENDOR_SELECTED">
+                  VENDOR_SELECTED
+                </Select.Option>
+              </Select>
               <Checkbox
                 checked={viewMyInquiryOnly}
                 onChange={handleViewMyInquiryOnlyChange}
