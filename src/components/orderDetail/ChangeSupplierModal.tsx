@@ -1,7 +1,18 @@
-import { Modal, List, Card, Typography, Button, Space, message } from "antd";
+import {
+  Modal,
+  List,
+  Card,
+  Typography,
+  Button,
+  Space,
+  message,
+  Spin,
+  Row,
+  Col,
+} from "antd";
 import { OrderItemDetail, OrderSupplier } from "../../types/types";
 import { fetchOrderSupplierInfo } from "../../api/api";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styled from "styled-components";
 
 const { Text } = Typography;
@@ -16,23 +27,8 @@ const StyledCard = styled(Card)`
     padding: 12px;
   }
 
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  }
-
   &.selected {
     border-color: #1890ff;
-  }
-`;
-
-const AmountDisplay = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin-top: 4px;
-
-  .ant-space {
-    gap: 4px !important;
   }
 `;
 
@@ -49,55 +45,112 @@ const ChangeSupplierModal = ({
 }) => {
   const [selectedSupplier, setSelectedSupplier] =
     useState<OrderSupplier | null>(null);
-  const [supplierItems, setSupplierItems] = useState<OrderItemDetail[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [supplierData, setSupplierData] = useState<{
+    [key: string]: { items: any[]; totals: any };
+  }>({});
+  const [loading, setLoading] = useState<boolean>(true);
 
-  const fetchSupplierInfo = async (supplier: OrderSupplier) => {
-    setLoading(true);
-    try {
-      if (!supplier.supplierInquiryId) return;
+  // 모달이 열릴 때 모든 공급처의 데이터를 미리 로드
+  useEffect(() => {
+    if (visible) {
+      const fetchAllSupplierData = async () => {
+        setLoading(true);
+        const data: {
+          [key: string]: { items: any[]; totals: any };
+        } = {};
 
-      const response = await fetchOrderSupplierInfo(supplier.supplierInquiryId);
+        try {
+          await Promise.all(
+            supplierInfoList.map(async (supplier) => {
+              if (!supplier.supplierInquiryId) return;
 
-      setSupplierItems(response.itemDetailList);
+              const response = await fetchOrderSupplierInfo(
+                supplier.supplierInquiryId
+              );
+              const items = response.itemDetailList;
 
-      // 총액 계산
-      const totalSales = response.itemDetailList.reduce(
-        (sum: number, item: OrderItemDetail) =>
-          sum + (item.salesAmountKRW || 0),
-        0
-      );
-      const totalPurchase = response.itemDetailList.reduce(
-        (sum: number, item: OrderItemDetail) =>
-          sum + (item.purchaseAmountKRW || 0),
-        0
-      );
+              // 총액 계산
+              const totals = {
+                salesKRW: items.reduce(
+                  (sum: number, item: any) => sum + (item.salesAmountKRW || 0),
+                  0
+                ),
+                purchaseKRW: items.reduce(
+                  (sum: number, item: any) =>
+                    sum + (item.purchaseAmountKRW || 0),
+                  0
+                ),
+                salesGlobal: items.reduce(
+                  (sum: number, item: any) =>
+                    sum + (item.salesAmountGlobal || 0),
+                  0
+                ),
+                purchaseGlobal: items.reduce(
+                  (sum: number, item: any) =>
+                    sum + (item.purchaseAmountGlobal || 0),
+                  0
+                ),
+              };
 
-      return { totalSales, totalPurchase };
-    } catch (error) {
-      message.error("Failed to fetch supplier info");
-      console.error("공급업체 정보 조회 중 오류 발생:", error);
-    } finally {
-      setLoading(false);
+              data[supplier.supplierInquiryId] = { items, totals };
+            })
+          );
+
+          setSupplierData(data);
+        } catch (error) {
+          message.error("Error loading supplier data");
+          console.error("Error loading supplier data:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchAllSupplierData();
     }
-  };
+  }, [visible, supplierInfoList]);
 
-  const handleSupplierSelect = async (supplier: OrderSupplier) => {
+  const handleSupplierSelect = (supplier: OrderSupplier) => {
     setSelectedSupplier(supplier);
-    await fetchSupplierInfo(supplier);
   };
 
   const handleConfirm = () => {
-    if (supplierItems.length > 0) {
-      setItems(supplierItems);
+    if (
+      selectedSupplier?.supplierInquiryId &&
+      supplierData[selectedSupplier.supplierInquiryId]
+    ) {
+      const formattedItems = supplierData[
+        selectedSupplier.supplierInquiryId
+      ].items.map((item) => ({
+        ordersItemId: null,
+        itemType: item.inquiryItemType,
+        itemCode: item.itemCode,
+        itemName: item.itemName,
+        itemRemark: item.itemRemark,
+        qty: item.qty,
+        position: item.position,
+        unit: item.unit,
+        indexNo: item.indexNo,
+        salesPriceKRW: item.salesPriceKRW,
+        salesPriceGlobal: item.salesPriceGlobal,
+        salesAmountKRW: item.salesAmountKRW,
+        salesAmountGlobal: item.salesAmountGlobal,
+        margin: item.margin,
+        purchasePriceKRW: item.purchasePriceKRW,
+        purchasePriceGlobal: item.purchasePriceGlobal,
+        purchaseAmountKRW: item.purchaseAmountKRW,
+        purchaseAmountGlobal: item.purchaseAmountGlobal,
+      }));
+
+      setItems(formattedItems);
       onClose();
     }
   };
 
-  const formatAmount = (amount: number) => {
-    return new Intl.NumberFormat("ko-KR", {
+  const formatAmount = (amount: number, isGlobal: boolean = false) => {
+    return new Intl.NumberFormat(isGlobal ? "en-US" : "ko-KR", {
       style: "currency",
-      currency: "KRW",
+      currency: isGlobal ? "USD" : "KRW",
+      maximumFractionDigits: isGlobal ? 2 : 0,
     }).format(amount);
   };
 
@@ -106,7 +159,7 @@ const ChangeSupplierModal = ({
       title="Change Supplier"
       open={visible}
       onCancel={onClose}
-      width={600}
+      width={800}
       footer={[
         <Button key="cancel" onClick={onClose}>
           Cancel
@@ -121,71 +174,70 @@ const ChangeSupplierModal = ({
         </Button>,
       ]}
     >
-      <List
-        loading={loading}
-        dataSource={supplierInfoList}
-        renderItem={(supplier) => {
-          const isSelected =
-            selectedSupplier?.supplierInquiryId === supplier.supplierInquiryId;
+      <Spin spinning={loading}>
+        <List
+          grid={{ gutter: 16, column: 2 }}
+          dataSource={supplierInfoList}
+          renderItem={(supplier) => {
+            const isSelected =
+              selectedSupplier?.supplierInquiryId ===
+              supplier.supplierInquiryId;
+            const data = supplierData[supplier.supplierInquiryId || ""];
 
-          return (
-            <StyledCard
-              className={isSelected ? "selected" : ""}
-              onClick={() => handleSupplierSelect(supplier)}
-            >
-              <Space direction="vertical" style={{ width: "100%", gap: "4px" }}>
-                <div>
-                  <Text strong style={{ fontSize: "14px" }}>
-                    {supplier.companyName}
-                  </Text>
-                  <Text
-                    type="secondary"
-                    style={{ marginLeft: "8px", fontSize: "12px" }}
-                  >
-                    ({supplier.code})
-                  </Text>
-                </div>
-                {isSelected && supplierItems?.length > 0 && (
-                  <AmountDisplay>
-                    <Space direction="vertical" size={1}>
-                      <Text type="secondary" style={{ fontSize: "12px" }}>
-                        Sales Amount :
-                      </Text>
-                      <Text
-                        strong
-                        style={{ color: "#52c41a", fontSize: "13px" }}
+            return (
+              <List.Item>
+                <StyledCard
+                  className={isSelected ? "selected" : ""}
+                  onClick={() => handleSupplierSelect(supplier)}
+                  hoverable
+                >
+                  <Space direction="vertical" style={{ width: "100%" }}>
+                    <div style={{ display: "flex", flexDirection: "column" }}>
+                      <Text strong>{supplier.companyName}</Text>
+                      <Text type="secondary">{supplier.code}</Text>
+                    </div>
+                    {data && (
+                      <Space
+                        direction="vertical"
+                        size="small"
+                        style={{ width: "100%" }}
                       >
-                        {formatAmount(
-                          supplierItems.reduce(
-                            (sum, item) => sum + (item.salesAmountKRW || 0),
-                            0
-                          )
-                        )}
-                      </Text>
-                    </Space>
-                    <Space direction="vertical" size={1}>
-                      <Text type="secondary" style={{ fontSize: "12px" }}>
-                        Purchase Amount :
-                      </Text>
-                      <Text
-                        strong
-                        style={{ color: "#1890ff", fontSize: "13px" }}
-                      >
-                        {formatAmount(
-                          supplierItems.reduce(
-                            (sum, item) => sum + (item.purchaseAmountKRW || 0),
-                            0
-                          )
-                        )}
-                      </Text>
-                    </Space>
-                  </AmountDisplay>
-                )}
-              </Space>
-            </StyledCard>
-          );
-        }}
-      />
+                        <Row justify="space-between">
+                          <Col>
+                            <Text type="secondary">Sales:</Text>
+                          </Col>
+                          <Col>
+                            <Text strong style={{ color: "#52c41a" }}>
+                              {formatAmount(data.totals.salesKRW)}
+                            </Text>
+                            <Text type="secondary" style={{ marginLeft: 8 }}>
+                              (F {formatAmount(data.totals.salesGlobal, true)})
+                            </Text>
+                          </Col>
+                        </Row>
+                        <Row justify="space-between">
+                          <Col>
+                            <Text type="secondary">Purchase:</Text>
+                          </Col>
+                          <Col>
+                            <Text strong style={{ color: "#1890ff" }}>
+                              {formatAmount(data.totals.purchaseKRW)}
+                            </Text>
+                            <Text type="secondary" style={{ marginLeft: 8 }}>
+                              (F{" "}
+                              {formatAmount(data.totals.purchaseGlobal, true)})
+                            </Text>
+                          </Col>
+                        </Row>
+                      </Space>
+                    )}
+                  </Space>
+                </StyledCard>
+              </List.Item>
+            );
+          }}
+        />
+      </Spin>
     </Modal>
   );
 };

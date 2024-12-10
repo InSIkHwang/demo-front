@@ -110,8 +110,6 @@ const OrderDetail = () => {
     }
   }, [language]);
 
-  console.log(supplierInfoList);
-
   useEffect(() => {
     const loadOrderDetail = async () => {
       try {
