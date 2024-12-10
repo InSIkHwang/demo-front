@@ -453,7 +453,8 @@ export const fetchInquiryList = async (
   page: number,
   pageSize: number,
   viewMyInquiryOnly: boolean,
-  viewOnlySentEmails: boolean
+  viewOnlySentEmails: boolean,
+  viewDocumentStatus: string
 ) => {
   const params: any = {
     page: page - 1, // 페이지는 0부터 시작
@@ -462,6 +463,7 @@ export const fetchInquiryList = async (
     selectDocumentStatusType: viewOnlySentEmails
       ? "SENT_CUSTOMER_INQUIRY"
       : "CUSTOMER_INQUIRY",
+    documentStatus: viewDocumentStatus === "ALL" ? "" : viewDocumentStatus,
   };
 
   const response = await axios.get<{
@@ -512,7 +514,8 @@ export const searchInquiryList = async (
   page: number,
   pageSize: number,
   viewMyInquiryOnly: boolean,
-  viewOnlySentEmails: boolean
+  viewOnlySentEmails: boolean,
+  viewDocumentStatus: string
 ): Promise<{
   totalCount: number;
   customerInquiryList: Inquiry[];
@@ -532,6 +535,7 @@ export const searchInquiryList = async (
     selectDocumentStatusType: viewOnlySentEmails
       ? "SENT_CUSTOMER_INQUIRY"
       : "CUSTOMER_INQUIRY",
+    viewDocumentStatus,
   };
 
   // 쿼리 문자열을 생성
@@ -556,7 +560,8 @@ export const searchInquiryList = async (
 export const fetchOfferList = async (
   page: number,
   pageSize: number,
-  viewMyInquiryOnly: boolean
+  viewMyInquiryOnly: boolean,
+  viewDocumentStatus: string
 ) => {
   const response = await axios.get<{
     totalCount: number;
@@ -566,6 +571,7 @@ export const fetchOfferList = async (
       page: page - 1, // 페이지는 0부터 시작
       pageSize: pageSize, // 페이지당 아이템 수
       writer: viewMyInquiryOnly ? "MY" : "ALL",
+      documentStatus: viewDocumentStatus === "ALL" ? "" : viewDocumentStatus,
     },
   });
 
@@ -594,6 +600,7 @@ export const searchOfferList = async ({
   itemName = "",
   itemCode = "",
   vesselName = "",
+  documentStatus = "",
 }: OfferSearchParams): Promise<{
   totalCount: number;
   supplierInquiryList: SupplierInquiryListIF[];
@@ -612,6 +619,7 @@ export const searchOfferList = async ({
     itemName,
     itemCode,
     vesselName,
+    documentStatus,
   };
 
   const queryString = new URLSearchParams(

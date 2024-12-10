@@ -117,7 +117,7 @@ export interface Inquiry {
   currency: number;
   vesselName: string;
   veeselHullNo: string;
-  docRemark: string;
+  remark: string;
   docManager: string;
   representative: string;
   documentStatus: string;
@@ -550,6 +550,7 @@ export interface OfferSearchParams {
   itemName?: string;
   itemCode?: string;
   vesselName?: string;
+  documentStatus?: string;
 }
 
 export interface ComplexInquirySupplier {

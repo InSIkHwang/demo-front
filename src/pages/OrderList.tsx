@@ -152,6 +152,9 @@ const columns: ColumnsType<Order> = [
     render: (status) => {
       let color;
       switch (status) {
+        case "QUOTATION_CONFIRM":
+          color = "tomato";
+          break;
         default:
           color = "cornflowerblue";
       }
@@ -181,7 +184,7 @@ const OrderList = () => {
     Number(searchParams.get("page")) || 1
   );
   const [itemsPerPage, setItemsPerPage] = useState<number>(
-    Number(searchParams.get("pageSize")) || 30
+    Number(searchParams.get("pageSize")) || 100
   );
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
@@ -462,7 +465,7 @@ const OrderList = () => {
               onChange={handlePageChange}
               onShowSizeChange={handlePageSizeChange}
               showSizeChanger
-              pageSizeOptions={[30, 50, 100]}
+              pageSizeOptions={[50, 100, 200]}
               showQuickJumper
               itemRender={(page, type, originalElement) => {
                 if (type === "prev") {

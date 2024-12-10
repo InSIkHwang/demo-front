@@ -289,15 +289,15 @@ const MailSenderModal = ({
         for (let i = 0; i < selectedSuppliers.length; i++) {
           console.log(`Processing email ${i + 1}/${selectedSuppliers.length}`);
           const updatedFileData = [...uploadFile];
-          console.log(selectedSuppliers, "selectedSuppliersList");
+          const currentSupplier = selectedSuppliers[i];
+          console.log(currentSupplier, "currentSupplier");
 
           const pdfFiles = await generatePDFs(
-            selectedSuppliers,
+            [currentSupplier],
             inquiryFormValues,
             getItemsForSupplier,
             vesselInfo,
-            pdfHeader,
-            i
+            pdfHeader
           );
 
           if (!pdfFiles || pdfFiles.length === 0) {
@@ -326,6 +326,8 @@ const MailSenderModal = ({
             supplierName: selectedSuppliers[i]?.name || "",
             supplierId: selectedSuppliers[i]?.id,
           };
+
+          console.log(currentFormData, "currentFormData");
 
           // 유효성 검사 실행
           if (!validateFormData(currentFormData, i)) {

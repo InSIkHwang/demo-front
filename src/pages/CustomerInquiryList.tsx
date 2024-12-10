@@ -38,6 +38,9 @@ const Title = styled.h1`
 `;
 
 const StyledTable = styled(Table)<{ color?: string } & TableProps<Inquiry>>`
+  .ant-table-column-sort {
+    background-color: inherit !important;
+  }
   .ant-table-tbody {
     tr {
       // complex-row 스타일을 custom-color-row보다 나중에 선언
@@ -116,7 +119,12 @@ const columns: ColumnsType<Inquiry> = [
     title: "Document Number",
     dataIndex: "documentNumber",
     key: "documentNumber",
-    sorter: (a, b) => a.documentNumber.localeCompare(b.documentNumber),
+    sorter: (a, b) => {
+      if (!a.documentNumber && !b.documentNumber) return 0;
+      if (!a.documentNumber) return 1;
+      if (!b.documentNumber) return -1;
+      return a.documentNumber.localeCompare(b.documentNumber);
+    },
   },
   {
     title: "Registration Date",
@@ -148,6 +156,8 @@ const columns: ColumnsType<Inquiry> = [
     title: "Remark",
     dataIndex: "remark",
     key: "remark",
+    sorter: (a, b) => a.remark.localeCompare(b.remark),
+    sortDirections: ["ascend", "descend"],
   },
   {
     title: "Manager",
@@ -179,6 +189,8 @@ const columns: ColumnsType<Inquiry> = [
     title: "Document Status",
     dataIndex: "documentStatus",
     key: "documentStatus",
+    sorter: (a, b) => a.documentStatus.localeCompare(b.documentStatus),
+    sortDirections: ["ascend", "descend"],
     render: (status) => {
       let color;
       switch (status) {
@@ -215,7 +227,7 @@ const CustomerInquiryList = () => {
     Number(searchParams.get("page")) || 1
   );
   const [itemsPerPage, setItemsPerPage] = useState<number>(
-    Number(searchParams.get("pageSize")) || 30
+    Number(searchParams.get("pageSize")) || 100
   );
   const [selectedInquiryId, setSelectedInquiryId] = useState<number | null>(
     null
@@ -234,6 +246,9 @@ const CustomerInquiryList = () => {
   const [viewOnlySentEmails, setViewOnlySentEmails] = useState<boolean>(
     searchParams.get("viewOnlySentEmails") === "true"
   );
+  const [viewDocumentStatus, setViewDocumentStatus] = useState<string>(
+    searchParams.get("viewDocumentStatus") || "ALL"
+  );
 
   useEffect(() => {
     if (searchParams.toString()) {
@@ -249,7 +264,13 @@ const CustomerInquiryList = () => {
     } else {
       fetchData();
     }
-  }, [currentPage, itemsPerPage, viewMyInquiryOnly, viewOnlySentEmails]);
+  }, [
+    currentPage,
+    itemsPerPage,
+    viewMyInquiryOnly,
+    viewOnlySentEmails,
+    viewDocumentStatus,
+  ]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -258,7 +279,8 @@ const CustomerInquiryList = () => {
         currentPage,
         itemsPerPage,
         viewMyInquiryOnly,
-        viewOnlySentEmails
+        viewOnlySentEmails,
+        viewDocumentStatus === "ALL" ? "" : viewDocumentStatus
       );
       setData(response.customerInquiryList);
       setTotalCount(response.totalCount);
@@ -308,6 +330,7 @@ const CustomerInquiryList = () => {
       pageSize: itemsPerPage,
       viewMyInquiryOnly,
       viewOnlySentEmails,
+      viewDocumentStatus,
     });
     try {
       const response = await searchInquiryList(
@@ -321,7 +344,8 @@ const CustomerInquiryList = () => {
         currentPage,
         itemsPerPage,
         viewMyInquiryOnly,
-        viewOnlySentEmails
+        viewOnlySentEmails,
+        viewDocumentStatus === "ALL" ? "" : viewDocumentStatus
       );
 
       setData(response.customerInquiryList);
@@ -418,6 +442,19 @@ const CustomerInquiryList = () => {
               Search
             </Button>
             <CheckboxWrapper>
+              <Select
+                defaultValue="ALL"
+                style={{ width: 170, marginRight: 10 }}
+                onChange={(value) => setViewDocumentStatus(value)}
+              >
+                <Select.Option value="">ALL</Select.Option>
+                <Select.Option value="VENDOR_PENDING">
+                  VENDOR_PENDING
+                </Select.Option>
+                <Select.Option value="VENDOR_SELECTED">
+                  VENDOR_SELECTED
+                </Select.Option>
+              </Select>
               <Checkbox
                 checked={viewMyInquiryOnly}
                 onChange={handleViewMyInquiryOnlyChange}
@@ -484,7 +521,7 @@ const CustomerInquiryList = () => {
               onChange={handlePageChange}
               onShowSizeChange={handlePageSizeChange}
               showSizeChanger
-              pageSizeOptions={[30, 50, 100]}
+              pageSizeOptions={[50, 100, 200]}
               showQuickJumper
               itemRender={(page, type, originalElement) => {
                 if (type === "prev") {

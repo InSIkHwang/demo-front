@@ -116,23 +116,26 @@ export const generatePDFs = async (
   formValues: FormValues,
   getItemsForSupplier: (supplierId: number) => InquiryItem[],
   vesselInfo: VesselList | null,
-  pdfHeader: string,
-  selectedSupplierIndex: number
+  pdfHeader: string
+  // selectedSupplierIndex 파라미터 제거
 ): Promise<File[]> => {
   const updatedFiles: File[] = [];
-  const supplierTag = selectedSupplierTag[selectedSupplierIndex];
-  console.log("supplierTag", supplierTag);
-  if (supplierTag) {
-    const supplierItems = getItemsForSupplier(supplierTag.id);
-    console.log("supplierItems", supplierItems);
+  // 단일 공급처만 처리하도록 수정
+  const supplierTag = selectedSupplierTag[0];
 
-    if (supplierItems.length < 1) {
-      //Error message
-      message.error("Please select supplier.");
-      // console.log("supplierTag", supplierTag);
-      return [];
-    }
+  if (!supplierTag) {
+    message.error("No supplier selected.");
+    return [];
+  }
 
+  const supplierItems = getItemsForSupplier(supplierTag.id);
+
+  if (supplierItems.length < 1) {
+    message.error(`No items selected for supplier: ${supplierTag.name}`);
+    return [];
+  }
+
+  try {
     const doc = (
       <PDFDocument
         formValues={formValues}
@@ -143,23 +146,27 @@ export const generatePDFs = async (
         viewMode={false}
       />
     );
-    const pdfBlob = await pdf(doc).toBlob();
 
+    const pdfBlob = await pdf(doc).toBlob();
     const fileName =
       supplierTag.communicationLanguage === "ENG"
         ? `${supplierTag.name} REQUEST FOR QUOTATION ${formValues.docNumber}.pdf`
         : `${supplierTag.korName} 견적의뢰서 ${formValues.docNumber}.pdf`;
+
     const newFile = new File([pdfBlob], fileName, {
       type: "application/pdf",
     });
 
-    if (newFile) {
-      updatedFiles.push(newFile);
-    } else {
-      console.log(`supplierTag: ${supplierTag.name} pdf is not generated`);
-    }
+    updatedFiles.push(newFile);
+    return updatedFiles;
+  } catch (error) {
+    console.error(
+      `PDF generation failed for supplier ${supplierTag.name}:`,
+      error
+    );
+    message.error(`Failed to generate PDF for ${supplierTag.name}`);
+    return [];
   }
-  return updatedFiles;
 };
 
 const PDFGenerator = ({

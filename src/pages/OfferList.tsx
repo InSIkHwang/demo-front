@@ -46,6 +46,9 @@ const Title = styled.h1`
 const StyledTable = styled(Table)<
   { color?: string } & TableProps<SupplierInquiryListIF>
 >`
+  .ant-table-column-sort {
+    background-color: inherit !important;
+  }
   .ant-table-tbody {
     tr {
       // complex-row 스타일을 custom-color-row보다 나중에 선언
@@ -103,7 +106,6 @@ const SearchSection = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  flex: 1;
 `;
 
 const CheckboxWrapper = styled.div`
@@ -252,6 +254,8 @@ const columns: ColumnsType<SupplierInquiryListIF> = [
     title: "Document Status",
     dataIndex: "documentStatus",
     key: "documentStatus",
+    sorter: (a, b) => a.documentStatus.localeCompare(b.documentStatus),
+    sortDirections: ["ascend", "descend"],
     render: (status) => {
       let color;
       switch (status) {
@@ -298,13 +302,16 @@ const OfferList = () => {
     Number(searchParams.get("page")) || 1
   );
   const [itemsPerPage, setItemsPerPage] = useState<number>(
-    Number(searchParams.get("pageSize")) || 30
+    Number(searchParams.get("pageSize")) || 100
   );
   const [viewMyOfferOnly, setViewMyOfferOnly] = useState<boolean>(
     searchParams.get("viewMyOfferOnly") === "true"
   );
   const [showItemSearch, setShowItemSearch] = useState<boolean>(
     searchParams.get("showItemSearch") === "true"
+  );
+  const [viewDocumentStatus, setViewDocumentStatus] = useState<string>(
+    searchParams.get("viewDocumentStatus") || "ALL"
   );
 
   useEffect(() => {
@@ -321,14 +328,15 @@ const OfferList = () => {
     } else {
       fetchData();
     }
-  }, [currentPage, itemsPerPage, viewMyOfferOnly]);
+  }, [currentPage, itemsPerPage, viewMyOfferOnly, viewDocumentStatus]);
 
   const fetchData = async () => {
     try {
       const response = await fetchOfferList(
         currentPage,
         itemsPerPage,
-        viewMyOfferOnly
+        viewMyOfferOnly,
+        viewDocumentStatus === "ALL" ? "" : viewDocumentStatus
       );
       setData(response.supplierInquiryList);
       setTotalCount(response.totalCount);
@@ -354,6 +362,7 @@ const OfferList = () => {
       pageSize: itemsPerPage,
       viewMyOfferOnly,
       showItemSearch,
+      viewDocumentStatus,
     });
 
     try {
@@ -373,6 +382,9 @@ const OfferList = () => {
         writer: viewMyOfferOnly ? "MY" : ("ALL" as const),
         ...(showItemSearch && {
           [searchSubCategory]: searchSubText,
+        }),
+        ...(viewDocumentStatus !== "ALL" && {
+          documentStatus: viewDocumentStatus,
         }),
       };
 
@@ -667,6 +679,19 @@ const OfferList = () => {
               </Button>
             </SearchSection>
             <CheckboxWrapper>
+              <Select
+                defaultValue="ALL"
+                style={{ width: 150, marginRight: 10 }}
+                onChange={(value) => setViewDocumentStatus(value)}
+              >
+                <Select.Option value="ALL">ALL</Select.Option>
+                <Select.Option value="PRICE_PENDING">
+                  PRICE_PENDING
+                </Select.Option>
+                <Select.Option value="PRICE_ENTERED">
+                  PRICE_ENTERED
+                </Select.Option>
+              </Select>
               <Checkbox
                 checked={viewMyOfferOnly}
                 onChange={handleViewMyOfferOnlyChange}
@@ -748,7 +773,7 @@ const OfferList = () => {
               onChange={handlePageChange}
               onShowSizeChange={handlePageSizeChange}
               showSizeChanger
-              pageSizeOptions={[30, 50, 100]}
+              pageSizeOptions={[50, 100, 200]}
               showQuickJumper
               itemRender={(page, type, originalElement) => {
                 if (type === "prev") {
