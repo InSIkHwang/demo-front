@@ -11,6 +11,7 @@ import {
   OfferSearchParams,
   Order,
   orderAllResponses,
+  OrderRequest,
   Quotation,
   Supplier,
   SupplierInquiryListIF,
@@ -888,7 +889,11 @@ export const confirmQutation = async (supplierInquiryId: number) => {
 // ORDER 조회 관련
 
 //ORDER 조회
-export const fetchOrderList = async (page: number, pageSize: number) => {
+export const fetchOrderList = async (
+  page: number,
+  pageSize: number,
+  viewMyOfferOnly: boolean
+) => {
   const response = await axios.get<{
     totalCount: number;
     orderList: Order[];
@@ -896,6 +901,7 @@ export const fetchOrderList = async (page: number, pageSize: number) => {
     params: {
       page: page - 1, // 페이지는 0부터 시작
       pageSize: pageSize, // 페이지당 아이템 수
+      writer: viewMyOfferOnly ? "MY" : "ALL",
     },
   });
 
@@ -954,6 +960,20 @@ export const searchOrderList = async ({
     totalCount: number;
     orderList: Order[];
   }>(`/api/orders/search?${queryString}`);
+
+  return response.data;
+};
+
+//ORDER 수정
+export const editOrder = async (orderId: number, request: OrderRequest) => {
+  const response = await axios.put(`/api/orders/${orderId}`, request);
+
+  return response.data;
+};
+
+//ORDER 매입처 변경을 위한 가격 정보 조회
+export const fetchOrderSupplierInfo = async (inquiryId: number) => {
+  const response = await axios.get(`/api/orders/prices-info/${inquiryId}`);
 
   return response.data;
 };

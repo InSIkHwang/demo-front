@@ -26,11 +26,9 @@ import {
 import { ColumnsType } from "antd/es/table";
 import styled from "styled-components";
 import {
-  FormValuesType,
-  InvCharge,
   ItemDetailType,
-  OfferResponse,
   OrderItemDetail,
+  OrderSupplier,
   Supplier,
 } from "../../types/types";
 import {
@@ -45,7 +43,6 @@ import { fetchItemData, handleOfferExport } from "../../api/api";
 import ExcelUploadModal from "../ExcelUploadModal";
 import { TextAreaRef } from "antd/es/input/TextArea";
 import { debounce } from "lodash";
-import TotalCardsComponent from "../makeOffer/TotalCardsComponent";
 
 interface TableProps {
   $zoomLevel?: number;
@@ -195,7 +192,7 @@ const SupplierName = styled.span`
   position: relative;
 
   .ant-input {
-    width: 100%;
+    width: 400px;
     color: #262626;
     font-size: 18px;
     font-weight: 600;
@@ -269,7 +266,7 @@ interface TableComponentProps {
     currency: number
   ) => void;
   orderId: number;
-  supplier: Supplier;
+  supplier: OrderSupplier;
   // pdfUrl: string | null;
 }
 
