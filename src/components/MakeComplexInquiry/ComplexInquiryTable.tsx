@@ -177,6 +177,14 @@ const ComplexInquiryTable = ({
 
   const IndexNoCell = React.memo(
     ({ record, index, items, handleInputChange }: any) => {
+      const [localValue, setLocalValue] = useState(record.indexNo);
+
+      // record.indexNo가 변경될 때 로컬 상태 업데이트
+      useEffect(() => {
+        setLocalValue(record.indexNo);
+      }, [record.indexNo]);
+
+      // ITEM 타입일 때 자동 번호 부여 로직
       useEffect(() => {
         if (record.itemType === "ITEM") {
           const filteredIndex = items
@@ -193,9 +201,12 @@ const ComplexInquiryTable = ({
       if (record.itemType === "DASH") {
         return (
           <Input
-            value={record.indexNo}
+            value={localValue}
             onChange={(e) => {
-              handleInputChange(index, "indexNo", e.target.value);
+              setLocalValue(e.target.value);
+            }}
+            onBlur={() => {
+              handleInputChange(index, "indexNo", localValue);
             }}
             ref={(el) => {
               if (!inputRefs.current[index]) {
@@ -206,6 +217,10 @@ const ComplexInquiryTable = ({
             onKeyDown={(e) => handleKeyDown(e, index, 1)}
           />
         );
+      }
+
+      if (record.itemType !== "ITEM" && record.itemType !== "DASH") {
+        return null;
       }
 
       return <span>{record.indexNo}</span>;
