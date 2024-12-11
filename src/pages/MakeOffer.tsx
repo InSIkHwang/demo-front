@@ -84,8 +84,6 @@ const MakeOffer = () => {
   const { documentId: urlDocumentId } = useParams();
   const [searchParams] = useSearchParams();
   const searchParamsString = searchParams.toString();
-  console.log(searchParamsString);
-
   const loadDocumentId = {
     documentId: state?.info.documentId || Number(urlDocumentId) || [],
   };
