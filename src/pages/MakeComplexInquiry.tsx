@@ -34,7 +34,7 @@ import {
   offerEmailSendData,
   HeaderFormData,
 } from "../types/types";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import HeaderEditModal from "../components/makeInquiry/HeaderEditModal";
 import MailSenderModal from "../components/makeInquiry/MailSenderModal";
 import PDFGenerator from "../components/makeInquiry/PDFGenerator";
@@ -181,6 +181,8 @@ const INITIAL_ITEM_VALUES: ComplexInquiryItemDetail[] = [
 ];
 
 const MakeComplexInquiry = () => {
+  const [searchParams] = useSearchParams();
+  const searchParamsString = searchParams.toString();
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
   const { complexInquiryId } = useParams<{ complexInquiryId?: string }>();
   const navigate = useNavigate();
@@ -1337,7 +1339,17 @@ const MakeComplexInquiry = () => {
       </Button>
       <Button
         type="default"
-        onClick={() => navigate("/customerInquirylist")}
+        onClick={() =>
+          documentType === "inquiry"
+            ? navigate({
+                pathname: "/customerInquirylist",
+                search: searchParamsString,
+              })
+            : navigate({
+                pathname: "/supplierInquirylist",
+                search: searchParamsString,
+              })
+        }
         style={{ margin: "20px 0 0 15px", float: "right" }}
       >
         Back

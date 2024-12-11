@@ -22,6 +22,7 @@ import {
   OrderItemDetail,
   OrderAckHeaderFormData,
   Order,
+  orderRemark,
 } from "../../types/types";
 
 // 한글 글꼴 등록
@@ -49,10 +50,7 @@ interface OrderAckPDFDocumentProps {
   pdfHeader: OrderAckHeaderFormData;
   viewMode: boolean;
   language: string;
-  pdfFooter: {
-    quotationRemarkId: number | null;
-    quotationRemark: string;
-  }[];
+  pdfFooter: orderRemark[];
   finalTotals: {
     totalSalesAmountKRW: number;
     totalSalesAmountGlobal: number;
@@ -760,7 +758,7 @@ const OfferPDFDocument = ({
               ** REMARK
             </Text>
             {pdfFooter.map((footer, index) => {
-              const formattedText = footer.quotationRemark
+              const formattedText = footer.orderRemark
                 .split("\n")
                 .map((line) => line.replace(/ /g, "\u00A0"))
                 .join("\n");

@@ -182,10 +182,10 @@ const SupplierName = styled.span`
   font-weight: 500;
 `;
 
-const Value = styled.span<{ isZero: boolean }>`
+const Value = styled.span<{ $isZero: boolean }>`
   font-weight: 500;
-  color: ${({ isZero }) =>
-    isZero ? "red" : "inherit"}; // 값이 0일 경우 빨간색
+  color: ${({ $isZero }) =>
+    $isZero ? "red" : "inherit"}; // 값이 0일 경우 빨간색
 `;
 
 const EditButton = styled(Button)`
@@ -323,7 +323,10 @@ const OfferList = () => {
   }, []);
 
   useEffect(() => {
-    if ((searchText || searchSubText) && registerStartDate && registerEndDate) {
+    if (
+      ((searchText || searchSubText) && registerStartDate && registerEndDate) ||
+      viewDocumentStatus !== "ALL"
+    ) {
       handleSearch();
     } else {
       fetchData();
@@ -475,11 +478,18 @@ const OfferList = () => {
           onClick={(e) => {
             e.stopPropagation();
             navigate(
-              record.documentType === "COMPLEX"
-                ? `/makecomplexinquiry/${record.customerInquiryId}`
-                : `/makeoffer/${record.documentId}`,
               {
-                state: { info: record, category: "offer" },
+                pathname:
+                  record.documentType === "COMPLEX"
+                    ? `/makecomplexinquiry/${record.customerInquiryId}`
+                    : `/makeoffer/${record.documentId}`,
+                search: searchParams.toString(),
+              },
+              {
+                state: {
+                  info: record,
+                  category: "offer",
+                },
               }
             );
           }}
@@ -509,7 +519,7 @@ const OfferList = () => {
                 </div>
                 <div className="info-row">
                   <span className="label">Sales Amount:</span>
-                  <Value isZero={isSalesZero}>
+                  <Value $isZero={isSalesZero}>
                     {supplier.totalSalesAmountGlobal.toLocaleString("en-US", {
                       style: "currency",
                       currency: record.currencyType,
@@ -518,7 +528,7 @@ const OfferList = () => {
                 </div>
                 <div className="info-row">
                   <span className="label">Purchase Amount:</span>
-                  <Value isZero={isPurchaseZero}>
+                  <Value $isZero={isPurchaseZero}>
                     {supplier.totalPurchaseAmountGlobal.toLocaleString(
                       "en-US",
                       {
@@ -531,7 +541,7 @@ const OfferList = () => {
                 <div className="info-row">
                   <span className="label">Profit:</span>
                   <Value
-                    isZero={isProfitNegative}
+                    $isZero={isProfitNegative}
                     style={{ color: isProfitNegative ? "red" : "green" }}
                   >
                     {profit.toLocaleString("en-US", {
@@ -543,7 +553,7 @@ const OfferList = () => {
                 <div className="info-row">
                   <span className="label">Profit Rate:</span>
                   <Value
-                    isZero={isProfitNegative}
+                    $isZero={isProfitNegative}
                     style={{ color: isProfitNegative ? "red" : "green" }}
                   >
                     {profitRate.toFixed(2)}%
@@ -552,7 +562,7 @@ const OfferList = () => {
                 <div className="info-row">
                   <span className="label">Document Status:</span>
                   <Value
-                    isZero={false}
+                    $isZero={false}
                     style={{
                       color: supplier.status === "NA" ? "red" : "black",
                     }}
@@ -680,7 +690,7 @@ const OfferList = () => {
             </SearchSection>
             <CheckboxWrapper>
               <Select
-                defaultValue="ALL"
+                defaultValue={viewDocumentStatus}
                 style={{ width: 150, marginRight: 10 }}
                 onChange={(value) => setViewDocumentStatus(value)}
               >

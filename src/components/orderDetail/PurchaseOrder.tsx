@@ -18,6 +18,7 @@ import {
   InvCharge,
   Order,
   OrderItemDetail,
+  orderRemark,
   OrderSupplier,
 } from "../../types/types";
 
@@ -43,10 +44,10 @@ Font.registerHyphenationCallback((word) => ["", word, ""]);
 interface PDFDocumentProps {
   info: Order;
   items: OrderItemDetail[];
-  pdfHeader: string;
+  pdfHeader: orderRemark;
   viewMode: boolean;
   language: string;
-  pdfFooter: string;
+  pdfFooter: orderRemark;
   finalTotals: {
     totalSalesAmountKRW: number;
     totalSalesAmountGlobal: number;
@@ -509,7 +510,7 @@ const PurchaseOrderPDFDocument = ({
           info.vesselName,
           info.documentNumber || "",
           dayjs().format("YYYY-MM-DD"),
-          pdfHeader,
+          pdfHeader.orderRemark,
           language,
           supplier
         )}
@@ -632,7 +633,7 @@ const PurchaseOrderPDFDocument = ({
         </View>
         <View>
           <View style={styles.headerMessage}>
-            <Text style={styles.headerValue}>{pdfFooter}</Text>
+            <Text style={styles.headerValue}>{pdfFooter.orderRemark}</Text>
           </View>
         </View>
       </Page>

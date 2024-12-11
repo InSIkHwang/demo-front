@@ -5,7 +5,12 @@ import React, {
   useMemo,
   useRef,
 } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import {
+  useLocation,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import {
   Button,
   Checkbox,
@@ -77,6 +82,8 @@ const INITIAL_HEADER_VALUES: HeaderFormData = {
 const MakeOffer = () => {
   const { state } = useLocation();
   const { documentId: urlDocumentId } = useParams();
+  const [searchParams] = useSearchParams();
+  const searchParamsString = searchParams.toString();
   const loadDocumentId = {
     documentId: state?.info.documentId || Number(urlDocumentId) || [],
   };
@@ -125,7 +132,7 @@ const MakeOffer = () => {
   const [pdfCustomerTag, setPdfCustomerTag] = useState<{
     id: number;
     name: string;
-  }>({ id: 0, name: "" });
+  } | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isMailSenderVisible, setIsMailSenderVisible] = useState(false);
   const [mailData, setMailData] = useState<offerEmailSendData | null>(null);
@@ -284,6 +291,11 @@ const MakeOffer = () => {
           response: response.response,
         });
 
+        setPdfCustomerTag({
+          id: response.documentInfo.customerId,
+          name: response.documentInfo.companyName,
+        });
+
         // 현재 선택된 공급업체 찾기
         const currentSupplier = response.response.find(
           (supplier: { inquiryId: number }) =>
@@ -298,13 +310,11 @@ const MakeOffer = () => {
               response.documentInfo.documentNumber,
           });
           // 현재 선택된 공급업체의 데이터로 설정
+
           setCurrentDetailItems(currentSupplier.itemDetail);
           setCurrentSupplierInfo(currentSupplier.supplierInfo);
           setCurrentInquiryId(currentSupplier.inquiryId);
-          setPdfCustomerTag({
-            id: response.documentInfo.customerId,
-            name: response.documentInfo.companyName,
-          });
+
           setCurrentSupplierInquiryName(currentSupplier.supplierInquiryName);
           setPdfHeader(
             currentSupplier.quotationHeader || INITIAL_HEADER_VALUES
@@ -1353,7 +1363,12 @@ const MakeOffer = () => {
       </Tooltip>
       <Button
         type="default"
-        onClick={() => navigate(-1)}
+        onClick={() =>
+          navigate({
+            pathname: "/supplierInquirylist",
+            search: searchParamsString,
+          })
+        }
         style={{ margin: "20px 15px 0 0 ", float: "right" }}
       >
         Back

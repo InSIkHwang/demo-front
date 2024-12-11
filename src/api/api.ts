@@ -10,7 +10,9 @@ import {
   ItemDataType,
   OfferSearchParams,
   Order,
+  OrderAckHeaderFormData,
   orderAllResponses,
+  orderRemark,
   OrderRequest,
   Quotation,
   Supplier,
@@ -453,17 +455,13 @@ export const fetchInquiryList = async (
   page: number,
   pageSize: number,
   viewMyInquiryOnly: boolean,
-  viewOnlySentEmails: boolean,
-  viewDocumentStatus: string
+  documentStatus: string
 ) => {
   const params: any = {
     page: page - 1, // 페이지는 0부터 시작
     pageSize: pageSize, // 페이지당 아이템 수
     writer: viewMyInquiryOnly ? "MY" : "ALL",
-    selectDocumentStatusType: viewOnlySentEmails
-      ? "SENT_CUSTOMER_INQUIRY"
-      : "CUSTOMER_INQUIRY",
-    documentStatus: viewDocumentStatus === "ALL" ? "" : viewDocumentStatus,
+    documentStatus: documentStatus === "ALL" ? "" : documentStatus,
   };
 
   const response = await axios.get<{
@@ -514,8 +512,7 @@ export const searchInquiryList = async (
   page: number,
   pageSize: number,
   viewMyInquiryOnly: boolean,
-  viewOnlySentEmails: boolean,
-  viewDocumentStatus: string
+  documentStatus: string
 ): Promise<{
   totalCount: number;
   customerInquiryList: Inquiry[];
@@ -532,10 +529,7 @@ export const searchInquiryList = async (
     page: (page - 1).toString(), // 페이지는 0부터 시작
     pageSize: pageSize.toString(), // 페이지당 아이템 수,
     writer: viewMyInquiryOnly ? "MY" : "ALL",
-    selectDocumentStatusType: viewOnlySentEmails
-      ? "SENT_CUSTOMER_INQUIRY"
-      : "CUSTOMER_INQUIRY",
-    viewDocumentStatus,
+    documentStatus: documentStatus === "ALL" ? "" : documentStatus,
   };
 
   // 쿼리 문자열을 생성
@@ -982,6 +976,25 @@ export const editOrder = async (orderId: number, request: OrderRequest) => {
 //ORDER 매입처 변경을 위한 가격 정보 조회
 export const fetchOrderSupplierInfo = async (inquiryId: number) => {
   const response = await axios.get(`/api/orders/prices-info/${inquiryId}`);
+
+  return response.data;
+};
+
+//ORDER 헤더 저장
+export const saveOrderHeader = async (
+  orderId: number,
+  orderHeader:
+    | OrderAckHeaderFormData
+    | {
+        orderRemarkId: number | null;
+        receiverType: string;
+      },
+  orderRemark: orderRemark[]
+) => {
+  const response = await axios.put(`/api/orders/headers/${orderId}`, {
+    orderHeader,
+    orderRemark,
+  });
 
   return response.data;
 };

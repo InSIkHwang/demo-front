@@ -45,7 +45,7 @@ Font.registerHyphenationCallback((word) => ["", word, ""]);
 interface PDFDocumentProps {
   info: FormValuesType;
   items: ItemDetailType[];
-  pdfHeader: HeaderFormData;
+  pdfHeader: OrderAckHeaderFormData;
   viewMode: boolean;
   language: string;
   pdfFooter: {
