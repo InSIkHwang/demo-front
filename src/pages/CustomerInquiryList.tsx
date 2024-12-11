@@ -243,11 +243,8 @@ const CustomerInquiryList = () => {
   const [viewMyInquiryOnly, setViewMyInquiryOnly] = useState<boolean>(
     searchParams.get("viewMyInquiryOnly") === "true"
   );
-  const [viewOnlySentEmails, setViewOnlySentEmails] = useState<boolean>(
-    searchParams.get("viewOnlySentEmails") === "true"
-  );
-  const [viewDocumentStatus, setViewDocumentStatus] = useState<string>(
-    searchParams.get("viewDocumentStatus") || "ALL"
+  const [documentStatus, setDocumentStatus] = useState<string>(
+    searchParams.get("documentStatus") || "ALL"
   );
 
   useEffect(() => {
@@ -259,18 +256,15 @@ const CustomerInquiryList = () => {
   }, []);
 
   useEffect(() => {
-    if (searchText && registerStartDate && registerEndDate) {
+    if (
+      (searchText && registerStartDate && registerEndDate) ||
+      documentStatus !== "ALL"
+    ) {
       handleSearch();
     } else {
       fetchData();
     }
-  }, [
-    currentPage,
-    itemsPerPage,
-    viewMyInquiryOnly,
-    viewOnlySentEmails,
-    viewDocumentStatus,
-  ]);
+  }, [currentPage, itemsPerPage, viewMyInquiryOnly, documentStatus]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -279,8 +273,7 @@ const CustomerInquiryList = () => {
         currentPage,
         itemsPerPage,
         viewMyInquiryOnly,
-        viewOnlySentEmails,
-        viewDocumentStatus === "ALL" ? "" : viewDocumentStatus
+        documentStatus === "ALL" ? "" : documentStatus
       );
       setData(response.customerInquiryList);
       setTotalCount(response.totalCount);
@@ -329,8 +322,7 @@ const CustomerInquiryList = () => {
       page: currentPage,
       pageSize: itemsPerPage,
       viewMyInquiryOnly,
-      viewOnlySentEmails,
-      viewDocumentStatus,
+      documentStatus: documentStatus,
     });
     try {
       const response = await searchInquiryList(
@@ -344,8 +336,7 @@ const CustomerInquiryList = () => {
         currentPage,
         itemsPerPage,
         viewMyInquiryOnly,
-        viewOnlySentEmails,
-        viewDocumentStatus === "ALL" ? "" : viewDocumentStatus
+        documentStatus === "ALL" ? "" : documentStatus
       );
 
       setData(response.customerInquiryList);
@@ -377,11 +368,6 @@ const CustomerInquiryList = () => {
   const handleViewMyInquiryOnlyChange = (e: CheckboxChangeEvent) => {
     setViewMyInquiryOnly(e.target.checked);
     updateSearchParams({ viewMyInquiryOnly: e.target.checked });
-  };
-
-  const handleViewOnlySentEmailsChange = (e: CheckboxChangeEvent) => {
-    setViewOnlySentEmails(e.target.checked);
-    updateSearchParams({ viewOnlySentEmails: e.target.checked });
   };
 
   return (
@@ -443,9 +429,9 @@ const CustomerInquiryList = () => {
             </Button>
             <CheckboxWrapper>
               <Select
-                defaultValue="ALL"
-                style={{ width: 170, marginRight: 10 }}
-                onChange={(value) => setViewDocumentStatus(value)}
+                defaultValue={documentStatus}
+                style={{ width: 200, marginRight: 10 }}
+                onChange={(value) => setDocumentStatus(value)}
               >
                 <Select.Option value="">ALL</Select.Option>
                 <Select.Option value="VENDOR_PENDING">
@@ -454,19 +440,15 @@ const CustomerInquiryList = () => {
                 <Select.Option value="VENDOR_SELECTED">
                   VENDOR_SELECTED
                 </Select.Option>
+                <Select.Option value="SENT_CUSTOMER_INQUIRY">
+                  SENT_EMAIL_INQUIRY
+                </Select.Option>
               </Select>
               <Checkbox
                 checked={viewMyInquiryOnly}
                 onChange={handleViewMyInquiryOnlyChange}
               >
                 View My Inquiry Only
-              </Checkbox>
-              <Checkbox
-                checked={viewOnlySentEmails}
-                style={{ marginLeft: 10 }}
-                onChange={handleViewOnlySentEmailsChange}
-              >
-                View Only Sent Emails
               </Checkbox>
             </CheckboxWrapper>
           </SearchBar>

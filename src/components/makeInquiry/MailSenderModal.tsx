@@ -105,6 +105,17 @@ interface FormValue {
   supplierName: string;
 }
 
+interface MailFormData {
+  [key: number]: {
+    supplierId: number;
+    toRecipient: string;
+    subject: string;
+    content: string;
+    ccRecipient: string;
+    bccRecipient: string;
+  };
+}
+
 interface MailSenderModalProps {
   mode: string;
   mailDataList: emailSendData[];
@@ -144,7 +155,6 @@ const MailSenderModal = ({
 }: MailSenderModalProps) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [currentMailDataList, setCurrentMailDataList] = useState(mailDataList);
   const [selectedSuppliers, setSelectedSuppliers] = useState<
     Set<SelectedSupplier>
   >(new Set());
@@ -152,66 +162,83 @@ const MailSenderModal = ({
   const [missingFieldsState, setMissingFieldsState] = useState<{
     [key: string]: string[];
   } | null>(null);
+  const [mailFormData, setMailFormData] = useState<MailFormData>(
+    mailDataList as MailFormData
+  );
+  const [isDataLoading, setIsDataLoading] = useState(true);
 
   const navigate = useNavigate();
 
-  const formValues = Form.useWatch([], form);
+  const handleInputChange = (
+    supplierId: number,
+    field: string,
+    value: string
+  ) => {
+    setMailFormData((prev) => ({
+      ...prev,
+      [supplierId]: {
+        ...prev[supplierId],
+        [field]: value,
+      },
+    }));
+  };
 
   useEffect(() => {
-    if (isMailSenderVisible && selectedSupplierTag.length > 0) {
-      // 모든 탭의 초기값을 설정
-      const initialValues = {
-        docNumber: inquiryFormValues.docNumber,
-        refNumber: inquiryFormValues.refNumber,
-        customer: inquiryFormValues.customer,
-        vesselName: inquiryFormValues.vesselName,
-        mails: selectedSupplierTag.map((supplier) => ({
-          supplierId: supplier.id,
-          toRecipient: supplier.email || "",
-          subject:
-            mailDataList.find((m) => m.supplierId === supplier.id)?.subject ||
-            "",
-          content:
-            mailDataList.find((m) => m.supplierId === supplier.id)?.content ||
-            "",
-          ccRecipient:
-            mailDataList.find((m) => m.supplierId === supplier.id)
-              ?.ccRecipient || "",
-          bccRecipient:
-            mailDataList.find((m) => m.supplierId === supplier.id)
-              ?.bccRecipient || "",
-          communicationLanguage: supplier.communicationLanguage || "",
-        })),
-      };
+    const initializeMailData = async () => {
+      setIsDataLoading(true);
+      try {
+        if (isMailSenderVisible && selectedSupplierTag.length > 0) {
+          const newMailFormData: MailFormData = {};
 
-      // 폼 초기화
-      form.setFieldsValue(initialValues);
+          selectedSupplierTag.forEach((supplier) => {
+            const existingMailData = mailDataList.find(
+              (m) => m.supplierId === supplier.id
+            );
 
-      // 모든 탭의 필드를 한 번에 터치하여 유효성 검사 리거
-      selectedSupplierTag.forEach((_, index) => {
-        form
-          .validateFields([
-            ["mails", index, "toRecipient"],
-            ["mails", index, "subject"],
-            ["mails", index, "content"],
-          ])
-          .catch(() => {
-            // 유효성 검사 실패는 무시 - validateAndUpdateFields에서 처리됨
+            newMailFormData[supplier.id] = {
+              supplierId: supplier.id,
+              toRecipient: supplier.email || "",
+              subject: existingMailData?.subject || "",
+              content: existingMailData?.content || "",
+              ccRecipient: existingMailData?.ccRecipient || "",
+              bccRecipient: existingMailData?.bccRecipient || "",
+            };
           });
-      });
 
-      setCurrentMailDataList(mailDataList);
-    }
+          setMailFormData(newMailFormData);
+        }
+      } catch (error) {
+        console.error("메일 데이터 초기화 중 오류 발생:", error);
+      } finally {
+        setIsDataLoading(false);
+      }
+    };
+
+    initializeMailData();
   }, [isMailSenderVisible, selectedSupplierTag, mailDataList]);
 
+  useEffect(() => {
+    if (Object.keys(mailFormData).length > 0) {
+      form.setFieldsValue({
+        mails: selectedSupplierTag.map((supplier) => ({
+          supplierId: supplier.id,
+          toRecipient: mailFormData[supplier.id]?.toRecipient || supplier.email,
+          subject: mailFormData[supplier.id]?.subject || "",
+          content: mailFormData[supplier.id]?.content || "",
+          ccRecipient: mailFormData[supplier.id]?.ccRecipient || "",
+        })),
+      });
+    }
+  }, [mailFormData, selectedSupplierTag]);
+
   const validateAndUpdateFields = () => {
-    const currentValues = form.getFieldsValue();
+    const currentValues = mailFormData;
     const missingFields: { [key: string]: string[] } = {};
 
     selectedSupplierTag.forEach((supplier, index) => {
       const supplierName = supplier?.name || `Supplier ${index + 1}`;
       const missing: string[] = [];
-      const currentMail = currentValues.mails?.[index];
+      const currentMail = currentValues[supplier.id];
       const mailListData = mailDataList[index];
 
       if (
@@ -246,7 +273,7 @@ const MailSenderModal = ({
 
   useEffect(() => {
     validateAndUpdateFields();
-  }, [formValues, selectedSupplierTag]);
+  }, [mailFormData, selectedSupplierTag]);
 
   const handleSelectAllChange = (e: CheckboxChangeEvent) => {
     if (e.target.checked) {
@@ -310,10 +337,8 @@ const MailSenderModal = ({
         const results = [];
         const selectedSuppliersArray = Array.from(selectedSuppliers);
 
-        // 선택된 공급처들의 메일 데이터 배열 생성
         const selectedMailsData = selectedSuppliersArray
           .map((selected) => {
-            // 현재 선택된 공급처 정보 찾기
             const currentSupplier = selectedSupplierTag.find(
               (s) => s.id === selected.supplierId
             );
@@ -322,42 +347,40 @@ const MailSenderModal = ({
               console.error(
                 `Supplier with ID ${selected.supplierId} not found.`
               );
+              localStorage.setItem(
+                "emailProcessingError",
+                JSON.stringify({
+                  supplier: selected,
+                  error: "Supplier not found",
+                })
+              );
               return null;
             }
 
-            // values.mails에서 supplierId로 직접 메일 데이터 찾기
-            const formMailData = values.mails.find(
-              (mail: any) => mail.supplierId === currentSupplier.id
-            );
+            const formMailData = mailFormData[currentSupplier.id];
 
             if (!formMailData) {
               console.error(
                 `Mail data for supplier ID ${currentSupplier.id} not found.`
               );
+              localStorage.setItem(
+                "emailProcessingError",
+                JSON.stringify({
+                  supplier: currentSupplier,
+                  error: "Mail data not found",
+                })
+              );
               return null;
             }
-
-            // mailDataList에서도 현재 supplier의 데이터를 찾습니다 (폴백용)
-            const fallbackMailData = mailDataList.find(
-              (mail) => mail.supplierId === currentSupplier.id
-            );
 
             return {
               supplier: currentSupplier,
               mailData: {
                 toRecipient: currentSupplier.email,
-                subject:
-                  formMailData.subject || fallbackMailData?.subject || "",
-                content:
-                  formMailData.content || fallbackMailData?.content || "",
-                ccRecipient:
-                  formMailData.ccRecipient ||
-                  fallbackMailData?.ccRecipient ||
-                  "",
-                bccRecipient:
-                  formMailData.bccRecipient ||
-                  fallbackMailData?.bccRecipient ||
-                  "",
+                subject: formMailData.subject,
+                content: formMailData.content,
+                ccRecipient: formMailData.ccRecipient,
+                bccRecipient: formMailData.bccRecipient,
                 supplierName: currentSupplier.name,
                 supplierId: currentSupplier.id,
               },
@@ -432,6 +455,19 @@ const MailSenderModal = ({
     } catch (error) {
       console.error("Error during email processing:", error);
       message.error("An error occurred while sending emails.");
+      const err = error as Error;
+
+      const errorDetails = {
+        message: err.message,
+        stack: err.stack,
+        time: new Date().toISOString(),
+        mailFormData,
+        selectedSuppliers: Array.from(selectedSuppliers),
+      };
+      localStorage.setItem(
+        "emailProcessingError",
+        JSON.stringify(errorDetails)
+      );
     } finally {
       setLoading(false);
       modal.destroy();
@@ -452,14 +488,14 @@ const MailSenderModal = ({
     });
   };
 
-  const tabsItems = currentMailDataList.map((mailData, index) => ({
+  const tabsItems = selectedSupplierTag.map((supplier, index) => ({
     key: index.toString(),
-    label: `${selectedSupplierTag[index]?.name || ` ${index + 1}`}`,
+    label: supplier.name || `Supplier ${index + 1}`,
     children: (
       <StyledCard>
         <StyledFormItem
           name={["mails", index, "supplierId"]}
-          initialValue={selectedSupplierTag[index]?.id}
+          initialValue={supplier.id}
           style={{ display: "none" }}
         >
           <Input type="hidden" />
@@ -468,11 +504,17 @@ const MailSenderModal = ({
           <StyledFormItem
             style={{ width: "30%" }}
             name={["mails", index, "toRecipient"]}
+            initialValue={
+              mailFormData[supplier.id]?.toRecipient || supplier.email
+            }
             rules={[{ required: true, message: "Please enter the recipient" }]}
             label="Recipient"
           >
             <Input
               prefix={<MailOutlined />}
+              onChange={(e) =>
+                handleInputChange(supplier.id, "toRecipient", e.target.value)
+              }
               placeholder="Recipient"
               disabled={true}
             />
@@ -480,10 +522,16 @@ const MailSenderModal = ({
           <StyledFormItem
             style={{ width: "50%" }}
             name={["mails", index, "subject"]}
+            initialValue={mailFormData[supplier.id]?.subject}
             rules={[{ required: true, message: "Please enter a title." }]}
             label="Title"
           >
-            <Input placeholder="Title" />
+            <Input
+              placeholder="Title"
+              onChange={(e) =>
+                handleInputChange(supplier.id, "subject", e.target.value)
+              }
+            />
           </StyledFormItem>
           <StyledFormItem
             style={{ width: "20%" }}
@@ -491,10 +539,8 @@ const MailSenderModal = ({
             label="Language"
           >
             <Select
-              value={selectedSupplierTag[index]?.communicationLanguage}
-              onChange={(value) =>
-                handleLanguageChange(value, selectedSupplierTag[index]?.id)
-              }
+              value={supplier.communicationLanguage}
+              onChange={(value) => handleLanguageChange(value, supplier.id)}
             >
               <Select.Option value="KOR">KOR</Select.Option>
               <Select.Option value="ENG">ENG</Select.Option>
@@ -503,17 +549,31 @@ const MailSenderModal = ({
         </div>
         <StyledFormItem
           name={["mails", index, "content"]}
+          initialValue={mailFormData[supplier.id]?.content}
           rules={[{ required: true, message: "Please enter the contents." }]}
         >
-          <TextArea style={{ height: 300 }} placeholder="Content" rows={6} />
+          <TextArea
+            style={{ height: 300 }}
+            placeholder="Content"
+            rows={6}
+            onChange={(e) =>
+              handleInputChange(supplier.id, "content", e.target.value)
+            }
+          />
         </StyledFormItem>
         <div style={{ display: "flex", gap: 20 }}>
           <StyledFormItem
             style={{ width: "50%" }}
             name={["mails", index, "ccRecipient"]}
+            initialValue={mailFormData[supplier.id]?.ccRecipient}
             label="ccRecipient"
           >
-            <Input placeholder="CC Recipient" />
+            <Input
+              placeholder="CC Recipient"
+              onChange={(e) =>
+                handleInputChange(supplier.id, "ccRecipient", e.target.value)
+              }
+            />
           </StyledFormItem>
         </div>
       </StyledCard>
@@ -575,8 +635,20 @@ const MailSenderModal = ({
     }
   }, [isMailSenderVisible]);
 
+  if (isDataLoading) {
+    return (
+      <div style={{ textAlign: "center", padding: "20px" }}>
+        <Spin tip="Loading..." />
+      </div>
+    );
+  }
+
   if (!isMailSenderVisible) {
     return null;
+  }
+
+  if (mailDataList.length === 0) {
+    return <div>No mail data found</div>;
   }
 
   return (
@@ -619,14 +691,14 @@ const MailSenderModal = ({
             <Input disabled placeholder="vesselName" />
           </StyledFormItem>
         </FormRow>
-        {selectedSupplierTag.length === 0 ? (
+        {!isDataLoading && selectedSupplierTag.length > 0 ? (
+          <Tabs defaultActiveKey="0" type="card" items={tabsItems} />
+        ) : (
           <Typography.Paragraph
             style={{ textAlign: "center", padding: 20, color: "red" }}
           >
             No Supplier selected!
           </Typography.Paragraph>
-        ) : (
-          <Tabs defaultActiveKey="0" type="card" items={tabsItems} />
         )}
 
         <div>

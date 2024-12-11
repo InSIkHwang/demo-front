@@ -453,17 +453,13 @@ export const fetchInquiryList = async (
   page: number,
   pageSize: number,
   viewMyInquiryOnly: boolean,
-  viewOnlySentEmails: boolean,
-  viewDocumentStatus: string
+  documentStatus: string
 ) => {
   const params: any = {
     page: page - 1, // 페이지는 0부터 시작
     pageSize: pageSize, // 페이지당 아이템 수
     writer: viewMyInquiryOnly ? "MY" : "ALL",
-    selectDocumentStatusType: viewOnlySentEmails
-      ? "SENT_CUSTOMER_INQUIRY"
-      : "CUSTOMER_INQUIRY",
-    documentStatus: viewDocumentStatus === "ALL" ? "" : viewDocumentStatus,
+    documentStatus: documentStatus === "ALL" ? "" : documentStatus,
   };
 
   const response = await axios.get<{
@@ -514,8 +510,7 @@ export const searchInquiryList = async (
   page: number,
   pageSize: number,
   viewMyInquiryOnly: boolean,
-  viewOnlySentEmails: boolean,
-  viewDocumentStatus: string
+  documentStatus: string
 ): Promise<{
   totalCount: number;
   customerInquiryList: Inquiry[];
@@ -532,10 +527,7 @@ export const searchInquiryList = async (
     page: (page - 1).toString(), // 페이지는 0부터 시작
     pageSize: pageSize.toString(), // 페이지당 아이템 수,
     writer: viewMyInquiryOnly ? "MY" : "ALL",
-    selectDocumentStatusType: viewOnlySentEmails
-      ? "SENT_CUSTOMER_INQUIRY"
-      : "CUSTOMER_INQUIRY",
-    viewDocumentStatus,
+    documentStatus: documentStatus === "ALL" ? "" : documentStatus,
   };
 
   // 쿼리 문자열을 생성

@@ -323,7 +323,10 @@ const OfferList = () => {
   }, []);
 
   useEffect(() => {
-    if ((searchText || searchSubText) && registerStartDate && registerEndDate) {
+    if (
+      ((searchText || searchSubText) && registerStartDate && registerEndDate) ||
+      viewDocumentStatus !== "ALL"
+    ) {
       handleSearch();
     } else {
       fetchData();
@@ -680,7 +683,7 @@ const OfferList = () => {
             </SearchSection>
             <CheckboxWrapper>
               <Select
-                defaultValue="ALL"
+                defaultValue={viewDocumentStatus}
                 style={{ width: 150, marginRight: 10 }}
                 onChange={(value) => setViewDocumentStatus(value)}
               >
