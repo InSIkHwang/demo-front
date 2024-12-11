@@ -10,7 +10,11 @@ import {
   AutoComplete,
 } from "antd";
 import styled from "styled-components";
-import { HeaderFormData, OrderAckHeaderFormData } from "../../types/types";
+import {
+  HeaderFormData,
+  OrderAckHeaderFormData,
+  orderRemark,
+} from "../../types/types";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 
@@ -45,15 +49,11 @@ const StyledFormItem = styled(Form.Item)`
 interface HeaderEditModalProps {
   open: boolean;
   onClose: () => void;
-  onSave: (
-    header: OrderAckHeaderFormData,
-    footer: { quotationRemarkId: number | null; quotationRemark: string }[]
-  ) => void;
+  onSave: (header: OrderAckHeaderFormData, footer: orderRemark[]) => void;
   pdfHeader: OrderAckHeaderFormData;
-  pdfFooter: {
-    quotationRemarkId: number | null;
-    quotationRemark: string;
-  }[];
+  pdfFooter: orderRemark[];
+  setPdfOrderAckHeader: (value: OrderAckHeaderFormData) => void;
+  setPdfOrderAckFooter: (value: orderRemark[]) => void;
 }
 
 const TERMS_OF_PAYMENT_OPTIONS = [
@@ -81,13 +81,13 @@ const OrderAckHeaderEditModal = ({
   onSave,
   pdfHeader,
   pdfFooter,
+  setPdfOrderAckHeader,
+  setPdfOrderAckFooter,
 }: HeaderEditModalProps) => {
   const [headerChk, setHeaderChk] = useState<boolean>(true);
   const [footerChk, setFooterChk] = useState<boolean>(pdfFooter.length > 0);
   const [form] = Form.useForm<OrderAckHeaderFormData>();
-  const [footerText, setFooterText] = useState<
-    { quotationRemarkId: number | null; quotationRemark: string }[]
-  >(
+  const [footerText, setFooterText] = useState<orderRemark[]>(
     Array.isArray(pdfFooter) && pdfFooter.length > 0
       ? pdfFooter.map((item) => item || [])
       : []
@@ -102,10 +102,7 @@ const OrderAckHeaderEditModal = ({
   };
 
   const handleAddFooterLine = () => {
-    setFooterText([
-      ...footerText,
-      { quotationRemarkId: null, quotationRemark: "" },
-    ]);
+    setFooterText([...footerText, { orderRemarkId: null, orderRemark: "" }]);
   };
 
   const handleRemoveFooterLine = (index: number) => {
@@ -115,8 +112,8 @@ const OrderAckHeaderEditModal = ({
   const handleFooterChange = (index: number, value: string) => {
     const newFooterText = [...footerText];
     newFooterText[index] = {
-      quotationRemarkId: footerText[index].quotationRemarkId || null,
-      quotationRemark: value,
+      orderRemarkId: footerText[index].orderRemarkId || null,
+      orderRemark: value,
     };
     setFooterText(newFooterText);
   };
@@ -145,17 +142,19 @@ const OrderAckHeaderEditModal = ({
     const headerData = headerChk
       ? {
           ...form.getFieldsValue(),
-          quotationHeaderId: pdfHeader.quotationHeaderId || null,
+          orderHeaderId: pdfHeader.orderHeaderId || null,
+          receiverType: "CUSTOMER",
         }
       : {
-          quotationHeaderId: pdfHeader.quotationHeaderId || null,
+          orderHeaderId: pdfHeader.orderHeaderId || null,
           portOfShipment: "",
           deliveryTime: "",
           termsOfPayment: "",
           incoterms: "",
-          offerValidity: "",
-          partCondition: "",
+          receiverType: "CUSTOMER",
         };
+    setPdfOrderAckHeader(headerData);
+    setPdfOrderAckFooter(footerText);
     onSave(headerData, footerText);
     onClose();
   };
@@ -273,7 +272,7 @@ const OrderAckHeaderEditModal = ({
               {index + 1}.
             </div>
             <Input.TextArea
-              value={text.quotationRemark}
+              value={text.orderRemark}
               onChange={(e) => handleFooterChange(index, e.target.value)}
               autoSize={{ minRows: 1 }}
               disabled={!footerChk}

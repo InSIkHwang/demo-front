@@ -399,12 +399,35 @@ export interface OrderSupplier {
   representative?: string | null;
 }
 
+export interface orderRemark {
+  orderRemarkId: number | null;
+  orderRemark: string;
+}
+
+export interface orderHeaderResponse {
+  orderCustomerHeader: {
+    orderHeaderId: number | null;
+    portOfShipment: string;
+    deliveryTime: string;
+    termsOfPayment: string;
+    incoterms: string;
+    receiverType: string;
+  };
+  orderSupplierHeader: {
+    orderHeaderId: number | null;
+    receiverType: string;
+  };
+  orderCustomerRemark: orderRemark[];
+  orderSupplierRemark: orderRemark[];
+}
+
 export interface OrderResponse {
   documentInfo: Order;
   invChargeList: InvCharge[];
   itemDetailList: OrderItemDetail[];
   suppliers: OrderSupplier[];
   supplierInfoList: OrderSupplier[];
+  orderHeaderResponse: orderHeaderResponse;
 }
 
 export interface OrderRequest {
@@ -619,9 +642,10 @@ export interface HeaderFormData {
 }
 
 export interface OrderAckHeaderFormData {
-  quotationHeaderId: number | null;
+  orderHeaderId: number | null;
   portOfShipment: string | "";
   deliveryTime: string | "";
   termsOfPayment: string | "";
   incoterms: string | "";
+  receiverType: string | "";
 }

@@ -744,7 +744,6 @@ const InquiryForm = ({
                   }}
                   onSelect={(value, option: any) => {
                     const selectedSupplier = option.supplier; // option.supplier를 통해 supplier 객체 접근
-                    console.log(selectedSupplier);
 
                     if (selectedSupplier) {
                       setSelectedSuppliers((prevSuppliers) => [

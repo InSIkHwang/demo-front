@@ -10,7 +10,9 @@ import {
   ItemDataType,
   OfferSearchParams,
   Order,
+  OrderAckHeaderFormData,
   orderAllResponses,
+  orderRemark,
   OrderRequest,
   Quotation,
   Supplier,
@@ -974,6 +976,25 @@ export const editOrder = async (orderId: number, request: OrderRequest) => {
 //ORDER 매입처 변경을 위한 가격 정보 조회
 export const fetchOrderSupplierInfo = async (inquiryId: number) => {
   const response = await axios.get(`/api/orders/prices-info/${inquiryId}`);
+
+  return response.data;
+};
+
+//ORDER 헤더 저장
+export const saveOrderHeader = async (
+  orderId: number,
+  orderHeader:
+    | OrderAckHeaderFormData
+    | {
+        orderRemarkId: number | null;
+        receiverType: string;
+      },
+  orderRemark: orderRemark[]
+) => {
+  const response = await axios.put(`/api/orders/headers/${orderId}`, {
+    orderHeader,
+    orderRemark,
+  });
 
   return response.data;
 };
