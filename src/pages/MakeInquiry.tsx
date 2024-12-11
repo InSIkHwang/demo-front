@@ -25,7 +25,7 @@ import {
   InquiryResponse,
   InquiryTable,
 } from "../types/types";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import HeaderEditModal from "../components/makeInquiry/HeaderEditModal";
 import MailSenderModal from "../components/makeInquiry/MailSenderModal";
 import PDFGenerator from "../components/makeInquiry/PDFGenerator";
@@ -159,6 +159,8 @@ const getSupplierMap = (
 };
 
 const MakeInquiry = () => {
+  const [searchParams] = useSearchParams();
+  const searchParamsString = searchParams.toString();
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
   const { customerInquiryId } = useParams<{ customerInquiryId?: string }>();
   const navigate = useNavigate();
@@ -942,7 +944,12 @@ const MakeInquiry = () => {
       </Button>
       <Button
         type="default"
-        onClick={() => navigate("/customerInquirylist")}
+        onClick={() =>
+          navigate({
+            pathname: "/customerInquirylist",
+            search: searchParamsString,
+          })
+        }
         style={{ margin: "20px 0 0 15px", float: "right" }}
       >
         Back

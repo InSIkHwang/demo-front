@@ -32,6 +32,7 @@ interface DetailInquiryModalProps {
   inquiryId: number;
   fetchData: () => Promise<void>;
   documentType: string;
+  searchParams: URLSearchParams;
 }
 
 const StyledModal = styled(Modal)`
@@ -121,6 +122,7 @@ const DetailInquiryModal = ({
   inquiryId,
   fetchData,
   documentType,
+  searchParams,
 }: DetailInquiryModalProps) => {
   const [inquiryDetail, setInquiryDetail] = useState<InquiryResponse | null>(
     null
@@ -199,7 +201,10 @@ const DetailInquiryModal = ({
       const basePath =
         documentType === "COMPLEX" ? "/makecomplexinquiry" : "/makeinquiry";
       const path = inquiryId ? `${basePath}/${inquiryId}` : basePath;
-      navigate(path);
+      navigate({
+        pathname: path,
+        search: searchParams.toString(),
+      });
     }
   };
 

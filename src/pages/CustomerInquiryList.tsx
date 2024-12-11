@@ -528,6 +528,7 @@ const CustomerInquiryList = () => {
           onClose={() => setIsDetailModalOpen(false)}
           inquiryId={selectedInquiryId}
           fetchData={fetchData}
+          searchParams={searchParams}
         />
       )}
     </>

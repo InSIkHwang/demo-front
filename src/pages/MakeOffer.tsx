@@ -5,7 +5,12 @@ import React, {
   useMemo,
   useRef,
 } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import {
+  useLocation,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import {
   Button,
   Checkbox,
@@ -77,6 +82,10 @@ const INITIAL_HEADER_VALUES: HeaderFormData = {
 const MakeOffer = () => {
   const { state } = useLocation();
   const { documentId: urlDocumentId } = useParams();
+  const [searchParams] = useSearchParams();
+  const searchParamsString = searchParams.toString();
+  console.log(searchParamsString);
+
   const loadDocumentId = {
     documentId: state?.info.documentId || Number(urlDocumentId) || [],
   };
@@ -1356,7 +1365,12 @@ const MakeOffer = () => {
       </Tooltip>
       <Button
         type="default"
-        onClick={() => navigate(-1)}
+        onClick={() =>
+          navigate({
+            pathname: "/supplierInquirylist",
+            search: searchParamsString,
+          })
+        }
         style={{ margin: "20px 15px 0 0 ", float: "right" }}
       >
         Back

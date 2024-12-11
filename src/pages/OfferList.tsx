@@ -478,11 +478,18 @@ const OfferList = () => {
           onClick={(e) => {
             e.stopPropagation();
             navigate(
-              record.documentType === "COMPLEX"
-                ? `/makecomplexinquiry/${record.customerInquiryId}`
-                : `/makeoffer/${record.documentId}`,
               {
-                state: { info: record, category: "offer" },
+                pathname:
+                  record.documentType === "COMPLEX"
+                    ? `/makecomplexinquiry/${record.customerInquiryId}`
+                    : `/makeoffer/${record.documentId}`,
+                search: searchParams.toString(),
+              },
+              {
+                state: {
+                  info: record,
+                  category: "offer",
+                },
               }
             );
           }}

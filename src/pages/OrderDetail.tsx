@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Button, Divider, message, Select } from "antd";
+import { Button, Checkbox, Divider, Input, message, Modal, Select } from "antd";
 import styled from "styled-components";
 import dayjs, { Dayjs } from "dayjs";
 import { editOrder, fetchOrderDetail } from "../api/api";
@@ -24,6 +24,7 @@ import POHeaderEditModal from "../components/orderDetail/POHeaderEditModal";
 import OrderAckHeaderEditModal from "../components/orderDetail/OrderAckHeaderEditModal";
 import OrderAckPDFDocument from "../components/orderDetail/OrderAckPDFDocument";
 import ChangeSupplierModal from "../components/orderDetail/ChangeSupplierModal";
+import { pdf } from "@react-pdf/renderer";
 
 const Container = styled.div`
   position: relative;
@@ -479,6 +480,113 @@ const OrderDetail = () => {
     setSupplierInfoListModalVisible(false);
   };
 
+  const handlePDFDownload = async () => {
+    if (!formValues || !supplier || !items || !supplier.supplierId) {
+      message.error("Please fill in all fields.");
+      return;
+    }
+
+    try {
+      let doc;
+      if (pdfType === "PO") {
+        doc = (
+          <PurchaseOrderPDFDocument
+            info={formValues}
+            items={items}
+            pdfHeader={pdfPOHeader}
+            viewMode={false}
+            language={language}
+            pdfFooter={pdfPOFooter}
+            finalTotals={finalTotals}
+            supplier={supplier}
+          />
+        );
+      } else if (pdfType === "OA") {
+        doc = (
+          <OrderAckPDFDocument
+            info={formValues}
+            items={items}
+            pdfHeader={pdfOrderAckHeader}
+            viewMode={false}
+            language={language}
+            pdfFooter={pdfOrderAckFooter}
+            finalTotals={finalTotals}
+            dcInfo={dcInfo}
+            invChargeList={invChargeList}
+          />
+        );
+      }
+
+      const pdfBlob = await pdf(doc).toBlob();
+      let defaultFileName = "";
+
+      if (pdfType === "PO" && language === "KOR") {
+        defaultFileName = `${
+          supplier.korCompanyName || supplier.companyName
+        }_발주서_${formValues.documentNumber}.pdf`;
+      } else if (pdfType === "PO" && language === "ENG") {
+        defaultFileName = `${supplier.companyName}_Purchase_Order_${formValues.documentNumber}.pdf`;
+      } else if (pdfType === "OA" && language === "KOR") {
+        defaultFileName = `${formValues.refNumber}(주문확인서).pdf`;
+      } else if (pdfType === "OA" && language === "ENG") {
+        defaultFileName = `${formValues.refNumber}(ORDER_ACK).pdf`;
+      }
+
+      let modalInstance: any;
+      let localSendMailState = true; // 모달 내부에서 사용할 로컬 상태
+
+      modalInstance = Modal.confirm({
+        title: "Quotation PDF File",
+        width: 500,
+        content: (
+          <div style={{ marginBottom: 20 }}>
+            <span>File name: </span>
+            <Input
+              defaultValue={defaultFileName}
+              id="fileNameInput"
+              onPressEnter={() => {
+                modalInstance.destroy();
+              }}
+            />
+            <Divider variant="dashed" style={{ borderColor: "#007bff" }}>
+              Send mail or not
+            </Divider>
+            <Checkbox
+              defaultChecked={true}
+              onChange={(e) => {
+                localSendMailState = e.target.checked;
+              }}
+            >
+              I will send customer an e-mail immediately
+            </Checkbox>
+          </div>
+        ),
+        onOk: async () => {
+          const inputElement = document.getElementById(
+            "fileNameInput"
+          ) as HTMLInputElement;
+          const fileName = inputElement.value || defaultFileName;
+
+          const url = URL.createObjectURL(pdfBlob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = fileName.endsWith(".pdf")
+            ? fileName
+            : `${fileName}.pdf`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        },
+        okText: "Download",
+        cancelText: "Cancel",
+      });
+    } catch (error) {
+      console.error("PDF Download Error:", error);
+      message.error("PDF Download Error");
+    }
+  };
+
   if (isLoading) {
     return <LoadingSpinner />;
   }
@@ -567,6 +675,13 @@ const OrderDetail = () => {
           type="default"
         >
           {showPDFPreview ? "Close Preview" : "PDF Preview"}
+        </Button>
+        <Button
+          style={{ marginLeft: 10 }}
+          onClick={handlePDFDownload}
+          type="default"
+        >
+          PDF Download
         </Button>
       </div>
       {pdfType === "PO" && showPDFPreview && formValues && supplier && (
