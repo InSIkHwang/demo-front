@@ -373,6 +373,9 @@ const MailSenderModal = ({
               return null;
             }
 
+            if (currentSupplier) {
+            }
+
             return {
               supplier: currentSupplier,
               mailData: {
@@ -425,6 +428,17 @@ const MailSenderModal = ({
           }
 
           const finalFileData = [...updatedFileData, ...pdfFiles];
+
+          //최종 메일데이터 공급처 일치 확인
+          if (
+            mailData.mailData.supplierId !== mailData.supplier.id ||
+            mailData.mailData.toRecipient !== mailData.supplier.email ||
+            mailData.mailData.supplierName !== mailData.supplier.name
+          ) {
+            throw new Error(
+              `Supplier and mail data mismatch: ${mailData.mailData.supplierId} !== ${mailData.supplier.id}, ${mailData.mailData.toRecipient} !== ${mailData.supplier.email}, ${mailData.mailData.supplierName} !== ${mailData.supplier.name}`
+            );
+          }
 
           await sendInquiryMail(
             mode,
