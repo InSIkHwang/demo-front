@@ -155,6 +155,7 @@ interface InquiryFormProps {
         supplierRemark: string;
       }[]
     | undefined;
+  setTables: Dispatch<SetStateAction<any[]>>;
 }
 
 type Presets = Required<ColorPickerProps>["presets"][number];
@@ -247,6 +248,7 @@ const InquiryForm = ({
   isSupplierModalOpen,
   uniqueSuppliers,
   isEditMode,
+  setTables,
 }: InquiryFormProps) => {
   const [form] = Form.useForm();
   const [supplierSearch, setSupplierSearch] = useState("");
@@ -742,12 +744,48 @@ const InquiryForm = ({
                   }}
                   onSelect={(value, option: any) => {
                     const selectedSupplier = option.supplier; // option.supplier를 통해 supplier 객체 접근
+                    console.log(selectedSupplier);
 
                     if (selectedSupplier) {
                       setSelectedSuppliers((prevSuppliers) => [
                         ...prevSuppliers,
                         selectedSupplier,
                       ]);
+
+                      setTables((prevTables) => {
+                        const updatedTables = [...prevTables];
+                        const targetTable = { ...updatedTables[0] };
+
+                        // 이미 존재하는 supplier인지 확인
+                        const isExisting = targetTable.supplierList?.some(
+                          (supplier: any) =>
+                            supplier.supplierId === selectedSupplier.id
+                        );
+
+                        if (!isExisting) {
+                          // supplierList가 없으면 새로 생성
+                          if (!targetTable.supplierList) {
+                            targetTable.supplierList = [];
+                          }
+
+                          // 새로운 supplier 추가
+                          targetTable.supplierList.push({
+                            inquiryItemDetailId: undefined,
+                            supplierId: selectedSupplier.id,
+                            code: selectedSupplier.code,
+                            companyName: selectedSupplier.name,
+                            korCompanyName: selectedSupplier.korName,
+                            representative: "",
+                            email: selectedSupplier.email || "",
+                            communicationLanguage:
+                              selectedSupplier.communicationLanguage,
+                            supplierRemark: selectedSupplier.supplierRemark,
+                          });
+
+                          updatedTables[0] = targetTable;
+                        }
+                        return updatedTables;
+                      });
                     }
 
                     // 검색창 초기화

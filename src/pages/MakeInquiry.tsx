@@ -896,6 +896,7 @@ const MakeInquiry = () => {
           isVesselModalOpen={isVesselModalOpen}
           isSupplierModalOpen={isSupplierModalOpen}
           uniqueSuppliers={uniqueSuppliers}
+          setTables={setTables}
         />
       )}
       <Divider variant="dashed" style={{ borderColor: "#007bff" }}>
