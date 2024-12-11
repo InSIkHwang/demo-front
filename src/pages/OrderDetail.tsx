@@ -81,7 +81,7 @@ const OrderDetail = () => {
     totalProfitPercent: 0,
   });
   const [showPDFPreview, setShowPDFPreview] = useState(false);
-  const [language, setLanguage] = useState<string>("ENG");
+  const [language, setLanguage] = useState<string>("KOR");
   const [headerEditModalVisible, setHeaderEditModalVisible] =
     useState<boolean>(false);
   const [pdfType, setPdfType] = useState<string>("PO");
@@ -149,10 +149,12 @@ const OrderDetail = () => {
         setPdfOrderAckHeader(
           data.orderHeaderResponse.orderCustomerHeader || INITIAL_HEADER_VALUES
         );
-        setPdfOrderAckFooter(data.orderHeaderResponse.orderSupplierRemark);
+        setPdfOrderAckFooter(
+          data.orderHeaderResponse.orderCustomerRemark || []
+        );
         setPdfPOHeader({
           orderRemarkId:
-            data.orderHeaderResponse.orderSupplierHeader.orderHeaderId || null,
+            data.orderHeaderResponse.orderSupplierHeader?.orderHeaderId || null,
           orderRemark:
             "1. 귀사의 무궁한 발전을 기원합니다.\n2. 하기와 같이 발주하오니 업무에 참조하시기 바랍니다.",
           receiverType: "SUPPLIER",
@@ -164,6 +166,7 @@ const OrderDetail = () => {
           }
         );
       } catch (error) {
+        console.error("Order detail error:", error);
         message.error("Failed to load order detail.");
       } finally {
         setIsLoading(false);
