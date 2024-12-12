@@ -104,6 +104,28 @@ const TableComponent = ({ items, setItems }: TableComponentProps) => {
       rowIndex: number,
       columnIndex: number
     ) => {
+      if (e.ctrlKey && e.key === "Enter") {
+        e.preventDefault();
+        handleAddItem(rowIndex);
+        if (inputRefs.current[rowIndex + 1]?.[columnIndex]) {
+          inputRefs.current[rowIndex + 1][columnIndex]?.focus();
+        }
+
+        return;
+      }
+
+      // Ctrl + Backspace 키 감지
+      if (e.ctrlKey && e.key === "Backspace") {
+        e.preventDefault();
+
+        handleDeleteItem(rowIndex);
+        if (inputRefs.current[rowIndex - 1]?.[columnIndex]) {
+          inputRefs.current[rowIndex - 1][columnIndex]?.focus();
+        }
+
+        return;
+      }
+
       if (e.key === "ArrowDown" || e.key === "ArrowUp") {
         e.preventDefault();
         const nextIndex = e.key === "ArrowDown" ? rowIndex + 1 : rowIndex - 1;

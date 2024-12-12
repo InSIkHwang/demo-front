@@ -408,6 +408,28 @@ const ComplexInquiryTable = ({
   ) => {
     const totalColumns = columns.length;
 
+    if (e.ctrlKey && e.key === "Enter") {
+      e.preventDefault();
+      handleAddItem(rowIndex);
+      if (inputRefs.current[rowIndex + 1]?.[columnIndex]) {
+        inputRefs.current[rowIndex + 1][columnIndex]?.focus();
+      }
+
+      return;
+    }
+
+    // Ctrl + Backspace 키 감지
+    if (e.ctrlKey && e.key === "Backspace") {
+      e.preventDefault();
+
+      handleDeleteItem(rowIndex);
+      if (inputRefs.current[rowIndex - 1]?.[columnIndex]) {
+        inputRefs.current[rowIndex - 1][columnIndex]?.focus();
+      }
+
+      return;
+    }
+
     switch (e.key) {
       case "ArrowUp":
         e.preventDefault();
