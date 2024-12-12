@@ -511,6 +511,12 @@ const OrderDetail = () => {
     setSupplierInfoListModalVisible(false);
   };
 
+  const handlePdfTypeChange = (value: string) => {
+    setPdfType(value);
+    // OA 선택 시 영어로, PO 선택 시 한글로 자동 변경
+    setLanguage(value === "OA" ? "ENG" : "KOR");
+  };
+
   const handlePDFDownload = async () => {
     if (!formValues || !supplier || !items || !supplier.supplierId) {
       message.error("Please fill in all fields.");
@@ -707,7 +713,7 @@ const OrderDetail = () => {
         <Select
           style={{ width: 230, marginLeft: 10 }}
           value={pdfType}
-          onChange={setPdfType}
+          onChange={handlePdfTypeChange}
         >
           <Select.Option value="PO">PURCHASE ORDER</Select.Option>
           <Select.Option value="OA">ORDER ACKNOWLEDGEMENT</Select.Option>
