@@ -729,6 +729,24 @@ const Footer = () => (
   </View>
 );
 
+const Footer = () => (
+  <View style={styles.footer} fixed>
+    <View style={styles.footerRow}>
+      <View>
+        <Text style={styles.footerText}>
+          43-4, Gyeongjeoncheon-ro 248beon-gil, Gangseo-gu, Busan Korea / 46719
+        </Text>
+        <Text style={styles.footerText}>
+          Tel: +82-51-797-7078 Fax: +82-51-797-7078 Email: info@bas-korea.com
+        </Text>
+      </View>
+      <Text style={styles.footerCertification}>
+        SHIPSERV TN-238398 ISO 9001:2015 ISO 14001:2015
+      </Text>
+    </View>
+  </View>
+);
+
 const PDFDocument = ({
   formValues,
   items,
