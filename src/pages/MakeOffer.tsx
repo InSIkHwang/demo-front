@@ -15,6 +15,7 @@ import {
   Button,
   Checkbox,
   Divider,
+  FloatButton,
   Input,
   message,
   Modal,
@@ -22,7 +23,13 @@ import {
   Tabs,
   Tooltip,
 } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import {
+  PlusOutlined,
+  SaveOutlined,
+  FilePdfOutlined,
+  DownloadOutlined,
+  RollbackOutlined,
+} from "@ant-design/icons";
 import styled from "styled-components";
 import dayjs from "dayjs";
 import FormComponent from "../components/makeOffer/FormComponent";
@@ -68,6 +75,8 @@ const Title = styled.h1`
   margin-bottom: 30px;
   color: #333;
 `;
+
+const BtnGroup = styled(FloatButton.Group)``;
 
 const INITIAL_HEADER_VALUES: HeaderFormData = {
   quotationHeaderId: null,
@@ -1472,6 +1481,58 @@ const MakeOffer = () => {
           invChargeList={invChargeList}
         />
       )}
+      <BtnGroup>
+        <FloatButton.Group
+          trigger="hover"
+          shape="square"
+          style={{ insetInlineEnd: 0 }}
+        >
+          <FloatButton
+            type="primary"
+            tooltip="Save"
+            icon={<SaveOutlined />}
+            onClick={() => handleSave(false, activeKey)}
+            style={{
+              opacity:
+                !formValues.refNumber || formValues.refNumber.trim() === ""
+                  ? 0.5
+                  : 1,
+              pointerEvents:
+                !formValues.refNumber || formValues.refNumber.trim() === ""
+                  ? "none"
+                  : "auto",
+            }}
+          />
+          <FloatButton
+            tooltip="PDF Preview"
+            icon={<FilePdfOutlined />}
+            onClick={() => {
+              window.scrollTo(0, document.body.scrollHeight);
+              setShowPDFPreview(true);
+            }}
+          />
+          <FloatButton
+            tooltip="PDF Download"
+            icon={<DownloadOutlined />}
+            onClick={clickPdfDownload}
+            style={{
+              opacity: selectedSupplierIds.length === 0 ? 0.5 : 1,
+              pointerEvents: selectedSupplierIds.length === 0 ? "none" : "auto",
+            }}
+          />
+          <FloatButton.BackTop visibilityHeight={0} />
+          <FloatButton
+            tooltip="Back"
+            icon={<RollbackOutlined />}
+            onClick={() =>
+              navigate({
+                pathname: "/supplierInquirylist",
+                search: searchParamsString,
+              })
+            }
+          />
+        </FloatButton.Group>
+      </BtnGroup>
     </FormContainer>
   );
 };

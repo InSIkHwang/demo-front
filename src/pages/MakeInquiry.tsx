@@ -1,7 +1,13 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import styled from "styled-components";
 import { Button, Divider, FloatButton, message, Modal, Select } from "antd";
-import { FileSearchOutlined } from "@ant-design/icons";
+import {
+  FileSearchOutlined,
+  SaveOutlined,
+  MailOutlined,
+  FilePdfOutlined,
+  RollbackOutlined,
+} from "@ant-design/icons";
 import dayjs, { Dayjs } from "dayjs";
 import {
   fetchDocData,
@@ -51,9 +57,7 @@ const Title = styled.h1`
   color: #333;
 `;
 
-const BtnGroup = styled(FloatButton.Group)`
-  bottom: 10vh;
-`;
+const BtnGroup = styled(FloatButton.Group)``;
 
 // Constants
 interface FormValues {
@@ -1095,12 +1099,73 @@ const MakeInquiry = () => {
         />
       )}
       <BtnGroup>
-        <FloatButton
-          type="primary"
-          tooltip="Search the maker's inquiries to identify the supplier"
-          icon={<FileSearchOutlined />}
-          onClick={() => toggleModal("inquirySearch", true)}
-        />
+        <FloatButton.Group>
+          <FloatButton
+            type="primary"
+            tooltip="Save"
+            icon={<SaveOutlined />}
+            onClick={handleSubmit}
+            style={{
+              opacity:
+                isDocNumDuplicate ||
+                !formValues.docNumber ||
+                !formValues.refNumber?.trim()
+                  ? 0.5
+                  : 1,
+              pointerEvents:
+                isDocNumDuplicate ||
+                !formValues.docNumber ||
+                !formValues.refNumber?.trim()
+                  ? "none"
+                  : "auto",
+            }}
+          />
+          <FloatButton
+            type="primary"
+            tooltip="Send Email"
+            icon={<MailOutlined />}
+            onClick={() => toggleModal("mail", true)}
+            style={{
+              opacity:
+                isDocNumDuplicate ||
+                !formValues.docNumber ||
+                formValues.refNumber?.trim() === ""
+                  ? 0.5
+                  : 1,
+              pointerEvents:
+                isDocNumDuplicate ||
+                !formValues.docNumber ||
+                formValues.refNumber?.trim() === ""
+                  ? "none"
+                  : "auto",
+            }}
+          />
+          <FloatButton
+            tooltip="PDF Preview"
+            icon={<FilePdfOutlined />}
+            onClick={() => {
+              window.scrollTo(0, document.body.scrollHeight);
+              setShowPDFPreview(true);
+            }}
+          />
+          <FloatButton
+            type="primary"
+            tooltip="Search the maker's inquiries to identify the supplier"
+            icon={<FileSearchOutlined />}
+            onClick={() => toggleModal("inquirySearch", true)}
+          />
+          <FloatButton.BackTop visibilityHeight={0} />
+          <FloatButton
+            tooltip="Back"
+            icon={<RollbackOutlined />}
+            onClick={() =>
+              navigate({
+                pathname: "/customerInquirylist",
+                search: searchParamsString,
+              })
+            }
+          />
+        </FloatButton.Group>
         <InquirySearchModal
           isVisible={isInquirySearchModalVisible}
           onClose={() => toggleModal("inquirySearch", false)}
@@ -1111,7 +1176,6 @@ const MakeInquiry = () => {
           handleInquirySearch={handleInquirySearch}
           setSelectedSuppliers={setSelectedSuppliers}
         />
-        <FloatButton.BackTop visibilityHeight={0} />
       </BtnGroup>
     </FormContainer>
   );
