@@ -76,8 +76,6 @@ const Title = styled.h1`
   color: #333;
 `;
 
-const BtnGroup = styled(FloatButton.Group)``;
-
 const INITIAL_HEADER_VALUES: HeaderFormData = {
   quotationHeaderId: null,
   portOfShipment: "BUSAN, KOREA",
@@ -1481,58 +1479,57 @@ const MakeOffer = () => {
           invChargeList={invChargeList}
         />
       )}
-      <BtnGroup>
-        <FloatButton.Group
-          trigger="hover"
-          shape="square"
-          style={{ insetInlineEnd: 0 }}
-        >
-          <FloatButton
-            type="primary"
-            tooltip="Save"
-            icon={<SaveOutlined />}
-            onClick={() => handleSave(false, activeKey)}
-            style={{
-              opacity:
-                !formValues.refNumber || formValues.refNumber.trim() === ""
-                  ? 0.5
-                  : 1,
-              pointerEvents:
-                !formValues.refNumber || formValues.refNumber.trim() === ""
-                  ? "none"
-                  : "auto",
-            }}
-          />
-          <FloatButton
-            tooltip="PDF Preview"
-            icon={<FilePdfOutlined />}
-            onClick={() => {
-              window.scrollTo(0, document.body.scrollHeight);
-              setShowPDFPreview(true);
-            }}
-          />
-          <FloatButton
-            tooltip="PDF Download"
-            icon={<DownloadOutlined />}
-            onClick={clickPdfDownload}
-            style={{
-              opacity: selectedSupplierIds.length === 0 ? 0.5 : 1,
-              pointerEvents: selectedSupplierIds.length === 0 ? "none" : "auto",
-            }}
-          />
-          <FloatButton.BackTop visibilityHeight={0} />
-          <FloatButton
-            tooltip="Back"
-            icon={<RollbackOutlined />}
-            onClick={() =>
-              navigate({
-                pathname: "/supplierInquirylist",
-                search: searchParamsString,
-              })
-            }
-          />
-        </FloatButton.Group>
-      </BtnGroup>
+      <FloatButton.Group
+        shape="square"
+        placement="bottom"
+        trigger="click"
+        style={{ insetInlineEnd: 0, bottom: "50%" }}
+      >
+        <FloatButton
+          type="primary"
+          tooltip="Save"
+          icon={<SaveOutlined />}
+          onClick={() => handleSave(false, activeKey)}
+          style={{
+            opacity:
+              !formValues.refNumber || formValues.refNumber.trim() === ""
+                ? 0.5
+                : 1,
+            pointerEvents:
+              !formValues.refNumber || formValues.refNumber.trim() === ""
+                ? "none"
+                : "auto",
+          }}
+        />
+        <FloatButton
+          tooltip="PDF Preview"
+          icon={<FilePdfOutlined />}
+          onClick={() => {
+            window.scrollTo(0, document.body.scrollHeight);
+            setShowPDFPreview(true);
+          }}
+        />
+        <FloatButton
+          tooltip="PDF Download"
+          icon={<DownloadOutlined />}
+          onClick={clickPdfDownload}
+          style={{
+            opacity: selectedSupplierIds.length === 0 ? 0.5 : 1,
+            pointerEvents: selectedSupplierIds.length === 0 ? "none" : "auto",
+          }}
+        />
+        <FloatButton.BackTop visibilityHeight={0} />
+        <FloatButton
+          tooltip="Back"
+          icon={<RollbackOutlined />}
+          onClick={() =>
+            navigate({
+              pathname: "/supplierInquirylist",
+              search: searchParamsString,
+            })
+          }
+        />
+      </FloatButton.Group>
     </FormContainer>
   );
 };
