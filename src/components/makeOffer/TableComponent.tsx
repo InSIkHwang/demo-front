@@ -49,6 +49,12 @@ interface TableProps {
   $zoomLevel?: number;
 }
 
+declare global {
+  interface Window {
+    marginTimer: NodeJS.Timeout | undefined;
+  }
+}
+
 const CustomTable = styled(Table)<TableProps>`
   // 기본 스타일
   .ant-table * {
@@ -1414,13 +1420,37 @@ const TableComponent = ({
             parser={(value) =>
               value ? parseFloat(value.replace(/ %/, "")) : 0
             }
-            onBlur={(e) => {
-              const parsedValue = Number(e.target.value) || 0; // 숫자 타입이 아닐 경우 기본값으로 0 설정
+            onChange={(value) => {
+              // 입력값이 변경될 때마다 실행
+              if (value === null || value === undefined) {
+                applyMarginToAllRows(0);
+                return;
+              }
 
-              applyMarginToAllRows(parsedValue); // 모든 행에 마진 적용
+              // 숫자가 아닌 경우 처리하지 않음
+              if (isNaN(Number(value))) return;
+
+              // 타이머를 사용하여 입력이 끝난 후 처리
+              if (window.marginTimer) {
+                clearTimeout(window.marginTimer);
+              }
+
+              window.marginTimer = setTimeout(() => {
+                const finalValue = Number(value);
+                applyMarginToAllRows(finalValue);
+              }, 300); // 300ms 딜레이
+            }}
+            onBlur={(e) => {
+              // 포커스가 벗어날 때 최종 처리
+              const value = e.target.value;
+              const parsedValue = value
+                ? parseFloat(value.replace(/ %/, ""))
+                : 0;
+              const finalValue = isNaN(parsedValue) ? 0 : parsedValue;
+              applyMarginToAllRows(finalValue);
             }}
             style={{ width: "100%" }}
-            controls={false} // 스핀 버튼 제거
+            controls={false}
           />
         </div>
       ),

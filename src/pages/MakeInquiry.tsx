@@ -1133,85 +1133,84 @@ const MakeInquiry = () => {
           viewMode={true}
         />
       )}
-      <BtnGroup>
-        <FloatButton.Group>
-          <FloatButton
-            type="primary"
-            tooltip="Save"
-            icon={<SaveOutlined />}
-            onClick={handleSubmit}
-            style={{
-              opacity:
-                isDocNumDuplicate ||
-                !formValues.docNumber ||
-                !formValues.refNumber?.trim()
-                  ? 0.5
-                  : 1,
-              pointerEvents:
-                isDocNumDuplicate ||
-                !formValues.docNumber ||
-                !formValues.refNumber?.trim()
-                  ? "none"
-                  : "auto",
-            }}
-          />
-          <FloatButton
-            type="primary"
-            tooltip="Send Email"
-            icon={<MailOutlined />}
-            onClick={() => toggleModal("mail", true)}
-            style={{
-              opacity:
-                isDocNumDuplicate ||
-                !formValues.docNumber ||
-                formValues.refNumber?.trim() === ""
-                  ? 0.5
-                  : 1,
-              pointerEvents:
-                isDocNumDuplicate ||
-                !formValues.docNumber ||
-                formValues.refNumber?.trim() === ""
-                  ? "none"
-                  : "auto",
-            }}
-          />
-          <FloatButton
-            tooltip="PDF Preview"
-            icon={<FilePdfOutlined />}
-            onClick={() => {
-              window.scrollTo(0, document.body.scrollHeight);
-              setShowPDFPreview(true);
-            }}
-          />
-          <FloatButton
-            type="primary"
-            tooltip="Search the maker's inquiries to identify the supplier"
-            icon={<FileSearchOutlined />}
-            onClick={() => toggleModal("inquirySearch", true)}
-          />
-          <FloatButton.BackTop visibilityHeight={0} />
-          <FloatButton
-            tooltip="Back"
-            icon={<RollbackOutlined />}
-            onClick={() =>
-              navigate({
-                pathname: "/customerInquirylist",
-                search: searchParamsString,
-              })
-            }
-          />
-        </FloatButton.Group>
-        <InquirySearchModal
-          isVisible={isInquirySearchModalVisible}
-          onClose={() => toggleModal("inquirySearch", false)}
-          inquirySearchMakerName={inquirySearchMakerName}
-          setInquirySearchMakerName={setInquirySearchMakerName}
-          selectedSuppliers={selectedSuppliers}
-          inquirySearchMakerNameResult={inquirySearchMakerNameResult}
-          handleInquirySearch={handleInquirySearch}
-          setSelectedSuppliers={setSelectedSuppliers}
+
+      <FloatButton.Group trigger="hover">
+        <FloatButton
+          type="primary"
+          tooltip="Save"
+          icon={<SaveOutlined />}
+          onClick={handleSubmit}
+          style={{
+            opacity:
+              isDocNumDuplicate ||
+              !formValues.docNumber ||
+              !formValues.refNumber?.trim()
+                ? 0.5
+                : 1,
+            pointerEvents:
+              isDocNumDuplicate ||
+              !formValues.docNumber ||
+              !formValues.refNumber?.trim()
+                ? "none"
+                : "auto",
+          }}
         />
-      </BtnGroup>
+        <FloatButton
+          type="primary"
+          tooltip="Send Email"
+          icon={<MailOutlined />}
+          onClick={() => toggleModal("mail", true)}
+          style={{
+            opacity:
+              isDocNumDuplicate ||
+              !formValues.docNumber ||
+              formValues.refNumber?.trim() === ""
+                ? 0.5
+                : 1,
+            pointerEvents:
+              isDocNumDuplicate ||
+              !formValues.docNumber ||
+              formValues.refNumber?.trim() === ""
+                ? "none"
+                : "auto",
+          }}
+        />
+        <FloatButton
+          tooltip="PDF Preview"
+          icon={<FilePdfOutlined />}
+          onClick={() => {
+            window.scrollTo(0, document.body.scrollHeight);
+            setShowPDFPreview(true);
+          }}
+        />
+        <FloatButton
+          type="primary"
+          tooltip="Search the maker's inquiries to identify the supplier"
+          icon={<FileSearchOutlined />}
+          onClick={() => toggleModal("inquirySearch", true)}
+        />
+        <FloatButton.BackTop visibilityHeight={0} />
+        <FloatButton
+          tooltip="Back"
+          icon={<RollbackOutlined />}
+          onClick={() =>
+            navigate({
+              pathname: "/customerInquirylist",
+              search: searchParamsString,
+            })
+          }
+        />
+      </FloatButton.Group>
+      <InquirySearchModal
+        isVisible={isInquirySearchModalVisible}
+        onClose={() => toggleModal("inquirySearch", false)}
+        inquirySearchMakerName={inquirySearchMakerName}
+        setInquirySearchMakerName={setInquirySearchMakerName}
+        selectedSuppliers={selectedSuppliers}
+        inquirySearchMakerNameResult={inquirySearchMakerNameResult}
+        handleInquirySearch={handleInquirySearch}
+        setSelectedSuppliers={setSelectedSuppliers}
+      />
     </FormContainer>
   );
 };
