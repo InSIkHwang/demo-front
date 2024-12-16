@@ -191,6 +191,27 @@ const MakeOffer = () => {
   useEffect(() => {
     loadOfferDetail();
   }, []);
+  const handleKeyboardSave = useCallback(
+    async (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "s") {
+        event.preventDefault();
+
+        if (!formValues.refNumber || formValues.refNumber.trim() === "") {
+          message.error("Reference number is required");
+          return;
+        }
+
+        await handleSave(false, activeKey);
+      }
+    },
+    [formValues, activeKey, currentDetailItems, finalTotals]
+  );
+
+  // 컴포넌트가 마운트될 때 이벤트 리스너 등록
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyboardSave);
+    return () => document.removeEventListener("keydown", handleKeyboardSave);
+  }, [handleKeyboardSave]);
 
   // 소수점 둘째자리까지 반올림하는 함수
   const roundToTwoDecimalPlaces = useCallback((value: number) => {
@@ -1482,7 +1503,7 @@ const MakeOffer = () => {
       <FloatButton.Group
         shape="square"
         placement="bottom"
-        trigger="click"
+        trigger="hover"
         style={{ insetInlineEnd: 0, bottom: "50%" }}
       >
         <FloatButton
