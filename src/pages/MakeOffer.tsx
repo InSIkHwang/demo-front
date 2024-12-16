@@ -15,6 +15,7 @@ import {
   Button,
   Checkbox,
   Divider,
+  FloatButton,
   Input,
   message,
   Modal,
@@ -22,7 +23,13 @@ import {
   Tabs,
   Tooltip,
 } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import {
+  PlusOutlined,
+  SaveOutlined,
+  FilePdfOutlined,
+  DownloadOutlined,
+  RollbackOutlined,
+} from "@ant-design/icons";
 import styled from "styled-components";
 import dayjs from "dayjs";
 import FormComponent from "../components/makeOffer/FormComponent";
@@ -184,6 +191,27 @@ const MakeOffer = () => {
   useEffect(() => {
     loadOfferDetail();
   }, []);
+  const handleKeyboardSave = useCallback(
+    async (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "s") {
+        event.preventDefault();
+
+        if (!formValues.refNumber || formValues.refNumber.trim() === "") {
+          message.error("Reference number is required");
+          return;
+        }
+
+        await handleSave(false, activeKey);
+      }
+    },
+    [formValues, activeKey, currentDetailItems, finalTotals]
+  );
+
+  // 컴포넌트가 마운트될 때 이벤트 리스너 등록
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyboardSave);
+    return () => document.removeEventListener("keydown", handleKeyboardSave);
+  }, [handleKeyboardSave]);
 
   // 소수점 둘째자리까지 반올림하는 함수
   const roundToTwoDecimalPlaces = useCallback((value: number) => {
@@ -1472,6 +1500,57 @@ const MakeOffer = () => {
           invChargeList={invChargeList}
         />
       )}
+      <FloatButton.Group
+        shape="square"
+        placement="bottom"
+        trigger="hover"
+        style={{ insetInlineEnd: 0, bottom: "50%" }}
+      >
+        <FloatButton
+          type="primary"
+          tooltip="Save"
+          icon={<SaveOutlined />}
+          onClick={() => handleSave(false, activeKey)}
+          style={{
+            opacity:
+              !formValues.refNumber || formValues.refNumber.trim() === ""
+                ? 0.5
+                : 1,
+            pointerEvents:
+              !formValues.refNumber || formValues.refNumber.trim() === ""
+                ? "none"
+                : "auto",
+          }}
+        />
+        <FloatButton
+          tooltip="PDF Preview"
+          icon={<FilePdfOutlined />}
+          onClick={() => {
+            window.scrollTo(0, document.body.scrollHeight);
+            setShowPDFPreview(true);
+          }}
+        />
+        <FloatButton
+          tooltip="PDF Download"
+          icon={<DownloadOutlined />}
+          onClick={clickPdfDownload}
+          style={{
+            opacity: selectedSupplierIds.length === 0 ? 0.5 : 1,
+            pointerEvents: selectedSupplierIds.length === 0 ? "none" : "auto",
+          }}
+        />
+        <FloatButton.BackTop visibilityHeight={0} />
+        <FloatButton
+          tooltip="Back"
+          icon={<RollbackOutlined />}
+          onClick={() =>
+            navigate({
+              pathname: "/supplierInquirylist",
+              search: searchParamsString,
+            })
+          }
+        />
+      </FloatButton.Group>
     </FormContainer>
   );
 };

@@ -965,7 +965,7 @@ const ComplexInquiryTable = ({
           items[index].itemType === "DASH") &&
         !items[index].itemRemark ? (
           <Input
-            type="number"
+            type="string" // number에서 string으로 변경
             value={text}
             className="custom-input"
             addonAfter={"%"}
@@ -981,9 +981,23 @@ const ComplexInquiryTable = ({
               };
               setItems(newItems);
             }}
-            onChange={(e) =>
-              handleInputChange(index, "margin", Number(e.target.value))
-            }
+            onChange={(e) => {
+              const inputValue = e.target.value;
+              // 음수 입력을 허용하는 정규식 패턴
+              if (
+                inputValue === "" ||
+                inputValue === "-" ||
+                !isNaN(Number(inputValue))
+              ) {
+                handleInputChange(index, "margin", inputValue);
+              }
+            }}
+            onBlur={(e) => {
+              // 포커스를 잃을 때 유효한 숫자로 변환
+              const value = e.target.value;
+              const processedValue = value === "-" ? 0 : Number(value) || 0;
+              handleInputChange(index, "margin", processedValue);
+            }}
             ref={(el) => {
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];

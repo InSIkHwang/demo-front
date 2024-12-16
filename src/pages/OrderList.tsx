@@ -190,7 +190,7 @@ const OrderList = () => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
   const [registerStartDate, setRegisterStartDate] = useState<string>(
     searchParams.get("startDate") ||
-      dayjs().subtract(1, "month").format("YYYY-MM-DD")
+      dayjs().subtract(3, "month").format("YYYY-MM-DD")
   );
   const [registerEndDate, setRegisterEndDate] = useState<string>(
     searchParams.get("endDate") || dayjs().format("YYYY-MM-DD")
@@ -374,7 +374,7 @@ const OrderList = () => {
               <DatePicker
                 placeholder="Start Date"
                 format="YYYY-MM-DD"
-                defaultValue={dayjs().subtract(1, "month")}
+                defaultValue={dayjs().subtract(3, "month")}
                 onChange={(date) =>
                   setRegisterStartDate(date ? date.format("YYYY-MM-DD") : "")
                 }

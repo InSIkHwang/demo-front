@@ -288,6 +288,51 @@ const MakeComplexInquiry = () => {
       supplierRemark: string;
     }[]
   >([]);
+  console.log(vesselList);
+
+  const handleKeyboardSave = useCallback(
+    async (event: KeyboardEvent) => {
+      console.log(vesselList);
+
+      if ((event.ctrlKey || event.metaKey) && event.key === "s") {
+        event.preventDefault();
+
+        // 문서번호 중복 체크
+        if (formValues.docNumber) {
+          const isDuplicate = await chkDuplicateDocNum(
+            formValues.docNumber?.trim(),
+            Number(complexInquiryId)
+          );
+          setIsDocNumDuplicate(isDuplicate);
+
+          if (isDuplicate) {
+            message.error(
+              "Document number is duplicated. please enter another."
+            );
+            return;
+          }
+        }
+
+        await handleSubmit();
+      }
+    },
+    [
+      formValues,
+      complexInquiryId,
+      items,
+      finalTotals,
+      vesselList,
+      selectedCustomerId,
+    ]
+  );
+
+  useEffect(() => {
+    // 로딩이 완료된 후에만 이벤트 리스너 등록
+    if (!isLoading) {
+      document.addEventListener("keydown", handleKeyboardSave);
+      return () => document.removeEventListener("keydown", handleKeyboardSave);
+    }
+  }, [handleKeyboardSave, isLoading]);
 
   const modalActions = {
     header: [setHeaderEditModalVisible, () => {}],
