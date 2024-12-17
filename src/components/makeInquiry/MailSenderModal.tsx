@@ -441,13 +441,27 @@ const MailSenderModal = ({
             );
           }
 
+          const updateItemData = getItemsForSupplier(mailData.supplier.id).map(
+            (item: any) => ({
+              itemCode: item.itemCode || "",
+              itemName: item.itemName || "",
+              itemRemark: item.itemRemark || "",
+              qty: item.qty || 0,
+              unit: item.unit || "PCS",
+              position: item.position,
+              indexNo: item?.indexNo || "",
+              itemType: item.itemType,
+            })
+          );
+
           await sendInquiryMail(
             mode,
             values.docNumber,
             inquiryId,
             finalFileData,
             [mailData.mailData],
-            documentId
+            documentId,
+            updateItemData
           );
 
           results.push({
@@ -476,12 +490,12 @@ const MailSenderModal = ({
       const errorDetails = {
         message: err.message,
         stack: err.stack,
-        time: new Date().toISOString(),
+        time: new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" }),
         mailFormData,
         selectedSuppliers: Array.from(selectedSuppliers),
       };
       localStorage.setItem(
-        "emailProcessingError",
+        `emailProcessingError-${documentId}`,
         JSON.stringify(errorDetails)
       );
     } finally {
