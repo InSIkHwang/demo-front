@@ -93,6 +93,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     textAlign: "left",
     padding: "10px 0",
+    lineHeight: 1.2,
   },
   inquiryInfoWrap: {
     flexDirection: "row",
@@ -233,6 +234,11 @@ const styles = StyleSheet.create({
   footerCertification: {
     fontSize: 9,
     color: "#323232",
+  },
+  footerCertificationLabel: {
+    fontSize: 9,
+    color: "#323232",
+    fontFamily: "malgunGothicBold",
   },
 });
 
@@ -483,10 +489,19 @@ const Footer = () => (
   <View style={styles.footer} fixed>
     <View style={[styles.footerInfoWrap, { textAlign: "left" }]}>
       <Text style={styles.footerCompanyName}>BAS KOREA</Text>
-      <View style={{ flexDirection: "row", gap: 5 }}>
-        <Text style={styles.footerCertification}>SHIPSERV TN-238398</Text>
-        <Text style={styles.footerCertification}>ISO 9001:2015</Text>
-        <Text style={styles.footerCertification}>ISO 14001:2015</Text>
+      <View style={{ flexDirection: "row" }}>
+        <Text style={[styles.footerCertificationLabel, { marginRight: 5 }]}>
+          SHIPSERV
+        </Text>
+        <Text style={styles.footerCertification}>TN-238398</Text>
+        <Text style={[styles.footerCertificationLabel, { marginLeft: 8 }]}>
+          ISO 9001
+        </Text>
+        <Text style={styles.footerCertification}>:2015</Text>
+        <Text style={[styles.footerCertificationLabel, { marginLeft: 8 }]}>
+          ISO 14001
+        </Text>
+        <Text style={styles.footerCertification}>:2015</Text>
       </View>
     </View>
     <View style={[styles.footerInfoWrap, { textAlign: "right" }]}>
@@ -625,7 +640,8 @@ const PDFDocument = ({
                 </View>
                 {renderTableRows(sortedItems)}
               </View>
-              <View style={styles.section}>
+
+              {pdfHeader?.length > 0 && (
                 <View style={styles.inquiryInfoBox}>
                   <View style={styles.inquiryInfoText}>
                     <Text style={styles.inquiryInfoTitle}>** REMARK</Text>
@@ -636,7 +652,7 @@ const PDFDocument = ({
                     </Text>
                   </View>
                 </View>
-              </View>
+              )}
             </View>
             <Footer />
           </Page>
@@ -684,13 +700,14 @@ const PDFDocument = ({
               <View style={[styles.tableSmallCol]}>
                 <Text style={styles.tableHeaderCell}>Unit</Text>
               </View>
-              <View style={styles.tableMedCol}>
+              <View style={[styles.tableMedCol, { alignItems: "center" }]}>
                 <Text style={styles.tableHeaderCell}>Remark</Text>
               </View>
             </View>
             {renderTableRows(sortedItems)}
           </View>
-          <View style={styles.section}>
+
+          {pdfHeader?.length > 0 && (
             <View style={styles.inquiryInfoBox}>
               <View style={styles.inquiryInfoText}>
                 <Text style={styles.inquiryInfoTitle}>** REMARK</Text>
@@ -699,7 +716,7 @@ const PDFDocument = ({
                 <Text style={styles.headerMessage}>{pdfHeader?.split("")}</Text>
               </View>
             </View>
-          </View>
+          )}
         </View>
         <Footer />
       </Page>
