@@ -112,7 +112,7 @@ const INITIAL_HEADER_VALUES: HeaderFormData = {
   incoterms: "EX WORKS",
   offerValidity: "30 DAYS",
   partCondition: "",
-  packing: "Unpacked",
+  packing: "UNPACKED",
 };
 
 const INITIAL_ITEM_VALUES: ComplexInquiryItemDetail[] = [

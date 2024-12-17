@@ -99,7 +99,7 @@ const INCOTERMS_OPTIONS = [
   { code: "DPU", name: "DELIVERED PLACE UNLOADED" },
 ];
 
-const PACKING_OPTIONS = ["Unpacked"];
+const PACKING_OPTIONS = ["UNPACKED", "PACKED"];
 
 const OfferHeaderEditModal = ({
   open,
@@ -127,7 +127,7 @@ const OfferHeaderEditModal = ({
     incoterms: "EX WORKS",
     offerValidity: "30 DAYS",
     partCondition: "",
-    packing: "Unpacked",
+    packing: "UNPACKED",
   };
 
   const handleAddFooterLine = () => {
@@ -299,7 +299,7 @@ const OfferHeaderEditModal = ({
                 value: option,
                 label: option,
               }))}
-              placeholder="Unpacked"
+              placeholder="UNPACKED"
               filterOption={(inputValue, option) => {
                 const optionValue =
                   option?.value.toString().toLowerCase() || "";

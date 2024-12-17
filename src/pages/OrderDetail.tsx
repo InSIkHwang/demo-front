@@ -51,7 +51,7 @@ const INITIAL_HEADER_VALUES: OrderAckHeaderFormData = {
   termsOfPayment: "",
   incoterms: "EX WORKS",
   receiverType: "CUSTOMER",
-  packing: "Unpacked",
+  packing: "UNPACKED",
 };
 
 const OrderDetail = () => {

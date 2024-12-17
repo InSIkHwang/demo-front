@@ -515,6 +515,12 @@ const renderHeader = (
           <Text style={styles.headerValue}>: {pdfHeader.partCondition}</Text>
         </View>
       )}
+      {pdfHeader?.packing && (
+        <View style={styles.headerMessage}>
+          <Text style={styles.headerLabel}>PACKING</Text>
+          <Text style={styles.headerValue}>: {pdfHeader.packing}</Text>
+        </View>
+      )}
       <View style={styles.dottedLine} />
     </View>
   </>
