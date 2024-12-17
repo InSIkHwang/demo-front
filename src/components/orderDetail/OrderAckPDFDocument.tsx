@@ -487,7 +487,7 @@ const renderHeader = (
       )}
       {pdfHeader?.incoterms && (
         <View style={styles.headerMessage}>
-          <Text style={styles.headerLabel}>INCOTERMS</Text>
+          <Text style={styles.headerLabel}>DELIVERY TERMS</Text>
           <Text style={styles.headerValue}>: {pdfHeader.incoterms}</Text>
         </View>
       )}

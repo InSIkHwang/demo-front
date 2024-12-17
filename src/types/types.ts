@@ -412,6 +412,7 @@ export interface orderHeaderResponse {
     termsOfPayment: string;
     incoterms: string;
     receiverType: string;
+    packing: string;
   };
   orderSupplierHeader: {
     orderHeaderId: number | null;
@@ -639,6 +640,7 @@ export interface HeaderFormData {
   incoterms: string | "";
   offerValidity: string | "";
   partCondition: string | "";
+  packing: string | "";
 }
 
 export interface OrderAckHeaderFormData {
@@ -648,4 +650,5 @@ export interface OrderAckHeaderFormData {
   termsOfPayment: string | "";
   incoterms: string | "";
   receiverType: string | "";
+  packing: string | "";
 }
