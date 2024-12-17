@@ -21,6 +21,32 @@ const CustomTable = styled(Table)`
   .ant-table * {
     font-size: 12px;
   }
+
+  .ant-table-body {
+    scrollbar-width: auto;
+    scrollbar-color: auto;
+  }
+
+  // custom scrollbar
+  .ant-table-body::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .ant-table-body::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 8px;
+  }
+
+  .ant-table-body::-webkit-scrollbar-thumb {
+    background-color: #d9d9d9;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: #bfbfbf;
+    }
+  }
 `;
 
 interface ExcelUploadModalProps {
@@ -363,7 +389,6 @@ const ExcelUploadModal = ({
           <CustomTable
             bordered
             scroll={{ y: 400 }}
-            virtual
             dataSource={excelData.map((row, index) => ({
               key: index,
               ...row.reduce((acc: any, val: any, idx: number) => {

@@ -24,7 +24,7 @@ import {
   Space,
 } from "antd";
 import { ColumnsType } from "antd/es/table";
-import styled from "styled-components";
+import styled, { createGlobalStyle } from "styled-components";
 import {
   FormValuesType,
   InvCharge,
@@ -61,25 +61,6 @@ const CustomTable = styled(Table)<TableProps>`
     font-size: ${(props) => `${11 * (props.$zoomLevel || 1)}px`};
   }
 
-  // 기존 트랜지션 스타일 제거 (중복 방지)
-  .ant-table-row,
-  .ant-table-row *,
-  .ant-table-cell *,
-  .ant-table-cell-row-hover {
-    transition: none;
-  }
-
-  // 모든 테이블 셀 관련 요소에 동일한 트랜지션 적용
-  .ant-table-cell,
-  .ant-table-cell *,
-  .ant-table-cell-fix-left,
-  .ant-table-cell-fix-left-last,
-  .ant-table-cell-row-hover,
-  .ant-table-row,
-  .ant-table-row * {
-    transition: all 0.2s ease !important;
-  }
-
   // 셀 스타일
   .ant-table-cell {
     padding: ${(props) =>
@@ -105,19 +86,6 @@ const CustomTable = styled(Table)<TableProps>`
   .ant-input-group-addon,
   .ant-input-number-group-addon {
     padding: 0 2px !important;
-  }
-
-  // 고정 셀 스타일
-  .ant-table-cell-fix-left {
-    background: inherit !important;
-    z-index: 2 !important;
-    &-last {
-      box-shadow: 14px 0 10px -10px rgba(0, 0, 0, 0.05) !important;
-    }
-  }
-
-  tr .ant-table-cell-fix-left {
-    background: #fafafa !important;
   }
 
   // 행 타입별 스타일 믹스인
@@ -156,6 +124,14 @@ const CustomTable = styled(Table)<TableProps>`
     will-change: border-color;
   }
 
+  .ant-table-row .ant-table-cell-fix-left {
+    background: inherit !important;
+    z-index: 2;
+    &-last {
+      box-shadow: 14px 0 10px -10px rgba(0, 0, 0, 0.05) !important;
+    }
+  }
+
   // 포커스된 행 스타일 - transition 제거하고 즉시 변경
   .ant-table-row:focus-within {
     border-color: #1890ff;
@@ -170,6 +146,32 @@ const CustomTable = styled(Table)<TableProps>`
   .ant-select-focused .ant-select-selector,
   .ant-input-number-focused {
     position: relative;
+  }
+
+  .ant-table-body {
+    scrollbar-width: auto;
+    scrollbar-color: auto;
+  }
+
+  // custom scrollbar
+  .ant-table-body::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .ant-table-body::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 8px;
+  }
+
+  .ant-table-body::-webkit-scrollbar-thumb {
+    background-color: #d9d9d9;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: #bfbfbf;
+    }
   }
 `;
 
@@ -1619,7 +1621,6 @@ const TableComponent = ({
           dataSource={itemDetails}
           pagination={false}
           scroll={{ y: 600 }}
-          virtual
         />
       </div>
       <Button

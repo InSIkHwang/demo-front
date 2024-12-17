@@ -129,6 +129,40 @@ const CustomTable = styled(Table<ComplexInquiryItemDetail>)<TableProps>`
       background-color: #dff4ff !important;
     }
   }
+
+  .ant-table-row .ant-table-cell-fix-left {
+    background: inherit !important;
+    z-index: 2;
+    &-last {
+      box-shadow: 14px 0 10px -10px rgba(0, 0, 0, 0.05) !important;
+    }
+  }
+
+  .ant-table-body {
+    scrollbar-width: auto;
+    scrollbar-color: auto;
+  }
+
+  // custom scrollbar
+  .ant-table-body::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .ant-table-body::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 8px;
+  }
+
+  .ant-table-body::-webkit-scrollbar-thumb {
+    background-color: #d9d9d9;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: #bfbfbf;
+    }
+  }
 `;
 
 interface ComplexInquiryTableProps {
@@ -1334,7 +1368,6 @@ const ComplexInquiryTable = ({
             }
           }}
           scroll={{ y: 600 }}
-          virtual
         />
       </div>
       <Button

@@ -92,6 +92,31 @@ const CustomTable = styled(Table)<TableProps>`
       }
     }
   `}
+  .ant-table-body {
+    scrollbar-width: auto;
+    scrollbar-color: auto;
+  }
+
+  // custom scrollbar
+  .ant-table-body::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .ant-table-body::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 8px;
+  }
+
+  .ant-table-body::-webkit-scrollbar-thumb {
+    background-color: #d9d9d9;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: #bfbfbf;
+    }
+  }
 `;
 
 interface DuplicateState {
@@ -494,7 +519,6 @@ function TableSection({
           pagination={false}
           rowKey="position"
           scroll={{ y: 500 }}
-          virtual
           size="small"
           onRow={() => ({
             onClick: () => setCurrentTableNo(tableIndex + 1),
