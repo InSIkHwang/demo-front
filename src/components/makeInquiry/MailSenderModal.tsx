@@ -381,13 +381,13 @@ const MailSenderModal = ({
             return {
               supplier: currentSupplier,
               mailData: {
-                toRecipient: currentSupplier.email,
+                toRecipient: formMailData.toRecipient,
                 subject: formMailData.subject,
                 content: formMailData.content,
                 ccRecipient: formMailData.ccRecipient,
                 bccRecipient: formMailData.bccRecipient,
                 supplierName: currentSupplier.name,
-                supplierId: currentSupplier.id,
+                supplierId: formMailData.supplierId,
               },
             };
           })
@@ -434,7 +434,6 @@ const MailSenderModal = ({
           //최종 메일데이터 공급처 일치 확인
           if (
             mailData.mailData.supplierId !== mailData.supplier.id ||
-            mailData.mailData.toRecipient !== mailData.supplier.email ||
             mailData.mailData.supplierName !== mailData.supplier.name
           ) {
             throw new Error(
@@ -524,16 +523,21 @@ const MailSenderModal = ({
             initialValue={
               mailFormData[supplier.id]?.toRecipient || supplier.email
             }
-            rules={[{ required: true, message: "Please enter the recipient" }]}
+            rules={[
+              { required: true, message: "Please enter the recipient" },
+              {
+                type: "email",
+                message: "Please enter a valid email address",
+              },
+            ]}
             label="Recipient"
           >
             <Input
               prefix={<MailOutlined />}
-              onChange={(e) =>
+              onBlur={(e) =>
                 handleInputChange(supplier.id, "toRecipient", e.target.value)
               }
               placeholder="Recipient"
-              disabled={true}
             />
           </StyledFormItem>
           <StyledFormItem
