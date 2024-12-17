@@ -55,11 +55,22 @@ interface HeaderEditModalProps {
   }[];
 }
 
+const PORT_OF_SHIPMENT_OPTIONS = [
+  "BUSAN, KOREA",
+  "GREECE",
+  "CHINA",
+  "JAPAN",
+  "EUROPE",
+  "SINGAPORE",
+];
+
 const PART_CONDITION_OPTIONS = [
   "GENUINE",
   "OEM",
   "KOREAN PRODUCT",
   "KOREAN PRODUCT(RELIABLE)",
+  "CHINA PRODUCT",
+  "CHINA PRODUCT(RELIABLE)",
   "EQUIVALENT",
 ];
 
@@ -88,6 +99,8 @@ const INCOTERMS_OPTIONS = [
   { code: "DPU", name: "DELIVERED PLACE UNLOADED" },
 ];
 
+const PACKING_OPTIONS = ["UNPACKED", "PACKED"];
+
 const OfferHeaderEditModal = ({
   open,
   onClose,
@@ -114,6 +127,7 @@ const OfferHeaderEditModal = ({
     incoterms: "EX WORKS",
     offerValidity: "30 DAYS",
     partCondition: "",
+    packing: "UNPACKED",
   };
 
   const handleAddFooterLine = () => {
@@ -170,6 +184,7 @@ const OfferHeaderEditModal = ({
           incoterms: "",
           offerValidity: "",
           partCondition: "",
+          packing: "",
         };
     onSave(headerData, footerText);
     onClose();
@@ -214,7 +229,20 @@ const OfferHeaderEditModal = ({
         <FormRow>
           <div style={{ display: "flex", gap: "5px", flex: 2 }}>
             <StyledFormItem name="portOfShipment" label="PORT OF SHIPMENT">
-              <Input.TextArea placeholder="BUSAN, KOREA" />
+              <AutoComplete
+                value={form.getFieldValue("portOfShipment")}
+                onChange={(value) =>
+                  form.setFieldsValue({ portOfShipment: value })
+                }
+                style={{ width: "100%" }}
+                options={PORT_OF_SHIPMENT_OPTIONS.map((option) => ({
+                  value: option,
+                  label: option,
+                }))}
+                placeholder="BUSAN, KOREA"
+              >
+                <Input.TextArea />
+              </AutoComplete>
             </StyledFormItem>
           </div>
           <StyledFormItem name="deliveryTime" label="DELIVERY TIME">
@@ -260,6 +288,48 @@ const OfferHeaderEditModal = ({
           </StyledFormItem>
         </FormRow>
         <FormRow>
+          <StyledFormItem name="packing" label="PACKING">
+            <AutoComplete
+              value={form.getFieldValue("packing")}
+              onChange={(value) =>
+                form.setFieldsValue({ termsOfPayment: value })
+              }
+              style={{ width: "100%" }}
+              options={PACKING_OPTIONS.map((option) => ({
+                value: option,
+                label: option,
+              }))}
+              placeholder="UNPACKED"
+              filterOption={(inputValue, option) => {
+                const optionValue =
+                  option?.value.toString().toLowerCase() || "";
+                const input = inputValue.toLowerCase();
+                return optionValue.startsWith(input);
+              }}
+            >
+              <Input.TextArea />
+            </AutoComplete>
+          </StyledFormItem>
+          <StyledFormItem name="incoterms" label="DELIVERY TERMS">
+            <Select
+              value={form.getFieldValue("incoterms")}
+              onChange={(value) => form.setFieldsValue({ incoterms: value })}
+              style={{ width: "100%" }}
+              options={INCOTERMS_OPTIONS.map((option) => ({
+                value: option.name,
+                label: `[${option.code}] ${option.name}`,
+              }))}
+              placeholder="Select Incoterms"
+              showSearch
+              filterOption={(input, option) => {
+                const optionValue = option?.label?.toLowerCase() || "";
+                return optionValue.includes(input.toLowerCase());
+              }}
+            />
+          </StyledFormItem>
+        </FormRow>
+        <FormRow>
+          {" "}
           <StyledFormItem name="termsOfPayment" label="TERMS OF PAYMENT">
             <AutoComplete
               value={form.getFieldValue("termsOfPayment")}
@@ -281,23 +351,6 @@ const OfferHeaderEditModal = ({
             >
               <Input.TextArea />
             </AutoComplete>
-          </StyledFormItem>
-          <StyledFormItem name="incoterms" label="INCOTERMS">
-            <Select
-              value={form.getFieldValue("incoterms")}
-              onChange={(value) => form.setFieldsValue({ incoterms: value })}
-              style={{ width: "100%" }}
-              options={INCOTERMS_OPTIONS.map((option) => ({
-                value: option.name,
-                label: `[${option.code}] ${option.name}`,
-              }))}
-              placeholder="Select Incoterms"
-              showSearch
-              filterOption={(input, option) => {
-                const optionValue = option?.label?.toLowerCase() || "";
-                return optionValue.includes(input.toLowerCase());
-              }}
-            />
           </StyledFormItem>
         </FormRow>
       </Form>

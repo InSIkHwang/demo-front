@@ -112,6 +112,7 @@ const INITIAL_HEADER_VALUES: HeaderFormData = {
   incoterms: "EX WORKS",
   offerValidity: "30 DAYS",
   partCondition: "",
+  packing: "UNPACKED",
 };
 
 const INITIAL_ITEM_VALUES: ComplexInquiryItemDetail[] = [
@@ -288,12 +289,9 @@ const MakeComplexInquiry = () => {
       supplierRemark: string;
     }[]
   >([]);
-  console.log(vesselList);
 
   const handleKeyboardSave = useCallback(
     async (event: KeyboardEvent) => {
-      console.log(vesselList);
-
       if ((event.ctrlKey || event.metaKey) && event.key === "s") {
         event.preventDefault();
 
@@ -1419,6 +1417,7 @@ const MakeComplexInquiry = () => {
             pdfHeader={inquiryPdfHeader}
             handleLanguageChange={handleLanguageChange}
             isMailSenderVisible={isMailSenderVisible}
+            documentId={formValues.documentId || 0}
           />
         )}
         {documentInfo && documentType === "quotation" ? (

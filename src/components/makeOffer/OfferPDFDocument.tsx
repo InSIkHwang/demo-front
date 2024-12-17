@@ -487,7 +487,7 @@ const renderHeader = (
       )}
       {pdfHeader?.incoterms && (
         <View style={styles.headerMessage}>
-          <Text style={styles.headerLabel}>INCOTERMS</Text>
+          <Text style={styles.headerLabel}>DELIVERY TERMS</Text>
           <Text style={styles.headerValue}>: {pdfHeader.incoterms}</Text>
         </View>
       )}
@@ -513,6 +513,12 @@ const renderHeader = (
         <View style={styles.headerMessage}>
           <Text style={styles.headerLabel}>PART CONDITION</Text>
           <Text style={styles.headerValue}>: {pdfHeader.partCondition}</Text>
+        </View>
+      )}
+      {pdfHeader?.packing && (
+        <View style={styles.headerMessage}>
+          <Text style={styles.headerLabel}>PACKING</Text>
+          <Text style={styles.headerValue}>: {pdfHeader.packing}</Text>
         </View>
       )}
       <View style={styles.dottedLine} />

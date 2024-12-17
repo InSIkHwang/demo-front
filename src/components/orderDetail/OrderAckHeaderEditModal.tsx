@@ -152,6 +152,7 @@ const OrderAckHeaderEditModal = ({
           termsOfPayment: "",
           incoterms: "",
           receiverType: "CUSTOMER",
+          packing: "",
         };
     setPdfOrderAckHeader(headerData);
     setPdfOrderAckFooter(footerText);
@@ -235,7 +236,7 @@ const OrderAckHeaderEditModal = ({
               <Input.TextArea />
             </AutoComplete>
           </StyledFormItem>
-          <StyledFormItem name="incoterms" label="INCOTERMS">
+          <StyledFormItem name="incoterms" label="DELIVERY TERMS">
             <Select
               value={form.getFieldValue("incoterms")}
               onChange={(value) => form.setFieldsValue({ incoterms: value })}

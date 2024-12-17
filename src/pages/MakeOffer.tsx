@@ -84,6 +84,7 @@ const INITIAL_HEADER_VALUES: HeaderFormData = {
   incoterms: "EX WORKS",
   offerValidity: "30 DAYS",
   partCondition: "",
+  packing: "UNPACKED",
 };
 
 const MakeOffer = () => {

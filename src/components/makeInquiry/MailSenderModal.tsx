@@ -134,6 +134,7 @@ interface MailSenderModalProps {
   pdfHeader: string;
   handleLanguageChange: (value: string, id: number) => void;
   isMailSenderVisible: boolean;
+  documentId: number;
 }
 
 interface SelectedSupplier {
@@ -152,6 +153,7 @@ const MailSenderModal = ({
   pdfHeader,
   handleLanguageChange,
   isMailSenderVisible,
+  documentId,
 }: MailSenderModalProps) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -379,13 +381,13 @@ const MailSenderModal = ({
             return {
               supplier: currentSupplier,
               mailData: {
-                toRecipient: currentSupplier.email,
+                toRecipient: formMailData.toRecipient,
                 subject: formMailData.subject,
                 content: formMailData.content,
                 ccRecipient: formMailData.ccRecipient,
                 bccRecipient: formMailData.bccRecipient,
                 supplierName: currentSupplier.name,
-                supplierId: currentSupplier.id,
+                supplierId: formMailData.supplierId,
               },
             };
           })
@@ -432,7 +434,6 @@ const MailSenderModal = ({
           //최종 메일데이터 공급처 일치 확인
           if (
             mailData.mailData.supplierId !== mailData.supplier.id ||
-            mailData.mailData.toRecipient !== mailData.supplier.email ||
             mailData.mailData.supplierName !== mailData.supplier.name
           ) {
             throw new Error(
@@ -440,12 +441,27 @@ const MailSenderModal = ({
             );
           }
 
+          const updateItemData = getItemsForSupplier(mailData.supplier.id).map(
+            (item: any) => ({
+              itemCode: item.itemCode || "",
+              itemName: item.itemName || "",
+              itemRemark: item.itemRemark || "",
+              qty: item.qty || 0,
+              unit: item.unit || "PCS",
+              position: item.position,
+              indexNo: item?.indexNo || "",
+              itemType: item.itemType,
+            })
+          );
+
           await sendInquiryMail(
             mode,
             values.docNumber,
             inquiryId,
             finalFileData,
-            [mailData.mailData]
+            [mailData.mailData],
+            documentId,
+            updateItemData
           );
 
           results.push({
@@ -474,12 +490,12 @@ const MailSenderModal = ({
       const errorDetails = {
         message: err.message,
         stack: err.stack,
-        time: new Date().toISOString(),
+        time: new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" }),
         mailFormData,
         selectedSuppliers: Array.from(selectedSuppliers),
       };
       localStorage.setItem(
-        "emailProcessingError",
+        `emailProcessingError-${documentId}`,
         JSON.stringify(errorDetails)
       );
     } finally {
@@ -521,16 +537,21 @@ const MailSenderModal = ({
             initialValue={
               mailFormData[supplier.id]?.toRecipient || supplier.email
             }
-            rules={[{ required: true, message: "Please enter the recipient" }]}
+            rules={[
+              { required: true, message: "Please enter the recipient" },
+              {
+                type: "email",
+                message: "Please enter a valid email address",
+              },
+            ]}
             label="Recipient"
           >
             <Input
               prefix={<MailOutlined />}
-              onChange={(e) =>
+              onBlur={(e) =>
                 handleInputChange(supplier.id, "toRecipient", e.target.value)
               }
               placeholder="Recipient"
-              disabled={true}
             />
           </StyledFormItem>
           <StyledFormItem
