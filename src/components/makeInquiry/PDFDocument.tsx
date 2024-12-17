@@ -638,10 +638,19 @@ const Footer = () => (
   <View style={styles.footer} fixed>
     <View style={[styles.footerInfoWrap, { textAlign: "left" }]}>
       <Text style={styles.footerCompanyName}>BAS KOREA</Text>
-      <View style={{ flexDirection: "row", gap: 5 }}>
-        <Text style={styles.footerCertification}>SHIPSERV TN-238398</Text>
-        <Text style={styles.footerCertification}>ISO 9001:2015</Text>
-        <Text style={styles.footerCertification}>ISO 14001:2015</Text>
+      <View style={{ flexDirection: "row" }}>
+        <Text style={[styles.footerCertificationLabel, { marginRight: 5 }]}>
+          SHIPSERV
+        </Text>
+        <Text style={styles.footerCertification}>TN-238398</Text>
+        <Text style={[styles.footerCertificationLabel, { marginLeft: 8 }]}>
+          ISO 9001
+        </Text>
+        <Text style={styles.footerCertification}>:2015</Text>
+        <Text style={[styles.footerCertificationLabel, { marginLeft: 8 }]}>
+          ISO 14001
+        </Text>
+        <Text style={styles.footerCertification}>:2015</Text>
       </View>
     </View>
     <View style={[styles.footerInfoWrap, { textAlign: "right" }]}>
