@@ -1026,6 +1026,7 @@ const MakeInquiry = () => {
           pdfHeader={pdfHeader}
           handleLanguageChange={handleLanguageChange}
           isMailSenderVisible={isMailSenderVisible}
+          documentId={formValues.documentId || 0}
         />
       </Modal>
       <div

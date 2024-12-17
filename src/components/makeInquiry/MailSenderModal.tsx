@@ -134,6 +134,7 @@ interface MailSenderModalProps {
   pdfHeader: string;
   handleLanguageChange: (value: string, id: number) => void;
   isMailSenderVisible: boolean;
+  documentId: number;
 }
 
 interface SelectedSupplier {
@@ -152,6 +153,7 @@ const MailSenderModal = ({
   pdfHeader,
   handleLanguageChange,
   isMailSenderVisible,
+  documentId,
 }: MailSenderModalProps) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -445,7 +447,8 @@ const MailSenderModal = ({
             values.docNumber,
             inquiryId,
             finalFileData,
-            [mailData.mailData]
+            [mailData.mailData],
+            documentId
           );
 
           results.push({

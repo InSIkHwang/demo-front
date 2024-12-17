@@ -288,12 +288,9 @@ const MakeComplexInquiry = () => {
       supplierRemark: string;
     }[]
   >([]);
-  console.log(vesselList);
 
   const handleKeyboardSave = useCallback(
     async (event: KeyboardEvent) => {
-      console.log(vesselList);
-
       if ((event.ctrlKey || event.metaKey) && event.key === "s") {
         event.preventDefault();
 
@@ -1419,6 +1416,7 @@ const MakeComplexInquiry = () => {
             pdfHeader={inquiryPdfHeader}
             handleLanguageChange={handleLanguageChange}
             isMailSenderVisible={isMailSenderVisible}
+            documentId={formValues.documentId || 0}
           />
         )}
         {documentInfo && documentType === "quotation" ? (

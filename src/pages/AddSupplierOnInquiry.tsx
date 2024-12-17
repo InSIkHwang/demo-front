@@ -366,6 +366,7 @@ const AddSupplierOnInquiry = () => {
             pdfHeader={pdfHeader}
             handleLanguageChange={handleLanguageChange}
             isMailSenderVisible={isMailSenderVisible}
+            documentId={data.documentInfo.documentId}
           />
         )}
       </Modal>

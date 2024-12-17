@@ -322,7 +322,8 @@ export const sendInquiryMail = async (
     ccRecipient: string;
     bccRecipient: string;
     supplierName: string;
-  }[]
+  }[],
+  documentId: number
 ) => {
   // FormData 객체 생성
   const formData = new FormData();
@@ -367,7 +368,7 @@ export const sendInquiryMail = async (
     return response.data;
   } else if (mode === "addSupplier") {
     const response = await axios.post(
-      `/api/supplier-inquiries/add/suppliers/send-email?docNumber=${docNumber}`,
+      `/api/supplier-inquiries/add/suppliers/send-email?documentId=${documentId}`,
       formData,
       {
         headers: {
