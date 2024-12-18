@@ -927,6 +927,12 @@ const MakeOffer = () => {
     }
   }, [combinedItemDetails, activeKey, showPDFPreview]);
 
+  useEffect(() => {
+    if (combinedItemDetails.length > 0) {
+      applyDcAndCharge("multiple");
+    }
+  }, [formValues.currency]);
+
   /**********************************************************************/
 
   // 아이템 데이터 비교 함수
