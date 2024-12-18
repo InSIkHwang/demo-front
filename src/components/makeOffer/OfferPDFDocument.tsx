@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "flex-end",
+    justifyContent: "space-between",
   },
   headerInfo: {
     width: 180,
@@ -577,7 +577,24 @@ const renderHeader = (
         <DiagonalLine language={language} />
       </View>
       <View style={styles.titleContainer}>
-        <Text style={styles.logoTitle}>BAS KOREA</Text>
+        <Text></Text>
+        <View>
+          <Image
+            src={logoUrl}
+            style={{
+              position: "absolute",
+              width: 300,
+              height: 330,
+              opacity: 0.1,
+              right: -65,
+              top: -125,
+              objectFit: "contain",
+              alignSelf: "center",
+              zIndex: -1,
+            }}
+          />
+          <Text style={styles.logoTitle}>BAS KOREA</Text>
+        </View>
       </View>
     </View>
     <View style={styles.inquiryInfoWrap}>
@@ -707,6 +724,14 @@ const Footer = () => (
   <View style={styles.footer} fixed>
     <View style={[styles.footerInfoWrap, { textAlign: "left" }]}>
       <View style={{ flexDirection: "row" }}>
+        <Image
+          src={logoUrl}
+          style={{
+            width: 30,
+            height: 39,
+            objectFit: "contain",
+          }}
+        />
         <Text style={styles.footerCompanyName}>BAS KOREA</Text>
       </View>
       <View style={{ flexDirection: "row" }}>
@@ -825,20 +850,6 @@ const OfferPDFDocument = ({
   const pdfBody = (
     <Document>
       <Page size="A4" style={styles.page}>
-        {/* <Image
-          src={logoUrl}
-          style={{
-            position: "absolute",
-            width: 300,
-            height: 330,
-            opacity: 0.08,
-            objectFit: "contain",
-            zIndex: -1,
-            left: 148, // (A4 width - image width) / 2
-            top: 258, // (A4 height - image height) / 2
-          }}
-          fixed
-        /> */}
         <View style={styles.contentWrapper}>
           {renderHeader(
             logoUrl,
