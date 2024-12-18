@@ -591,77 +591,7 @@ const PDFDocument = ({
   const sortedItems = [...items].sort((a, b) => a.position! - b.position!);
   const headerMessage = pdfHeader;
 
-  if (viewMode) {
-    return (
-      <PDFViewer width="100%" height="800" style={{ margin: "20px 0" }}>
-        <Document>
-          <Page size="A4" style={styles.page}>
-            <View style={styles.contentWrapper}>
-              {renderHeader(
-                logoUrl,
-                supplier,
-                formValues.vesselName,
-                vesselInfo,
-                formValues.docNumber,
-                dayjs().format("YYYY-MM-DD"),
-                headerMessage
-              )}
-              <View style={styles.table}>
-                <View
-                  style={[
-                    styles.tableRow,
-                    {
-                      borderBottom: "2px solid #142952",
-                      color: "#142952",
-                    },
-                  ]}
-                  fixed
-                >
-                  <View style={[styles.tableSmallCol, { flex: 0.5 }]}>
-                    <Text style={styles.tableHeaderCell}>No.</Text>
-                  </View>
-                  <View style={styles.tableMedCol}>
-                    <Text style={styles.tableHeaderCell}>Part No.</Text>
-                  </View>
-                  <View style={styles.tableBigCol}>
-                    <Text style={styles.tableHeaderCell}>Description</Text>
-                  </View>
-                  <View
-                    style={[styles.tableSmallCol, { alignItems: "flex-end" }]}
-                  >
-                    <Text style={styles.tableHeaderCell}>Qty</Text>
-                  </View>
-                  <View style={[styles.tableSmallCol]}>
-                    <Text style={styles.tableHeaderCell}>Unit</Text>
-                  </View>
-                  <View style={[styles.tableMedCol, { alignItems: "center" }]}>
-                    <Text style={styles.tableHeaderCell}>Remark</Text>
-                  </View>
-                </View>
-                {renderTableRows(sortedItems)}
-              </View>
-
-              {pdfHeader?.length > 0 && (
-                <View style={styles.inquiryInfoBox}>
-                  <View style={styles.inquiryInfoText}>
-                    <Text style={styles.inquiryInfoTitle}>** REMARK</Text>
-                  </View>
-                  <View style={styles.inquiryInfoText}>
-                    <Text style={styles.headerMessage}>
-                      {pdfHeader?.split("")}
-                    </Text>
-                  </View>
-                </View>
-              )}
-            </View>
-            <Footer />
-          </Page>
-        </Document>
-      </PDFViewer>
-    );
-  }
-
-  return (
+  const pdfBody = (
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.contentWrapper}>
@@ -722,6 +652,16 @@ const PDFDocument = ({
       </Page>
     </Document>
   );
+
+  if (viewMode) {
+    return (
+      <PDFViewer width="100%" height="800" style={{ margin: "20px 0" }}>
+        {pdfBody}
+      </PDFViewer>
+    );
+  }
+
+  return pdfBody;
 };
 
 export default PDFDocument;
