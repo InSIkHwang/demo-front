@@ -505,7 +505,7 @@ const renderTableRows = (items: ItemDetailType[], language: string) => {
               <Text style={styles.tableCell}>{item.qty}</Text>
             </View>
             <View style={styles.tableDashSmallCol}>
-              <Text style={styles.tableCell}>{item.unit}</Text>
+              <Text style={styles.tableCell}>{item.unit || " "}</Text>
             </View>
             <View style={[styles.tableDashPriceCol]}>
               <Text style={styles.tableCell}>
@@ -890,7 +890,7 @@ const OfferPDFDocument = ({
                     {pdfHeader?.incoterms && (
                       <View style={styles.inquiryInfoText}>
                         <Text style={{ lineHeight: 1.2, padding: "2px 0" }}>
-                          INCOTERMS : {pdfHeader.incoterms}
+                          DELIVERY TERMS : {pdfHeader.incoterms}
                         </Text>
                       </View>
                     )}
@@ -919,6 +919,13 @@ const OfferPDFDocument = ({
                       <View style={styles.inquiryInfoText}>
                         <Text style={{ lineHeight: 1.2, padding: "2px 0" }}>
                           PART CONDITION : {pdfHeader.partCondition}
+                        </Text>
+                      </View>
+                    )}
+                    {pdfHeader?.packing && (
+                      <View style={styles.inquiryInfoText}>
+                        <Text style={{ lineHeight: 1.2, padding: "2px 0" }}>
+                          PACKING : {pdfHeader.packing}
                         </Text>
                       </View>
                     )}
