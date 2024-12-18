@@ -49,32 +49,6 @@ const CustomTable = styled(Table)`
       background-color: #f0f0f0 !important;
     }
   }
-
-  .ant-table-body {
-    scrollbar-width: auto;
-    scrollbar-color: auto;
-  }
-
-  // custom scrollbar
-  .ant-table-body::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-
-  .ant-table-body::-webkit-scrollbar-track {
-    background: transparent;
-    border-radius: 8px;
-  }
-
-  .ant-table-body::-webkit-scrollbar-thumb {
-    background-color: #d9d9d9;
-    border-radius: 8px;
-    transition: background-color 0.2s ease;
-
-    &:hover {
-      background-color: #bfbfbf;
-    }
-  }
 `;
 
 interface TableComponentProps {
@@ -376,6 +350,7 @@ const TableComponent = ({ items, setItems }: TableComponentProps) => {
         if (record.itemType === "TYPE") return "type-row";
         return "";
       }}
+      virtual
       scroll={{ y: 600 }}
       dataSource={items}
       columns={columns}

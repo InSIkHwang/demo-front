@@ -61,6 +61,10 @@ const CustomTable = styled(Table)<TableProps>`
     font-size: ${(props) => `${11 * (props.$zoomLevel || 1)}px`};
   }
 
+  .ant-table-row {
+    transition: background 0.2s !important;
+  }
+
   // 셀 스타일
   .ant-table-cell {
     padding: ${(props) =>
@@ -146,32 +150,6 @@ const CustomTable = styled(Table)<TableProps>`
   .ant-select-focused .ant-select-selector,
   .ant-input-number-focused {
     position: relative;
-  }
-
-  .ant-table-body {
-    scrollbar-width: auto;
-    scrollbar-color: auto;
-  }
-
-  // custom scrollbar
-  .ant-table-body::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-
-  .ant-table-body::-webkit-scrollbar-track {
-    background: transparent;
-    border-radius: 8px;
-  }
-
-  .ant-table-body::-webkit-scrollbar-thumb {
-    background-color: #d9d9d9;
-    border-radius: 8px;
-    transition: background-color 0.2s ease;
-
-    &:hover {
-      background-color: #bfbfbf;
-    }
   }
 `;
 
@@ -1621,6 +1599,7 @@ const TableComponent = ({
           dataSource={itemDetails}
           pagination={false}
           scroll={{ y: 600 }}
+          virtual
         />
       </div>
       <Button
