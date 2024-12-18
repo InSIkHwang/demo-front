@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "flex-end",
   },
   headerInfo: {
     width: 180,
@@ -577,7 +577,6 @@ const renderHeader = (
         <DiagonalLine language={language} />
       </View>
       <View style={styles.titleContainer}>
-        <Text>{""}</Text>
         <Text style={styles.logoTitle}>BAS KOREA</Text>
       </View>
     </View>
@@ -707,7 +706,9 @@ const renderHeader = (
 const Footer = () => (
   <View style={styles.footer} fixed>
     <View style={[styles.footerInfoWrap, { textAlign: "left" }]}>
-      <Text style={styles.footerCompanyName}>BAS KOREA</Text>
+      <View style={{ flexDirection: "row" }}>
+        <Text style={styles.footerCompanyName}>BAS KOREA</Text>
+      </View>
       <View style={{ flexDirection: "row" }}>
         <Text style={[styles.footerCertificationLabel, { marginRight: 5 }]}>
           SHIPSERV
@@ -824,6 +825,20 @@ const OfferPDFDocument = ({
   const pdfBody = (
     <Document>
       <Page size="A4" style={styles.page}>
+        {/* <Image
+          src={logoUrl}
+          style={{
+            position: "absolute",
+            width: 300,
+            height: 330,
+            opacity: 0.08,
+            objectFit: "contain",
+            zIndex: -1,
+            left: 148, // (A4 width - image width) / 2
+            top: 258, // (A4 height - image height) / 2
+          }}
+          fixed
+        /> */}
         <View style={styles.contentWrapper}>
           {renderHeader(
             logoUrl,
@@ -976,7 +991,8 @@ const OfferPDFDocument = ({
                     ]}
                   >
                     <Text style={styles.inquiryPriceLabel}>
-                      SUB TOTAL({language === "KOR" ? "₩" : info.currencyType})
+                      SUB TOTAL({language === "KOR" ? "KRW" : info.currencyType}
+                      )
                     </Text>
                     <Text style={styles.inquiryPriceValue}>
                       {language === "KOR"
