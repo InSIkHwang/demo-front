@@ -774,8 +774,8 @@ const ComplexInquiryTable = ({
           items[index].itemType === "DASH") &&
           !items[index].itemRemark ? (
           <Input
-            type="number"
-            value={text}
+            type="text" // number에서 text로 변경
+            value={text ? Number(text).toLocaleString("ko-KR") : ""} // 천단위 구분기호 적용
             addonBefore="₩"
             className="custom-input"
             onFocus={(e) => {
@@ -789,13 +789,11 @@ const ComplexInquiryTable = ({
               };
               setItems(newItems);
             }}
-            onChange={(e) =>
-              handleInputChange(
-                index,
-                "purchasePriceKRW",
-                Number(e.target.value)
-              )
-            }
+            onChange={(e) => {
+              // 숫자가 아닌 문자 제거 후 숫자만 추출
+              const value = e.target.value.replace(/[^\d]/g, "");
+              handleInputChange(index, "purchasePriceKRW", Number(value));
+            }}
             ref={(el) => {
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
@@ -818,8 +816,8 @@ const ComplexInquiryTable = ({
           items[index].itemType === "DASH") &&
           !items[index].itemRemark ? (
           <Input
-            type="number"
-            value={text}
+            type="text"
+            value={text ? Number(text).toLocaleString("en-US") : ""}
             addonBefore="F"
             className="custom-input"
             onFocus={(e) => {
@@ -833,13 +831,11 @@ const ComplexInquiryTable = ({
               };
               setItems(newItems);
             }}
-            onChange={(e) =>
-              handleInputChange(
-                index,
-                "purchasePriceGlobal",
-                Number(e.target.value)
-              )
-            }
+            onChange={(e) => {
+              // 숫자가 아닌 문자 제거 후 숫자만 추출
+              const value = e.target.value.replace(/[^\d]/g, "");
+              handleInputChange(index, "purchasePriceGlobal", Number(value));
+            }}
             ref={(el) => {
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
@@ -860,7 +856,12 @@ const ComplexInquiryTable = ({
         (items[index].itemType === "ITEM" ||
           items[index].itemType === "DASH") &&
         !items[index].itemRemark ? (
-          <Input type="number" value={text} readOnly addonBefore="₩" />
+          <Input
+            type="text"
+            value={text ? Number(text).toLocaleString("ko-KR") : ""}
+            readOnly
+            addonBefore="₩"
+          />
         ) : null,
     },
     {
@@ -872,7 +873,12 @@ const ComplexInquiryTable = ({
         (items[index].itemType === "ITEM" ||
           items[index].itemType === "DASH") &&
         !items[index].itemRemark ? (
-          <Input type="number" value={text} readOnly addonBefore="F" />
+          <Input
+            type="text"
+            value={text ? Number(text).toLocaleString("en-US") : ""}
+            readOnly
+            addonBefore="F"
+          />
         ) : null,
     },
     {
@@ -885,8 +891,8 @@ const ComplexInquiryTable = ({
           items[index].itemType === "DASH") &&
         !items[index].itemRemark ? (
           <Input
-            type="number"
-            value={text}
+            type="text"
+            value={text ? Number(text).toLocaleString("ko-KR") : ""}
             onFocus={(e) => {
               e.target.select();
               const newItems = [...items];
@@ -924,8 +930,8 @@ const ComplexInquiryTable = ({
           items[index].itemType === "DASH") &&
         !items[index].itemRemark ? (
           <Input
-            type="number"
-            value={text}
+            type="text"
+            value={text ? Number(text).toLocaleString("en-US") : ""}
             addonBefore="F"
             className="custom-input"
             onFocus={(e) => {
@@ -966,7 +972,12 @@ const ComplexInquiryTable = ({
         (items[index].itemType === "ITEM" ||
           items[index].itemType === "DASH") &&
         !items[index].itemRemark ? (
-          <Input type="number" value={text} readOnly addonBefore="₩" />
+          <Input
+            type="text"
+            value={text ? Number(text).toLocaleString("ko-KR") : ""}
+            readOnly
+            addonBefore="₩"
+          />
         ) : null,
     },
     {
@@ -978,7 +989,12 @@ const ComplexInquiryTable = ({
         (items[index].itemType === "ITEM" ||
           items[index].itemType === "DASH") &&
         !items[index].itemRemark ? (
-          <Input type="number" value={text} readOnly addonBefore="F" />
+          <Input
+            type="text"
+            value={text ? Number(text).toLocaleString("en-US") : ""}
+            readOnly
+            addonBefore="F"
+          />
         ) : null,
     },
     {
