@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "flex-end",
   },
   headerInfo: {
     width: 180,
@@ -762,6 +762,20 @@ const OfferPDFDocument = ({
   const pdfBody = (
     <Document>
       <Page size="A4" style={styles.page}>
+        {/* <Image
+          src={logoUrl}
+          style={{
+            position: "absolute",
+            width: 300,
+            height: 330,
+            opacity: 0.08,
+            objectFit: "contain",
+            zIndex: -1,
+            left: 148, // (A4 width - image width) / 2
+            top: 258, // (A4 height - image height) / 2
+          }}
+          fixed
+        /> */}
         <View style={styles.contentWrapper}>
           {renderHeader(
             logoUrl,
