@@ -9,6 +9,7 @@ import {
   PDFViewer,
   Svg,
   Path,
+  Image,
 } from "@react-pdf/renderer";
 import dayjs from "dayjs";
 import malgunGothic from "../../assets/font/malgun.ttf";
@@ -344,8 +345,24 @@ const renderHeader = (
         <DiagonalLine />
       </View>
       <View style={styles.titleContainer}>
-        <Text>{""}</Text>
-        <Text style={styles.logoTitle}>BAS KOREA</Text>
+        <Text></Text>
+        <View>
+          <Image
+            src={logoUrl}
+            style={{
+              position: "absolute",
+              width: 300,
+              height: 330,
+              opacity: 0.1,
+              right: -65,
+              top: -125,
+              objectFit: "contain",
+              alignSelf: "center",
+              zIndex: -1,
+            }}
+          />
+          <Text style={styles.logoTitle}>BAS KOREA</Text>
+        </View>
       </View>
     </View>
     <View style={styles.inquiryInfoWrap}>
@@ -488,7 +505,17 @@ const renderHeader = (
 const Footer = () => (
   <View style={styles.footer} fixed>
     <View style={[styles.footerInfoWrap, { textAlign: "left" }]}>
-      <Text style={styles.footerCompanyName}>BAS KOREA</Text>
+      <View style={{ flexDirection: "row" }}>
+        <Image
+          src={logoUrl}
+          style={{
+            width: 30,
+            height: 39,
+            objectFit: "contain",
+          }}
+        />
+        <Text style={styles.footerCompanyName}>BAS KOREA</Text>
+      </View>
       <View style={{ flexDirection: "row" }}>
         <Text style={[styles.footerCertificationLabel, { marginRight: 5 }]}>
           SHIPSERV
