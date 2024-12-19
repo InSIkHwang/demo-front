@@ -136,6 +136,7 @@ const INITIAL_ITEM_VALUES: ComplexInquiryItemDetail[] = [
     purchaseAmountGlobal: 0,
     suppliers: [],
     confirmSupplier: null,
+    deliveryDate: 0,
   },
   {
     itemCode: "",
@@ -157,6 +158,7 @@ const INITIAL_ITEM_VALUES: ComplexInquiryItemDetail[] = [
     purchaseAmountGlobal: 0,
     suppliers: [],
     confirmSupplier: null,
+    deliveryDate: 0,
   },
   {
     itemCode: "",
@@ -178,6 +180,7 @@ const INITIAL_ITEM_VALUES: ComplexInquiryItemDetail[] = [
     purchaseAmountGlobal: 0,
     suppliers: [],
     confirmSupplier: null,
+    deliveryDate: 0,
   },
 ];
 
@@ -759,6 +762,7 @@ const MakeComplexInquiry = () => {
           purchasePriceGlobal: item.purchasePriceGlobal || 0,
           purchaseAmountKRW: item.purchaseAmountKRW || 0,
           purchaseAmountGlobal: item.purchaseAmountGlobal || 0,
+          deliveryDate: item.deliveryDate || 0,
           supplierIdList:
             item.suppliers?.map((supplier) => supplier.supplierId) || [],
           confirmSupplier: item.confirmSupplier || null,
@@ -896,6 +900,7 @@ const MakeComplexInquiry = () => {
         purchaseAmountKRW: item.purchaseAmountKRW || 0,
         purchaseAmountGlobal: item.purchaseAmountGlobal || 0,
         margin: item.margin || 0,
+        deliveryDate: item.deliveryDate || 0,
       });
 
       if (documentType === "inquiry") {

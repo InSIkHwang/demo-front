@@ -50,6 +50,7 @@ interface TableProps {
 declare global {
   interface Window {
     marginTimer: NodeJS.Timeout | undefined;
+    deliveryTimer: NodeJS.Timeout | undefined;
   }
 }
 
@@ -374,6 +375,9 @@ const TableComponent = ({
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [marginOptions, setMarginOptions] = useState<{ value: string }[]>([]);
+  const [deliveryDateOptions, setDeliveryDateOptions] = useState<
+    { value: string }[]
+  >([]);
 
   const ZOOM_STEP = 0.1;
   const MIN_ZOOM = 0.5;
@@ -529,6 +533,7 @@ const TableComponent = ({
       purchasePriceGlobal: 0,
       purchaseAmountKRW: 0,
       purchaseAmountGlobal: 0,
+      deliveryDate: 0,
     };
 
     const newItems = [
@@ -614,6 +619,29 @@ const TableComponent = ({
     });
 
     setItemDetails(updatedData); // 상태 업데이트
+  };
+
+  const handleDeliveryBlur = (value: string) => {
+    const parsedValue = value ? parseInt(value.replace(/[^0-9]/g, "")) : 0;
+    const finalValue = isNaN(parsedValue) ? 0 : parsedValue;
+
+    setDeliveryDateOptions((prevOptions) => {
+      const newValue = `${finalValue}`;
+      return prevOptions.some((option) => option.value === newValue)
+        ? prevOptions
+        : [...prevOptions, { value: newValue }];
+    });
+
+    applyDeliveryToAllRows(finalValue);
+  };
+
+  const applyDeliveryToAllRows = (deliveryValue: number) => {
+    const updatedData = itemDetails.map((row) => ({
+      ...row,
+      deliveryDate: deliveryValue,
+    }));
+
+    setItemDetails(updatedData);
   };
 
   // 마진에 따라 매출가격을 계산하는 함수 예시
@@ -718,6 +746,7 @@ const TableComponent = ({
       purchasePriceGlobal: 0,
       purchaseAmountKRW: 0,
       purchaseAmountGlobal: 0,
+      deliveryDate: 0,
     };
 
     const newItems = [
@@ -1467,6 +1496,67 @@ const TableComponent = ({
               // 값이 0으로 시작하고 길이가 1보다 큰 경우 앞의 0 제거
               const processedValue = String(value).replace(/^0+(?=\d)/, "");
               handleMarginChange(index, Number(processedValue) || 0);
+            }}
+          />
+        ) : null;
+      },
+    },
+    {
+      title: (
+        <div>
+          <AutoComplete
+            options={deliveryDateOptions}
+            placeholder="Delivery"
+            onChange={(value) => {
+              if (window.deliveryTimer) {
+                clearTimeout(window.deliveryTimer);
+              }
+
+              window.deliveryTimer = setTimeout(() => {
+                const parsedValue = value
+                  ? parseInt(value.replace(/[^0-9]/g, ""))
+                  : 0;
+                const finalValue = isNaN(parsedValue) ? 0 : parsedValue;
+                applyDeliveryToAllRows(finalValue);
+              }, 300);
+            }}
+            onBlur={(e: React.FocusEvent<HTMLInputElement>) =>
+              handleDeliveryBlur(e.target.value)
+            }
+            style={{ width: "100%" }}
+          >
+            <Input />
+          </AutoComplete>
+        </div>
+      ),
+      dataIndex: "deliveryDate",
+      key: "deliveryDate",
+      width: 60 * zoomLevel,
+      render: (text: number, record: any, index: number) => {
+        const value =
+          (record.itemType !== "ITEM" && record.itemType !== "DASH") ||
+          record.itemRemark
+            ? 0
+            : text;
+
+        return (record.itemType === "ITEM" || record.itemType === "DASH") &&
+          !record.itemRemark ? (
+          <MemoizedDisplayInput
+            value={value}
+            ref={(el) => {
+              if (!inputRefs.current[index]) {
+                inputRefs.current[index] = [];
+              }
+              inputRefs.current[index][14] = el;
+            }}
+            style={{ width: "100%" }}
+            className="custom-input"
+            onKeyDown={(e) => handleNextRowKeyDown(e, index, 14)}
+            onChange={(value) => {
+              const inputValue = value.replace(/[^0-9]/g, "");
+              if (inputValue === "" || !isNaN(Number(inputValue))) {
+                handleInputChange(index, "deliveryDate", inputValue);
+              }
             }}
           />
         ) : null;

@@ -592,6 +592,7 @@ const MakeOffer = () => {
       purchasePriceGlobal: item.purchasePriceGlobal,
       purchaseAmountKRW: item.purchaseAmountKRW,
       purchaseAmountGlobal: item.purchaseAmountGlobal,
+      deliveryDate: item.deliveryDate || 0,
     }));
 
     try {
@@ -952,7 +953,8 @@ const MakeOffer = () => {
         currentItem.unit === savedItem.unit &&
         currentItem.salesPriceKRW === savedItem.salesPriceKRW &&
         currentItem.purchasePriceKRW === savedItem.purchasePriceKRW &&
-        currentItem.margin === savedItem.margin
+        currentItem.margin === savedItem.margin &&
+        currentItem.deliveryDate === savedItem.deliveryDate
       );
     });
   };
