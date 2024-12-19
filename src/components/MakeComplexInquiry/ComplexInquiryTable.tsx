@@ -1057,39 +1057,36 @@ const ComplexInquiryTable = ({
       dataIndex: "deliveryDate",
       key: "deliveryDate",
       width: 60 * zoomLevel,
-      render: (text: string, _: any, index: number) =>
-        (items[index].itemType === "ITEM" ||
-          items[index].itemType === "DASH") &&
-        !items[index].itemRemark ? (
-          <Input
-            type="string"
-            value={text}
-            className="custom-input"
-            onFocus={(e) => {
-              e.target.select();
-              const newItems = [...items];
-              newItems[index] = {
-                ...newItems[index],
-                deliveryDate: 0,
-              };
-              setItems(newItems);
-            }}
-            onChange={(e) => {
-              const inputValue = e.target.value;
-              // 숫자만 입력 가능하도록
-              if (inputValue === "" || !isNaN(Number(inputValue))) {
-                handleInputChange(index, "deliveryDate", inputValue);
-              }
-            }}
-            ref={(el) => {
-              if (!inputRefs.current[index]) {
-                inputRefs.current[index] = [];
-              }
-              inputRefs.current[index][13] = el;
-            }}
-            onKeyDown={(e) => handleKeyDown(e, index, 13)}
-          />
-        ) : null,
+      render: (text: string, _: any, index: number) => (
+        <Input
+          type="string"
+          value={text}
+          className="custom-input"
+          onFocus={(e) => {
+            e.target.select();
+            const newItems = [...items];
+            newItems[index] = {
+              ...newItems[index],
+              deliveryDate: 0,
+            };
+            setItems(newItems);
+          }}
+          onChange={(e) => {
+            const inputValue = e.target.value;
+            // 숫자만 입력 가능하도록
+            if (inputValue === "" || !isNaN(Number(inputValue))) {
+              handleInputChange(index, "deliveryDate", inputValue);
+            }
+          }}
+          ref={(el) => {
+            if (!inputRefs.current[index]) {
+              inputRefs.current[index] = [];
+            }
+            inputRefs.current[index][13] = el;
+          }}
+          onKeyDown={(e) => handleKeyDown(e, index, 13)}
+        />
+      ),
     },
     {
       title: () => (
