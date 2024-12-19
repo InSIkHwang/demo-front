@@ -272,6 +272,12 @@ const styles = StyleSheet.create({
     padding: "5px 0 5px 0",
     alignItems: "center",
   },
+  tableDeliveryCol: {
+    ...baseTableCol,
+    flex: 0.4,
+    padding: "5px 0 5px 0",
+    alignItems: "center",
+  },
   tableDashBigCol: {
     ...baseDashTableCol,
     flex: 3,
@@ -288,6 +294,12 @@ const styles = StyleSheet.create({
   tableDashSmallCol: {
     ...baseDashTableCol,
     flex: 0.2,
+    padding: "5px 0 5px 0",
+    alignItems: "center",
+  },
+  tableDashDeliveryCol: {
+    ...baseDashTableCol,
+    flex: 0.4,
     padding: "5px 0 5px 0",
     alignItems: "center",
   },
@@ -428,13 +440,13 @@ const renderTableRows = (items: ItemDetailType[], language: string) => {
     return (
       <View style={[styles.tableRow]} key={item.position} wrap={false}>
         {isItemType ? (
-          <View style={[styles.tableSmallCol, { flex: 0.25 }]}>
+          <View style={[styles.tableSmallCol, { flex: 0.28 }]}>
             <Text style={styles.tableCell}>
               {getDisplayNo(item.itemType, itemIndex - 1, item.indexNo + "")}
             </Text>
           </View>
         ) : isDashType ? (
-          <View style={[styles.tableDashSmallCol, { flex: 0.25 }]}>
+          <View style={[styles.tableDashSmallCol, { flex: 0.28 }]}>
             <Text style={styles.tableCell}>
               {getDisplayNo(item.itemType, itemIndex - 1, item.indexNo + "")}
             </Text>
@@ -476,8 +488,10 @@ const renderTableRows = (items: ItemDetailType[], language: string) => {
                     })}
               </Text>
             </View>
-            <View style={[styles.tableSmallCol]}>
-              <Text style={styles.tableCell}>{item.deliveryDate}</Text>
+            <View style={[styles.tableDeliveryCol]}>
+              <Text style={styles.tableCell}>
+                {item.deliveryDate === 0 ? " " : item.deliveryDate + " days"}
+              </Text>
             </View>
           </>
         ) : isDashType ? (
@@ -522,8 +536,10 @@ const renderTableRows = (items: ItemDetailType[], language: string) => {
                     })}
               </Text>
             </View>
-            <View style={[styles.tableDashSmallCol]}>
-              <Text style={styles.tableCell}>{item.deliveryDate}</Text>
+            <View style={[styles.tableDashDeliveryCol]}>
+              <Text style={styles.tableCell}>
+                {item.deliveryDate === 0 ? " " : item.deliveryDate + " days"}
+              </Text>
             </View>
           </>
         ) : (
@@ -786,7 +802,7 @@ const OfferPDFDocument = ({
               ]}
               fixed
             >
-              <View style={[styles.tableSmallCol, { flex: 0.25 }]}>
+              <View style={[styles.tableSmallCol, { flex: 0.28 }]}>
                 <Text style={styles.tableHeaderCell}>No.</Text>
               </View>
               <View style={styles.tableMedCol}>
@@ -807,7 +823,7 @@ const OfferPDFDocument = ({
               <View style={[styles.tablePriceCol]}>
                 <Text style={styles.tableHeaderCell}>Amount</Text>
               </View>
-              <View style={[styles.tableSmallCol]}>
+              <View style={[styles.tableDeliveryCol]}>
                 <Text style={styles.tableHeaderCell}>Del.</Text>
               </View>
             </View>
