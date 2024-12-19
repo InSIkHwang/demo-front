@@ -38,6 +38,7 @@ interface Company {
   communicationLanguage: string;
   modifiedAt: string;
   headerMessage: string;
+  margin?: number;
   supplierRemark?: string;
   makerCategoryList?: { category: string; makers: string[] }[];
 }
@@ -142,24 +143,6 @@ const StyledTag = styled(Tag)`
   &:hover {
     background: #e2e8f0;
     transform: translateY(-1px);
-  }
-`;
-
-const StyledButton = styled(Button)`
-  border-radius: 10px;
-  height: 38px;
-  padding: 0 20px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  }
-
-  &.ant-btn-primary {
-    background: linear-gradient(135deg, #2c5282 0%, #1a365d 100%);
-    border: none;
   }
 `;
 
@@ -351,6 +334,11 @@ const DetailCompanyModal = ({
   };
 
   const handleChange = (changedValues: any) => {
+    if ("margin" in changedValues) {
+      changedValues.margin = changedValues.margin
+        ? Number(changedValues.margin)
+        : null;
+    }
     setFormData({
       ...formData,
       ...changedValues,
@@ -527,6 +515,20 @@ const DetailCompanyModal = ({
         <StyledFormItem label="Header Message" name="headerMessage">
           <Input.TextArea readOnly={!isEditing} />
         </StyledFormItem>
+        {category === "customer" && (
+          <StyledFormItem
+            label="Margin:"
+            name="margin"
+            rules={[
+              {
+                pattern: /^\d*\.?\d*$/,
+                message: "Only numbers can be entered",
+              },
+            ]}
+          >
+            <Input readOnly={!isEditing} type="number" min={0} />
+          </StyledFormItem>
+        )}
         {category === "supplier" && (
           <StyledFormItem label="remark:" name="supplierRemark">
             <Input.TextArea readOnly={!isEditing} />

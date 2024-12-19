@@ -127,6 +127,7 @@ interface Payload {
   communicationLanguage: string;
   makerCategoryList?: { category: string; makers: string[] }[]; // supplier일 때만 전송
   supplierRemark?: string; // supplier일 때만 전송
+  margin?: number;
 }
 
 interface ModalProps {
@@ -147,6 +148,7 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
     language: "",
     headerMessage: "",
     supplierRemark: "",
+    margin: 0,
   });
 
   const [isCodeUnique, setIsCodeUnique] = useState(true);
@@ -180,10 +182,18 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    if (e.target.name === "margin") {
+      const value = e.target.value.replace(/[^0-9]/g, "");
+      setFormData({
+        ...formData,
+        [e.target.name]: Number(value),
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [e.target.name]: e.target.value,
+      });
+    }
   };
 
   const handleMakerSearch = async (
@@ -321,6 +331,7 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
     address: string;
     language: string;
     supplierRemark: string;
+    margin: number;
   }) => {
     try {
       setLoading(true);
@@ -342,6 +353,9 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
       if (category === "supplier") {
         payload.makerCategoryList = makerCategoryList;
         payload.korCompanyName = values.korName;
+      }
+      if (category === "customer") {
+        payload.margin = Number(values.margin);
       }
 
       await axios.post(endpoint, payload);
@@ -481,6 +495,16 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
             placeholder="We wish your company continued success."
           />
         </StyledFormItem>
+        {category === "customer" && (
+          <StyledFormItem label="Margin:" name="margin">
+            <Input
+              name="margin"
+              value={formData.margin}
+              onChange={handleChange}
+              placeholder="Enter margin ex) 10"
+            />
+          </StyledFormItem>
+        )}
         {category === "supplier" && (
           <StyledFormItem label="remark:" name="supplierRemark">
             <Input.TextArea

@@ -139,6 +139,7 @@ const ChangeSupplierModal = ({
         purchasePriceGlobal: item.purchasePriceGlobal,
         purchaseAmountKRW: item.purchaseAmountKRW,
         purchaseAmountGlobal: item.purchaseAmountGlobal,
+        deliveryDate: item.deliveryDate,
       }));
 
       setItems(formattedItems);

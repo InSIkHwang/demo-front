@@ -510,6 +510,7 @@ TableComponentProps) => {
       purchasePriceGlobal: 0,
       purchaseAmountKRW: 0,
       purchaseAmountGlobal: 0,
+      deliveryDate: 0,
     };
 
     const newItems = [
@@ -595,6 +596,15 @@ TableComponentProps) => {
     });
 
     setItemDetails(updatedData); // 상태 업데이트
+  };
+
+  const applyDeliveryToAllRows = (deliveryValue: number) => {
+    const updatedData = itemDetails.map((row) => ({
+      ...row,
+      deliveryDate: deliveryValue,
+    }));
+
+    setItemDetails(updatedData);
   };
 
   // 마진에 따라 매출가격을 계산하는 함수 예시
@@ -1343,6 +1353,56 @@ TableComponentProps) => {
               // 값이 0으로 시작하고 길이가 1보다 큰 경우 앞의 0 제거
               const processedValue = String(value).replace(/^0+(?=\d)/, "");
               handleMarginChange(index, Number(processedValue) || 0);
+            }}
+          />
+        ) : null;
+      },
+    },
+    {
+      title: (
+        <div>
+          <InputNumber
+            placeholder="Delivery"
+            parser={(value) =>
+              value ? parseInt(value.replace(/[^0-9]/g, "")) : 0
+            }
+            onBlur={(e) => {
+              const parsedValue = Number(e.target.value) || 0;
+              applyDeliveryToAllRows(parsedValue);
+            }}
+            style={{ width: "100%" }}
+            controls={false}
+          />
+        </div>
+      ),
+      dataIndex: "deliveryDate",
+      key: "deliveryDate",
+      width: 60 * zoomLevel,
+      render: (text: number, record: any, index: number) => {
+        const value =
+          (record.itemType !== "ITEM" && record.itemType !== "DASH") ||
+          record.itemRemark
+            ? 0
+            : text;
+
+        return (record.itemType === "ITEM" || record.itemType === "DASH") &&
+          !record.itemRemark ? (
+          <MemoizedDisplayInput
+            value={value}
+            ref={(el) => {
+              if (!inputRefs.current[index]) {
+                inputRefs.current[index] = [];
+              }
+              inputRefs.current[index][14] = el;
+            }}
+            style={{ width: "100%" }}
+            className="custom-input"
+            onKeyDown={(e) => handleNextRowKeyDown(e, index, 14)}
+            onChange={(value) => {
+              const inputValue = value.replace(/[^0-9]/g, "");
+              if (inputValue === "" || !isNaN(Number(inputValue))) {
+                handleInputChange(index, "deliveryDate", inputValue);
+              }
             }}
           />
         ) : null;

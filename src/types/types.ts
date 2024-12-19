@@ -385,6 +385,7 @@ export interface OrderItemDetail {
   purchasePriceGlobal: number;
   purchaseAmountKRW: number;
   purchaseAmountGlobal: number;
+  deliveryDate: number;
 }
 
 export interface OrderSupplier {
@@ -558,6 +559,7 @@ export interface ItemDetailType {
   purchasePriceGlobal: number;
   purchaseAmountKRW: number;
   purchaseAmountGlobal: number;
+  deliveryDate: number;
 }
 
 export interface OfferSearchParams {
@@ -616,6 +618,7 @@ export interface ComplexInquiryItemDetail {
   purchasePriceGlobal: number;
   purchaseAmountKRW: number;
   purchaseAmountGlobal: number;
+  deliveryDate: number;
   suppliers: ComplexInquirySupplier[];
   confirmSupplier: ComplexInquiryConfirmSupplier | null;
 }
