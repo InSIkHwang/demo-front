@@ -1533,16 +1533,9 @@ const TableComponent = ({
       key: "deliveryDate",
       width: 60 * zoomLevel,
       render: (text: number, record: any, index: number) => {
-        const value =
-          (record.itemType !== "ITEM" && record.itemType !== "DASH") ||
-          record.itemRemark
-            ? 0
-            : text;
-
-        return (record.itemType === "ITEM" || record.itemType === "DASH") &&
-          !record.itemRemark ? (
+        return (
           <MemoizedDisplayInput
-            value={value}
+            value={text}
             ref={(el) => {
               if (!inputRefs.current[index]) {
                 inputRefs.current[index] = [];
@@ -1559,7 +1552,7 @@ const TableComponent = ({
               }
             }}
           />
-        ) : null;
+        );
       },
     },
   ];
