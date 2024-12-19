@@ -13,7 +13,6 @@ import {
   Table,
   Input,
   Select,
-  InputNumber,
   Button,
   AutoComplete,
   notification,
@@ -24,7 +23,7 @@ import {
   Space,
 } from "antd";
 import { ColumnsType } from "antd/es/table";
-import styled, { createGlobalStyle } from "styled-components";
+import styled from "styled-components";
 import {
   FormValuesType,
   InvCharge,
@@ -43,7 +42,6 @@ import { fetchItemData, handleOfferExport } from "../../api/api";
 import ExcelUploadModal from "../ExcelUploadModal";
 import { TextAreaRef } from "antd/es/input/TextArea";
 import { debounce } from "lodash";
-import TotalCardsComponent from "./TotalCardsComponent";
 
 interface TableProps {
   $zoomLevel?: number;
@@ -375,6 +373,7 @@ const TableComponent = ({
   const [unitOptions, setUnitOptions] = useState<string[]>(["PCS", "SET"]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
+  const [marginOptions, setMarginOptions] = useState<{ value: string }[]>([]);
 
   const ZOOM_STEP = 0.1;
   const MIN_ZOOM = 0.5;
@@ -387,6 +386,15 @@ const TableComponent = ({
   const handleZoomOut = () => {
     setZoomLevel((prev) => Math.max(prev - ZOOM_STEP, MIN_ZOOM));
   };
+
+  useEffect(() => {
+    if (itemDetails && itemDetails.length > 0) {
+      const firstItemMargin = itemDetails[0].margin;
+      if (firstItemMargin !== undefined && firstItemMargin !== null) {
+        setMarginOptions([{ value: String(firstItemMargin) }]);
+      }
+    }
+  }, []);
 
   // 공통 데이터 처리 함수
   const updateDataSource = (
@@ -1395,43 +1403,29 @@ const TableComponent = ({
     {
       title: (
         <div>
-          <InputNumber
+          <AutoComplete
+            options={marginOptions}
             placeholder="Margin"
-            parser={(value) =>
-              value ? parseFloat(value.replace(/ %/, "")) : 0
-            }
             onChange={(value) => {
-              // 입력값이 변경될 때마다 실행
-              if (value === null || value === undefined) {
-                applyMarginToAllRows(0);
-                return;
-              }
-
-              // 숫자가 아닌 경우 처리하지 않음
-              if (isNaN(Number(value))) return;
-
-              // 타이머를 사용하여 입력이 끝난 후 처리
               if (window.marginTimer) {
                 clearTimeout(window.marginTimer);
               }
 
               window.marginTimer = setTimeout(() => {
-                const finalValue = Number(value);
+                const parsedValue = value
+                  ? parseFloat(value.replace(/ %/, ""))
+                  : 0;
+                const finalValue = isNaN(parsedValue) ? 0 : parsedValue;
                 applyMarginToAllRows(finalValue);
-              }, 300); // 300ms 딜레이
+              }, 300);
             }}
-            onBlur={(e) => {
-              // 포커스가 벗어날 때 최종 처리
-              const value = e.target.value;
-              const parsedValue = value
-                ? parseFloat(value.replace(/ %/, ""))
-                : 0;
-              const finalValue = isNaN(parsedValue) ? 0 : parsedValue;
-              applyMarginToAllRows(finalValue);
-            }}
+            onBlur={(e: React.FocusEvent<HTMLInputElement>) =>
+              handleMarginBlur(e.target.value)
+            }
             style={{ width: "100%" }}
-            controls={false}
-          />
+          >
+            <Input />
+          </AutoComplete>
         </div>
       ),
       dataIndex: "margin",
@@ -1511,6 +1505,22 @@ const TableComponent = ({
         documentNumber: newValue,
       };
     });
+  };
+
+  // margin 값이 입력되면 options에 추가하는 함수
+  const handleMarginBlur = (value: string) => {
+    const parsedValue = value ? parseFloat(value.replace(/ %/, "")) : 0;
+    const finalValue = isNaN(parsedValue) ? 0 : parsedValue;
+
+    // options에 새로운 값 추가 (중복 제거)
+    setMarginOptions((prevOptions) => {
+      const newValue = `${finalValue}`;
+      return prevOptions.some((option) => option.value === newValue)
+        ? prevOptions
+        : [...prevOptions, { value: newValue }];
+    });
+
+    applyMarginToAllRows(finalValue);
   };
 
   return (
