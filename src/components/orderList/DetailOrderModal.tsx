@@ -346,7 +346,7 @@ const DetailOrderModal = ({
               <Descriptions.Item label="Registration Date">
                 {orderDetail.documentInfo.registerDate}
               </Descriptions.Item>
-              <Descriptions.Item label="Costomer Name">
+              <Descriptions.Item label="Customer Name">
                 {orderDetail.documentInfo.companyName}
               </Descriptions.Item>
               <Descriptions.Item label="REF NO.">

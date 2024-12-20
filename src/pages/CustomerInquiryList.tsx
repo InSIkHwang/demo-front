@@ -135,7 +135,7 @@ const columns: ColumnsType<Inquiry> = [
     sortDirections: ["ascend", "descend"],
   },
   {
-    title: "Costomer",
+    title: "Customer",
     dataIndex: "companyName",
     key: "companyName",
     sorter: (a, b) => a.companyName.localeCompare(b.companyName),
@@ -384,7 +384,7 @@ const CustomerInquiryList = () => {
               <Select.Option value="ALL">ALL</Select.Option>
               <Select.Option value="documentNumber">Document No.</Select.Option>
               <Select.Option value="refNumber">REF No.</Select.Option>
-              <Select.Option value="customerName">Costomer Name</Select.Option>
+              <Select.Option value="customerName">Customer Name</Select.Option>
               <Select.Option value="vesselName">Vessel Name</Select.Option>
             </Select>
             <Input

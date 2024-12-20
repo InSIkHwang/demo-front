@@ -208,7 +208,7 @@ const columns: ColumnsType<SupplierInquiryListIF> = [
     sortDirections: ["ascend", "descend"],
   },
   {
-    title: "Costomer",
+    title: "Customer",
     dataIndex: "companyName",
     key: "companyName",
   },

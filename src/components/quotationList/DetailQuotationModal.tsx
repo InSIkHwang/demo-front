@@ -463,7 +463,7 @@ const DetailQuotationModal = ({
               <Descriptions.Item label="Registration Date">
                 {quotationDetail.quotationDocumentDetail.registerDate}
               </Descriptions.Item>
-              <Descriptions.Item label="Costomer Name">
+              <Descriptions.Item label="Customer Name">
                 {quotationDetail.quotationDocumentDetail.companyName}
               </Descriptions.Item>
               <Descriptions.Item label="REF NO.">
@@ -527,7 +527,9 @@ const DetailQuotationModal = ({
                     style={{ borderColor: "#ccc" }}
                     type="vertical"
                   />
-                  <span>{`${currencySymbol} ${finalSalesAmountGlobal?.toLocaleString('en-US')}`}</span>
+                  <span>{`${currencySymbol} ${finalSalesAmountGlobal?.toLocaleString(
+                    "en-US"
+                  )}`}</span>
                 </AmountTotal>
               </Descriptions.Item>
               <Descriptions.Item label="Total Purchase Amount ">
@@ -539,7 +541,9 @@ const DetailQuotationModal = ({
                     style={{ borderColor: "#ccc" }}
                     type="vertical"
                   />
-                  <span>{`${currencySymbol} ${totalPurchaseAmountGlobal?.toLocaleString('en-US')}`}</span>
+                  <span>{`${currencySymbol} ${totalPurchaseAmountGlobal?.toLocaleString(
+                    "en-US"
+                  )}`}</span>
                 </AmountTotal>
               </Descriptions.Item>
               <Descriptions.Item label="Total Margin Amount">
@@ -551,7 +555,9 @@ const DetailQuotationModal = ({
                     style={{ borderColor: "#ccc" }}
                     type="vertical"
                   />
-                  <span>{`${currencySymbol} ${finalMarginAmountGlobal?.toLocaleString('en-US')}`}</span>
+                  <span>{`${currencySymbol} ${finalMarginAmountGlobal?.toLocaleString(
+                    "en-US"
+                  )}`}</span>
                 </AmountTotal>
               </Descriptions.Item>
             </Descriptions>
