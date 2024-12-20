@@ -79,7 +79,7 @@ const Title = styled.h1`
 const INITIAL_HEADER_VALUES: HeaderFormData = {
   quotationHeaderId: null,
   portOfShipment: "BUSAN, KOREA",
-  deliveryTime: "DAYS AFTER ORDER",
+  deliveryTime: "WORKING DAYS AFTER ORDER",
   termsOfPayment: "",
   incoterms: "EX WORKS",
   offerValidity: "30 DAYS",
