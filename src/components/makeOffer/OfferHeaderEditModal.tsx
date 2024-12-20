@@ -75,9 +75,9 @@ const PART_CONDITION_OPTIONS = [
 ];
 
 const DELIVERY_TIME_OPTIONS = [
-  "DAYS AFTER ORDER",
-  "DAYS AFTER ORDER IN STOCK (Subject to prior sale)",
-  "DAYS AFTER PAYMENT",
+  "WORKING DAYS AFTER ORDER",
+  "WORKING DAYS AFTER ORDER IN STOCK (Subject to prior sale)",
+  "WORKING DAYS AFTER PAYMENT",
 ];
 
 const TERMS_OF_PAYMENT_OPTIONS = [
@@ -122,7 +122,7 @@ const OfferHeaderEditModal = ({
   const INITIAL_HEADER_VALUES = {
     quotationHeaderId: null,
     portOfShipment: "BUSAN, KOREA",
-    deliveryTime: "DAYS AFTER ORDER",
+    deliveryTime: "WORKING DAYS AFTER ORDER",
     termsOfPayment: "",
     incoterms: "EX WORKS",
     offerValidity: "30 DAYS",
@@ -254,7 +254,7 @@ const OfferHeaderEditModal = ({
                 value: option,
                 label: option,
               }))}
-              placeholder="DAYS AFTER ORDER"
+              placeholder="WORKING DAYS AFTER ORDER"
             >
               <Input.TextArea />
             </AutoComplete>
