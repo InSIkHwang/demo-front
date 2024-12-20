@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   contentWrapper: {
-    flex: 0.95,
+    flex: 0.9,
     position: "relative",
   },
   table: {

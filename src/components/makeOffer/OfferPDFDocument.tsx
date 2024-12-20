@@ -17,6 +17,8 @@ import malgunGothic from "../../assets/font/malgun.ttf";
 import malgunGothicBold from "../../assets/font/malgunbd.ttf";
 import NotoSerifKRExtraBold from "../../assets/font/NotoSerifKR-ExtraBold.ttf";
 import NotoSerifKR from "../../assets/font/NotoSerifKR-Medium.ttf";
+import NotoSansExtraBold from "../../assets/font/NotoSansExtraBold.ttf";
+import NotoSansBold from "../../assets/font/NotoSansBold.ttf";
 import logoUrl from "../../assets/logo/withoutTextLogo.png";
 import simpleLogoUrl from "../../assets/logo/simpleLogo.png";
 import {
@@ -43,6 +45,15 @@ Font.register({
   family: "NotoSerifKR",
   src: NotoSerifKR,
 });
+Font.register({
+  family: "NotoSansExtraBold",
+  src: NotoSansExtraBold,
+});
+Font.register({
+  family: "NotoSansBold",
+  src: NotoSansBold,
+});
+
 Font.registerHyphenationCallback((word) => ["", word, ""]);
 
 interface PDFDocumentProps {
@@ -154,7 +165,7 @@ const styles = StyleSheet.create({
   },
   inquiryPriceValue: {
     fontSize: 11,
-    fontFamily: "malgunGothicBold",
+    fontFamily: "NotoSansBold",
   },
   inquiryInfoBox: {
     borderLeft: "8px solid #172952",
