@@ -1190,12 +1190,27 @@ const MakeComplexInquiry = () => {
       const updatedTotalSalesAmountGlobal =
         newTotalSalesAmountGlobal + chargePriceGlobalTotal;
 
+      const chargeCurrency = () => {
+        switch (formValues.currencyType) {
+          case "USD":
+            return 1400;
+          case "EUR":
+            return 1500;
+          case "INR":
+            return 16;
+          default:
+            return 1400;
+        }
+      };
+
       // 이익 계산
       const updatedTotalProfit =
-        updatedTotalSalesAmountGlobal * 1350 - totalPurchaseAmountKRW;
+        updatedTotalSalesAmountGlobal * chargeCurrency() -
+        totalPurchaseAmountKRW;
       const updatedTotalProfitPercent = Number(
         (
-          (updatedTotalProfit / (updatedTotalSalesAmountGlobal * 1350)) *
+          (updatedTotalProfit /
+            (updatedTotalSalesAmountGlobal * chargeCurrency())) *
           100
         ).toFixed(2)
       );
