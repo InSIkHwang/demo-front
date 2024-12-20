@@ -85,7 +85,7 @@ const columns: ColumnsType<Quotation> = [
     sortDirections: ["ascend", "descend"],
   },
   {
-    title: "Costomer",
+    title: "Customer",
     dataIndex: "companyName",
     key: "companyName",
     sorter: (a, b) => a.companyName.localeCompare(b.companyName),
@@ -232,7 +232,7 @@ const QuotationList = () => {
                 Document Number
               </Select.Option>
               <Select.Option value="refNumber">REF NO.</Select.Option>
-              <Select.Option value="customerName">Costomer Name</Select.Option>
+              <Select.Option value="customerName">Customer Name</Select.Option>
             </Select>
             <Input
               placeholder="Search..."

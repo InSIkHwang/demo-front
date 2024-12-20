@@ -930,7 +930,10 @@ const MakeOffer = () => {
 
   useEffect(() => {
     if (combinedItemDetails.length > 0) {
-      applyDcAndCharge("multiple");
+      const timer = setTimeout(() => {
+        applyDcAndCharge("multiple");
+      }, 300); // 300ms 후에 실행
+      return () => clearTimeout(timer); // cleanup 함수
     }
   }, [formValues.currency]);
 

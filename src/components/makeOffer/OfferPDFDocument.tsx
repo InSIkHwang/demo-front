@@ -17,6 +17,8 @@ import malgunGothic from "../../assets/font/malgun.ttf";
 import malgunGothicBold from "../../assets/font/malgunbd.ttf";
 import NotoSerifKRExtraBold from "../../assets/font/NotoSerifKR-ExtraBold.ttf";
 import NotoSerifKR from "../../assets/font/NotoSerifKR-Medium.ttf";
+import NotoSansExtraBold from "../../assets/font/NotoSansExtraBold.ttf";
+import NotoSansBold from "../../assets/font/NotoSansBold.ttf";
 import logoUrl from "../../assets/logo/withoutTextLogo.png";
 import simpleLogoUrl from "../../assets/logo/simpleLogo.png";
 import {
@@ -43,6 +45,15 @@ Font.register({
   family: "NotoSerifKR",
   src: NotoSerifKR,
 });
+Font.register({
+  family: "NotoSansExtraBold",
+  src: NotoSansExtraBold,
+});
+Font.register({
+  family: "NotoSansBold",
+  src: NotoSansBold,
+});
+
 Font.registerHyphenationCallback((word) => ["", word, ""]);
 
 interface PDFDocumentProps {
@@ -154,7 +165,7 @@ const styles = StyleSheet.create({
   },
   inquiryPriceValue: {
     fontSize: 11,
-    fontFamily: "malgunGothicBold",
+    fontFamily: "NotoSansBold",
   },
   inquiryInfoBox: {
     borderLeft: "8px solid #172952",
@@ -281,7 +292,7 @@ const styles = StyleSheet.create({
   },
   tableDeliveryCol: {
     ...baseTableCol,
-    flex: 0.2,
+    flex: 0.35,
     padding: "5px 0 5px 0",
     alignItems: "center",
   },
@@ -306,7 +317,7 @@ const styles = StyleSheet.create({
   },
   tableDashDeliveryCol: {
     ...baseDashTableCol,
-    flex: 0.2,
+    flex: 0.35,
     padding: "5px 0 5px 0",
     alignItems: "center",
   },
@@ -509,7 +520,9 @@ const renderTableRows = (items: ItemDetailType[], language: string) => {
             </View>
             <View style={[styles.tableDeliveryCol]}>
               <Text style={styles.tableCell}>
-                {item.deliveryDate === 0 ? " " : item.deliveryDate + "D"}
+                {item.deliveryDate === 0 || !item.deliveryDate
+                  ? " "
+                  : item.deliveryDate + " days"}
               </Text>
             </View>
           </>
@@ -557,7 +570,9 @@ const renderTableRows = (items: ItemDetailType[], language: string) => {
             </View>
             <View style={[styles.tableDashDeliveryCol]}>
               <Text style={styles.tableCell}>
-                {item.deliveryDate === 0 ? " " : item.deliveryDate + "D"}
+                {item.deliveryDate === 0 || !item.deliveryDate
+                  ? " "
+                  : item.deliveryDate + " days"}
               </Text>
             </View>
           </>
@@ -848,6 +863,7 @@ const OfferPDFDocument = ({
               style={[
                 styles.tableRow,
                 {
+                  borderTop: "none",
                   borderBottom: "2px solid #142952",
                   color: "#142952",
                 },
@@ -980,18 +996,26 @@ const OfferPDFDocument = ({
                             .split("\n")
                             .map((line) => line.replace(/ /g, "\u00A0"))
                             .join("\n");
-
                           return (
-                            <Text
+                            <View
                               key={index}
                               style={{
-                                fontSize: 9,
-                                lineHeight: 1.5,
+                                flexDirection: "row",
+                                flexWrap: "wrap",
                                 marginBottom: 5,
                               }}
                             >
-                              {`${index + 1}. ${formattedText}`}
-                            </Text>
+                              <Text
+                                style={{
+                                  fontSize: 9,
+                                  lineHeight: 1.5,
+                                  backgroundColor: "#d1ebf9",
+                                }}
+                              >
+                                {`${index + 1}. `}
+                                {formattedText}
+                              </Text>
+                            </View>
                           );
                         })}
                       </View>

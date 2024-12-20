@@ -119,7 +119,7 @@ const columns: ColumnsType<Order> = [
     sortDirections: ["ascend", "descend"],
   },
   {
-    title: "Costomer",
+    title: "Customer",
     dataIndex: "companyName",
     key: "companyName",
     sorter: (a, b) => a.companyName.localeCompare(b.companyName),
