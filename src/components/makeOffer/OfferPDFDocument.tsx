@@ -11,6 +11,7 @@ import {
   Svg,
   Path,
 } from "@react-pdf/renderer";
+import { Style } from "@react-pdf/types";
 import dayjs from "dayjs";
 import malgunGothic from "../../assets/font/malgun.ttf";
 import malgunGothicBold from "../../assets/font/malgunbd.ttf";
@@ -248,9 +249,15 @@ const styles = StyleSheet.create({
   },
   tableRow: {
     flexDirection: "row",
-    borderBottomWidth: 0.5,
+    borderTopWidth: 0.5,
     alignItems: "center",
     borderColor: "#142952",
+  },
+  tableDescCol: {
+    ...baseTableCol,
+    flex: 3,
+    border: "none",
+    padding: "0 0 5px 0",
   },
   tableBigCol: {
     ...baseTableCol,
@@ -274,7 +281,7 @@ const styles = StyleSheet.create({
   },
   tableDeliveryCol: {
     ...baseTableCol,
-    flex: 0.4,
+    flex: 0.2,
     padding: "5px 0 5px 0",
     alignItems: "center",
   },
@@ -299,7 +306,7 @@ const styles = StyleSheet.create({
   },
   tableDashDeliveryCol: {
     ...baseDashTableCol,
-    flex: 0.4,
+    flex: 0.2,
     padding: "5px 0 5px 0",
     alignItems: "center",
   },
@@ -340,6 +347,8 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontFamily: "malgunGothicBold",
     lineHeight: 1.8,
+    backgroundColor: "#d1ebf9", // 노란색 배경 예시
+    padding: 2,
   },
   pageNumber: {
     position: "absolute",
@@ -351,10 +360,9 @@ const styles = StyleSheet.create({
     color: "grey",
   },
   desctypeCell: {
-    marginLeft: 25,
+    marginLeft: 3,
     fontSize: 9,
     color: "#142952",
-    fontFamily: "malgunGothicBold",
     lineHeight: 1.8,
   },
 
@@ -433,12 +441,23 @@ const renderTableRows = (items: ItemDetailType[], language: string) => {
     const isItemType = item.itemType === "ITEM";
     const isDashType = item.itemType === "DASH";
     const isDescType = item.itemType === "DESC";
+    const isLastRow = item.position === items.length;
     if (isItemType) {
       itemIndex += 1; // "ITEM" 타입일 때만 인덱스 증가
     }
 
     return (
-      <View style={[styles.tableRow]} key={item.position} wrap={false}>
+      <View
+        style={[
+          styles.tableRow,
+          isDescType
+            ? ({ border: "none", borderTopWidth: 0 } as Style)
+            : ({} as Style),
+          isLastRow ? ({ borderBottomWidth: 0.5 } as Style) : ({} as Style),
+        ]}
+        key={item.position}
+        wrap={false}
+      >
         {isItemType ? (
           <View style={[styles.tableSmallCol, { flex: 0.28 }]}>
             <Text style={styles.tableCell}>
@@ -490,7 +509,7 @@ const renderTableRows = (items: ItemDetailType[], language: string) => {
             </View>
             <View style={[styles.tableDeliveryCol]}>
               <Text style={styles.tableCell}>
-                {item.deliveryDate === 0 ? " " : item.deliveryDate + " days"}
+                {item.deliveryDate === 0 ? " " : item.deliveryDate + "D"}
               </Text>
             </View>
           </>
@@ -538,22 +557,34 @@ const renderTableRows = (items: ItemDetailType[], language: string) => {
             </View>
             <View style={[styles.tableDashDeliveryCol]}>
               <Text style={styles.tableCell}>
-                {item.deliveryDate === 0 ? " " : item.deliveryDate + " days"}
+                {item.deliveryDate === 0 ? " " : item.deliveryDate + "D"}
               </Text>
             </View>
           </>
         ) : (
-          <View style={[styles.tableBigCol]}>
+          <>
             {isDescType ? (
-              <Text style={styles.desctypeCell}>
-                {item?.itemName?.split("")}
-              </Text>
+              <View style={[styles.tableDescCol]}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                  }}
+                >
+                  <DescriptionIcon />
+                  <Text style={styles.desctypeCell}>
+                    {item?.itemName?.split("")}
+                  </Text>
+                </View>
+              </View>
             ) : (
-              <Text style={styles.nonItemtypeCell}>
-                {item?.itemName?.split("")}
-              </Text>
+              <View style={[styles.tableBigCol]}>
+                <Text style={styles.nonItemtypeCell}>
+                  {item?.itemName?.split("")}
+                </Text>
+              </View>
             )}
-          </View>
+          </>
         )}
       </View>
     );
@@ -753,6 +784,27 @@ const Footer = () => (
   </View>
 );
 
+// 설명 아이콘 컴포넌트 추가
+// const DescriptionIcon = () => (
+//   <Svg width={10} height={10} style={{ marginLeft: 25, marginBottom: 3 }}>
+//     <Path
+//       d="M5 0C2.24 0 0 2.24 0 5C0 7.76 2.24 10 5 10C7.76 10 10 7.76 10 5C10 2.24 7.76 0 5 0ZM5.5 7.5H4.5V4.5H5.5V7.5ZM5.5 3.5H4.5V2.5H5.5V3.5Z"
+//       fill="#142952"
+//     />
+//   </Svg>
+// );
+
+const DescriptionIcon = () => (
+  <Svg width={12} height={12} style={{ marginLeft: 25, bottom: 5 }}>
+    <Path
+      d="M2 2 L2 8 L8 8 M6 6 L8 8 L6 10"
+      stroke="#142952"
+      strokeWidth="1.5"
+      fill="none"
+    />
+  </Svg>
+);
+
 const OfferPDFDocument = ({
   info,
   items,
@@ -811,10 +863,12 @@ const OfferPDFDocument = ({
               <View style={styles.tableBigCol}>
                 <Text style={styles.tableHeaderCell}>Description</Text>
               </View>
-              <View style={[styles.tableSmallCol, { alignItems: "flex-end" }]}>
+              <View
+                style={[styles.tableSmallCol, { alignItems: "flex-start" }]}
+              >
                 <Text style={styles.tableHeaderCell}>Qty</Text>
               </View>
-              <View style={styles.tableSmallCol}>
+              <View style={[styles.tableSmallCol]}>
                 <Text style={styles.tableHeaderCell}>Unit</Text>
               </View>
               <View style={[styles.tablePriceCol]}>
