@@ -11,6 +11,7 @@ import {
   Path,
   Image,
 } from "@react-pdf/renderer";
+import { Style } from "@react-pdf/types";
 import dayjs from "dayjs";
 import malgunGothic from "../../assets/font/malgun.ttf";
 import malgunGothicBold from "../../assets/font/malgunbd.ttf";
@@ -156,9 +157,15 @@ const styles = StyleSheet.create({
   },
   tableRow: {
     flexDirection: "row",
-    borderBottomWidth: 0.5,
+    borderTopWidth: 0.5,
     alignItems: "center",
     borderColor: "#142952",
+  },
+  tableDescCol: {
+    flex: 3,
+    border: "none",
+    padding: "0 0 5px 0",
+    alignItems: "flex-start",
   },
   tableBigCol: {
     flex: 3,
@@ -196,10 +203,9 @@ const styles = StyleSheet.create({
     lineHeight: 1.8,
   },
   desctypeCell: {
-    marginLeft: 40,
+    marginLeft: 3,
     fontSize: 9,
     color: "#142952",
-    fontFamily: "malgunGothicBold",
     lineHeight: 1.8,
   },
 
@@ -271,12 +277,22 @@ const renderTableRows = (items: InquiryItem[]) => {
   return items.map((item) => {
     const isItemType = item.itemType === "ITEM";
     const isDescType = item.itemType === "DESC";
+    const isLastRow = item.position === items.length;
     if (isItemType) {
       itemIndex += 1; // "ITEM" 타입일 때만 인덱스 증가
     }
 
     return (
-      <View style={styles.tableRow} key={item.position}>
+      <View
+        style={[
+          styles.tableRow,
+          isDescType
+            ? ({ border: "none", borderTopWidth: 0 } as Style)
+            : ({} as Style),
+          isLastRow ? ({ borderBottomWidth: 0.5 } as Style) : ({} as Style),
+        ]}
+        key={item.position}
+      >
         {isItemType && (
           <View style={[styles.tableSmallCol, { flex: 0.5 }]}>
             <Text style={styles.tableCell}>
@@ -303,17 +319,29 @@ const renderTableRows = (items: InquiryItem[]) => {
             </View>
           </>
         ) : (
-          <View style={[styles.tableBigCol, { flex: 1 }]}>
+          <>
             {isDescType ? (
-              <Text style={styles.desctypeCell}>
-                {item.itemName?.split("")}
-              </Text>
+              <View style={[styles.tableDescCol]}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                  }}
+                >
+                  <DescriptionIcon />
+                  <Text style={styles.desctypeCell}>
+                    {item?.itemName?.split("")}
+                  </Text>
+                </View>
+              </View>
             ) : (
-              <Text style={styles.nonItemtypeCell}>
-                {item.itemName?.split("")}
-              </Text>
+              <View style={[styles.tableBigCol]}>
+                <Text style={styles.nonItemtypeCell}>
+                  {item?.itemName?.split("")}
+                </Text>
+              </View>
             )}
-          </View>
+          </>
         )}
       </View>
     );
