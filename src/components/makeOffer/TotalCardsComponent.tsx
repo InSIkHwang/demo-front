@@ -1,6 +1,6 @@
-import { ReloadOutlined } from "@ant-design/icons";
+import { ReloadOutlined, UpOutlined } from "@ant-design/icons";
 import { Button } from "antd";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import styled from "styled-components";
 import { InvCharge } from "../../types/types";
 import ChargeInputPopover from "./ChargeInputPopover";
@@ -29,8 +29,6 @@ interface TotalCardsProps {
   setInvChargeList: Dispatch<SetStateAction<InvCharge[] | null>>;
 }
 const RefreshBtn = styled(Button)`
-  width: 32px;
-  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -44,88 +42,122 @@ const RefreshBtn = styled(Button)`
   }
 `;
 
+const TotalCardsWrapper = styled.div<{ $isCollapsed: boolean }>`
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: ${(props) =>
+    props.$isCollapsed
+      ? "translate(-50%, calc(100% - 50px))"
+      : "translate(-50%, 0)"};
+  width: ${(props) => (props.$isCollapsed ? "auto" : "auto")};
+  min-width: ${(props) => (props.$isCollapsed ? "300px" : "auto")};
+  background: white;
+  box-shadow: ${(props) =>
+    props.$isCollapsed
+      ? "0 -2px 15px rgba(0, 0, 0, 0.1)"
+      : "0 -4px 20px rgba(0, 0, 0, 0.15)"};
+  z-index: 1000;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 20px 20px 0 0;
+  background: #f8fafc;
+`;
+
+const CollapseHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 32px;
+  background: white;
+  cursor: pointer;
+  border-radius: 20px 20px 0 0;
+  position: relative;
+  white-space: nowrap;
+
+  &:before {
+    content: "";
+    position: absolute;
+    top: 8px;
+    width: 60px;
+    height: 4px;
+    background: #e8e8e8;
+    border-radius: 4px;
+  }
+
+  &:hover:before {
+    background: #d0d0d0;
+  }
+`;
+
 const TotalCards = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: stretch;
-  margin: 0px 0 20px 0;
-  padding: 15px;
-  border-radius: 12px;
-  background: linear-gradient(145deg, #f6f8fa, #ffffff);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
-  gap: 12px;
+  flex-direction: row;
+  gap: 10px;
 `;
 
 const TotalCard = styled.div<{ $isHighlight?: boolean; $isPositive?: boolean }>`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  background: white;
+  padding: 6px;
   text-align: center;
-  padding: 12px 15px;
-  border-radius: 8px;
-  transition: all 0.3s ease;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+  width: 140px;
+  flex: 1;
+  border: 1px solid
+    ${({ $isHighlight, $isPositive }) =>
+      $isHighlight
+        ? $isPositive
+          ? "rgba(52, 211, 153, 0.2)"
+          : "rgba(239, 68, 68, 0.2)"
+        : "rgba(226, 232, 240, 0.6)"};
 
-  background: ${({ $isHighlight, $isPositive }) =>
-    $isHighlight
-      ? $isPositive
-        ? "linear-gradient(145deg, #f0fff0, #e6ffe6)"
-        : "linear-gradient(145deg, #fff0f0, #ffe6e6)"
-      : "linear-gradient(145deg, #ffffff, #f8f8f8)"};
-
-  box-shadow: ${({ $isHighlight }) =>
-    $isHighlight
-      ? "0 2px 8px rgba(0, 0, 0, 0.1)"
-      : "0 1px 3px rgba(0, 0, 0, 0.05)"};
-
-  border: ${({ $isHighlight, $isPositive }) =>
-    $isHighlight
-      ? `1px solid ${$isPositive ? "#b7ebba" : "#ebb7b7"}`
-      : "1px solid #eaeaea"};
+  ${({ $isHighlight, $isPositive }) =>
+    $isHighlight &&
+    `
+    background: ${
+      $isPositive
+        ? "linear-gradient(135deg, #f0fdf4, #ffffff)"
+        : "linear-gradient(135deg, #fef2f2, #ffffff)"
+    };
+  `}
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   }
 
   span {
     display: block;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 500;
-    color: ${({ $isHighlight, $isPositive }) =>
-      $isHighlight ? ($isPositive ? "#2e8b57" : "#d9534f") : "#666"};
-    margin-bottom: 4px;
-    letter-spacing: 0.3px;
+    color: #64748b;
+    margin-bottom: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   span.value {
-    font-size: 20px;
+    font-size: 14px;
     font-weight: 600;
-    letter-spacing: 0.5px;
-    margin-top: 4px;
+    color: ${({ $isHighlight, $isPositive }) =>
+      $isHighlight ? ($isPositive ? "#059669" : "#dc2626") : "#1e293b"};
   }
 `;
 
 const Title = styled.h2`
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
-  color: #1f1f1f;
-  margin: 0 0 12px 0;
-  padding: 8px 0;
-  text-align: left;
-  border-bottom: 2px solid #e8e8e8;
-  letter-spacing: 0.5px;
+  color: #334155;
+  margin: 0;
 
   span {
-    color: #1890ff;
+    color: #3b82f6;
     margin-left: 8px;
     font-weight: 500;
     font-size: 14px;
   }
-`;
-
-const TotalCardsWrapper = styled.div`
-  margin-bottom: 24px;
 `;
 
 const TotalCardsComponent = ({
@@ -138,88 +170,90 @@ const TotalCardsComponent = ({
   invChargeList,
   setInvChargeList,
 }: TotalCardsProps) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
   return (
-    <TotalCardsWrapper>
-      <Title>
-        {mode === "multiple" ? (
-          <>
-            Final Price Data<span>Total amount for all suppliers</span>
-          </>
-        ) : (
-          <>
-            Supplier Price Data<span>Amount for current supplier</span>
-          </>
-        )}
-      </Title>
-      <TotalCards>
-        <TotalCard>
-          <span>Sales Amount(KRW)</span>
-          <span className="value">
-            ₩ {finalTotals.totalSalesAmountKRW?.toLocaleString("ko-KR")}
+    <TotalCardsWrapper $isCollapsed={isCollapsed}>
+      <CollapseHeader onClick={() => setIsCollapsed((prev) => !prev)}>
+        <Title>
+          Total Price Information{" "}
+          <span>
+            Total Profit: ₩ {finalTotals.totalProfit?.toLocaleString("ko-KR")} (
+            {finalTotals.totalProfitPercent}%)
           </span>
-        </TotalCard>
-        <TotalCard>
-          <span>Sales Amount(F)</span>
-          <span className="value">
-            F {finalTotals.totalSalesAmountGlobal?.toLocaleString("en-US")}
-          </span>
-        </TotalCard>
-        <TotalCard>
-          <span>Purchase Amount(KRW)</span>
-          <span className="value">
-            ₩ {finalTotals.totalPurchaseAmountKRW?.toLocaleString("ko-KR")}
-          </span>
-        </TotalCard>
-        <TotalCard>
-          <span>Purchase Amount(F)</span>
-          <span className="value">
-            F {finalTotals.totalPurchaseAmountGlobal?.toLocaleString("en-US")}
-          </span>
-        </TotalCard>
-        <TotalCard $isHighlight $isPositive={finalTotals.totalProfit >= 0}>
-          <span>Profit Amount</span>
-          <span className="value">
-            ₩ {finalTotals.totalProfit?.toLocaleString("ko-KR")}
-          </span>
-        </TotalCard>
-        <TotalCard
-          $isHighlight
-          $isPositive={finalTotals.totalProfitPercent >= 0}
-        >
-          <span>Profit Percent</span>
-          <span className="value">
-            {isNaN(finalTotals.totalProfitPercent)
-              ? 0
-              : finalTotals.totalProfitPercent}
-            %
-          </span>
-        </TotalCard>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <RefreshBtn
-            icon={<ReloadOutlined />}
-            type="primary"
-            onClick={() => applyDcAndCharge(mode)}
-          />
-          {mode === "multiple" && (
-            <ChargeInputPopover
-              currency={currency}
-              dcInfo={dcInfo}
-              setDcInfo={setDcInfo}
-              invChargeList={invChargeList}
-              setInvChargeList={setInvChargeList}
-              applyDcAndCharge={applyDcAndCharge}
-              finalTotals={finalTotals}
+        </Title>
+      </CollapseHeader>
+      <div style={{ padding: "15px 20px" }}>
+        <TotalCards>
+          <TotalCard>
+            <span>Sales Amount(KRW)</span>
+            <span className="value">
+              ₩ {finalTotals.totalSalesAmountKRW?.toLocaleString("ko-KR")}
+            </span>
+          </TotalCard>
+          <TotalCard>
+            <span>Sales Amount(F)</span>
+            <span className="value">
+              F {finalTotals.totalSalesAmountGlobal?.toLocaleString("en-US")}
+            </span>
+          </TotalCard>
+          <TotalCard>
+            <span>Purchase Amount(KRW)</span>
+            <span className="value">
+              ₩ {finalTotals.totalPurchaseAmountKRW?.toLocaleString("ko-KR")}
+            </span>
+          </TotalCard>
+          <TotalCard>
+            <span>Purchase Amount(F)</span>
+            <span className="value">
+              F {finalTotals.totalPurchaseAmountGlobal?.toLocaleString("en-US")}
+            </span>
+          </TotalCard>
+          <TotalCard $isHighlight $isPositive={finalTotals.totalProfit >= 0}>
+            <span>Profit Amount</span>
+            <span className="value">
+              ₩ {finalTotals.totalProfit?.toLocaleString("ko-KR")}
+            </span>
+          </TotalCard>
+          <TotalCard
+            $isHighlight
+            $isPositive={finalTotals.totalProfitPercent >= 0}
+          >
+            <span>Profit Percent</span>
+            <span className="value">
+              {isNaN(finalTotals.totalProfitPercent)
+                ? 0
+                : finalTotals.totalProfitPercent}
+              %
+            </span>
+          </TotalCard>{" "}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "5px",
+            }}
+          >
+            <RefreshBtn
+              icon={<ReloadOutlined />}
+              type="primary"
+              onClick={() => applyDcAndCharge(mode)}
             />
-          )}
-        </div>
-      </TotalCards>
+            {mode === "multiple" && (
+              <ChargeInputPopover
+                currency={currency}
+                dcInfo={dcInfo}
+                setDcInfo={setDcInfo}
+                invChargeList={invChargeList}
+                setInvChargeList={setInvChargeList}
+                applyDcAndCharge={applyDcAndCharge}
+                finalTotals={finalTotals}
+              />
+            )}
+          </div>
+        </TotalCards>
+      </div>
     </TotalCardsWrapper>
   );
 };

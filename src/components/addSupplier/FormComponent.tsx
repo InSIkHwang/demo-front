@@ -18,6 +18,7 @@ import {
   searchSupplier,
   searchSupplierUseMaker,
 } from "../../api/api";
+import CreateCompanyModal from "../company/CreateCompanyModal";
 
 const InquiryItemForm = styled(Form.Item)`
   margin-bottom: 8px;
@@ -140,6 +141,7 @@ const FormComponent = ({
     []
   );
   const [categoryWord, setCategoryWord] = useState<string>("");
+  const [isSupplierModalOpen, setIsSupplierModalOpen] = useState(false);
   const [makerSupplierList, setMakerSupplierList] = useState<
     {
       maker: string;
@@ -371,51 +373,71 @@ const FormComponent = ({
         <FormRow>
           {mode === "add" ? (
             <SearchBox>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  marginRight: 20,
-                  width: 400,
-                }}
-              >
-                <AutoComplete
-                  value={supplierSearch}
-                  onFocus={() => {
-                    setSelectedType("SUPPLIER");
+              <div>
+                <div
+                  style={{
+                    display: "flex",
+                    marginRight: 20,
+                    width: 400,
+                    marginBottom: 3,
+                    alignItems: "center",
+                    justifyContent: "space-between",
                   }}
-                  onChange={(value) => {
-                    handleSearch(value, null);
+                >
+                  <span>매입처(Supplier)</span>
+                  <Button
+                    type="primary"
+                    onClick={() => setIsSupplierModalOpen(true)}
+                  >
+                    Register
+                  </Button>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    marginRight: 20,
+                    width: 400,
                   }}
-                  onSelect={(value: string, option: any) => {
-                    const selectedSupplier = option.supplier;
-                    if (selectedSupplier) {
-                      setSelectedSuppliers((prevSuppliers) => {
-                        // 중복 제거를 위한 Set 생성
-                        const uniqueIds = new Set(
-                          prevSuppliers.map((supplier) => supplier.id)
-                        );
+                >
+                  <AutoComplete
+                    value={supplierSearch}
+                    onFocus={() => {
+                      setSelectedType("SUPPLIER");
+                    }}
+                    onChange={(value) => {
+                      handleSearch(value, null);
+                    }}
+                    onSelect={(value: string, option: any) => {
+                      const selectedSupplier = option.supplier;
+                      if (selectedSupplier) {
+                        setSelectedSuppliers((prevSuppliers) => {
+                          // 중복 제거를 위한 Set 생성
+                          const uniqueIds = new Set(
+                            prevSuppliers.map((supplier) => supplier.id)
+                          );
 
-                        // 이미 존재하는 supplier가 아닌 경우에만 추가
-                        if (!uniqueIds.has(selectedSupplier.id)) {
-                          return [...prevSuppliers, selectedSupplier];
-                        }
-                        return prevSuppliers;
-                      });
-                    }
-                    setSupplierSearch("");
-                  }}
-                  options={autoSearchSupCompleteOptions} // supplier 객체 포함된 옵션 사용
-                  placeholder="Search SUPPLIER ex) TECHLOG"
-                >
-                  <Input style={{ width: "100%" }} />
-                </AutoComplete>
-                <Button
-                  onClick={() => showModal("MAKER")}
-                  style={{ marginTop: 10, width: 250 }}
-                >
-                  Search supplier by category & maker
-                </Button>
+                          // 이미 존재하는 supplier가 아닌 경우에만 추가
+                          if (!uniqueIds.has(selectedSupplier.id)) {
+                            return [...prevSuppliers, selectedSupplier];
+                          }
+                          return prevSuppliers;
+                        });
+                      }
+                      setSupplierSearch("");
+                    }}
+                    options={autoSearchSupCompleteOptions} // supplier 객체 포함된 옵션 사용
+                    placeholder="Search SUPPLIER ex) TECHLOG"
+                  >
+                    <Input style={{ width: "100%" }} />
+                  </AutoComplete>
+                  <Button
+                    onClick={() => showModal("MAKER")}
+                    style={{ marginTop: 10, width: 250 }}
+                  >
+                    Search supplier by category & maker
+                  </Button>
+                </div>
               </div>
               {selectedType === "MAKER" && (
                 <Modal
@@ -509,6 +531,13 @@ const FormComponent = ({
           )}
         </FormRow>
       </Form>
+      {isSupplierModalOpen && (
+        <CreateCompanyModal
+          category={"supplier"}
+          onClose={() => setIsSupplierModalOpen(false)}
+          onUpdate={() => setIsSupplierModalOpen(false)}
+        />
+      )}
     </>
   );
 };
