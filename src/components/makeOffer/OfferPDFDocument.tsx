@@ -599,17 +599,8 @@ const renderHeader = (
   vesselName: string,
   docNumber: string,
   registerDate: string | dayjs.Dayjs,
-  pdfHeader: HeaderFormData,
   language: string,
   refNumber: string,
-  finalTotals: {
-    totalSalesAmountKRW: number;
-    totalSalesAmountGlobal: number;
-    totalPurchaseAmountKRW: number;
-    totalPurchaseAmountGlobal: number;
-    totalProfit: number;
-    totalProfitPercent: number;
-  },
   info: FormValuesType
 ) => (
   <>
@@ -825,6 +816,7 @@ const OfferPDFDocument = ({
       return items.reduce((total, item) => total + item.salesAmountGlobal, 0);
     }
   };
+
   const totalSalesAmount = calculateTotalSalesAmount(items);
   const dcAmountGlobal = totalSalesAmount * (dcInfo.dcPercent / 100);
 
@@ -838,10 +830,8 @@ const OfferPDFDocument = ({
             info.vesselName,
             info.documentNumber || "",
             dayjs().format("YYYY-MM-DD"),
-            headerMessage,
             language,
             info.refNumber,
-            finalTotals,
             info
           )}
           <View style={styles.table}>
@@ -1014,30 +1004,30 @@ const OfferPDFDocument = ({
                     { alignItems: "flex-end", flex: 0.35 },
                   ]}
                 >
-                  <View
-                    style={[
-                      styles.inquiryPriceRow,
-                      { borderBottom: "1px dotted #000" },
-                    ]}
-                  >
-                    <Text style={styles.inquiryPriceLabel}>
-                      SUB TOTAL({language === "KOR" ? "KRW" : info.currencyType}
-                      )
-                    </Text>
-                    <Text style={styles.inquiryPriceValue}>
-                      {language === "KOR"
-                        ? totalSalesAmount?.toLocaleString("ko-KR", {
-                            style: "currency",
-                            currency: "KRW",
-                          })
-                        : totalSalesAmount?.toLocaleString("en-US", {
-                            style: "currency",
-                            currency: info.currencyType,
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
-                    </Text>
-                  </View>
+                  {(dcInfo.dcPercent ||
+                    (invChargeList && invChargeList.length > 0)) && (
+                    <View
+                      style={[
+                        styles.inquiryPriceRow,
+                        { borderBottom: "1px dotted #000" },
+                      ]}
+                    >
+                      <Text style={styles.inquiryPriceLabel}>SUB TOTAL</Text>
+                      <Text style={styles.inquiryPriceValue}>
+                        {language === "KOR"
+                          ? totalSalesAmount?.toLocaleString("ko-KR", {
+                              style: "currency",
+                              currency: "KRW",
+                            })
+                          : totalSalesAmount?.toLocaleString("en-US", {
+                              style: "currency",
+                              currency: info.currencyType,
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                      </Text>
+                    </View>
+                  )}
                   {dcInfo.dcPercent && dcInfo.dcPercent !== 0 && (
                     <View style={styles.inquiryPriceRow}>
                       <Text style={styles.inquiryPriceLabel}>
@@ -1088,36 +1078,37 @@ const OfferPDFDocument = ({
                       ))}
                     </View>
                   )}
-                  {(dcInfo.dcPercent ||
-                    (invChargeList && invChargeList.length > 0)) && (
-                    <View
-                      style={[
-                        styles.inquiryPriceRow,
-                        { borderTop: "1px dotted #000" },
-                      ]}
-                    >
-                      <Text style={styles.inquiryPriceLabel}>TOTAL AMOUNT</Text>
-                      <Text style={styles.inquiryPriceValue}>
-                        {language === "KOR"
-                          ? finalTotals.totalSalesAmountKRW?.toLocaleString(
-                              "ko-KR",
-                              {
-                                style: "currency",
-                                currency: "KRW",
-                              }
-                            )
-                          : finalTotals.totalSalesAmountGlobal?.toLocaleString(
-                              "en-US",
-                              {
-                                style: "currency",
-                                currency: info.currencyType,
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              }
-                            )}
-                      </Text>
-                    </View>
-                  )}
+
+                  <View
+                    style={[
+                      styles.inquiryPriceRow,
+                      { borderTop: "1px dotted #000" },
+                    ]}
+                  >
+                    <Text style={styles.inquiryPriceLabel}>
+                      TOTAL AMOUNT(
+                      {language === "KOR" ? "KRW" : info.currencyType})
+                    </Text>
+                    <Text style={styles.inquiryPriceValue}>
+                      {language === "KOR"
+                        ? finalTotals.totalSalesAmountKRW?.toLocaleString(
+                            "ko-KR",
+                            {
+                              style: "currency",
+                              currency: "KRW",
+                            }
+                          )
+                        : finalTotals.totalSalesAmountGlobal?.toLocaleString(
+                            "en-US",
+                            {
+                              style: "currency",
+                              currency: info.currencyType,
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            }
+                          )}
+                    </Text>
+                  </View>
                 </View>
               </View>
             </View>

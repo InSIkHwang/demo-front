@@ -98,7 +98,8 @@ const OrderDetail = () => {
   });
   const [pdfPOFooter, setPdfPOFooter] = useState<orderRemark>({
     orderRemarkId: null,
-    orderRemark: "",
+    orderRemark:
+      "1. 세금 계산서 - 법인\n2. 희망 납기일 - \n3. 예정 납기일 포함된 발주서 접수 회신 메일 부탁 드립니다. 감사합니다.",
   });
   const [pdfOrderAckHeader, setPdfOrderAckHeader] =
     useState<OrderAckHeaderFormData>(INITIAL_HEADER_VALUES);
@@ -163,7 +164,8 @@ const OrderDetail = () => {
         setPdfPOFooter(
           data.orderHeaderResponse.orderSupplierRemark[0] || {
             orderRemarkId: null,
-            orderRemark: "",
+            orderRemark:
+              "1. 세금 계산서 - 법인\n2. 희망 납기일 - \n3. 예정 납기일 포함된 발주서 접수 회신 메일 부탁 드립니다. 감사합니다.",
           }
         );
       } catch (error) {
