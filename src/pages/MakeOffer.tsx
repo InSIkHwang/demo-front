@@ -29,6 +29,7 @@ import {
   FilePdfOutlined,
   DownloadOutlined,
   RollbackOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
 import styled from "styled-components";
 import dayjs from "dayjs";
@@ -37,6 +38,7 @@ import TableComponent from "../components/makeOffer/TableComponent";
 import {
   changeOfferStatus,
   checkOfferPdfDocNumber,
+  deleteSupplierInquiry,
   editOffer,
   fetchOfferDetail,
   saveOfferHeader,
@@ -1158,9 +1160,46 @@ const MakeOffer = () => {
       );
     };
 
+    const handleDeleteSupplier = async (
+      inquiryId: number,
+      supplierName: string
+    ) => {
+      Modal.confirm({
+        title: "Delete Supplier on Offer",
+        content: `Are you sure you want to delete ${supplierName} on this offer?`,
+        okText: "Delete",
+        cancelText: "Cancel",
+        onOk: async () => {
+          try {
+            await deleteSupplierInquiry(inquiryId);
+            message.success("Supplier deleted successfully.");
+            // 목록 갱신
+            loadOfferDetail();
+          } catch (error) {
+            console.error("Error deleting supplier inquiry:", error);
+            message.error("Failed to delete supplier. Please try again.");
+          }
+        },
+      });
+    };
+
     const items = dataSource.response.map((supplier) => ({
       key: supplier.inquiryId.toString(),
-      label: supplier.supplierInfo.supplierName,
+      label: (
+        <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          {supplier.supplierInfo.supplierName}
+          <DeleteOutlined
+            style={{ color: "#ff4d4f" }}
+            onClick={(e) => {
+              e.stopPropagation(); // 탭 클릭 이벤트 전파 방지
+              handleDeleteSupplier(
+                supplier.inquiryId,
+                supplier.supplierInfo.supplierName
+              );
+            }}
+          />
+        </span>
+      ),
       children: (
         <>
           <TableComponent
