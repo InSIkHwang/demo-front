@@ -78,17 +78,46 @@ interface PDFDocumentProps {
   invChargeList: InvCharge[] | null;
 }
 
+const COLORS = {
+  primary: "#142952",
+  secondary: "#172952",
+  gray: "#666666",
+  darkGray: "#323232",
+  lightGray: "#828282",
+  background: "#dbdbdb",
+  highlight: "#d1ebf9",
+} as const;
+
+// 테이블 컬럼 기본 스타일
 const baseTableCol = {
-  borderColor: "#142952",
   padding: "5px 0",
   alignItems: "flex-start" as const,
+  border: "none",
 };
 
 const baseDashTableCol = {
-  padding: "5px 0",
-  alignItems: "flex-start" as const,
-  backgroundColor: "#dbdbdb",
+  ...baseTableCol,
+  backgroundColor: COLORS.background,
 };
+
+// 컬럼 크기 설정
+const columnSizes = {
+  big: { flex: 2.95, flexGrow: 1, minWidth: 150 },
+  med: { flex: 1, paddingRight: 5 },
+  price: { flex: 0.55, maxWidth: 100, alignItems: "center" as const },
+  small: { flex: 0.2, alignItems: "center" as const },
+  delivery: { flex: 0.35, alignItems: "center" as const },
+  desc: { flex: 3, border: "none", padding: "0 0 5px 0" },
+};
+
+// 스타일 생성 함수
+const createColumnStyle = (
+  size: keyof typeof columnSizes,
+  isDash: boolean = false
+) => ({
+  ...(isDash ? baseDashTableCol : baseTableCol),
+  ...columnSizes[size],
+});
 
 // 스타일 정의
 const styles = StyleSheet.create({
@@ -264,76 +293,30 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderColor: "#142952",
   },
-  tableDescCol: {
-    ...baseTableCol,
-    flex: 3,
-    border: "none",
-    padding: "0 0 5px 0",
-  },
-  tableBigCol: {
-    ...baseTableCol,
-    flex: 2.95,
-    flexGrow: 1,
-    minWidth: 150,
-  },
-  tableMedCol: {
-    ...baseTableCol,
-    flex: 1,
-    paddingRight: 5,
-  },
-  tablePriceCol: {
-    ...baseTableCol,
-    flex: 0.55,
-    alignItems: "center",
-    maxWidth: 100,
-  },
-  tableSmallCol: {
-    ...baseTableCol,
-    flex: 0.2,
-    padding: "5px 0 5px 0",
-    alignItems: "center",
-  },
-  tableDeliveryCol: {
-    ...baseTableCol,
-    flex: 0.35,
-    padding: "5px 0 5px 0",
-    alignItems: "center",
-  },
-  tableDashBigCol: {
-    ...baseDashTableCol,
-    flex: 2.95,
-  },
-  tableDashMedCol: {
-    ...baseDashTableCol,
-    flex: 1,
-  },
-  tableDashPriceCol: {
-    ...baseDashTableCol,
-    flex: 0.55,
-    alignItems: "center",
-  },
-  tableDashSmallCol: {
-    ...baseDashTableCol,
-    flex: 0.2,
-    padding: "5px 0 5px 0",
-    alignItems: "center",
-  },
-  tableDashDeliveryCol: {
-    ...baseDashTableCol,
-    flex: 0.35,
-    padding: "5px 0 5px 0",
-    alignItems: "center",
-  },
+  // 테이블 컬럼 스타일
+  tableDescCol: createColumnStyle("desc"),
+  tableBigCol: createColumnStyle("big"),
+  tableMedCol: createColumnStyle("med"),
+  tablePriceCol: createColumnStyle("price"),
+  tableSmallCol: createColumnStyle("small"),
+  tableDeliveryCol: createColumnStyle("delivery"),
+
+  // 대시 테이블 컬럼 스타일
+  tableDashBigCol: createColumnStyle("big", true),
+  tableDashMedCol: createColumnStyle("med", true),
+  tableDashPriceCol: createColumnStyle("price", true),
+  tableDashSmallCol: createColumnStyle("small", true),
+  tableDashDeliveryCol: createColumnStyle("delivery", true),
   tableHeaderCell: {
     fontSize: 9,
     textAlign: "left",
-    margin: "1px 0 1px 0",
+    margin: "1px 0",
     fontFamily: "malgunGothicBold",
   },
   tableCell: {
     fontSize: 9,
     textAlign: "left",
-    margin: "1px 0 1px 0",
+    margin: "1px 0",
     lineHeight: 1.8,
   },
   tableTotalAmount: {
