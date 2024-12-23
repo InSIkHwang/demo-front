@@ -272,7 +272,9 @@ const styles = StyleSheet.create({
   },
   tableBigCol: {
     ...baseTableCol,
-    flex: 3,
+    flex: 2.95,
+    flexGrow: 1,
+    minWidth: 150,
   },
   tableMedCol: {
     ...baseTableCol,
@@ -281,8 +283,9 @@ const styles = StyleSheet.create({
   },
   tablePriceCol: {
     ...baseTableCol,
-    flex: 0.5,
+    flex: 0.55,
     alignItems: "center",
+    maxWidth: 100,
   },
   tableSmallCol: {
     ...baseTableCol,
@@ -298,7 +301,7 @@ const styles = StyleSheet.create({
   },
   tableDashBigCol: {
     ...baseDashTableCol,
-    flex: 3,
+    flex: 2.95,
   },
   tableDashMedCol: {
     ...baseDashTableCol,
@@ -306,7 +309,7 @@ const styles = StyleSheet.create({
   },
   tableDashPriceCol: {
     ...baseDashTableCol,
-    flex: 0.5,
+    flex: 0.55,
     alignItems: "center",
   },
   tableDashSmallCol: {
@@ -433,7 +436,7 @@ const getDisplayNo = (itemType: string, itemIndex: number, indexNo: string) => {
     case "ITEM":
       return (itemIndex + 1).toString(); // 1-based index for ITEM type
     case "DASH":
-      return indexNo;
+      return indexNo || " ";
     case "MAKER":
       return "MAKER";
     case "TYPE":
