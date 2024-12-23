@@ -582,6 +582,22 @@ export const fetchOfferDetail = async (documentId: number) => {
   return response.data;
 };
 
+//Offer 삭제(전체)
+export const deleteOffer = async (documentId: number) => {
+  const response = await axios.put(
+    `/api/supplier-inquiries/trash-document/${documentId}`
+  );
+  return response.data;
+};
+
+// OFFER - SUPPLIER 삭제
+export const deleteSupplierInquiry = async (inquiryId: number) => {
+  const response = await axios.put(
+    `/api/supplier-inquiries/trash-inquiry/${inquiryId}`
+  );
+  return response.data;
+};
+
 //Offer 검색
 export const searchOfferList = async ({
   registerStartDate = "",

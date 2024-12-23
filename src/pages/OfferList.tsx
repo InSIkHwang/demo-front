@@ -12,11 +12,13 @@ import {
   Tooltip,
   Modal,
 } from "antd";
-import { LeftOutlined, RightOutlined } from "@ant-design/icons";
+import { LeftOutlined, RightOutlined, DeleteOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 import {
   changeOfferStatus,
   confirmQutation,
+  deleteOffer,
+  deleteSupplierInquiry,
   fetchOfferList,
   searchOfferList,
 } from "../api/api";
@@ -470,32 +472,86 @@ const OfferList = () => {
     });
   };
 
+  const handleDelete = async (documentId: number) => {
+    Modal.confirm({
+      title: "Delete Offer",
+      content: "Are you sure you want to delete this offer?",
+      okText: "Delete",
+      cancelText: "Cancel",
+      onOk: async () => {
+        try {
+          await deleteOffer(documentId);
+          message.success("Offer deleted successfully.");
+          // 목록 갱신
+          fetchData();
+        } catch (error) {
+          console.error("Error deleting offer:", error);
+          message.error("Failed to delete offer. Please try again.");
+        }
+      },
+    });
+  };
+
+  const handleDeleteSupplier = async (
+    inquiryId: number,
+    supplierName: string
+  ) => {
+    Modal.confirm({
+      title: "Delete Supplier on Offer",
+      content: `Are you sure you want to delete ${supplierName} on this offer?`,
+      okText: "Delete",
+      cancelText: "Cancel",
+      onOk: async () => {
+        try {
+          await deleteSupplierInquiry(inquiryId);
+          message.success("Supplier deleted successfully.");
+          // 목록 갱신
+          fetchData();
+        } catch (error) {
+          console.error("Error deleting supplier inquiry:", error);
+          message.error("Failed to delete supplier. Please try again.");
+        }
+      },
+    });
+  };
+
   const expandedRowRender = (record: SupplierInquiryListIF) => {
     return (
       <div>
-        <EditButton
-          type="primary"
-          onClick={(e) => {
-            e.stopPropagation();
-            navigate(
-              {
-                pathname:
-                  record.documentType === "COMPLEX"
-                    ? `/makecomplexinquiry/${record.customerInquiryId}`
-                    : `/makeoffer/${record.documentId}`,
-                search: searchParams.toString(),
-              },
-              {
-                state: {
-                  info: record,
-                  category: "offer",
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <EditButton
+            type="primary"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(
+                {
+                  pathname:
+                    record.documentType === "COMPLEX"
+                      ? `/makecomplexinquiry/${record.customerInquiryId}`
+                      : `/makeoffer/${record.documentId}`,
+                  search: searchParams.toString(),
                 },
-              }
-            );
-          }}
-        >
-          View Details
-        </EditButton>
+                {
+                  state: {
+                    info: record,
+                    category: "offer",
+                  },
+                }
+              );
+            }}
+          >
+            View Details
+          </EditButton>
+          <EditButton
+            danger
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDelete(record.documentId);
+            }}
+          >
+            Delete
+          </EditButton>
+        </div>
         <SupplierPreviewCard>
           {record.supplierPreview.map((supplier) => {
             const isSalesZero = supplier.totalSalesAmountGlobal === 0;
@@ -514,7 +570,26 @@ const OfferList = () => {
             return (
               <Card key={supplier.supplierInquiryId}>
                 <div className="supplier-name">
-                  <SupplierCode>{supplier.supplierCode}</SupplierCode>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <SupplierCode>{supplier.supplierCode}</SupplierCode>
+                    <DeleteOutlined
+                      style={{ color: "#ff4d4f", cursor: "pointer" }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteSupplier(
+                          supplier.supplierInquiryId,
+                          supplier.supplierName
+                        );
+                      }}
+                    />
+                  </div>
                   <SupplierName>{supplier.supplierName}</SupplierName>
                 </div>
                 <div className="info-row">
@@ -660,7 +735,7 @@ const OfferList = () => {
               <DatePicker
                 placeholder="Start Date"
                 format="YYYY-MM-DD"
-                defaultValue={dayjs().subtract(3, "month")}
+                value={dayjs(registerStartDate)}
                 onChange={(date) =>
                   setRegisterStartDate(date ? date.format("YYYY-MM-DD") : "")
                 }
@@ -669,7 +744,7 @@ const OfferList = () => {
               <DatePicker
                 placeholder="End Date"
                 format="YYYY-MM-DD"
-                defaultValue={dayjs()}
+                value={dayjs(registerEndDate)}
                 onChange={(date) =>
                   setRegisterEndDate(date ? date.format("YYYY-MM-DD") : "")
                 }

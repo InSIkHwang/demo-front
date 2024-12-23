@@ -374,7 +374,7 @@ const OrderList = () => {
               <DatePicker
                 placeholder="Start Date"
                 format="YYYY-MM-DD"
-                defaultValue={dayjs().subtract(3, "month")}
+                value={dayjs(registerStartDate)}
                 onChange={(date) =>
                   setRegisterStartDate(date ? date.format("YYYY-MM-DD") : "")
                 }
@@ -383,7 +383,7 @@ const OrderList = () => {
               <DatePicker
                 placeholder="End Date"
                 format="YYYY-MM-DD"
-                defaultValue={dayjs()}
+                value={dayjs(registerEndDate)}
                 onChange={(date) =>
                   setRegisterEndDate(date ? date.format("YYYY-MM-DD") : "")
                 }

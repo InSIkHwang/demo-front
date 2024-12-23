@@ -142,7 +142,7 @@ const QuotationList = () => {
   );
   const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
   const [registerStartDate, setRegisterStartDate] = useState<string>(
-    dayjs().subtract(1, "month").format("YYYY-MM-DD")
+    dayjs().subtract(3, "month").format("YYYY-MM-DD")
   );
   const [registerEndDate, setRegisterEndDate] = useState<string>(
     dayjs().format("YYYY-MM-DD")
@@ -244,7 +244,7 @@ const QuotationList = () => {
             <DatePicker
               placeholder="Start Date"
               format="YYYY-MM-DD"
-              defaultValue={dayjs().subtract(1, "month")}
+              value={dayjs(registerStartDate)}
               onChange={(date) =>
                 setRegisterStartDate(date ? date.format("YYYY-MM-DD") : "")
               }
@@ -253,7 +253,7 @@ const QuotationList = () => {
             <DatePicker
               placeholder="End Date"
               format="YYYY-MM-DD"
-              defaultValue={dayjs()}
+              value={dayjs(registerEndDate)}
               onChange={(date) =>
                 setRegisterEndDate(date ? date.format("YYYY-MM-DD") : "")
               }
