@@ -5,6 +5,7 @@ import styled from "styled-components";
 import dayjs, { Dayjs } from "dayjs";
 import { editOrder, fetchOrderDetail, saveOrderHeader } from "../api/api";
 import {
+  CIPLHeaderFormData,
   HeaderFormData,
   InvCharge,
   Order,
@@ -52,6 +53,41 @@ const INITIAL_HEADER_VALUES: OrderAckHeaderFormData = {
   incoterms: "EX WORKS",
   receiverType: "CUSTOMER",
   packing: "UNPACKED",
+};
+
+const INITIAL_PL_VALUES: CIPLHeaderFormData = {
+  orderHeaderId: null,
+  shipper:
+    "BAS KOREA CO.\n43-4, Gyeongjeoncheol-ro 24beon-gil,\nGangseo-gu, Busan, Korea / 46719\nTel: +82-51-977-7070, Fax: +82-51-793-0635",
+  forAccountAndRiskOfMessers: "MASTER OF \nSHIP'S SPARES IN TRANSIT",
+  notifyParty: "",
+  portOfLoading: "BUSAN, KOREA",
+  portOfDestination: "",
+  vesselAndVoyage: "",
+  sailingOnOr: "",
+  noAndDateOfInvoice: "",
+  noAndDateOfPo: "",
+  lcIssuingBank: "",
+  remark:
+    "SHIPS SPARES IN TRANSIT\nPACKING DETAILS\n\nHS CODE: 8409.99-9000\nCOUNTRY OF ORIGIN: KOREA",
+};
+
+const TEST_PL_VALUES: CIPLHeaderFormData = {
+  orderHeaderId: 1,
+  shipper:
+    "BAS KOREA CO.\n43-4, Gyeongjeoncheol-ro 24beon-gil,\nGangseo-gu, Busan, Korea / 46719\nTel: +82-51-977-7070, Fax: +82-51-793-0635",
+  forAccountAndRiskOfMessers:
+    "MASTER OF DELBIN\nSHIP'S SPARES IN TRANSIT\nAddress: W128/A, Dubai Maritime City, U.A.E\nCompany name: AvidMarine\nContact Person: Seyed Amin For Hazim",
+  notifyParty: "Contact Number: +971522725950",
+  portOfLoading: "BUSAN, KOREA",
+  portOfDestination: "",
+  vesselAndVoyage: "DELBIN",
+  sailingOnOr: "",
+  noAndDateOfInvoice: "V-24-6012-132-E/03, 20 DEC, 2024",
+  noAndDateOfPo: "BAS240829-074",
+  lcIssuingBank: "YSH MARINE",
+  remark:
+    "SHIPS SPARES IN TRANSIT\nPACKING DETAILS\n40 X 31 X 26 CM 14 KG 1 CARTON\nHS CODE: 8409.99-9000\nCOUNTRY OF ORIGIN: KOREA",
 };
 
 const OrderDetail = () => {
@@ -104,8 +140,12 @@ const OrderDetail = () => {
   const [pdfOrderAckHeader, setPdfOrderAckHeader] =
     useState<OrderAckHeaderFormData>(INITIAL_HEADER_VALUES);
   const [pdfOrderAckFooter, setPdfOrderAckFooter] = useState<orderRemark[]>([]);
+  const [pdfCIPLHeader, setPdfCIPLHeader] =
+    useState<CIPLHeaderFormData>(TEST_PL_VALUES);
   const [supplierInfoListModalVisible, setSupplierInfoListModalVisible] =
     useState<boolean>(false);
+
+  console.log(pdfCIPLHeader);
 
   useEffect(() => {
     if (language === "KOR") {
@@ -168,6 +208,16 @@ const OrderDetail = () => {
               "1. 세금 계산서 - 법인\n2. 희망 납기일 - \n3. 예정 납기일 포함된 발주서 접수 회신 메일 부탁 드립니다. 감사합니다.",
           }
         );
+        // setPdfCIPLHeader({
+        //   ...INITIAL_PL_VALUES,
+        //   forAccountAndRiskOfMessers: `"MASTER OF ${data.documentInfo.vesselName}\nSHIP'S SPARES IN TRANSIT"`,
+        //   vesselAndVoyage: data.documentInfo.vesselName,
+        //   noAndDateOfInvoice: `${data.documentInfo.refNumber} ${dayjs().format(
+        //     "DD MMM, YYYY"
+        //   )}`,
+        //   noAndDateOfPo: data.documentInfo.documentNumber,
+        //   lcIssuingBank: data.documentInfo.companyName,
+        // });
       } catch (error) {
         console.error("Order detail error:", error);
         message.error("Failed to load order detail.");
@@ -535,7 +585,7 @@ const OrderDetail = () => {
   const handlePdfTypeChange = (value: string) => {
     setPdfType(value);
     // OA 선택 시 영어로, PO 선택 시 한글로 자동 변경
-    setLanguage(value === "OA" ? "ENG" : "KOR");
+    setLanguage(value === "PO" ? "KOR" : "ENG");
   };
 
   const handlePDFDownload = async () => {
@@ -732,12 +782,16 @@ const OrderDetail = () => {
         </Select>
         <span style={{ marginLeft: 20 }}>DOCUMENT TYPE: </span>
         <Select
-          style={{ width: 230, marginLeft: 10 }}
+          style={{ width: 280, marginLeft: 10 }}
           value={pdfType}
           onChange={handlePdfTypeChange}
         >
           <Select.Option value="PO">PURCHASE ORDER</Select.Option>
           <Select.Option value="OA">ORDER ACKNOWLEDGEMENT</Select.Option>
+          <Select.Option value="CIPL">
+            COMMERCIAL INVOICE / PACKING LIST
+          </Select.Option>
+          <Select.Option value="PL">PACKING LIST</Select.Option>
         </Select>
         <Button
           style={{ marginLeft: 10 }}

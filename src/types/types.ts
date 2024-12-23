@@ -655,3 +655,18 @@ export interface OrderAckHeaderFormData {
   receiverType: string | "";
   packing: string | "";
 }
+
+export interface CIPLHeaderFormData {
+  orderHeaderId: number | null;
+  shipper: string;
+  forAccountAndRiskOfMessers: string;
+  notifyParty: string;
+  portOfLoading: string;
+  portOfDestination: string;
+  vesselAndVoyage: string;
+  sailingOnOr: string;
+  noAndDateOfInvoice: string;
+  noAndDateOfPo: string;
+  lcIssuingBank: string;
+  remark: string;
+}
