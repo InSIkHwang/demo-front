@@ -162,11 +162,15 @@ export interface SupplierInquiryListIF {
   documentType: string;
   customerInquiryId?: number;
   supplierPreview: {
+    currencyType: string;
+    documentId: number;
     supplierInquiryId: number;
     supplierCode: string;
     supplierName: string;
-    totalSalesAmountGlobal: number;
     totalPurchaseAmountGlobal: number;
+    totalPurchaseAmountKrw: number;
+    totalSalesAmountGlobal: number;
+    totalSalesAmountKrw: number;
     status: string;
   }[];
 }

@@ -557,14 +557,29 @@ const OfferList = () => {
             const isSalesZero = supplier.totalSalesAmountGlobal === 0;
             const isPurchaseZero = supplier.totalPurchaseAmountGlobal === 0;
 
+            const chargeCurrency = () => {
+              switch (supplier.currencyType) {
+                case "USD":
+                  return 1400;
+                case "EUR":
+                  return 1500;
+                case "INR":
+                  return 16;
+                default:
+                  return 1400;
+              }
+            };
+
             // 이익 금액과 이익율 계산
             const profit =
-              supplier.totalSalesAmountGlobal -
-              supplier.totalPurchaseAmountGlobal;
+              supplier.totalSalesAmountGlobal * chargeCurrency() -
+              supplier.totalPurchaseAmountKrw;
             const profitRate =
               supplier.totalSalesAmountGlobal === 0
                 ? 0
-                : (profit / supplier.totalPurchaseAmountGlobal) * 100;
+                : (profit /
+                    (supplier.totalSalesAmountGlobal * chargeCurrency())) *
+                  100;
             const isProfitNegative = profit < 0;
 
             return (
@@ -619,9 +634,9 @@ const OfferList = () => {
                     $isZero={isProfitNegative}
                     style={{ color: isProfitNegative ? "red" : "green" }}
                   >
-                    {profit.toLocaleString("en-US", {
+                    {profit.toLocaleString("ko-KR", {
                       style: "currency",
-                      currency: record.currencyType,
+                      currency: "KRW",
                     })}
                   </Value>
                 </div>

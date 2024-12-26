@@ -896,16 +896,6 @@ const OfferPDFDocument = ({
                         </Text>
                       </View>
                     )}
-                    {pdfHeader?.packing && (
-                      <View style={styles.inquiryInfoText}>
-                        <Text style={{ lineHeight: 1.2, padding: "2px 0" }}>
-                          PACKING :{" "}
-                          <Text style={styles.inquiryInfoValueBold}>
-                            {pdfHeader.packing}
-                          </Text>
-                        </Text>
-                      </View>
-                    )}
                   </View>
                   {pdfFooter.length > 0 && (
                     <View style={[styles.inquiryInfoBox]} wrap>

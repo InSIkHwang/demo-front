@@ -632,14 +632,8 @@ const renderTableRows = (
 const renderHeader = (
   mode: string,
   logoUrl: string,
-  customerName: string,
-  vesselName: string,
-  docNumber: string,
-  registerDate: string | dayjs.Dayjs,
   pdfHeader: CIPLHeaderFormData,
-  language: string,
-  refNumber: string,
-  imoNo: string
+  language: string
 ) => (
   <>
     <View style={styles.header}>
@@ -753,7 +747,9 @@ const renderHeader = (
             <Text style={styles.inquiryInfoTitle}>①Shipper/Exporter</Text>
           </View>
           <View style={styles.inquiryInfoText}>
-            <Text style={{ lineHeight: 1.2 }}>{pdfHeader.shipper}</Text>
+            <Text style={{ lineHeight: 1.2, paddingBottom: 5 }}>
+              {pdfHeader?.shipper || " "}
+            </Text>
           </View>
         </View>
         <View style={[styles.CIPLInfoBox]}>
@@ -763,8 +759,8 @@ const renderHeader = (
             </Text>
           </View>
           <View style={styles.inquiryInfoText}>
-            <Text style={{ lineHeight: 1.2 }}>
-              {pdfHeader.forAccountAndRiskOfMessers}
+            <Text style={{ lineHeight: 1.2, paddingBottom: 5 }}>
+              {pdfHeader?.forAccountAndRiskOfMessers || " "}
             </Text>
           </View>
         </View>
@@ -773,7 +769,9 @@ const renderHeader = (
             <Text style={styles.inquiryInfoTitle}>③Notify party</Text>
           </View>
           <View style={styles.inquiryInfoText}>
-            <Text style={{ lineHeight: 1.2 }}>{pdfHeader.notifyParty}</Text>
+            <Text style={{ lineHeight: 1.2, paddingBottom: 5 }}>
+              {pdfHeader?.notifyParty || " "}
+            </Text>
           </View>
         </View>
         <View style={{ flexDirection: "row" }}>
@@ -783,8 +781,8 @@ const renderHeader = (
                 <Text style={styles.inquiryInfoTitle}>④Port of loading</Text>
               </View>
               <View style={styles.inquiryInfoText}>
-                <Text style={{ lineHeight: 1.2 }}>
-                  {pdfHeader.portOfLoading}
+                <Text style={{ lineHeight: 1.2, paddingBottom: 5 }}>
+                  {pdfHeader?.portOfLoading || " "}
                 </Text>
               </View>
             </View>
@@ -795,8 +793,8 @@ const renderHeader = (
                 <Text style={styles.inquiryInfoTitle}>⑤Final destination</Text>
               </View>
               <View style={styles.inquiryInfoText}>
-                <Text style={{ lineHeight: 1.2 }}>
-                  {pdfHeader.finalDestination}
+                <Text style={{ lineHeight: 1.2, paddingBottom: 5 }}>
+                  {pdfHeader?.finalDestination || " "}
                 </Text>
               </View>
             </View>
@@ -809,8 +807,8 @@ const renderHeader = (
                 <Text style={styles.inquiryInfoTitle}>⑥Vessel & Voyage</Text>
               </View>
               <View style={styles.inquiryInfoText}>
-                <Text style={{ lineHeight: 1.2 }}>
-                  {pdfHeader.vesselAndVoyage?.split("")}
+                <Text style={{ lineHeight: 1.2, paddingBottom: 5 }}>
+                  {pdfHeader?.vesselAndVoyage?.split("") || " "}
                 </Text>
               </View>
             </View>
@@ -821,45 +819,53 @@ const renderHeader = (
                 <Text style={styles.inquiryInfoTitle}>⑦Sailing on or</Text>
               </View>
               <View style={styles.inquiryInfoText}>
-                <Text style={{ lineHeight: 1.2 }}>{pdfHeader.sailingOnOr}</Text>
+                <Text style={{ lineHeight: 1.2, paddingBottom: 5 }}>
+                  {pdfHeader?.sailingOnOr || " "}
+                </Text>
               </View>
             </View>
           </View>
         </View>
       </View>
       <View style={[styles.inquiryInfoColumn, { flex: 0.9 }]}>
-        <View style={[styles.CIPLInfoBox]}>
+        <View style={[styles.CIPLInfoBox, { flex: 1 }]}>
           <View style={styles.inquiryInfoText}>
             <Text style={styles.inquiryInfoTitle}>⑧No.& date of invoice</Text>
           </View>
           <View style={styles.inquiryInfoText}>
-            <Text style={{ lineHeight: 1.2 }}>
-              {pdfHeader.noAndDateOfInvoice}
+            <Text style={{ lineHeight: 1.2, paddingBottom: 5 }}>
+              {pdfHeader?.noAndDateOfInvoice || " "}
             </Text>
           </View>
         </View>
-        <View style={[styles.CIPLInfoBox]}>
+        <View style={[styles.CIPLInfoBox, { flex: 1 }]}>
           <View style={styles.inquiryInfoText}>
             <Text style={styles.inquiryInfoTitle}>⑨No.& date of L/C</Text>
           </View>
           <View style={styles.inquiryInfoText}>
-            <Text style={{ lineHeight: 1.2 }}>{pdfHeader.noAndDateOfPo}</Text>
+            <Text style={{ lineHeight: 1.2, paddingBottom: 5 }}>
+              {pdfHeader?.noAndDateOfPo || " "}
+            </Text>
           </View>
         </View>
-        <View style={[styles.CIPLInfoBox]}>
+        <View style={[styles.CIPLInfoBox, { flex: 1 }]}>
           <View style={styles.inquiryInfoText}>
             <Text style={styles.inquiryInfoTitle}>⑩L/C issuing bank</Text>
           </View>
           <View style={styles.inquiryInfoText}>
-            <Text style={{ lineHeight: 1.2 }}>{pdfHeader.lcIssuingBank}</Text>
+            <Text style={{ lineHeight: 1.2, paddingBottom: 5 }}>
+              {pdfHeader?.lcIssuingBank || " "}
+            </Text>
           </View>
         </View>
-        <View style={[styles.CIPLInfoBox]}>
+        <View style={[styles.CIPLInfoBox, { flex: 4 }]}>
           <View style={styles.inquiryInfoText}>
             <Text style={styles.inquiryInfoTitle}>⑪Remarks :</Text>
           </View>
           <View style={styles.inquiryInfoText}>
-            <Text style={{ lineHeight: 1.2 }}>{pdfHeader.remark}</Text>
+            <Text style={{ lineHeight: 1.2, paddingBottom: 5 }}>
+              {pdfHeader?.remark || " "}
+            </Text>
           </View>
         </View>
       </View>
@@ -928,18 +934,7 @@ const CIPLDocument = ({
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.contentWrapper}>
-          {renderHeader(
-            mode,
-            logoUrl,
-            info.companyName,
-            info.vesselName,
-            info.documentNumber || "",
-            dayjs().format("YYYY-MM-DD"),
-            headerMessage,
-            language,
-            info.refNumber,
-            info.imoNo + ""
-          )}
+          {renderHeader(mode, logoUrl, headerMessage, language)}
           <View style={styles.table}>
             <View
               style={[

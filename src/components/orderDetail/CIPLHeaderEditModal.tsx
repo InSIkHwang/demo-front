@@ -86,9 +86,6 @@ const CIPLHeaderEditModal = ({
     setPdfCIPLHeader(loadedCIPLHeader);
   };
 
-  console.log(loadedCIPLHeader);
-  console.log(pdfCIPLHeader);
-
   return (
     <StyledModal
       title="Header"
@@ -115,102 +112,39 @@ const CIPLHeaderEditModal = ({
               name="shipper"
               label="①Shipper/Exporter"
             >
-              <AutoComplete
-                value={form.getFieldValue("shipper")}
-                onChange={(value) => form.setFieldsValue({ shipper: value })}
-                options={[{ value: loadedCIPLHeader.shipper }]}
-                style={{ width: "100%" }}
-              >
-                <Input.TextArea autoSize={{ minRows: 5 }} />
-              </AutoComplete>
+              <Input.TextArea autoSize={{ minRows: 5 }} />
             </StyledFormItem>
             <StyledFormItem
               style={{ flex: 2.5 }}
               name="forAccountAndRiskOfMessers"
               label="②For Account & risk of Messers."
             >
-              <AutoComplete
-                value={form.getFieldValue("forAccountAndRiskOfMessers")}
-                onChange={(value) =>
-                  form.setFieldsValue({ forAccountAndRiskOfMessers: value })
-                }
-                style={{ width: "100%" }}
-                options={[
-                  { value: loadedCIPLHeader.forAccountAndRiskOfMessers },
-                ]}
-              >
-                <Input.TextArea autoSize={{ minRows: 5 }} />
-              </AutoComplete>
+              <Input.TextArea autoSize={{ minRows: 5 }} />
             </StyledFormItem>
             <StyledFormItem
               style={{ flex: 2.5 }}
               name="notifyParty"
               label="③Notify party"
             >
-              <AutoComplete
-                value={form.getFieldValue("notifyParty")}
-                onChange={(value) =>
-                  form.setFieldsValue({ notifyParty: value })
-                }
-                style={{ width: "100%" }}
-                options={[{ value: loadedCIPLHeader.notifyParty }]}
-              >
-                <Input.TextArea autoSize={{ minRows: 5 }} />
-              </AutoComplete>
+              <Input.TextArea autoSize={{ minRows: 5 }} />
             </StyledFormItem>
             <div style={{ display: "flex", flexDirection: "row" }}>
               <StyledFormItem name="portOfLoading" label="④Port of loading">
-                <AutoComplete
-                  value={form.getFieldValue("portOfLoading")}
-                  onChange={(value) =>
-                    form.setFieldsValue({ portOfLoading: value })
-                  }
-                  style={{ width: "100%" }}
-                  options={[{ value: loadedCIPLHeader.portOfLoading }]}
-                >
-                  <Input.TextArea autoSize={{ minRows: 1 }} />
-                </AutoComplete>
+                <Input.TextArea autoSize={{ minRows: 1 }} />
               </StyledFormItem>
               <StyledFormItem
                 name="finalDestination"
                 label="⑤Final destination"
               >
-                <AutoComplete
-                  value={form.getFieldValue("finalDestination")}
-                  onChange={(value) =>
-                    form.setFieldsValue({ finalDestination: value })
-                  }
-                  style={{ width: "100%" }}
-                  options={[{ value: loadedCIPLHeader.finalDestination }]}
-                >
-                  <Input.TextArea autoSize={{ minRows: 1 }} />
-                </AutoComplete>
+                <Input.TextArea autoSize={{ minRows: 1 }} />
               </StyledFormItem>
             </div>
             <div style={{ display: "flex", flexDirection: "row" }}>
               <StyledFormItem name="vesselAndVoyage" label="⑥Vessel & Voyage">
-                <AutoComplete
-                  value={form.getFieldValue("vesselAndVoyage")}
-                  onChange={(value) =>
-                    form.setFieldsValue({ vesselAndVoyage: value })
-                  }
-                  style={{ width: "100%" }}
-                  options={[{ value: loadedCIPLHeader.vesselAndVoyage }]}
-                >
-                  <Input.TextArea autoSize={{ minRows: 1 }} />
-                </AutoComplete>
+                <Input.TextArea autoSize={{ minRows: 1 }} />
               </StyledFormItem>
               <StyledFormItem name="sailingOnOr" label="⑦Sailing on or">
-                <AutoComplete
-                  value={form.getFieldValue("sailingOnOr")}
-                  onChange={(value) =>
-                    form.setFieldsValue({ sailingOnOr: value })
-                  }
-                  style={{ width: "100%" }}
-                  options={[{ value: loadedCIPLHeader.sailingOnOr }]}
-                >
-                  <Input.TextArea autoSize={{ minRows: 1 }} />
-                </AutoComplete>
+                <Input.TextArea autoSize={{ minRows: 1 }} />
               </StyledFormItem>
             </div>
           </FormRow>
@@ -219,16 +153,7 @@ const CIPLHeaderEditModal = ({
               name="noAndDateOfInvoice"
               label="⑧No & date of invoice"
             >
-              <AutoComplete
-                value={form.getFieldValue("noAndDateOfInvoice")}
-                onChange={(value) =>
-                  form.setFieldsValue({ noAndDateOfInvoice: value })
-                }
-                style={{ width: "100%" }}
-                options={[{ value: loadedCIPLHeader.noAndDateOfInvoice }]}
-              >
-                <Input.TextArea autoSize={{ minRows: 1 }} />
-              </AutoComplete>
+              <Input.TextArea autoSize={{ minRows: 1 }} />
             </StyledFormItem>
             <StyledFormItem name="noAndDateOfPo" label="⑨No.& date of L/C">
               <AutoComplete
@@ -243,26 +168,10 @@ const CIPLHeaderEditModal = ({
               </AutoComplete>
             </StyledFormItem>
             <StyledFormItem name="lcIssuingBank" label="⑩L/C issuing bank">
-              <AutoComplete
-                value={form.getFieldValue("lcIssuingBank")}
-                onChange={(value) =>
-                  form.setFieldsValue({ lcIssuingBank: value })
-                }
-                style={{ width: "100%" }}
-                options={[{ value: loadedCIPLHeader.lcIssuingBank }]}
-              >
-                <Input.TextArea />
-              </AutoComplete>
+              <Input.TextArea />
             </StyledFormItem>
             <StyledFormItem style={{ flex: 6 }} name="remark" label="⑪Remarks">
-              <AutoComplete
-                value={form.getFieldValue("remark")}
-                onChange={(value) => form.setFieldsValue({ remark: value })}
-                style={{ width: "100%" }}
-                options={[{ value: loadedCIPLHeader.remark }]}
-              >
-                <Input.TextArea autoSize={{ minRows: 10 }} />
-              </AutoComplete>
+              <Input.TextArea autoSize={{ minRows: 10 }} />
             </StyledFormItem>
           </FormRow>
         </div>

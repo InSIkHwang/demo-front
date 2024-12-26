@@ -210,7 +210,7 @@ const OrderDetail = () => {
           ciPlId: data?.orderCiPlResponse?.ciPlId || null,
           shipper:
             "BAS KOREA CO.\n43-4, Gyeongjeoncheol-ro 24beon-gil,\nGangseo-gu, Busan, Korea / 46719\nTel: +82-51-977-7070, Fax: +82-51-793-0635",
-          forAccountAndRiskOfMessers: `"MASTER OF ${data.documentInfo.vesselName}\nSHIP'S SPARES IN TRANSIT"`,
+          forAccountAndRiskOfMessers: `MASTER OF ${data.documentInfo.vesselName}\nSHIP'S SPARES IN TRANSIT`,
           notifyParty: "",
           portOfLoading: "BUSAN, KOREA",
           finalDestination: "",
@@ -228,7 +228,7 @@ const OrderDetail = () => {
         setPdfCIPLHeader(
           data.orderCiPlResponse || {
             ...INITIAL_PL_VALUES,
-            forAccountAndRiskOfMessers: `"MASTER OF ${data.documentInfo.vesselName}\nSHIP'S SPARES IN TRANSIT"`,
+            forAccountAndRiskOfMessers: `MASTER OF ${data.documentInfo.vesselName}\nSHIP'S SPARES IN TRANSIT`,
             vesselAndVoyage: data.documentInfo.vesselName,
             noAndDateOfInvoice: `${
               data.documentInfo.refNumber
@@ -734,8 +734,8 @@ const OrderDetail = () => {
   };
 
   const SaveCIPLHeader = async (header: CIPLHeaderFormData) => {
-    await saveCIPLHeader(Number(orderId), header);
-    setPdfCIPLHeader(header);
+    const response = await saveCIPLHeader(Number(orderId), header);
+    setPdfCIPLHeader(response);
   };
 
   if (isLoading) {

@@ -899,7 +899,7 @@ const PurchaseOrderPDFDocument = ({
             <View wrap={false}>
               <View style={[styles.inquiryInfoWrap, { marginTop: 20 }]}>
                 <View style={[styles.inquiryInfoColumn, { flex: 1 }]}>
-                  <View style={styles.inquiryInfoBox}>
+                  <View style={[styles.inquiryInfoBox, { paddingBottom: 10 }]}>
                     <View style={styles.inquiryInfoText}>
                       <Text style={styles.inquiryInfoTitle}>REMARK</Text>
                     </View>

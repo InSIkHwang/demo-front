@@ -1023,9 +1023,7 @@ export const saveCIPLHeader = async (
   orderId: number,
   orderHeader: CIPLHeaderFormData
 ) => {
-  const response = await axios.put(`/api/orders/ci-pl/${orderId}`, {
-    orderHeader,
-  });
+  const response = await axios.put(`/api/orders/ci-pl/${orderId}`, orderHeader);
 
   return response.data;
 };

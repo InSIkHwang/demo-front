@@ -169,8 +169,11 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
     const fetchCategoryList = async () => {
       try {
         const response = await fetchCategory();
-        setCategoryList(response.categoryType);
-        setInitialCategoryList(response.categoryType);
+        const sortedCategories = response.categoryType.sort(
+          (a: string, b: string) => a.localeCompare(b)
+        );
+        setCategoryList(sortedCategories);
+        setInitialCategoryList(sortedCategories);
       } catch (error) {
         console.error("Error fetching category list:", error);
       }
