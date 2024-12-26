@@ -430,6 +430,7 @@ export interface OrderResponse {
   suppliers: OrderSupplier[];
   supplierInfoList: OrderSupplier[];
   orderHeaderResponse: orderHeaderResponse;
+  orderCiPlResponse: CIPLHeaderFormData;
 }
 
 export interface OrderRequest {
@@ -657,12 +658,12 @@ export interface OrderAckHeaderFormData {
 }
 
 export interface CIPLHeaderFormData {
-  orderHeaderId: number | null;
+  ciPlId: number | null;
   shipper: string;
   forAccountAndRiskOfMessers: string;
   notifyParty: string;
   portOfLoading: string;
-  portOfDestination: string;
+  finalDestination: string;
   vesselAndVoyage: string;
   sailingOnOr: string;
   noAndDateOfInvoice: string;

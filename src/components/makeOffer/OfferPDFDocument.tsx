@@ -474,7 +474,7 @@ const renderTableRows = (items: ItemDetailType[], language: string) => {
               <Text style={styles.tableCell}>{item.itemCode?.split("")}</Text>
             </View>
             <View style={styles.tableBigCol}>
-              <Text style={styles.tableCell}>{item.itemName}</Text>
+              <Text style={styles.tableCell}>{item.itemName?.split("")}</Text>
             </View>
             <View style={[styles.tableSmallCol, { alignItems: "flex-end" }]}>
               <Text style={styles.tableCell}>{item.qty}</Text>

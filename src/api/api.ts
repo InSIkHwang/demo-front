@@ -3,6 +3,7 @@ import axios from "../api/axios";
 import { AxiosError } from "axios";
 
 import {
+  CIPLHeaderFormData,
   Customer,
   HeaderFormData,
   Inquiry,
@@ -1005,7 +1006,7 @@ export const saveOrderHeader = async (
   orderHeader:
     | OrderAckHeaderFormData
     | {
-        orderRemarkId: number | null;
+        orderHeaderId: number | null;
         receiverType: string;
       },
   orderRemark: orderRemark[]
@@ -1013,6 +1014,17 @@ export const saveOrderHeader = async (
   const response = await axios.put(`/api/orders/headers/${orderId}`, {
     orderHeader,
     orderRemark,
+  });
+
+  return response.data;
+};
+
+export const saveCIPLHeader = async (
+  orderId: number,
+  orderHeader: CIPLHeaderFormData
+) => {
+  const response = await axios.put(`/api/orders/ci-pl/${orderId}`, {
+    orderHeader,
   });
 
   return response.data;

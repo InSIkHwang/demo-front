@@ -191,6 +191,7 @@ const ChangeSupplierModal = ({
                   className={isSelected ? "selected" : ""}
                   onClick={() => handleSupplierSelect(supplier)}
                   hoverable
+                  key={supplier.supplierInquiryId}
                 >
                   <Space direction="vertical" style={{ width: "100%" }}>
                     <div style={{ display: "flex", flexDirection: "column" }}>
