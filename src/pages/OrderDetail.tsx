@@ -172,81 +172,105 @@ const OrderDetail = () => {
     }
   }, [language]);
 
-  useEffect(() => {
-    const loadOrderDetail = async () => {
-      try {
-        const data: OrderResponse = await fetchOrderDetail(Number(orderId));
-        setOrderData(data);
-        setFormValues(data.documentInfo);
-        setItems(data.itemDetailList);
-        setSupplier(data.suppliers[0]);
-        setInvChargeList(data.invChargeList);
-        setDcInfo({
-          dcPercent: data.documentInfo.discount || 0,
-          dcKrw: 0,
-          dcGlobal: 0,
-        });
-        setSupplierInfoList(data.supplierInfoList);
-        setPdfOrderAckHeader(
-          data.orderHeaderResponse.orderCustomerHeader || INITIAL_HEADER_VALUES
-        );
-        setPdfOrderAckFooter(
-          data.orderHeaderResponse.orderCustomerRemark || []
-        );
-        setPdfPOHeader({
-          orderHeaderId:
-            data.orderHeaderResponse.orderSupplierHeader?.orderHeaderId || null,
-          receiverType: "SUPPLIER",
-        });
-        setPdfPOFooter(
-          data.orderHeaderResponse.orderSupplierRemark[0] || {
-            orderRemarkId: null,
-            orderRemark:
-              "1. 귀사의 무궁한 발전을 기원합니다.\n2. 상기와 같이 발주하오니 업무에 참조하시기 바랍니다.\n3. 세금 계산서 - 법인\n4. 희망 납기일 - \n5. 예정 납기일 포함된 발주서 접수 회신 메일 부탁 드립니다. 감사합니다.",
-          }
-        );
+  const loadOrderDetail = async () => {
+    try {
+      const data: OrderResponse = await fetchOrderDetail(Number(orderId));
 
-        setLoadedCIPLHeader({
-          ciPlId: data?.orderCiPlResponse?.ciPlId || null,
-          shipper:
-            "BAS KOREA CO.\n43-4, Gyeongjeoncheol-ro 24beon-gil,\nGangseo-gu, Busan, Korea / 46719\nTel: +82-51-977-7070, Fax: +82-51-793-0635",
+      const sortedItems = data.itemDetailList.sort(
+        (a, b) => a.position - b.position
+      );
+      setOrderData(data);
+      setFormValues(data.documentInfo);
+      setItems(sortedItems);
+      setSupplier(data.suppliers[0]);
+      setInvChargeList(data.invChargeList);
+      setDcInfo({
+        dcPercent: data.documentInfo.discount || 0,
+        dcKrw: 0,
+        dcGlobal: 0,
+      });
+      setSupplierInfoList(data.supplierInfoList);
+      setPdfOrderAckHeader(
+        data.orderHeaderResponse.orderCustomerHeader || INITIAL_HEADER_VALUES
+      );
+      setPdfOrderAckFooter(data.orderHeaderResponse.orderCustomerRemark || []);
+      setPdfPOHeader({
+        orderHeaderId:
+          data.orderHeaderResponse.orderSupplierHeader?.orderHeaderId || null,
+        receiverType: "SUPPLIER",
+      });
+      setPdfPOFooter(
+        data.orderHeaderResponse.orderSupplierRemark[0] || {
+          orderRemarkId: null,
+          orderRemark:
+            "1. 귀사의 무궁한 발전을 기원합니다.\n2. 상기와 같이 발주하오니 업무에 참조하시기 바랍니다.\n3. 세금 계산서 - 법인\n4. 희망 납기일 - \n5. 예정 납기일 포함된 발주서 접수 회신 메일 부탁 드립니다. 감사합니다.",
+        }
+      );
+
+      setLoadedCIPLHeader({
+        ciPlId: data?.orderCiPlResponse?.ciPlId || null,
+        shipper:
+          "BAS KOREA CO.\n43-4, Gyeongjeoncheol-ro 24beon-gil,\nGangseo-gu, Busan, Korea / 46719\nTel: +82-51-977-7070, Fax: +82-51-793-0635",
+        forAccountAndRiskOfMessers: `MASTER OF ${data.documentInfo.vesselName}\nSHIP'S SPARES IN TRANSIT`,
+        notifyParty: "",
+        portOfLoading: "BUSAN, KOREA",
+        finalDestination: "",
+        vesselAndVoyage: data.documentInfo.vesselName,
+        sailingOnOr: "",
+        noAndDateOfInvoice: `${data.documentInfo.refNumber}, ${dayjs().format(
+          "DD MMM, YYYY"
+        )}`,
+        noAndDateOfPo: data.documentInfo.documentNumber,
+        lcIssuingBank: data.documentInfo.companyName,
+        remark:
+          "SHIPS SPARES IN TRANSIT\nPACKING DETAILS\n\nHS CODE: 8409.99-9000\nCOUNTRY OF ORIGIN: KOREA",
+      });
+
+      setPdfCIPLHeader(
+        data.orderCiPlResponse || {
+          ...INITIAL_PL_VALUES,
           forAccountAndRiskOfMessers: `MASTER OF ${data.documentInfo.vesselName}\nSHIP'S SPARES IN TRANSIT`,
-          notifyParty: "",
-          portOfLoading: "BUSAN, KOREA",
-          finalDestination: "",
           vesselAndVoyage: data.documentInfo.vesselName,
-          sailingOnOr: "",
           noAndDateOfInvoice: `${data.documentInfo.refNumber}, ${dayjs().format(
             "DD MMM, YYYY"
           )}`,
           noAndDateOfPo: data.documentInfo.documentNumber,
           lcIssuingBank: data.documentInfo.companyName,
-          remark:
-            "SHIPS SPARES IN TRANSIT\nPACKING DETAILS\n\nHS CODE: 8409.99-9000\nCOUNTRY OF ORIGIN: KOREA",
-        });
+        }
+      );
+    } catch (error) {
+      console.error("Order detail error:", error);
+      message.error("Failed to load order detail.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-        setPdfCIPLHeader(
-          data.orderCiPlResponse || {
-            ...INITIAL_PL_VALUES,
-            forAccountAndRiskOfMessers: `MASTER OF ${data.documentInfo.vesselName}\nSHIP'S SPARES IN TRANSIT`,
-            vesselAndVoyage: data.documentInfo.vesselName,
-            noAndDateOfInvoice: `${
-              data.documentInfo.refNumber
-            }, ${dayjs().format("DD MMM, YYYY")}`,
-            noAndDateOfPo: data.documentInfo.documentNumber,
-            lcIssuingBank: data.documentInfo.companyName,
-          }
-        );
-      } catch (error) {
-        console.error("Order detail error:", error);
-        message.error("Failed to load order detail.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
+  useEffect(() => {
     loadOrderDetail();
   }, [orderId]);
+
+  const handleKeyboardSave = useCallback(
+    async (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "s") {
+        event.preventDefault();
+
+        if (!formValues?.refNumber || formValues?.refNumber.trim() === "") {
+          message.error("Reference number is required");
+          return;
+        }
+
+        await handleSave();
+      }
+    },
+    [formValues, items, finalTotals]
+  );
+
+  // 컴포넌트가 마운트될 때 이벤트 리스너 등록
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyboardSave);
+    return () => document.removeEventListener("keydown", handleKeyboardSave);
+  }, [handleKeyboardSave]);
 
   const handleInputChange = useCallback(
     (index: number, key: keyof OrderItemDetail, value: any) => {
@@ -590,7 +614,16 @@ const OrderDetail = () => {
       invChargeList: invChargeList,
       itemDetailList: items,
     };
-    await editOrder(Number(orderId), request);
+
+    try {
+      await editOrder(Number(orderId), request);
+      message.success("Order saved successfully");
+
+      loadOrderDetail();
+    } catch (error) {
+      console.error("Error saving order:", error);
+      message.error("Failed to save order. Please try again.");
+    }
   };
 
   const handleChangeSupplier = () => {

@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Document,
   Page,
@@ -12,7 +11,6 @@ import {
   Path,
 } from "@react-pdf/renderer";
 import { Style } from "@react-pdf/types";
-import dayjs from "dayjs";
 import malgunGothic from "../../assets/font/malgun.ttf";
 import malgunGothicBold from "../../assets/font/malgunbd.ttf";
 import NotoSerifKRExtraBold from "../../assets/font/NotoSerifKR-ExtraBold.ttf";
@@ -22,13 +20,9 @@ import NotoSansBold from "../../assets/font/NotoSansBold.ttf";
 import logoUrl from "../../assets/logo/withoutTextLogo.png";
 import simpleLogoUrl from "../../assets/logo/simpleLogo.png";
 import {
-  FormValuesType,
-  HeaderFormData,
   InvCharge,
   OrderItemDetail,
-  OrderAckHeaderFormData,
   Order,
-  orderRemark,
   CIPLHeaderFormData,
 } from "../../types/types";
 
