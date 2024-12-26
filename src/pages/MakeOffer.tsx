@@ -29,6 +29,7 @@ import {
   FilePdfOutlined,
   DownloadOutlined,
   RollbackOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
 import styled from "styled-components";
 import dayjs from "dayjs";
@@ -37,6 +38,7 @@ import TableComponent from "../components/makeOffer/TableComponent";
 import {
   changeOfferStatus,
   checkOfferPdfDocNumber,
+  deleteSupplierInquiry,
   editOffer,
   fetchOfferDetail,
   saveOfferHeader,
@@ -272,12 +274,17 @@ const MakeOffer = () => {
     []
   );
 
+  const calculateTotalAmount = useCallback(
+    (price: number, qty: number) => roundToTwoDecimalPlaces(price * qty),
+    []
+  );
+
   const updateGlobalPrices = useCallback(() => {
     setCurrentDetailItems((prevItems) => {
-      if (!prevItems || !currentSupplierInfo) return prevItems; // null/undefined 체크
+      if (!prevItems || !currentSupplierInfo) return prevItems;
 
       return prevItems.map((record) => {
-        if (!record || record.itemType !== "ITEM") return record; // record가 없거나 ITEM이 아닌 경우 처
+        if (!record || record.itemType !== "ITEM") return record;
 
         const updatedSalesPriceGlobal = convertCurrency(
           record.salesPriceKRW,
@@ -290,14 +297,43 @@ const MakeOffer = () => {
           "USD"
         );
 
+        // 판매 금액 계산
+        const salesAmountKRW = calculateTotalAmount(
+          record.salesPriceKRW,
+          record.qty
+        );
+        const salesAmountGlobal = calculateTotalAmount(
+          updatedSalesPriceGlobal,
+          record.qty
+        );
+
+        // 구매 금액 계산
+        const purchaseAmountKRW = calculateTotalAmount(
+          record.purchasePriceKRW,
+          record.qty
+        );
+        const purchaseAmountGlobal = calculateTotalAmount(
+          updatedPurchasePriceGlobal,
+          record.qty
+        );
+
         return {
           ...record,
           salesPriceGlobal: updatedSalesPriceGlobal,
           purchasePriceGlobal: updatedPurchasePriceGlobal,
+          salesAmountKRW,
+          salesAmountGlobal,
+          purchaseAmountKRW,
+          purchaseAmountGlobal,
         };
       });
     });
-  }, [currentSupplierInfo, formValues.currency, convertCurrency]);
+  }, [
+    currentSupplierInfo,
+    formValues.currency,
+    convertCurrency,
+    calculateTotalAmount,
+  ]);
 
   // formValues의 currency가 변경될 때 updateGlobalPrices 호출
   useEffect(() => {
@@ -436,11 +472,6 @@ const MakeOffer = () => {
     }
     setIsLoading(false);
   };
-
-  const calculateTotalAmount = useCallback(
-    (price: number, qty: number) => roundToTwoDecimalPlaces(price * qty),
-    []
-  );
 
   const handlePriceInputChange = (
     index: number,
@@ -583,15 +614,15 @@ const MakeOffer = () => {
       qty: item.qty,
       unit: item.unit || "",
       itemId: item.itemId,
-      salesPriceKRW: item.salesPriceKRW,
-      salesPriceGlobal: item.salesPriceGlobal,
-      salesAmountKRW: item.salesAmountKRW,
-      salesAmountGlobal: item.salesAmountGlobal,
-      margin: item.margin,
-      purchasePriceKRW: item.purchasePriceKRW,
-      purchasePriceGlobal: item.purchasePriceGlobal,
-      purchaseAmountKRW: item.purchaseAmountKRW,
-      purchaseAmountGlobal: item.purchaseAmountGlobal,
+      salesPriceKRW: item.salesPriceKRW || 0,
+      salesPriceGlobal: item.salesPriceGlobal || 0,
+      salesAmountKRW: item.salesAmountKRW || 0,
+      salesAmountGlobal: item.salesAmountGlobal || 0,
+      margin: item.margin || 0,
+      purchasePriceKRW: item.purchasePriceKRW || 0,
+      purchasePriceGlobal: item.purchasePriceGlobal || 0,
+      purchaseAmountKRW: item.purchaseAmountKRW || 0,
+      purchaseAmountGlobal: item.purchaseAmountGlobal || 0,
       deliveryDate: item.deliveryDate || 0,
     }));
 
@@ -730,7 +761,9 @@ const MakeOffer = () => {
         quotationHeader: header,
         quotationRemark: footer,
       };
-      await saveOfferHeader(Number(activeKey), request);
+      const response = await saveOfferHeader(Number(activeKey), request);
+      setPdfHeader(response.quotationHeader);
+      setPdfFooter(response.quotationRemark);
     } catch (error) {
       message.error("An error occurred while saving header.");
       console.log(error);
@@ -1158,9 +1191,46 @@ const MakeOffer = () => {
       );
     };
 
+    const handleDeleteSupplier = async (
+      inquiryId: number,
+      supplierName: string
+    ) => {
+      Modal.confirm({
+        title: "Delete Supplier on Offer",
+        content: `Are you sure you want to delete ${supplierName} on this offer?`,
+        okText: "Delete",
+        cancelText: "Cancel",
+        onOk: async () => {
+          try {
+            await deleteSupplierInquiry(inquiryId);
+            message.success("Supplier deleted successfully.");
+            // 목록 갱신
+            loadOfferDetail();
+          } catch (error) {
+            console.error("Error deleting supplier inquiry:", error);
+            message.error("Failed to delete supplier. Please try again.");
+          }
+        },
+      });
+    };
+
     const items = dataSource.response.map((supplier) => ({
       key: supplier.inquiryId.toString(),
-      label: supplier.supplierInfo.supplierName,
+      label: (
+        <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          {supplier.supplierInfo.supplierName}
+          <DeleteOutlined
+            style={{ color: "#ff4d4f" }}
+            onClick={(e) => {
+              e.stopPropagation(); // 탭 클릭 이벤트 전파 방지
+              handleDeleteSupplier(
+                supplier.inquiryId,
+                supplier.supplierInfo.supplierName
+              );
+            }}
+          />
+        </span>
+      ),
       children: (
         <>
           <TableComponent

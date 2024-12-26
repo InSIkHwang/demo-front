@@ -12,11 +12,13 @@ import {
   Tooltip,
   Modal,
 } from "antd";
-import { LeftOutlined, RightOutlined } from "@ant-design/icons";
+import { LeftOutlined, RightOutlined, DeleteOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 import {
   changeOfferStatus,
   confirmQutation,
+  deleteOffer,
+  deleteSupplierInquiry,
   fetchOfferList,
   searchOfferList,
 } from "../api/api";
@@ -470,51 +472,139 @@ const OfferList = () => {
     });
   };
 
+  const handleDelete = async (documentId: number) => {
+    Modal.confirm({
+      title: "Delete Offer",
+      content: "Are you sure you want to delete this offer?",
+      okText: "Delete",
+      cancelText: "Cancel",
+      onOk: async () => {
+        try {
+          await deleteOffer(documentId);
+          message.success("Offer deleted successfully.");
+          // 목록 갱신
+          fetchData();
+        } catch (error) {
+          console.error("Error deleting offer:", error);
+          message.error("Failed to delete offer. Please try again.");
+        }
+      },
+    });
+  };
+
+  const handleDeleteSupplier = async (
+    inquiryId: number,
+    supplierName: string
+  ) => {
+    Modal.confirm({
+      title: "Delete Supplier on Offer",
+      content: `Are you sure you want to delete ${supplierName} on this offer?`,
+      okText: "Delete",
+      cancelText: "Cancel",
+      onOk: async () => {
+        try {
+          await deleteSupplierInquiry(inquiryId);
+          message.success("Supplier deleted successfully.");
+          // 목록 갱신
+          fetchData();
+        } catch (error) {
+          console.error("Error deleting supplier inquiry:", error);
+          message.error("Failed to delete supplier. Please try again.");
+        }
+      },
+    });
+  };
+
   const expandedRowRender = (record: SupplierInquiryListIF) => {
     return (
       <div>
-        <EditButton
-          type="primary"
-          onClick={(e) => {
-            e.stopPropagation();
-            navigate(
-              {
-                pathname:
-                  record.documentType === "COMPLEX"
-                    ? `/makecomplexinquiry/${record.customerInquiryId}`
-                    : `/makeoffer/${record.documentId}`,
-                search: searchParams.toString(),
-              },
-              {
-                state: {
-                  info: record,
-                  category: "offer",
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <EditButton
+            type="primary"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(
+                {
+                  pathname:
+                    record.documentType === "COMPLEX"
+                      ? `/makecomplexinquiry/${record.customerInquiryId}`
+                      : `/makeoffer/${record.documentId}`,
+                  search: searchParams.toString(),
                 },
-              }
-            );
-          }}
-        >
-          View Details
-        </EditButton>
+                {
+                  state: {
+                    info: record,
+                    category: "offer",
+                  },
+                }
+              );
+            }}
+          >
+            View Details
+          </EditButton>
+          <EditButton
+            danger
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDelete(record.documentId);
+            }}
+          >
+            Delete
+          </EditButton>
+        </div>
         <SupplierPreviewCard>
           {record.supplierPreview.map((supplier) => {
             const isSalesZero = supplier.totalSalesAmountGlobal === 0;
             const isPurchaseZero = supplier.totalPurchaseAmountGlobal === 0;
 
+            const chargeCurrency = () => {
+              switch (supplier.currencyType) {
+                case "USD":
+                  return 1400;
+                case "EUR":
+                  return 1500;
+                case "INR":
+                  return 16;
+                default:
+                  return 1400;
+              }
+            };
+
             // 이익 금액과 이익율 계산
             const profit =
-              supplier.totalSalesAmountGlobal -
-              supplier.totalPurchaseAmountGlobal;
+              supplier.totalSalesAmountGlobal * chargeCurrency() -
+              supplier.totalPurchaseAmountKrw;
             const profitRate =
               supplier.totalSalesAmountGlobal === 0
                 ? 0
-                : (profit / supplier.totalPurchaseAmountGlobal) * 100;
+                : (profit /
+                    (supplier.totalSalesAmountGlobal * chargeCurrency())) *
+                  100;
             const isProfitNegative = profit < 0;
 
             return (
               <Card key={supplier.supplierInquiryId}>
                 <div className="supplier-name">
-                  <SupplierCode>{supplier.supplierCode}</SupplierCode>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <SupplierCode>{supplier.supplierCode}</SupplierCode>
+                    <DeleteOutlined
+                      style={{ color: "#ff4d4f", cursor: "pointer" }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteSupplier(
+                          supplier.supplierInquiryId,
+                          supplier.supplierName
+                        );
+                      }}
+                    />
+                  </div>
                   <SupplierName>{supplier.supplierName}</SupplierName>
                 </div>
                 <div className="info-row">
@@ -544,9 +634,9 @@ const OfferList = () => {
                     $isZero={isProfitNegative}
                     style={{ color: isProfitNegative ? "red" : "green" }}
                   >
-                    {profit.toLocaleString("en-US", {
+                    {profit.toLocaleString("ko-KR", {
                       style: "currency",
-                      currency: record.currencyType,
+                      currency: "KRW",
                     })}
                   </Value>
                 </div>
@@ -660,7 +750,7 @@ const OfferList = () => {
               <DatePicker
                 placeholder="Start Date"
                 format="YYYY-MM-DD"
-                defaultValue={dayjs().subtract(3, "month")}
+                value={dayjs(registerStartDate)}
                 onChange={(date) =>
                   setRegisterStartDate(date ? date.format("YYYY-MM-DD") : "")
                 }
@@ -669,7 +759,7 @@ const OfferList = () => {
               <DatePicker
                 placeholder="End Date"
                 format="YYYY-MM-DD"
-                defaultValue={dayjs()}
+                value={dayjs(registerEndDate)}
                 onChange={(date) =>
                   setRegisterEndDate(date ? date.format("YYYY-MM-DD") : "")
                 }

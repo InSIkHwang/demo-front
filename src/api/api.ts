@@ -3,6 +3,7 @@ import axios from "../api/axios";
 import { AxiosError } from "axios";
 
 import {
+  CIPLHeaderFormData,
   Customer,
   HeaderFormData,
   Inquiry,
@@ -582,6 +583,22 @@ export const fetchOfferDetail = async (documentId: number) => {
   return response.data;
 };
 
+//Offer 삭제(전체)
+export const deleteOffer = async (documentId: number) => {
+  const response = await axios.put(
+    `/api/supplier-inquiries/trash-document/${documentId}`
+  );
+  return response.data;
+};
+
+// OFFER - SUPPLIER 삭제
+export const deleteSupplierInquiry = async (inquiryId: number) => {
+  const response = await axios.put(
+    `/api/supplier-inquiries/trash-inquiry/${inquiryId}`
+  );
+  return response.data;
+};
+
 //Offer 검색
 export const searchOfferList = async ({
   registerStartDate = "",
@@ -989,7 +1006,7 @@ export const saveOrderHeader = async (
   orderHeader:
     | OrderAckHeaderFormData
     | {
-        orderRemarkId: number | null;
+        orderHeaderId: number | null;
         receiverType: string;
       },
   orderRemark: orderRemark[]
@@ -998,6 +1015,15 @@ export const saveOrderHeader = async (
     orderHeader,
     orderRemark,
   });
+
+  return response.data;
+};
+
+export const saveCIPLHeader = async (
+  orderId: number,
+  orderHeader: CIPLHeaderFormData
+) => {
+  const response = await axios.put(`/api/orders/ci-pl/${orderId}`, orderHeader);
 
   return response.data;
 };

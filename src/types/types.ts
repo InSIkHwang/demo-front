@@ -162,11 +162,15 @@ export interface SupplierInquiryListIF {
   documentType: string;
   customerInquiryId?: number;
   supplierPreview: {
+    currencyType: string;
+    documentId: number;
     supplierInquiryId: number;
     supplierCode: string;
     supplierName: string;
-    totalSalesAmountGlobal: number;
     totalPurchaseAmountGlobal: number;
+    totalPurchaseAmountKrw: number;
+    totalSalesAmountGlobal: number;
+    totalSalesAmountKrw: number;
     status: string;
   }[];
 }
@@ -430,6 +434,7 @@ export interface OrderResponse {
   suppliers: OrderSupplier[];
   supplierInfoList: OrderSupplier[];
   orderHeaderResponse: orderHeaderResponse;
+  orderCiPlResponse: CIPLHeaderFormData;
 }
 
 export interface OrderRequest {
@@ -654,4 +659,19 @@ export interface OrderAckHeaderFormData {
   incoterms: string | "";
   receiverType: string | "";
   packing: string | "";
+}
+
+export interface CIPLHeaderFormData {
+  ciPlId: number | null;
+  shipper: string;
+  forAccountAndRiskOfMessers: string;
+  notifyParty: string;
+  portOfLoading: string;
+  finalDestination: string;
+  vesselAndVoyage: string;
+  sailingOnOr: string;
+  noAndDateOfInvoice: string;
+  noAndDateOfPo: string;
+  lcIssuingBank: string;
+  remark: string;
 }
