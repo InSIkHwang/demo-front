@@ -161,6 +161,7 @@ export interface SupplierInquiryListIF {
   documentStatus: string;
   documentType: string;
   customerInquiryId?: number;
+  vesselName: string;
   supplierPreview: {
     currencyType: string;
     documentId: number;

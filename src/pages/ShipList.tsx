@@ -128,6 +128,8 @@ const ShipList = () => {
         params.imoNumber = searchText;
       } else if (searchCategory === "hullNumber") {
         params.hullNumber = searchText;
+      } else if (searchCategory === "customerName") {
+        params.customerName = searchText;
       }
       const response = await axios.get("/api/vessels/search", { params });
       setData(response.data.vessels);
@@ -219,6 +221,7 @@ const ShipList = () => {
               <Option value="vesselName">Vessel Name</Option>
               <Option value="imoNumber">IMO No.</Option>
               <Option value="hullNumber">Hull No.</Option>
+              <Option value="customerName">Customer Name</Option>
             </Select>
             <Input
               placeholder="Search..."

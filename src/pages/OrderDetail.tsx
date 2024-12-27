@@ -191,16 +191,16 @@ const OrderDetail = () => {
       });
       setSupplierInfoList(data.supplierInfoList);
       setPdfOrderAckHeader(
-        data.orderHeaderResponse.orderCustomerHeader || INITIAL_HEADER_VALUES
+        data.orderHeaderResponse?.orderCustomerHeader || INITIAL_HEADER_VALUES
       );
-      setPdfOrderAckFooter(data.orderHeaderResponse.orderCustomerRemark || []);
+      setPdfOrderAckFooter(data.orderHeaderResponse?.orderCustomerRemark || []);
       setPdfPOHeader({
         orderHeaderId:
-          data.orderHeaderResponse.orderSupplierHeader?.orderHeaderId || null,
+          data.orderHeaderResponse?.orderSupplierHeader?.orderHeaderId || null,
         receiverType: "SUPPLIER",
       });
       setPdfPOFooter(
-        data.orderHeaderResponse.orderSupplierRemark[0] || {
+        data.orderHeaderResponse?.orderSupplierRemark[0] || {
           orderRemarkId: null,
           orderRemark:
             "1. 귀사의 무궁한 발전을 기원합니다.\n2. 상기와 같이 발주하오니 업무에 참조하시기 바랍니다.\n3. 세금 계산서 - 법인\n4. 희망 납기일 - \n5. 예정 납기일 포함된 발주서 접수 회신 메일 부탁 드립니다. 감사합니다.",

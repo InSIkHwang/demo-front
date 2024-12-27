@@ -239,6 +239,11 @@ const columns: ColumnsType<SupplierInquiryListIF> = [
     key: "refNumber",
   },
   {
+    title: "Vessel",
+    dataIndex: "vesselName",
+    key: "vesselName",
+  },
+  {
     title: "Remark",
     dataIndex: "docRemark",
     key: "docRemark",
@@ -569,6 +574,13 @@ const OfferList = () => {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.ctrlKey && e.key === "Enter") {
       e.preventDefault();
+
+      if (searchTags.length > 2) {
+        message.error(
+          "You can only add up to 3 search terms.(최대 3개의 검색어만 추가할 수 있습니다.)"
+        );
+        return;
+      }
 
       if (searchCategory === "query") {
         message.error(

@@ -208,6 +208,7 @@ const styles = StyleSheet.create({
     borderLeft: "2px solid #172952",
     marginBottom: 15,
     paddingLeft: 5,
+    paddingBottom: 10,
   },
   inquiryInfoText: {
     fontSize: 9,
@@ -741,9 +742,7 @@ const renderHeader = (
             <Text style={styles.inquiryInfoTitle}>①Shipper/Exporter</Text>
           </View>
           <View style={styles.inquiryInfoText}>
-            <Text style={{ lineHeight: 1.2, paddingBottom: 5 }}>
-              {pdfHeader?.shipper || " "}
-            </Text>
+            <Text style={{ lineHeight: 1.2 }}>{pdfHeader?.shipper || " "}</Text>
           </View>
         </View>
         <View style={[styles.CIPLInfoBox]}>
@@ -753,7 +752,11 @@ const renderHeader = (
             </Text>
           </View>
           <View style={styles.inquiryInfoText}>
-            <Text style={{ lineHeight: 1.2, paddingBottom: 5 }}>
+            <Text
+              style={{
+                lineHeight: 1.2,
+              }}
+            >
               {pdfHeader?.forAccountAndRiskOfMessers || " "}
             </Text>
           </View>
@@ -763,7 +766,7 @@ const renderHeader = (
             <Text style={styles.inquiryInfoTitle}>③Notify party</Text>
           </View>
           <View style={styles.inquiryInfoText}>
-            <Text style={{ lineHeight: 1.2, paddingBottom: 5 }}>
+            <Text style={{ lineHeight: 1.2 }}>
               {pdfHeader?.notifyParty || " "}
             </Text>
           </View>
@@ -775,7 +778,7 @@ const renderHeader = (
                 <Text style={styles.inquiryInfoTitle}>④Port of loading</Text>
               </View>
               <View style={styles.inquiryInfoText}>
-                <Text style={{ lineHeight: 1.2, paddingBottom: 5 }}>
+                <Text style={{ lineHeight: 1.2 }}>
                   {pdfHeader?.portOfLoading || " "}
                 </Text>
               </View>
@@ -787,7 +790,7 @@ const renderHeader = (
                 <Text style={styles.inquiryInfoTitle}>⑤Final destination</Text>
               </View>
               <View style={styles.inquiryInfoText}>
-                <Text style={{ lineHeight: 1.2, paddingBottom: 5 }}>
+                <Text style={{ lineHeight: 1.2 }}>
                   {pdfHeader?.finalDestination || " "}
                 </Text>
               </View>
@@ -801,7 +804,7 @@ const renderHeader = (
                 <Text style={styles.inquiryInfoTitle}>⑥Vessel & Voyage</Text>
               </View>
               <View style={styles.inquiryInfoText}>
-                <Text style={{ lineHeight: 1.2, paddingBottom: 5 }}>
+                <Text style={{ lineHeight: 1.2 }}>
                   {pdfHeader?.vesselAndVoyage?.split("") || " "}
                 </Text>
               </View>
@@ -813,7 +816,7 @@ const renderHeader = (
                 <Text style={styles.inquiryInfoTitle}>⑦Sailing on or</Text>
               </View>
               <View style={styles.inquiryInfoText}>
-                <Text style={{ lineHeight: 1.2, paddingBottom: 5 }}>
+                <Text style={{ lineHeight: 1.2 }}>
                   {pdfHeader?.sailingOnOr || " "}
                 </Text>
               </View>
@@ -827,7 +830,7 @@ const renderHeader = (
             <Text style={styles.inquiryInfoTitle}>⑧No.& date of invoice</Text>
           </View>
           <View style={styles.inquiryInfoText}>
-            <Text style={{ lineHeight: 1.2, paddingBottom: 5 }}>
+            <Text style={{ lineHeight: 1.2 }}>
               {pdfHeader?.noAndDateOfInvoice || " "}
             </Text>
           </View>
@@ -837,7 +840,7 @@ const renderHeader = (
             <Text style={styles.inquiryInfoTitle}>⑨No.& date of L/C</Text>
           </View>
           <View style={styles.inquiryInfoText}>
-            <Text style={{ lineHeight: 1.2, paddingBottom: 5 }}>
+            <Text style={{ lineHeight: 1.2 }}>
               {pdfHeader?.noAndDateOfPo || " "}
             </Text>
           </View>
@@ -847,7 +850,7 @@ const renderHeader = (
             <Text style={styles.inquiryInfoTitle}>⑩L/C issuing bank</Text>
           </View>
           <View style={styles.inquiryInfoText}>
-            <Text style={{ lineHeight: 1.2, paddingBottom: 5 }}>
+            <Text style={{ lineHeight: 1.2 }}>
               {pdfHeader?.lcIssuingBank || " "}
             </Text>
           </View>
@@ -857,9 +860,7 @@ const renderHeader = (
             <Text style={styles.inquiryInfoTitle}>⑪Remarks :</Text>
           </View>
           <View style={styles.inquiryInfoText}>
-            <Text style={{ lineHeight: 1.2, paddingBottom: 5 }}>
-              {pdfHeader?.remark || " "}
-            </Text>
+            <Text style={{ lineHeight: 1.2 }}>{pdfHeader?.remark || " "}</Text>
           </View>
         </View>
       </View>
