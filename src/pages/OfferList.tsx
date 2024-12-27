@@ -194,6 +194,25 @@ const EditButton = styled(Button)`
   margin-top: 12px;
 `;
 
+const TagContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+`;
+
+const SearchTag = styled(Tag)`
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  margin: 0;
+`;
+
+interface SearchTagIF {
+  category: string;
+  value: string;
+}
+
 const columns: ColumnsType<SupplierInquiryListIF> = [
   {
     title: "Document Number",
@@ -315,18 +334,31 @@ const OfferList = () => {
   const [viewDocumentStatus, setViewDocumentStatus] = useState<string>(
     searchParams.get("viewDocumentStatus") || "ALL"
   );
+  const [searchTags, setSearchTags] = useState<SearchTagIF[]>(() => {
+    const tags: SearchTagIF[] = [];
+    const searchCategories = [
+      "documentNumber",
+      "refNumber",
+      "customerName",
+      "supplierName",
+      "vesselName",
+    ];
 
-  useEffect(() => {
-    if (searchParams.toString()) {
-      handleSearch();
-    } else {
-      fetchData();
-    }
-  }, []);
+    searchCategories.forEach((category) => {
+      const value = searchParams.get(category);
+      if (value) {
+        tags.push({ category, value });
+      }
+    });
+
+    return tags;
+  });
 
   useEffect(() => {
     if (
-      ((searchText || searchSubText) && registerStartDate && registerEndDate) ||
+      ((searchText || searchSubText || searchTags.length > 0) &&
+        registerStartDate &&
+        registerEndDate) ||
       viewDocumentStatus !== "ALL"
     ) {
       handleSearch();
@@ -336,6 +368,13 @@ const OfferList = () => {
   }, [currentPage, itemsPerPage, viewMyOfferOnly, viewDocumentStatus]);
 
   const fetchData = async () => {
+    updateSearchParams({
+      page: currentPage,
+      pageSize: itemsPerPage,
+      viewMyOfferOnly,
+      viewDocumentStatus:
+        viewDocumentStatus === "ALL" ? "" : viewDocumentStatus,
+    });
     try {
       const response = await fetchOfferList(
         currentPage,
@@ -354,6 +393,14 @@ const OfferList = () => {
 
   const handleSearch = async () => {
     setLoading(true);
+
+    if (searchTags.length > 0 && searchCategory === "query") {
+      message.error(
+        "if Tags are added, you cannot search with ALL.\n(태그가 있는 경우 ALL 카테고리로 검색할 수 없습니다.)"
+      );
+      setLoading(false);
+      return;
+    }
 
     // URL 파라미터 업데이트
     updateSearchParams({
@@ -374,17 +421,9 @@ const OfferList = () => {
       const searchParams: OfferSearchParams = {
         registerStartDate,
         registerEndDate,
-        ...(searchCategory === "query" && { query: searchText }),
-        ...(searchCategory === "documentNumber" && {
-          documentNumber: searchText,
-        }),
-        ...(searchCategory === "refNumber" && { refNumber: searchText }),
-        ...(searchCategory === "customerName" && { customerName: searchText }),
-        ...(searchCategory === "supplierName" && { supplierName: searchText }),
-        ...(searchCategory === "vesselName" && { vesselName: searchText }),
         page: currentPage,
         pageSize: itemsPerPage,
-        writer: viewMyOfferOnly ? "MY" : ("ALL" as const),
+        writer: viewMyOfferOnly ? "MY" : "ALL",
         ...(showItemSearch && {
           [searchSubCategory]: searchSubText,
         }),
@@ -392,6 +431,18 @@ const OfferList = () => {
           documentStatus: viewDocumentStatus,
         }),
       };
+
+      searchTags.forEach((tag) => {
+        searchParams[tag.category] = tag.value;
+      });
+
+      if (searchText.trim()) {
+        if (searchCategory === "query") {
+          searchParams.query = searchText.trim();
+        } else {
+          searchParams[searchCategory] = searchText.trim();
+        }
+      }
 
       const response = await searchOfferList(searchParams);
       setData(response.supplierInquiryList);
@@ -513,6 +564,45 @@ const OfferList = () => {
         }
       },
     });
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.ctrlKey && e.key === "Enter") {
+      e.preventDefault();
+
+      if (searchCategory === "query") {
+        message.error(
+          "Please select a specific category before adding a search term.(특정 카테고리를 선택한 후 검색어를 추가해주세요.)"
+        );
+        return;
+      }
+
+      if (!searchText.trim()) {
+        return;
+      }
+
+      // 중복 체크
+      const isDuplicate = searchTags.some(
+        (tag) =>
+          tag.category === searchCategory && tag.value === searchText.trim()
+      );
+
+      if (isDuplicate) {
+        message.warning(
+          "This search term is already added.(이미 추가된 검색어입니다.)"
+        );
+        return;
+      }
+
+      setSearchTags((prev) => [
+        ...prev,
+        {
+          category: searchCategory,
+          value: searchText.trim(),
+        },
+      ]);
+      setSearchText("");
+    }
   };
 
   const expandedRowRender = (record: SupplierInquiryListIF) => {
@@ -701,11 +791,19 @@ const OfferList = () => {
   ) => {
     const newSearchParams = new URLSearchParams(searchParams);
 
+    // 기존 파라미터 업데이트
     Object.entries(params).forEach(([key, value]) => {
       if (value === "" || value === null || value === undefined) {
         newSearchParams.delete(key);
       } else {
         newSearchParams.set(key, String(value));
+      }
+    });
+
+    // 검색 태그 파라미터 추가
+    searchTags.forEach((tag) => {
+      if (tag.value) {
+        newSearchParams.set(tag.category, tag.value);
       }
     });
 
@@ -720,7 +818,7 @@ const OfferList = () => {
           <SearchBar>
             <SearchSection>
               <Select
-                defaultValue="ALL"
+                defaultValue={searchCategory}
                 style={{ ...commonInputStyles, width: 140 }}
                 onChange={(value) => setSearchCategory(value)}
               >
@@ -737,16 +835,28 @@ const OfferList = () => {
                 </Select.Option>
                 <Select.Option value="vesselName">Vessel Name</Select.Option>
               </Select>
-              <Input
-                placeholder="Search..."
-                value={searchText}
-                onChange={(e) => {
-                  setSearchText(e.target.value);
-                  updateSearchParams({ searchText: e.target.value });
-                }}
-                onPressEnter={() => handleSearch()}
-                style={{ ...commonInputStyles, width: 280 }}
-              />
+              <Tooltip
+                placement="topLeft"
+                title="Ctrl + Enter to add a search term"
+                color="blue"
+              >
+                <Input
+                  placeholder="Search..."
+                  value={searchText}
+                  onChange={(e) => {
+                    setSearchText(e.target.value);
+                    updateSearchParams({ searchText: e.target.value });
+                  }}
+                  onKeyDown={handleKeyDown}
+                  onPressEnter={(e) => {
+                    if (!e.ctrlKey) {
+                      // Ctrl + Enter가 아닌 경우에만 검색 실행
+                      handleSearch();
+                    }
+                  }}
+                  style={{ ...commonInputStyles, width: 280 }}
+                />
+              </Tooltip>
               <DatePicker
                 placeholder="Start Date"
                 format="YYYY-MM-DD"
@@ -800,6 +910,19 @@ const OfferList = () => {
               </Checkbox>
             </CheckboxWrapper>
           </SearchBar>
+          <TagContainer>
+            {searchTags.map((tag, index) => (
+              <SearchTag
+                key={`${tag.category}-${index}`}
+                closable
+                onClose={() => {
+                  setSearchTags((prev) => prev.filter((_, i) => i !== index));
+                }}
+              >
+                {`${tag.category}: ${tag.value}`}
+              </SearchTag>
+            ))}
+          </TagContainer>
           <SearchBar>
             <SearchSection>
               <Checkbox

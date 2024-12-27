@@ -582,6 +582,7 @@ export interface OfferSearchParams {
   itemCode?: string;
   vesselName?: string;
   documentStatus?: string;
+  [key: string]: string | number | undefined;
 }
 
 export interface ComplexInquirySupplier {
