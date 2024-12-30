@@ -344,7 +344,7 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontFamily: "malgunGothicBold",
     lineHeight: 1.8,
-    backgroundColor: "#d1ebf9", // 노란색 배경 예시
+    backgroundColor: "#d1ebf9",
     padding: 2,
   },
   pageNumber: {
@@ -484,7 +484,7 @@ const renderTableRows = (items: ItemDetailType[], language: string) => {
             </View>
             <View style={[styles.tablePriceCol]}>
               <Text style={styles.tableCell}>
-                {item.itemRemark !== ""
+                {item.itemRemark
                   ? " "
                   : language === "KOR"
                   ? item.salesPriceKRW?.toLocaleString("ko-KR")
@@ -495,7 +495,7 @@ const renderTableRows = (items: ItemDetailType[], language: string) => {
             </View>
             <View style={[styles.tablePriceCol]}>
               <Text style={styles.tableCell}>
-                {item.itemRemark !== ""
+                {item.itemRemark
                   ? item.itemRemark
                   : language === "KOR"
                   ? item.salesAmountKRW?.toLocaleString("ko-KR")
@@ -534,7 +534,7 @@ const renderTableRows = (items: ItemDetailType[], language: string) => {
             </View>
             <View style={[styles.tableDashPriceCol]}>
               <Text style={styles.tableCell}>
-                {item.itemRemark !== ""
+                {item.itemRemark
                   ? " "
                   : language === "KOR"
                   ? item.salesPriceKRW?.toLocaleString("ko-KR")
@@ -545,7 +545,7 @@ const renderTableRows = (items: ItemDetailType[], language: string) => {
             </View>
             <View style={[styles.tableDashPriceCol, { alignItems: "center" }]}>
               <Text style={styles.tableCell}>
-                {item.itemRemark !== ""
+                {item.itemRemark
                   ? item.itemRemark
                   : language === "KOR"
                   ? item.salesAmountKRW?.toLocaleString("ko-KR")
@@ -1049,9 +1049,10 @@ const OfferPDFDocument = ({
                       </Text>
                     </View>
                   )}
-                  {invChargeList && invChargeList.length > 0 && (
-                    <View style={styles.inquiryPriceRow}>
-                      {invChargeList.map((charge) => (
+                  {invChargeList &&
+                    invChargeList.length > 0 &&
+                    invChargeList.map((charge) => (
+                      <View style={styles.inquiryPriceRow}>
                         <>
                           <Text style={styles.inquiryPriceLabel}>
                             {charge.customCharge}
@@ -1075,9 +1076,8 @@ const OfferPDFDocument = ({
                                 })}
                           </Text>
                         </>
-                      ))}
-                    </View>
-                  )}
+                      </View>
+                    ))}
 
                   <View
                     style={[

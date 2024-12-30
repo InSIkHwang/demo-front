@@ -134,6 +134,8 @@ const CustomerList = () => {
         params.companyName = searchText;
       } else if (searchCategory === "all") {
         params.query = searchText;
+      } else if (searchCategory === "vesselName") {
+        params.vesselName = searchText;
       }
 
       const response = await axios.get("/api/customers/search", { params });
@@ -231,6 +233,7 @@ const CustomerList = () => {
               <Option value="all">All</Option>
               <Option value="code">Code</Option>
               <Option value="companyName">Customer Name</Option>
+              <Option value="vesselName">Vessel Name</Option>
             </Select>
             <Input
               placeholder="Search..."
@@ -273,6 +276,7 @@ const CustomerList = () => {
                 onClick: () => openDetailCompanyModal(record),
               })}
               style={{ cursor: "pointer" }}
+              scroll={{ x: 1100 }}
             />
             <PaginationWrapper
               current={currentPage}

@@ -161,6 +161,7 @@ export interface SupplierInquiryListIF {
   documentStatus: string;
   documentType: string;
   customerInquiryId?: number;
+  vesselName: string;
   supplierPreview: {
     currencyType: string;
     documentId: number;
@@ -582,6 +583,7 @@ export interface OfferSearchParams {
   itemCode?: string;
   vesselName?: string;
   documentStatus?: string;
+  [key: string]: string | number | undefined;
 }
 
 export interface ComplexInquirySupplier {

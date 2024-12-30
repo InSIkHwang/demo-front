@@ -268,6 +268,12 @@ const CustomerInquiryList = () => {
 
   const fetchData = async () => {
     setLoading(true);
+    updateSearchParams({
+      page: currentPage,
+      pageSize: itemsPerPage,
+      viewMyInquiryOnly,
+      documentStatus: documentStatus === "ALL" ? "" : documentStatus,
+    });
     try {
       const response = await fetchInquiryList(
         currentPage,

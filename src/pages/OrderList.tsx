@@ -219,6 +219,12 @@ const OrderList = () => {
   }, [currentPage, itemsPerPage, viewMyOfferOnly, showItemSearch]);
 
   const fetchData = async () => {
+    setLoading(true);
+    updateSearchParams({
+      page: currentPage,
+      pageSize: itemsPerPage,
+      viewMyOfferOnly,
+    });
     try {
       const response = await fetchOrderList(
         currentPage,

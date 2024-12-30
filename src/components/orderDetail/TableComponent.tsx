@@ -490,11 +490,10 @@ TableComponentProps) => {
   };
 
   const handleAddItem = (index: number) => {
-    const newItem: ItemDetailType = {
+    const newItem: OrderItemDetail = {
       position: index + 2,
       indexNo: null,
-      itemDetailId: null,
-      itemId: null,
+      ordersItemId: null,
       itemType: "ITEM",
       itemCode: "",
       itemName: "",
@@ -525,11 +524,11 @@ TableComponentProps) => {
     setItemDetails(newItems as OrderItemDetail[]);
   };
 
-  const handleDeleteItem = (itemDetailId: number, position: number) => {
+  const handleDeleteItem = (ordersItemId: number | null, position: number) => {
     // 선택한 항목을 삭제한 새로운 데이터 소스를 생성
     const updatedItemDetails = itemDetails.filter(
       (item) =>
-        !(item.ordersItemId === itemDetailId && item.position === position)
+        !(item.ordersItemId === ordersItemId && item.position === position)
     );
 
     // 남은 항목들의 position 값을 1부터 다시 정렬
@@ -619,6 +618,29 @@ TableComponentProps) => {
     rowIndex: number,
     columnIndex: number
   ) => {
+    if (e.ctrlKey && e.key === "Enter") {
+      e.preventDefault();
+      handleAddItem(rowIndex);
+      if (inputRefs.current[rowIndex + 1]?.[columnIndex]) {
+        inputRefs.current[rowIndex + 1][columnIndex]?.focus();
+      }
+
+      return;
+    }
+
+    // Ctrl + Backspace 키 감지
+    if (e.ctrlKey && e.key === "Backspace") {
+      e.preventDefault();
+      const currentItem = itemDetails[rowIndex];
+
+      handleDeleteItem(currentItem.ordersItemId, currentItem.position);
+      if (inputRefs.current[rowIndex - 1]?.[columnIndex]) {
+        inputRefs.current[rowIndex - 1][columnIndex]?.focus();
+      }
+
+      return;
+    }
+
     if (e.key === "ArrowDown" || e.key === "ArrowUp") {
       e.preventDefault();
 
@@ -684,7 +706,7 @@ TableComponentProps) => {
             danger
             size="small"
             onClick={() =>
-              handleDeleteItem(record.itemDetailId, record.position)
+              handleDeleteItem(record.ordersItemId, record.position)
             }
             icon={<DeleteOutlined />}
           />
