@@ -190,6 +190,8 @@ const MakeOffer = () => {
   const navigate = useNavigate();
   const [activeKey, setActiveKey] = useState<string>("");
   const prevCombinedItemDetails = useRef<typeof combinedItemDetails>([]);
+  const [isUpdatingGlobalPrices, setIsUpdatingGlobalPrices] =
+    useState<boolean>(false);
 
   useEffect(() => {
     loadOfferDetail();
@@ -283,9 +285,10 @@ const MakeOffer = () => {
     setCurrentDetailItems((prevItems) => {
       if (!prevItems || !currentSupplierInfo) return prevItems;
 
-      return prevItems.map((record) => {
+      const updatedItems = prevItems.map((record) => {
         if (!record || record.itemType !== "ITEM") return record;
 
+        // 기존 KRW 가격 기준으로 새로운 Global 가격 계산
         const updatedSalesPriceGlobal = convertCurrency(
           record.salesPriceKRW,
           formValues.currency,
@@ -297,7 +300,7 @@ const MakeOffer = () => {
           "USD"
         );
 
-        // 판매 금액 계산
+        // 금액 계산은 한 번만 수행
         const salesAmountKRW = calculateTotalAmount(
           record.salesPriceKRW,
           record.qty
@@ -306,8 +309,6 @@ const MakeOffer = () => {
           updatedSalesPriceGlobal,
           record.qty
         );
-
-        // 구매 금액 계산
         const purchaseAmountKRW = calculateTotalAmount(
           record.purchasePriceKRW,
           record.qty
@@ -327,6 +328,8 @@ const MakeOffer = () => {
           purchaseAmountGlobal,
         };
       });
+
+      return updatedItems;
     });
   }, [
     currentSupplierInfo,
@@ -335,12 +338,18 @@ const MakeOffer = () => {
     calculateTotalAmount,
   ]);
 
-  // formValues의 currency가 변경될 때 updateGlobalPrices 호출
+  // 환율 변경 시 실행되는 useEffect
   useEffect(() => {
     if (formValues?.currency) {
-      updateGlobalPrices();
+      const timer = setTimeout(async () => {
+        setIsUpdatingGlobalPrices(true); // 업데이트 시작
+        await updateGlobalPrices(); // updateGlobalPrices가 완료될 때까지 대기
+        applyDcAndCharge("multiple"); // 그 후에 DC와 Charge 적용
+        setIsUpdatingGlobalPrices(false); // 업데이트 완료
+      }, 300);
+      return () => clearTimeout(timer);
     }
-  }, [formValues?.currency, updateGlobalPrices]);
+  }, [formValues?.currency]);
 
   // 데이터 로드 및 상태 업데이트 함수
   const loadOfferDetail = async () => {
@@ -808,7 +817,6 @@ const MakeOffer = () => {
   const applyDcAndCharge = (mode: string) => {
     if (mode === "single" && !currentDetailItems) return;
     if (mode === "multiple" && combinedItemDetails.length === 0) {
-      message.warning("Please select a supplier first");
       return;
     }
 
@@ -947,19 +955,20 @@ const MakeOffer = () => {
         });
   };
 
+  // combinedItemDetails 변경 시 실행되는 useEffect 수정
   useEffect(() => {
-    if (combinedItemDetails.length > 0 && !showPDFPreview) {
-      // 이전 상태와 현재 상태를 비교하여 실제 변경이 있을 때만 실행
+    if (combinedItemDetails.length > 0) {
       const hasChanged =
         JSON.stringify(combinedItemDetails) !==
         JSON.stringify(prevCombinedItemDetails.current);
 
-      if (hasChanged) {
+      if (hasChanged && !isUpdatingGlobalPrices) {
+        // 글로벌 가격 업데이트 중이 아닐 때만 실행
         prevCombinedItemDetails.current = combinedItemDetails;
         applyDcAndCharge("multiple");
       }
     }
-  }, [combinedItemDetails, activeKey, showPDFPreview]);
+  }, [combinedItemDetails, activeKey]);
 
   useEffect(() => {
     if (combinedItemDetails.length > 0) {
@@ -969,6 +978,8 @@ const MakeOffer = () => {
       return () => clearTimeout(timer); // cleanup 함수
     }
   }, [formValues.currency]);
+
+  console.log(finalTotals);
 
   /**********************************************************************/
 
