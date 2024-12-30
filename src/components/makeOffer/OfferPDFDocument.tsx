@@ -484,7 +484,7 @@ const renderTableRows = (items: ItemDetailType[], language: string) => {
             </View>
             <View style={[styles.tablePriceCol]}>
               <Text style={styles.tableCell}>
-                {item.itemRemark !== ""
+                {item.itemRemark
                   ? " "
                   : language === "KOR"
                   ? item.salesPriceKRW?.toLocaleString("ko-KR")
@@ -495,7 +495,7 @@ const renderTableRows = (items: ItemDetailType[], language: string) => {
             </View>
             <View style={[styles.tablePriceCol]}>
               <Text style={styles.tableCell}>
-                {item.itemRemark !== ""
+                {item.itemRemark
                   ? item.itemRemark
                   : language === "KOR"
                   ? item.salesAmountKRW?.toLocaleString("ko-KR")
@@ -534,7 +534,7 @@ const renderTableRows = (items: ItemDetailType[], language: string) => {
             </View>
             <View style={[styles.tableDashPriceCol]}>
               <Text style={styles.tableCell}>
-                {item.itemRemark !== ""
+                {item.itemRemark
                   ? " "
                   : language === "KOR"
                   ? item.salesPriceKRW?.toLocaleString("ko-KR")
@@ -545,7 +545,7 @@ const renderTableRows = (items: ItemDetailType[], language: string) => {
             </View>
             <View style={[styles.tableDashPriceCol, { alignItems: "center" }]}>
               <Text style={styles.tableCell}>
-                {item.itemRemark !== ""
+                {item.itemRemark
                   ? item.itemRemark
                   : language === "KOR"
                   ? item.salesAmountKRW?.toLocaleString("ko-KR")

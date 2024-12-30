@@ -148,6 +148,7 @@ const OrderDetail = () => {
     useState<boolean>(false);
   const [loadedCIPLHeader, setLoadedCIPLHeader] =
     useState<CIPLHeaderFormData>(INITIAL_PL_VALUES);
+  const [withLogo, setWithLogo] = useState<boolean>(true);
 
   useEffect(() => {
     if (language === "KOR") {
@@ -871,6 +872,15 @@ const OrderDetail = () => {
         >
           PDF Download
         </Button>
+        {(pdfType === "CIPL" || pdfType === "PL") && (
+          <Checkbox
+            checked={withLogo}
+            onChange={() => setWithLogo(!withLogo)}
+            style={{ marginLeft: 10 }}
+          >
+            With Logo
+          </Checkbox>
+        )}
       </div>
       {pdfType === "PO" && showPDFPreview && formValues && supplier && (
         <PurchaseOrderPDFDocument
@@ -910,6 +920,7 @@ const OrderDetail = () => {
             finalTotals={finalTotals}
             dcInfo={dcInfo}
             invChargeList={invChargeList}
+            withLogo={withLogo}
           />
         )}
       {pdfType === "PO" && headerEditModalVisible && (
