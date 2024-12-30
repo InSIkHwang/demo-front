@@ -720,63 +720,110 @@ const renderHeader = (
             </Text>
           </View>
         </View>
-        <View style={{ flexDirection: "row" }}>
-          <View style={styles.inquiryInfoColumn}>
-            <View style={[styles.CIPLInfoBox]}>
-              <View style={styles.inquiryInfoText}>
-                <Text style={styles.inquiryInfoTitle}>④Port of loading</Text>
+        {pdfHeader?.finalDestination || pdfHeader?.sailingOnOr ? (
+          <>
+            <View style={{ flexDirection: "row" }}>
+              <View style={styles.inquiryInfoColumn}>
+                <View style={[styles.CIPLInfoBox]}>
+                  <View style={styles.inquiryInfoText}>
+                    <Text style={styles.inquiryInfoTitle}>
+                      ④Port of loading
+                    </Text>
+                  </View>
+                  <View style={styles.inquiryInfoText}>
+                    <Text style={{ lineHeight: 1.2 }}>
+                      {pdfHeader?.portOfLoading || " "}
+                    </Text>
+                  </View>
+                </View>
               </View>
-              <View style={styles.inquiryInfoText}>
-                <Text style={{ lineHeight: 1.2 }}>
-                  {pdfHeader?.portOfLoading || " "}
-                </Text>
-              </View>
-            </View>
-          </View>
-          {/* <View style={[styles.inquiryInfoColumn, { flex: 0.9 }]}>
-            <View style={[styles.CIPLInfoBox]}>
-              <View style={styles.inquiryInfoText}>
-                <Text style={styles.inquiryInfoTitle}>⑤Final destination</Text>
-              </View>
-              <View style={styles.inquiryInfoText}>
-                <Text style={{ lineHeight: 1.2 }}>
-                  {pdfHeader?.finalDestination || " "}
-                </Text>
-              </View>
-            </View>
-          </View> */}
-          <View style={styles.inquiryInfoColumn}>
-            <View style={[styles.CIPLInfoBox]}>
-              <View style={styles.inquiryInfoText}>
-                <Text style={styles.inquiryInfoTitle}>⑥Vessel & Voyage</Text>
-              </View>
-              <View style={styles.inquiryInfoText}>
-                <Text style={{ lineHeight: 1.2 }}>
-                  {pdfHeader?.vesselAndVoyage?.split("") || " "}
-                </Text>
+              <View style={[styles.inquiryInfoColumn, { flex: 0.9 }]}>
+                <View style={[styles.CIPLInfoBox]}>
+                  <View style={styles.inquiryInfoText}>
+                    <Text style={styles.inquiryInfoTitle}>
+                      ⑤Final destination
+                    </Text>
+                  </View>
+                  <View style={styles.inquiryInfoText}>
+                    <Text style={{ lineHeight: 1.2 }}>
+                      {pdfHeader?.finalDestination || " "}
+                    </Text>
+                  </View>
+                </View>
               </View>
             </View>
-          </View>
-        </View>
-        {/* <View style={{ flexDirection: "row" }}>
-          <View style={[styles.inquiryInfoColumn, { flex: 0.9 }]}>
-            <View style={[styles.CIPLInfoBox]}>
-              <View style={styles.inquiryInfoText}>
-                <Text style={styles.inquiryInfoTitle}>⑦Sailing on or</Text>
+            <View style={{ flexDirection: "row" }}>
+              <View style={styles.inquiryInfoColumn}>
+                <View style={[styles.CIPLInfoBox]}>
+                  <View style={styles.inquiryInfoText}>
+                    <Text style={styles.inquiryInfoTitle}>
+                      ⑥Vessel & Voyage
+                    </Text>
+                  </View>
+                  <View style={styles.inquiryInfoText}>
+                    <Text style={{ lineHeight: 1.2 }}>
+                      {pdfHeader?.vesselAndVoyage?.split("") || " "}
+                    </Text>
+                  </View>
+                </View>
               </View>
-              <View style={styles.inquiryInfoText}>
-                <Text style={{ lineHeight: 1.2 }}>
-                  {pdfHeader?.sailingOnOr || " "}
-                </Text>
+              <View style={[styles.inquiryInfoColumn, { flex: 0.9 }]}>
+                <View style={[styles.CIPLInfoBox]}>
+                  <View style={styles.inquiryInfoText}>
+                    <Text style={styles.inquiryInfoTitle}>⑦Sailing on or</Text>
+                  </View>
+                  <View style={styles.inquiryInfoText}>
+                    <Text style={{ lineHeight: 1.2 }}>
+                      {pdfHeader?.sailingOnOr || " "}
+                    </Text>
+                  </View>
+                </View>
               </View>
             </View>
-          </View>
-        </View> */}
+          </>
+        ) : (
+          <>
+            <View style={{ flexDirection: "row" }}>
+              <View style={styles.inquiryInfoColumn}>
+                <View style={[styles.CIPLInfoBox]}>
+                  <View style={styles.inquiryInfoText}>
+                    <Text style={styles.inquiryInfoTitle}>
+                      ④Port of loading
+                    </Text>
+                  </View>
+                  <View style={styles.inquiryInfoText}>
+                    <Text style={{ lineHeight: 1.2 }}>
+                      {pdfHeader?.portOfLoading || " "}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+              <View style={styles.inquiryInfoColumn}>
+                <View style={[styles.CIPLInfoBox]}>
+                  <View style={styles.inquiryInfoText}>
+                    <Text style={styles.inquiryInfoTitle}>
+                      ⑤Vessel & Voyage
+                    </Text>
+                  </View>
+                  <View style={styles.inquiryInfoText}>
+                    <Text style={{ lineHeight: 1.2 }}>
+                      {pdfHeader?.vesselAndVoyage?.split("") || " "}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </>
+        )}
       </View>
       <View style={[styles.inquiryInfoColumn, { flex: 0.9 }]}>
         <View style={[styles.CIPLInfoBox, { flex: 1 }]}>
           <View style={styles.inquiryInfoText}>
-            <Text style={styles.inquiryInfoTitle}>⑧No.& date of invoice</Text>
+            <Text style={styles.inquiryInfoTitle}>
+              {pdfHeader?.finalDestination || pdfHeader?.sailingOnOr
+                ? "⑧No.& date of invoice"
+                : "⑥No.& date of invoice"}
+            </Text>
           </View>
           <View style={styles.inquiryInfoText}>
             <Text style={{ lineHeight: 1.2 }}>
@@ -786,7 +833,11 @@ const renderHeader = (
         </View>
         <View style={[styles.CIPLInfoBox, { flex: 1 }]}>
           <View style={styles.inquiryInfoText}>
-            <Text style={styles.inquiryInfoTitle}>⑨No.& date of L/C</Text>
+            <Text style={styles.inquiryInfoTitle}>
+              {pdfHeader?.finalDestination || pdfHeader?.sailingOnOr
+                ? "⑨No.& date of L/C"
+                : "⑦No.& date of L/C"}
+            </Text>
           </View>
           <View style={styles.inquiryInfoText}>
             <Text style={{ lineHeight: 1.2 }}>
@@ -796,7 +847,11 @@ const renderHeader = (
         </View>
         <View style={[styles.CIPLInfoBox, { flex: 1 }]}>
           <View style={styles.inquiryInfoText}>
-            <Text style={styles.inquiryInfoTitle}>⑩L/C issuing bank</Text>
+            <Text style={styles.inquiryInfoTitle}>
+              {pdfHeader?.finalDestination || pdfHeader?.sailingOnOr
+                ? "⑩L/C issuing bank"
+                : "⑧L/C issuing bank"}
+            </Text>
           </View>
           <View style={styles.inquiryInfoText}>
             <Text style={{ lineHeight: 1.2 }}>
@@ -806,7 +861,11 @@ const renderHeader = (
         </View>
         <View style={[styles.CIPLInfoBox, { flex: 4 }]}>
           <View style={styles.inquiryInfoText}>
-            <Text style={styles.inquiryInfoTitle}>⑪Remarks :</Text>
+            <Text style={styles.inquiryInfoTitle}>
+              {pdfHeader?.finalDestination || pdfHeader?.sailingOnOr
+                ? "⑪Remarks :"
+                : "⑨Remarks :"}
+            </Text>
           </View>
           <View style={styles.inquiryInfoText}>
             <Text style={{ lineHeight: 1.2 }}>{pdfHeader?.remark || " "}</Text>
@@ -926,7 +985,7 @@ const CIPLDocument = ({
   const pdfBody = (
     <Document>
       <Page size="A4" style={styles.page}>
-        <View style={styles.contentWrapper}>
+        <View style={[styles.contentWrapper, !withLogo ? { flex: 1 } : {}]}>
           {renderHeader(mode, logoUrl, headerMessage, language, withLogo)}
           <View style={styles.table}>
             <View
