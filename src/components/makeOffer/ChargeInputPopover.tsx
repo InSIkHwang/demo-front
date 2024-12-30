@@ -1,5 +1,5 @@
 import React, { Dispatch, SetStateAction, useCallback, useEffect } from "react";
-import { Button, Popover, Input, Form, Tooltip } from "antd";
+import { Button, Popover, Input, Form, Tooltip, AutoComplete } from "antd";
 import styled from "styled-components";
 import { InvCharge } from "../../types/types";
 import { PercentageOutlined } from "@ant-design/icons";
@@ -23,6 +23,8 @@ const ChargeBtn = styled(Button)`
   border-radius: 50%;
   transition: all 0.3s;
 `;
+
+const CHARGE_OPTIONS = ["PACKING CHARGE", "FREIGHT CHARGE"];
 
 interface ChargeComponentProps {
   finalTotals: {
@@ -206,12 +208,18 @@ const ChargeInputPopover = ({
           <Form.Item label="Charge Info">
             {invChargeList.map((charge, index) => (
               <InputGroup style={{ marginBottom: 5 }} key={index}>
-                <Input
+                <AutoComplete
                   value={charge.customCharge}
-                  onChange={(e) =>
-                    handleChargeChange(index, "customCharge", e.target.value)
+                  onChange={(value) =>
+                    handleChargeChange(index, "customCharge", value)
                   }
+                  options={CHARGE_OPTIONS.map((option) => ({ value: option }))}
                   placeholder="Enter charge name"
+                  filterOption={(inputValue, option) =>
+                    option!.value
+                      .toUpperCase()
+                      .indexOf(inputValue.toUpperCase()) !== -1
+                  }
                 />
                 <Input
                   type="number" // type을 number로 설정

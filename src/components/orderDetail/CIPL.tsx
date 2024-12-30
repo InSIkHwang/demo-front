@@ -1091,35 +1091,34 @@ const CIPLDocument = ({
                     )}
                   {mode === "CIPL" &&
                     invChargeList &&
-                    invChargeList.length > 0 && (
+                    invChargeList.length > 0 &&
+                    invChargeList.map((charge) => (
                       <View style={styles.inquiryPriceRow}>
-                        {invChargeList.map((charge) => (
-                          <>
-                            <Text style={styles.inquiryPriceLabel}>
-                              {charge.customCharge}
-                            </Text>
-                            <Text style={styles.inquiryPriceValue}>
-                              {language === "KOR"
-                                ? Number(charge.chargePriceKRW)?.toLocaleString(
-                                    "ko-KR",
-                                    {
-                                      style: "currency",
-                                      currency: "KRW",
-                                    }
-                                  )
-                                : Number(
-                                    charge.chargePriceGlobal
-                                  )?.toLocaleString("en-US", {
+                        <>
+                          <Text style={styles.inquiryPriceLabel}>
+                            {charge.customCharge}
+                          </Text>
+                          <Text style={styles.inquiryPriceValue}>
+                            {language === "KOR"
+                              ? Number(charge.chargePriceKRW)?.toLocaleString(
+                                  "ko-KR",
+                                  {
                                     style: "currency",
-                                    currency: info.currencyType,
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2,
-                                  })}
-                            </Text>
-                          </>
-                        ))}
+                                    currency: "KRW",
+                                  }
+                                )
+                              : Number(
+                                  charge.chargePriceGlobal
+                                )?.toLocaleString("en-US", {
+                                  style: "currency",
+                                  currency: info.currencyType,
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })}
+                          </Text>
+                        </>
                       </View>
-                    )}
+                    ))}
 
                   {mode === "CIPL" && (
                     <View

@@ -494,7 +494,7 @@ const renderTableRows = (items: OrderItemDetail[], language: string) => {
             </View>
             <View style={[styles.tablePriceCol]}>
               <Text style={styles.tableCell}>
-                {item.itemRemark 
+                {item.itemRemark
                   ? " "
                   : language === "KOR"
                   ? item.salesPriceKRW?.toLocaleString("ko-KR")
@@ -505,7 +505,7 @@ const renderTableRows = (items: OrderItemDetail[], language: string) => {
             </View>
             <View style={[styles.tablePriceCol]}>
               <Text style={styles.tableCell}>
-                {item.itemRemark 
+                {item.itemRemark
                   ? item.itemRemark
                   : language === "KOR"
                   ? item.salesAmountKRW?.toLocaleString("ko-KR")
@@ -548,7 +548,7 @@ const renderTableRows = (items: OrderItemDetail[], language: string) => {
             </View>
             <View style={[styles.tableDashPriceCol, { alignItems: "center" }]}>
               <Text style={styles.tableCell}>
-                {item.itemRemark 
+                {item.itemRemark
                   ? item.itemRemark
                   : language === "KOR"
                   ? item.salesAmountKRW?.toLocaleString("ko-KR")
@@ -773,7 +773,7 @@ const Footer = () => (
   </View>
 );
 
-const OfferPDFDocument = ({
+const OrderAckPDFDocument = ({
   info,
   items,
   pdfHeader,
@@ -992,9 +992,10 @@ const OfferPDFDocument = ({
                       </Text>
                     </View>
                   )}
-                  {invChargeList && invChargeList.length > 0 && (
-                    <View style={styles.inquiryPriceRow}>
-                      {invChargeList.map((charge) => (
+                  {invChargeList &&
+                    invChargeList.length > 0 &&
+                    invChargeList.map((charge) => (
+                      <View style={styles.inquiryPriceRow}>
                         <>
                           <Text style={styles.inquiryPriceLabel}>
                             {charge.customCharge}
@@ -1018,9 +1019,8 @@ const OfferPDFDocument = ({
                                 })}
                           </Text>
                         </>
-                      ))}
-                    </View>
-                  )}
+                      </View>
+                    ))}
 
                   <View
                     style={[
@@ -1073,4 +1073,4 @@ const OfferPDFDocument = ({
   return pdfBody;
 };
 
-export default OfferPDFDocument;
+export default OrderAckPDFDocument;

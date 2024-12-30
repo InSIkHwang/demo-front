@@ -95,8 +95,8 @@ const styles = StyleSheet.create({
   headerMessage: {
     fontSize: 10,
     textAlign: "left",
-    padding: "10px 0",
-    lineHeight: 1.2,
+    lineHeight: 1.5,
+    backgroundColor: "#d1ebf9",
   },
   inquiryInfoWrap: {
     flexDirection: "row",
@@ -197,10 +197,12 @@ const styles = StyleSheet.create({
     lineHeight: 1.8,
   },
   nonItemtypeCell: {
-    marginLeft: 40,
+    marginLeft: 35,
     fontSize: 9,
     fontFamily: "malgunGothicBold",
     lineHeight: 1.8,
+    backgroundColor: "#d1ebf9",
+    padding: 2,
   },
   desctypeCell: {
     marginLeft: 3,
