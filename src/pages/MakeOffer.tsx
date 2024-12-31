@@ -343,7 +343,7 @@ const MakeOffer = () => {
     if (formValues?.currency) {
       const timer = setTimeout(async () => {
         setIsUpdatingGlobalPrices(true); // 업데이트 시작
-        await updateGlobalPrices(); // updateGlobalPrices가 완료될 때까지 대기
+        updateGlobalPrices(); // updateGlobalPrices가 완료될 때까지 대기
         applyDcAndCharge("multiple"); // 그 후에 DC와 Charge 적용
         setIsUpdatingGlobalPrices(false); // 업데이트 완료
       }, 300);
@@ -488,82 +488,109 @@ const MakeOffer = () => {
     value: any,
     currency: number
   ) => {
-    const updatedItems = [...currentDetailItems];
-    const currentItem = updatedItems[index];
-    let updatedItem = { ...currentItem, [key]: value };
+    setCurrentDetailItems((prevItems) => {
+      const currentItem = prevItems[index];
+      if (!currentItem) return prevItems;
 
-    if (key === "purchasePriceGlobal") {
-      const updatedKRWPrice = Math.round(
-        convertCurrency(value, currency, "KRW")
-      );
-      updatedItem = { ...updatedItem, purchasePriceKRW: updatedKRWPrice };
-      handleMarginChange(index, currentItem.margin || 0);
-    }
+      let updatedItem = { ...currentItem, [key]: value };
+      const margin = currentItem.margin || 0;
 
-    if (key === "purchasePriceKRW") {
-      const updatedGlobalPrice = convertCurrency(value, currency, "USD");
-      updatedItem = { ...updatedItem, purchasePriceGlobal: updatedGlobalPrice };
-      handleMarginChange(index, currentItem.margin || 0);
-    }
+      // 구매가격 변경 시 로직
+      if (key === "purchasePriceGlobal") {
+        const updatedKRWPrice = Math.round(
+          convertCurrency(value, currency, "KRW")
+        );
+        const updatedSalesGlobal = value * (1 + margin / 100);
+        const updatedSalesKRW = Math.round(
+          updatedKRWPrice * (1 + margin / 100)
+        );
 
-    if (key === "salesPriceGlobal") {
-      const updatedKRWPrice = Math.round(
-        convertCurrency(value, currency, "KRW")
-      );
-      updatedItem = { ...updatedItem, salesPriceKRW: updatedKRWPrice };
+        updatedItem = {
+          ...updatedItem,
+          purchasePriceKRW: updatedKRWPrice,
+          salesPriceGlobal: roundToTwoDecimalPlaces(updatedSalesGlobal),
+          salesPriceKRW: updatedSalesKRW,
+        };
+      }
 
-      const margin = parseFloat(
-        (
-          ((value - currentItem.purchasePriceGlobal) /
-            currentItem.purchasePriceGlobal) *
-          100
-        ).toFixed(2)
-      );
-      updatedItem = { ...updatedItem, margin };
-    }
+      if (key === "purchasePriceKRW") {
+        const updatedGlobalPrice = convertCurrency(value, currency, "USD");
+        const updatedSalesKRW = Math.round(value * (1 + margin / 100));
+        const updatedSalesGlobal = updatedGlobalPrice * (1 + margin / 100);
 
-    if (key === "salesPriceKRW") {
-      const updatedGlobalPrice = convertCurrency(value, currency, "USD");
-      updatedItem = { ...updatedItem, salesPriceGlobal: updatedGlobalPrice };
+        updatedItem = {
+          ...updatedItem,
+          purchasePriceGlobal: updatedGlobalPrice,
+          salesPriceKRW: updatedSalesKRW,
+          salesPriceGlobal: roundToTwoDecimalPlaces(updatedSalesGlobal),
+        };
+      }
 
-      const margin = parseFloat(
-        (
-          ((value - currentItem.purchasePriceKRW) /
-            currentItem.purchasePriceKRW) *
-          100
-        ).toFixed(2)
-      );
-      updatedItem = { ...updatedItem, margin };
-    }
+      // 판매가격 변경 시 로직
+      if (key === "salesPriceGlobal") {
+        const updatedKRWPrice = Math.round(
+          convertCurrency(value, currency, "KRW")
+        );
+        const newMargin = parseFloat(
+          (
+            ((value - currentItem.purchasePriceGlobal) /
+              currentItem.purchasePriceGlobal) *
+            100
+          ).toFixed(2)
+        );
 
-    // Calculate amounts
-    const salesAmountKRW = calculateTotalAmount(
-      updatedItem.salesPriceKRW,
-      updatedItem.qty
-    );
-    const salesAmountGlobal = calculateTotalAmount(
-      updatedItem.salesPriceGlobal,
-      updatedItem.qty
-    );
-    const purchaseAmountKRW = calculateTotalAmount(
-      updatedItem.purchasePriceKRW,
-      updatedItem.qty
-    );
-    const purchaseAmountGlobal = calculateTotalAmount(
-      updatedItem.purchasePriceGlobal,
-      updatedItem.qty
-    );
+        updatedItem = {
+          ...updatedItem,
+          salesPriceKRW: updatedKRWPrice,
+          margin: newMargin,
+        };
+      }
 
-    updatedItem = {
-      ...updatedItem,
-      salesAmountKRW,
-      salesAmountGlobal,
-      purchaseAmountKRW,
-      purchaseAmountGlobal,
-    };
+      if (key === "salesPriceKRW") {
+        const updatedGlobalPrice = convertCurrency(value, currency, "USD");
+        const newMargin = parseFloat(
+          (
+            ((value - currentItem.purchasePriceKRW) /
+              currentItem.purchasePriceKRW) *
+            100
+          ).toFixed(2)
+        );
 
-    updatedItems[index] = updatedItem;
-    setCurrentDetailItems(updatedItems);
+        updatedItem = {
+          ...updatedItem,
+          salesPriceGlobal: updatedGlobalPrice,
+          margin: newMargin,
+        };
+      }
+
+      // 수량 기반 금액 계산
+      const qty = updatedItem.qty || 0;
+      const amounts = {
+        salesAmountKRW: calculateTotalAmount(updatedItem.salesPriceKRW, qty),
+        salesAmountGlobal: calculateTotalAmount(
+          updatedItem.salesPriceGlobal,
+          qty
+        ),
+        purchaseAmountKRW: calculateTotalAmount(
+          updatedItem.purchasePriceKRW,
+          qty
+        ),
+        purchaseAmountGlobal: calculateTotalAmount(
+          updatedItem.purchasePriceGlobal,
+          qty
+        ),
+      };
+
+      // 최종 업데이트된 아이템 반환
+      const finalUpdatedItem = {
+        ...updatedItem,
+        ...amounts,
+      };
+
+      const updatedItems = [...prevItems];
+      updatedItems[index] = finalUpdatedItem;
+      return updatedItems;
+    });
   };
 
   const handleFormChange = <K extends keyof typeof formValues>(
@@ -978,8 +1005,6 @@ const MakeOffer = () => {
       return () => clearTimeout(timer); // cleanup 함수
     }
   }, [formValues.currency]);
-
-  console.log(finalTotals);
 
   /**********************************************************************/
 
