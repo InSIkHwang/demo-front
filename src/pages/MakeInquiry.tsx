@@ -234,6 +234,7 @@ const MakeInquiry = () => {
   const [isMailSenderVisible, setIsMailSenderVisible] = useState(false);
   const [isInquirySearchModalVisible, setIsInquirySearchModalVisible] =
     useState(false);
+  const [isShipListModalOpen, setIsShipListModalOpen] = useState(false);
   const [tables, setTables] = useState<InquiryTable[]>([]);
   const [currentTableNo, setCurrentTableNo] = useState<number>(1);
 
@@ -253,6 +254,7 @@ const MakeInquiry = () => {
     customer: [setIsCustomerModalOpen, () => {}],
     vessel: [setIsVesselModalOpen, () => {}],
     supplier: [setIsSupplierModalOpen, () => {}],
+    shipList: [setIsShipListModalOpen, () => {}],
   };
 
   const setModalVisibility = (
@@ -475,7 +477,12 @@ const MakeInquiry = () => {
 
     const customerName = (formValues.customer + "")?.trim();
     customerName ? searchCompanyName(customerName) : resetCompanyData();
-  }, [formValues.customer, isCustomerModalOpen, isVesselModalOpen]);
+  }, [
+    formValues.customer,
+    isCustomerModalOpen,
+    isVesselModalOpen,
+    isShipListModalOpen,
+  ]);
 
   useEffect(() => {
     const updateSelectedVessel = () => {
@@ -934,6 +941,7 @@ const MakeInquiry = () => {
           isCustomerModalOpen={isCustomerModalOpen}
           isVesselModalOpen={isVesselModalOpen}
           isSupplierModalOpen={isSupplierModalOpen}
+          isShipListModalOpen={isShipListModalOpen}
           uniqueSuppliers={uniqueSuppliers}
           setTables={setTables}
         />

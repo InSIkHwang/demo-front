@@ -31,6 +31,7 @@ import {
   searchSupplier,
   searchSupplierUseMaker,
 } from "../../api/api";
+import ShipListModal from "../vessel/ShipListModal";
 
 const { Option } = Select;
 
@@ -141,7 +142,8 @@ interface InquiryFormProps {
       | "inquirySearch"
       | "customer"
       | "vessel"
-      | "supplier",
+      | "supplier"
+      | "shipList",
     isVisible: boolean
   ) => void;
   isCustomerModalOpen: boolean;
@@ -156,6 +158,7 @@ interface InquiryFormProps {
       }[]
     | undefined;
   setTables: Dispatch<SetStateAction<any[]>>;
+  isShipListModalOpen: boolean;
 }
 
 type Presets = Required<ColorPickerProps>["presets"][number];
@@ -249,6 +252,7 @@ const InquiryForm = ({
   uniqueSuppliers,
   isEditMode,
   setTables,
+  isShipListModalOpen,
 }: InquiryFormProps) => {
   const [form] = Form.useForm();
   const [supplierSearch, setSupplierSearch] = useState("");
@@ -655,6 +659,13 @@ const InquiryForm = ({
             >
               Register
             </Button>
+            <Button
+              type="dashed"
+              style={{ position: "absolute", top: "-35px", right: "90px" }}
+              onClick={() => toggleModal("shipList", true)}
+            >
+              Search
+            </Button>
             <AutoComplete
               value={formValues.vesselName}
               onChange={(value, option) => {
@@ -898,6 +909,12 @@ const InquiryForm = ({
           category={"supplier"}
           onClose={() => toggleModal("supplier", false)}
           onUpdate={() => toggleModal("supplier", false)}
+        />
+      )}
+      {isShipListModalOpen && (
+        <ShipListModal
+          isVisible={isShipListModalOpen}
+          onClose={() => toggleModal("shipList", false)}
         />
       )}
     </>
