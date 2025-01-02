@@ -291,9 +291,7 @@ const OfferHeaderEditModal = ({
           <StyledFormItem name="packing" label="PACKING">
             <AutoComplete
               value={form.getFieldValue("packing")}
-              onChange={(value) =>
-                form.setFieldsValue({ termsOfPayment: value })
-              }
+              onChange={(value) => form.setFieldsValue({ packing: value })}
               style={{ width: "100%" }}
               options={PACKING_OPTIONS.map((option) => ({
                 value: option,
