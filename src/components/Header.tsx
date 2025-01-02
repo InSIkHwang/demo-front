@@ -11,6 +11,7 @@ import {
   faTrash,
   faBoxOpen,
   faFileInvoice,
+  faFileInvoiceDollar,
 } from "@fortawesome/free-solid-svg-icons";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -259,6 +260,7 @@ const Header = ({ isAuthenticated, onLogout }: HeaderProps) => {
   const [isCodeOpen, setCodeOpen] = useState(false);
   const [isTrashOpen, setTrashOpen] = useState(false);
   const [isOrderOpen, setOrderOpen] = useState(false);
+  const [isInvoiceOpen, setInvoiceOpen] = useState(false);
   const navigate = useNavigate();
 
   const toggleMenu = (e: React.MouseEvent) => {
@@ -386,6 +388,24 @@ const Header = ({ isAuthenticated, onLogout }: HeaderProps) => {
             onClick={() => handleMenuItemClick(() => navigate("/orderlist"))}
           >
             수주 관리 - Orders
+          </MenuItem>
+        </SubMenu>
+        <MenuItem onClick={() => setInvoiceOpen(!isInvoiceOpen)}>
+          <FontAwesomeIcon
+            icon={faFileInvoiceDollar}
+            style={{ marginRight: "10px" }}
+          />
+          Invoices
+          <FontAwesomeIcon
+            icon={isInvoiceOpen ? faCaretUp : faCaretDown}
+            style={{ marginLeft: "auto", cursor: "pointer" }}
+          />
+        </MenuItem>
+        <SubMenu $isOpen={isInvoiceOpen}>
+          <MenuItem
+            onClick={() => handleMenuItemClick(() => navigate("/invoiceList"))}
+          >
+            매출 관리 - Invoices
           </MenuItem>
         </SubMenu>
         <MenuItem onClick={() => setCodeOpen(!isCodeOpen)}>
