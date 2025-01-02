@@ -677,3 +677,10 @@ export interface CIPLHeaderFormData {
   lcIssuingBank: string;
   remark: string;
 }
+
+export interface InvoiceHeaderFormData {
+  invoiceHeaderId: number | null;
+  messrs: string | "";
+  date: string | "";
+  paymentTerms: string | "";
+}

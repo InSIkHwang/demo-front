@@ -22,6 +22,7 @@ import CreateCompanyModal from "../company/CreateCompanyModal";
 import { debounce } from "lodash";
 import CreateVesselModal from "../vessel/CreateVesselModal";
 import { Color } from "antd/es/color-picker";
+import ShipListModal from "../vessel/ShipListModal";
 
 const { Option } = Select;
 
@@ -142,6 +143,7 @@ const FormComponent = ({
   >([]);
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
   const [isVesselModalOpen, setIsVesselModalOpen] = useState(false);
+  const [isShipListModalOpen, setIsShipListModalOpen] = useState(false);
   const [selectedVessel, setSelectedVessel] = useState<VesselList | null>(null);
   const [autoCompleteOptions, setAutoCompleteOptions] = useState<
     { value: string }[]
@@ -443,6 +445,13 @@ const FormComponent = ({
             >
               Register
             </Button>
+            <Button
+              type="dashed"
+              style={{ position: "absolute", top: "-35px", right: "90px" }}
+              onClick={() => setIsShipListModalOpen(true)}
+            >
+              Search
+            </Button>
             <AutoComplete
               value={formValues.vesselName}
               onChange={(value, option) => {
@@ -526,6 +535,12 @@ const FormComponent = ({
         <CreateVesselModal
           onClose={() => setIsVesselModalOpen(false)}
           onUpdate={() => setIsVesselModalOpen(false)}
+        />
+      )}
+      {isShipListModalOpen && (
+        <ShipListModal
+          isVisible={isShipListModalOpen}
+          onClose={() => setIsShipListModalOpen(false)}
         />
       )}
     </>
