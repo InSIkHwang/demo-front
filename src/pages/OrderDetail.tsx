@@ -676,6 +676,21 @@ const OrderDetail = () => {
             invChargeList={invChargeList}
           />
         );
+      } else if (pdfType === "CIPL" || pdfType === "PL") {
+        doc = (
+          <CIPLDocument
+            mode={pdfType}
+            info={formValues}
+            items={items}
+            pdfHeader={pdfCIPLHeader}
+            viewMode={false}
+            language={language}
+            finalTotals={finalTotals}
+            dcInfo={dcInfo}
+            invChargeList={invChargeList}
+            withLogo={withLogo}
+          />
+        );
       }
 
       const pdfBlob = await pdf(doc).toBlob();
@@ -691,6 +706,10 @@ const OrderDetail = () => {
         defaultFileName = `${formValues.refNumber}(주문확인서).pdf`;
       } else if (pdfType === "OA" && language === "ENG") {
         defaultFileName = `${formValues.refNumber}(ORDER_ACK).pdf`;
+      } else if (pdfType === "CIPL") {
+        defaultFileName = `${formValues.refNumber}(INVOICE/PACKING LIST).pdf`;
+      } else if (pdfType === "PL") {
+        defaultFileName = `${formValues.refNumber}(PACKING LIST).pdf`;
       }
 
       let modalInstance: any;
