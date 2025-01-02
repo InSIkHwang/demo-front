@@ -173,8 +173,14 @@ const OfferHeaderEditModal = ({
   const handleSave = () => {
     const headerData = headerChk
       ? {
-          ...form.getFieldsValue(),
           quotationHeaderId: pdfHeader.quotationHeaderId || null,
+          portOfShipment: form.getFieldValue("portOfShipment"),
+          deliveryTime: form.getFieldValue("deliveryTime"),
+          termsOfPayment: form.getFieldValue("termsOfPayment"),
+          incoterms: form.getFieldValue("incoterms"),
+          offerValidity: form.getFieldValue("offerValidity"),
+          partCondition: form.getFieldValue("partCondition"),
+          packing: form.getFieldValue("packing"),
         }
       : {
           quotationHeaderId: pdfHeader.quotationHeaderId || null,
@@ -262,7 +268,13 @@ const OfferHeaderEditModal = ({
         </FormRow>
         <FormRow>
           <StyledFormItem name="offerValidity" label="OFFER VALIDITY">
-            <Input.TextArea placeholder="DAYS" />
+            <Input.TextArea
+              placeholder="DAYS"
+              value={form.getFieldValue("offerValidity")}
+              onChange={(e) =>
+                form.setFieldsValue({ offerValidity: e.target.value })
+              }
+            />
           </StyledFormItem>
           <StyledFormItem name="partCondition" label="PART CONDITION">
             <AutoComplete

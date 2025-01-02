@@ -808,7 +808,6 @@ const OfferPDFDocument = ({
   dcInfo,
   invChargeList,
 }: PDFDocumentProps) => {
-  const headerMessage = pdfHeader;
   const calculateTotalSalesAmount = (items: ItemDetailType[]) => {
     if (language === "KOR") {
       return items.reduce((total, item) => total + item.salesAmountKRW, 0);
@@ -816,6 +815,8 @@ const OfferPDFDocument = ({
       return items.reduce((total, item) => total + item.salesAmountGlobal, 0);
     }
   };
+
+  console.log(pdfHeader);
 
   const totalSalesAmount = calculateTotalSalesAmount(items);
   const dcAmountGlobal = totalSalesAmount * (dcInfo.dcPercent / 100);

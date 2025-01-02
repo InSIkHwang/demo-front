@@ -22,7 +22,6 @@ import {
 } from "../types/types";
 import LoadingSpinner from "../components/LoadingSpinner";
 import FormComponent from "../components/orderDetail/FormComponent";
-import TableComponent from "../components/orderDetail/TableComponent";
 import TotalCardsComponent from "../components/makeOffer/TotalCardsComponent";
 import PurchaseOrderPDFDocument from "../components/orderDetail/PurchaseOrder";
 import POHeaderEditModal from "../components/orderDetail/POHeaderEditModal";
@@ -32,6 +31,7 @@ import ChangeSupplierModal from "../components/orderDetail/ChangeSupplierModal";
 import { pdf } from "@react-pdf/renderer";
 import CIPLDocument from "../components/orderDetail/CIPL";
 import CIPLHeaderEditModal from "../components/orderDetail/CIPLHeaderEditModal";
+import TableComponent from "../components/InvoiceDetail/TableComponent";
 
 const Container = styled.div`
   position: relative;
@@ -100,6 +100,7 @@ const InvoiceDetail = () => {
   const [formValues, setFormValues] = useState<Order>();
   const [items, setItems] = useState<OrderItemDetail[]>([]);
   const [supplier, setSupplier] = useState<OrderSupplier>();
+  const [invoiceNumber, setInvoiceNumber] = useState<string>("BAS-25-001");
   const navigate = useNavigate();
   const [orderData, setOrderData] = useState<OrderResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -125,50 +126,10 @@ const InvoiceDetail = () => {
   const [language, setLanguage] = useState<string>("KOR");
   const [headerEditModalVisible, setHeaderEditModalVisible] =
     useState<boolean>(false);
-  const [pdfType, setPdfType] = useState<string>("PO");
-  const [pdfPOHeader, setPdfPOHeader] = useState<{
-    orderHeaderId: number | null;
-    receiverType: string;
-  }>({
-    orderHeaderId: null,
-    receiverType: "SUPPLIER",
-  });
-  const [pdfPOFooter, setPdfPOFooter] = useState<orderRemark>({
-    orderRemarkId: null,
-    orderRemark:
-      "1. 귀사의 무궁한 발전을 기원합니다.\n2. 상기와 같이 발주하오니 업무에 참조하시기 바랍니다.\n3. 세금 계산서 - 법인\n4. 희망 납기일 - \n5. 예정 납기일 포함된 발주서 접수 회신 메일 부탁 드립니다. 감사합니다.",
-  });
+  const [pdfType, setPdfType] = useState<string>("INVOICEORIGINAL");
   const [pdfOrderAckHeader, setPdfOrderAckHeader] =
     useState<OrderAckHeaderFormData>(INITIAL_HEADER_VALUES);
   const [pdfOrderAckFooter, setPdfOrderAckFooter] = useState<orderRemark[]>([]);
-  const [pdfCIPLHeader, setPdfCIPLHeader] =
-    useState<CIPLHeaderFormData>(TEST_PL_VALUES);
-  const [loadedCIPLHeader, setLoadedCIPLHeader] =
-    useState<CIPLHeaderFormData>(INITIAL_PL_VALUES);
-  const [withLogo, setWithLogo] = useState<boolean>(true);
-
-  useEffect(() => {
-    if (language === "KOR") {
-      setPdfPOHeader((prev) => ({
-        orderHeaderId: prev.orderHeaderId,
-        receiverType: "SUPPLIER",
-      }));
-      setPdfPOFooter((prev) => ({
-        orderRemarkId: prev.orderRemarkId,
-        orderRemark:
-          "1. 귀사의 무궁한 발전을 기원합니다.\n2. 상기와 같이 발주하오니 업무에 참조하시기 바랍니다.\n3. 세금 계산서 - 법인\n4. 희망 납기일 - \n5. 예정 납기일 포함된 발주서 접수 회신 메일 부탁 드립니다. 감사합니다.",
-      }));
-    } else {
-      setPdfPOHeader((prev) => ({
-        orderHeaderId: prev.orderHeaderId,
-        receiverType: "SUPPLIER",
-      }));
-      setPdfPOFooter((prev) => ({
-        orderRemarkId: prev.orderRemarkId,
-        orderRemark: "EXPECTED DELIVERY DATE : ",
-      }));
-    }
-  }, [language]);
 
   const loadOrderDetail = async () => {
     try {
@@ -191,50 +152,6 @@ const InvoiceDetail = () => {
         data.orderHeaderResponse?.orderCustomerHeader || INITIAL_HEADER_VALUES
       );
       setPdfOrderAckFooter(data.orderHeaderResponse?.orderCustomerRemark || []);
-      setPdfPOHeader({
-        orderHeaderId:
-          data.orderHeaderResponse?.orderSupplierHeader?.orderHeaderId || null,
-        receiverType: "SUPPLIER",
-      });
-      setPdfPOFooter(
-        data.orderHeaderResponse?.orderSupplierRemark[0] || {
-          orderRemarkId: null,
-          orderRemark:
-            "1. 귀사의 무궁한 발전을 기원합니다.\n2. 상기와 같이 발주하오니 업무에 참조하시기 바랍니다.\n3. 세금 계산서 - 법인\n4. 희망 납기일 - \n5. 예정 납기일 포함된 발주서 접수 회신 메일 부탁 드립니다. 감사합니다.",
-        }
-      );
-
-      setLoadedCIPLHeader({
-        ciPlId: data?.orderCiPlResponse?.ciPlId || null,
-        shipper:
-          "BAS KOREA CO.\n43-4, Gyeongjeoncheol-ro 24beon-gil,\nGangseo-gu, Busan, Korea / 46719\nTel: +82-51-977-7070, Fax: +82-51-793-0635",
-        forAccountAndRiskOfMessers: `MASTER OF ${data.documentInfo.vesselName}\nSHIP'S SPARES IN TRANSIT`,
-        notifyParty: "",
-        portOfLoading: "BUSAN, KOREA",
-        finalDestination: "",
-        vesselAndVoyage: data.documentInfo.vesselName,
-        sailingOnOr: "",
-        noAndDateOfInvoice: `${data.documentInfo.refNumber}, ${dayjs().format(
-          "DD MMM, YYYY"
-        )}`,
-        noAndDateOfPo: data.documentInfo.documentNumber,
-        lcIssuingBank: data.documentInfo.companyName,
-        remark:
-          "SHIPS SPARES IN TRANSIT\nPACKING DETAILS\n\nHS CODE: 8409.99-9000\nCOUNTRY OF ORIGIN: KOREA",
-      });
-
-      setPdfCIPLHeader(
-        data.orderCiPlResponse || {
-          ...INITIAL_PL_VALUES,
-          forAccountAndRiskOfMessers: `MASTER OF ${data.documentInfo.vesselName}\nSHIP'S SPARES IN TRANSIT`,
-          vesselAndVoyage: data.documentInfo.vesselName,
-          noAndDateOfInvoice: `${data.documentInfo.refNumber}, ${dayjs().format(
-            "DD MMM, YYYY"
-          )}`,
-          noAndDateOfPo: data.documentInfo.documentNumber,
-          lcIssuingBank: data.documentInfo.companyName,
-        }
-      );
     } catch (error) {
       console.error("Order detail error:", error);
       message.error("Failed to load order detail.");
@@ -637,20 +554,7 @@ const InvoiceDetail = () => {
 
     try {
       let doc;
-      if (pdfType === "PO") {
-        doc = (
-          <PurchaseOrderPDFDocument
-            info={formValues}
-            items={items}
-            pdfHeader={pdfPOHeader}
-            viewMode={false}
-            language={language}
-            pdfFooter={pdfPOFooter}
-            finalTotals={finalTotals}
-            supplier={supplier}
-          />
-        );
-      } else if (pdfType === "OA") {
+      if (pdfType === "OA") {
         doc = (
           <OrderAckPDFDocument
             info={formValues}
@@ -746,18 +650,10 @@ const InvoiceDetail = () => {
     footer: orderRemark[]
   ) => {
     const response = await saveOrderHeader(Number(invoiceId), header, footer);
-    if (header.receiverType === "PO") {
-      setPdfPOHeader(response.orderSupplierHeader);
-      setPdfPOFooter(response.orderSupplierRemark);
-    } else if (header.receiverType === "OA") {
+    if (header.receiverType === "OA") {
       setPdfOrderAckHeader(response.orderCustomerHeader);
       setPdfOrderAckFooter(response.orderCustomerRemark);
     }
-  };
-
-  const SaveCIPLHeader = async (header: CIPLHeaderFormData) => {
-    const response = await saveCIPLHeader(Number(invoiceId), header);
-    setPdfCIPLHeader(response);
   };
 
   if (isLoading) {
@@ -776,7 +672,7 @@ const InvoiceDetail = () => {
         Invoice Item List
       </Divider>
 
-      {items && supplier && (
+      {items && (
         <TableComponent
           itemDetails={items}
           setItemDetails={setItems}
@@ -787,7 +683,7 @@ const InvoiceDetail = () => {
           handleMarginChange={handleMarginChange}
           handlePriceInputChange={handlePriceInputChange}
           orderId={orderData.documentInfo.orderId || 0}
-          supplier={supplier}
+          invoiceNumber={invoiceNumber}
           // pdfUrl={pdfUrl}
           // supplierName={supplier.supplierName}
           // documentNumber={orderData.documentInfo.documentNumber}
@@ -833,12 +729,11 @@ const InvoiceDetail = () => {
           value={pdfType}
           onChange={handlePdfTypeChange}
         >
-          <Select.Option value="PO">PURCHASE ORDER</Select.Option>
-          <Select.Option value="OA">ORDER ACKNOWLEDGEMENT</Select.Option>
-          <Select.Option value="CIPL">
-            COMMERCIAL INVOICE / PACKING LIST
+          <Select.Option value="INVOICEORIGINAL">
+            INVOICE ORIGINAL
           </Select.Option>
-          <Select.Option value="PL">PACKING LIST</Select.Option>
+          <Select.Option value="INVOICECOPY">INVOICE COPY</Select.Option>
+          <Select.Option value="CREDITNOTE">CREDIT NOTE</Select.Option>
         </Select>
         <Button
           style={{ marginLeft: 10 }}
@@ -854,29 +749,24 @@ const InvoiceDetail = () => {
         >
           PDF Download
         </Button>
-        {(pdfType === "CIPL" || pdfType === "PL") && (
-          <Checkbox
-            checked={withLogo}
-            onChange={() => setWithLogo(!withLogo)}
-            style={{ marginLeft: 10 }}
-          >
-            With Logo
-          </Checkbox>
-        )}
       </div>
-      {pdfType === "PO" && showPDFPreview && formValues && supplier && (
-        <PurchaseOrderPDFDocument
-          info={formValues}
-          items={items}
-          pdfHeader={pdfPOHeader}
-          viewMode={true}
-          language={language}
-          pdfFooter={pdfPOFooter}
-          finalTotals={finalTotals}
-          supplier={supplier}
-        />
-      )}
-      {pdfType === "OA" && showPDFPreview && formValues && (
+      {pdfType === "INVOICEORIGINAL" &&
+        showPDFPreview &&
+        formValues &&
+        supplier && (
+          <OrderAckPDFDocument
+            info={formValues}
+            items={items}
+            pdfHeader={pdfOrderAckHeader}
+            viewMode={true}
+            language={language}
+            pdfFooter={pdfOrderAckFooter}
+            finalTotals={finalTotals}
+            dcInfo={dcInfo}
+            invChargeList={invChargeList}
+          />
+        )}
+      {pdfType === "INVOICECOPY" && showPDFPreview && formValues && (
         <OrderAckPDFDocument
           info={formValues}
           items={items}
@@ -889,36 +779,20 @@ const InvoiceDetail = () => {
           invChargeList={invChargeList}
         />
       )}
-      {(pdfType === "CIPL" || pdfType === "PL") &&
-        showPDFPreview &&
-        formValues && (
-          <CIPLDocument
-            mode={pdfType}
-            info={formValues}
-            items={items}
-            pdfHeader={pdfCIPLHeader}
-            viewMode={true}
-            language={language}
-            finalTotals={finalTotals}
-            dcInfo={dcInfo}
-            invChargeList={invChargeList}
-            withLogo={withLogo}
-          />
-        )}
-      {pdfType === "PO" && headerEditModalVisible && (
-        <POHeaderEditModal
-          visible={headerEditModalVisible}
-          onClose={handleCloseHeaderModal}
-          pdfPOHeader={pdfPOHeader}
-          pdfPOFooter={pdfPOFooter}
-          setPdfPOHeader={setPdfPOHeader}
-          setPdfPOFooter={setPdfPOFooter}
+      {pdfType === "CREDITNOTE" && showPDFPreview && formValues && (
+        <OrderAckPDFDocument
+          info={formValues}
+          items={items}
+          pdfHeader={pdfOrderAckHeader}
+          viewMode={true}
           language={language}
-          setLanguage={setLanguage}
-          commonSaveHeader={commonSaveHeader}
+          pdfFooter={pdfOrderAckFooter}
+          finalTotals={finalTotals}
+          dcInfo={dcInfo}
+          invChargeList={invChargeList}
         />
       )}
-      {pdfType === "OA" && headerEditModalVisible && (
+      {headerEditModalVisible && (
         <OrderAckHeaderEditModal
           open={headerEditModalVisible}
           onSave={commonSaveHeader}
@@ -927,16 +801,6 @@ const InvoiceDetail = () => {
           pdfFooter={pdfOrderAckFooter}
           setPdfOrderAckHeader={setPdfOrderAckHeader}
           setPdfOrderAckFooter={setPdfOrderAckFooter}
-        />
-      )}
-      {(pdfType === "CIPL" || pdfType === "PL") && headerEditModalVisible && (
-        <CIPLHeaderEditModal
-          open={headerEditModalVisible}
-          onSave={SaveCIPLHeader}
-          onClose={handleCloseHeaderModal}
-          pdfCIPLHeader={pdfCIPLHeader}
-          setPdfCIPLHeader={setPdfCIPLHeader}
-          loadedCIPLHeader={loadedCIPLHeader}
         />
       )}
     </Container>

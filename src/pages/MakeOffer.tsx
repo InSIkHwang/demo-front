@@ -1378,6 +1378,8 @@ const MakeOffer = () => {
 
   const handlePDFDownload = async () => {
     try {
+      console.log(pdfHeader);
+
       const doc = (
         <OfferPDFDocument
           info={newDocumentInfo!}
