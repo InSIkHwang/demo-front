@@ -12,6 +12,7 @@ import {
 import {
   CIPLHeaderFormData,
   InvCharge,
+  InvoiceHeaderFormData,
   Order,
   OrderAckHeaderFormData,
   OrderItemDetail,
@@ -23,15 +24,12 @@ import {
 import LoadingSpinner from "../components/LoadingSpinner";
 import FormComponent from "../components/orderDetail/FormComponent";
 import TotalCardsComponent from "../components/makeOffer/TotalCardsComponent";
-import PurchaseOrderPDFDocument from "../components/orderDetail/PurchaseOrder";
-import POHeaderEditModal from "../components/orderDetail/POHeaderEditModal";
-import OrderAckHeaderEditModal from "../components/orderDetail/OrderAckHeaderEditModal";
 import OrderAckPDFDocument from "../components/orderDetail/OrderAckPDFDocument";
-import ChangeSupplierModal from "../components/orderDetail/ChangeSupplierModal";
 import { pdf } from "@react-pdf/renderer";
-import CIPLDocument from "../components/orderDetail/CIPL";
-import CIPLHeaderEditModal from "../components/orderDetail/CIPLHeaderEditModal";
 import TableComponent from "../components/InvoiceDetail/TableComponent";
+import InvoicePDFDocument from "../components/InvoiceDetail/InvoicePDFDocument";
+import InvoiceHeaderEditModal from "../components/InvoiceDetail/InvoiceHeaderEditModal";
+import CreditNotePopover from "../components/InvoiceDetail/CreditNotePopover";
 
 const Container = styled.div`
   position: relative;
@@ -50,49 +48,11 @@ const Title = styled.h1`
   color: #333;
 `;
 
-const INITIAL_HEADER_VALUES: OrderAckHeaderFormData = {
-  orderHeaderId: null,
-  portOfShipment: "BUSAN, KOREA",
-  deliveryTime: dayjs().format("DD MMM, YYYY").toUpperCase(),
-  termsOfPayment: "",
-  incoterms: "EX WORKS",
-  receiverType: "CUSTOMER",
-  packing: "UNPACKED",
-};
-
-const INITIAL_PL_VALUES: CIPLHeaderFormData = {
-  ciPlId: null,
-  shipper:
-    "BAS KOREA CO.\n43-4, Gyeongjeoncheol-ro 24beon-gil,\nGangseo-gu, Busan, Korea / 46719\nTel: +82-51-977-7070, Fax: +82-51-793-0635",
-  forAccountAndRiskOfMessers: "MASTER OF \nSHIP'S SPARES IN TRANSIT",
-  notifyParty: "",
-  portOfLoading: "BUSAN, KOREA",
-  finalDestination: "",
-  vesselAndVoyage: "",
-  sailingOnOr: "",
-  noAndDateOfInvoice: "",
-  noAndDateOfPo: "",
-  lcIssuingBank: "",
-  remark:
-    "SHIPS SPARES IN TRANSIT\nPACKING DETAILS\n\nHS CODE: 8409.99-9000\nCOUNTRY OF ORIGIN: KOREA",
-};
-
-const TEST_PL_VALUES: CIPLHeaderFormData = {
-  ciPlId: 1,
-  shipper:
-    "BAS KOREA CO.\n43-4, Gyeongjeoncheol-ro 24beon-gil,\nGangseo-gu, Busan, Korea / 46719\nTel: +82-51-977-7070, Fax: +82-51-793-0635",
-  forAccountAndRiskOfMessers:
-    "MASTER OF DELBIN\nSHIP'S SPARES IN TRANSIT\nAddress: W128/A, Dubai Maritime City, U.A.E\nCompany name: AvidMarine\nContact Person: Seyed Amin For Hazim",
-  notifyParty: "Contact Number: +971522725950",
-  portOfLoading: "BUSAN, KOREA",
-  finalDestination: "",
-  vesselAndVoyage: "DELBIN",
-  sailingOnOr: "",
-  noAndDateOfInvoice: "V-24-6012-132-E/03, 20 DEC, 2024",
-  noAndDateOfPo: "BAS240829-074",
-  lcIssuingBank: "YSH MARINE",
-  remark:
-    "SHIPS SPARES IN TRANSIT\nPACKING DETAILS\n40 X 31 X 26 CM 14 KG 1 CARTON\nHS CODE: 8409.99-9000\nCOUNTRY OF ORIGIN: KOREA",
+const INITIAL_HEADER_VALUES: InvoiceHeaderFormData = {
+  invoiceHeaderId: null,
+  messrs: "",
+  date: dayjs().format("DD MMM, YYYY").toUpperCase(),
+  paymentTerms: "DAYS",
 };
 
 const InvoiceDetail = () => {
@@ -127,9 +87,10 @@ const InvoiceDetail = () => {
   const [headerEditModalVisible, setHeaderEditModalVisible] =
     useState<boolean>(false);
   const [pdfType, setPdfType] = useState<string>("INVOICEORIGINAL");
-  const [pdfOrderAckHeader, setPdfOrderAckHeader] =
-    useState<OrderAckHeaderFormData>(INITIAL_HEADER_VALUES);
-  const [pdfOrderAckFooter, setPdfOrderAckFooter] = useState<orderRemark[]>([]);
+  const [pdfInvoiceHeader, setPdfInvoiceHeader] =
+    useState<InvoiceHeaderFormData>(INITIAL_HEADER_VALUES);
+  const [pdfInvoiceFooter, setPdfInvoiceFooter] = useState<orderRemark[]>([]);
+  const [creditNoteAmount, setCreditNoteAmount] = useState<OrderItemDetail>();
 
   const loadOrderDetail = async () => {
     try {
@@ -148,10 +109,11 @@ const InvoiceDetail = () => {
         dcKrw: 0,
         dcGlobal: 0,
       });
-      setPdfOrderAckHeader(
-        data.orderHeaderResponse?.orderCustomerHeader || INITIAL_HEADER_VALUES
-      );
-      setPdfOrderAckFooter(data.orderHeaderResponse?.orderCustomerRemark || []);
+      setPdfInvoiceHeader({
+        ...INITIAL_HEADER_VALUES,
+        messrs: data.documentInfo.companyName,
+      });
+      setPdfInvoiceFooter(data.orderHeaderResponse?.orderCustomerRemark || []);
     } catch (error) {
       console.error("Order detail error:", error);
       message.error("Failed to load order detail.");
@@ -554,15 +516,17 @@ const InvoiceDetail = () => {
 
     try {
       let doc;
-      if (pdfType === "OA") {
+      if (pdfType === "INVOICEORIGINAL") {
         doc = (
-          <OrderAckPDFDocument
+          <InvoicePDFDocument
+            invoiceNumber={invoiceNumber}
+            pdfType={pdfType}
             info={formValues}
             items={items}
-            pdfHeader={pdfOrderAckHeader}
+            pdfHeader={pdfInvoiceHeader}
             viewMode={false}
             language={language}
-            pdfFooter={pdfOrderAckFooter}
+            pdfFooter={pdfInvoiceFooter}
             finalTotals={finalTotals}
             dcInfo={dcInfo}
             invChargeList={invChargeList}
@@ -641,19 +605,39 @@ const InvoiceDetail = () => {
   };
 
   const commonSaveHeader = async (
-    header:
-      | OrderAckHeaderFormData
-      | {
-          orderHeaderId: number | null;
-          receiverType: string;
-        },
+    header: InvoiceHeaderFormData,
     footer: orderRemark[]
   ) => {
-    const response = await saveOrderHeader(Number(invoiceId), header, footer);
-    if (header.receiverType === "OA") {
-      setPdfOrderAckHeader(response.orderCustomerHeader);
-      setPdfOrderAckFooter(response.orderCustomerRemark);
-    }
+    // const response = await saveInvoiceHeader(Number(invoiceId), header, footer);
+
+    console.log("header", header);
+
+    setPdfInvoiceHeader(header);
+    setPdfInvoiceFooter(footer);
+  };
+
+  const handleCreditNoteApply = (krwAmount: number, globalAmount: number) => {
+    setCreditNoteAmount({
+      ordersItemId: null,
+      itemType: "ITEM",
+      itemCode: "",
+      itemName: "CREDIT NOTE",
+      itemRemark: "",
+      qty: 1,
+      position: 1,
+      unit: "EA",
+      indexNo: null,
+      salesPriceKRW: krwAmount,
+      salesPriceGlobal: globalAmount,
+      salesAmountKRW: krwAmount,
+      salesAmountGlobal: globalAmount,
+      margin: 0,
+      purchasePriceKRW: 0,
+      purchasePriceGlobal: 0,
+      purchaseAmountKRW: 0,
+      purchaseAmountGlobal: 0,
+      deliveryDate: 0,
+    });
   };
 
   if (isLoading) {
@@ -749,58 +733,71 @@ const InvoiceDetail = () => {
         >
           PDF Download
         </Button>
+        <CreditNotePopover
+          currency={formValues?.currency || 1050}
+          onApply={handleCreditNoteApply}
+        />
       </div>
       {pdfType === "INVOICEORIGINAL" &&
         showPDFPreview &&
         formValues &&
         supplier && (
-          <OrderAckPDFDocument
+          <InvoicePDFDocument
+            invoiceNumber={invoiceNumber}
+            pdfType={pdfType}
             info={formValues}
             items={items}
-            pdfHeader={pdfOrderAckHeader}
+            pdfHeader={pdfInvoiceHeader}
             viewMode={true}
             language={language}
-            pdfFooter={pdfOrderAckFooter}
+            pdfFooter={pdfInvoiceFooter}
             finalTotals={finalTotals}
             dcInfo={dcInfo}
             invChargeList={invChargeList}
           />
         )}
       {pdfType === "INVOICECOPY" && showPDFPreview && formValues && (
-        <OrderAckPDFDocument
+        <InvoicePDFDocument
+          invoiceNumber={invoiceNumber}
+          pdfType={pdfType}
           info={formValues}
           items={items}
-          pdfHeader={pdfOrderAckHeader}
+          pdfHeader={pdfInvoiceHeader}
           viewMode={true}
           language={language}
-          pdfFooter={pdfOrderAckFooter}
+          pdfFooter={pdfInvoiceFooter}
           finalTotals={finalTotals}
           dcInfo={dcInfo}
           invChargeList={invChargeList}
         />
       )}
-      {pdfType === "CREDITNOTE" && showPDFPreview && formValues && (
-        <OrderAckPDFDocument
-          info={formValues}
-          items={items}
-          pdfHeader={pdfOrderAckHeader}
-          viewMode={true}
-          language={language}
-          pdfFooter={pdfOrderAckFooter}
-          finalTotals={finalTotals}
-          dcInfo={dcInfo}
-          invChargeList={invChargeList}
-        />
-      )}
+      {pdfType === "CREDITNOTE" &&
+        showPDFPreview &&
+        formValues &&
+        creditNoteAmount && (
+          <InvoicePDFDocument
+            invoiceNumber={invoiceNumber}
+            pdfType={pdfType}
+            info={formValues}
+            items={[creditNoteAmount]}
+            pdfHeader={pdfInvoiceHeader}
+            viewMode={true}
+            language={language}
+            pdfFooter={pdfInvoiceFooter}
+            finalTotals={finalTotals}
+            dcInfo={dcInfo}
+            invChargeList={invChargeList}
+          />
+        )}
       {headerEditModalVisible && (
-        <OrderAckHeaderEditModal
+        <InvoiceHeaderEditModal
           open={headerEditModalVisible}
           onSave={commonSaveHeader}
           onClose={handleCloseHeaderModal}
-          pdfHeader={pdfOrderAckHeader}
-          pdfFooter={pdfOrderAckFooter}
-          setPdfOrderAckHeader={setPdfOrderAckHeader}
-          setPdfOrderAckFooter={setPdfOrderAckFooter}
+          pdfHeader={pdfInvoiceHeader}
+          pdfFooter={pdfInvoiceFooter}
+          setPdfInvoiceHeader={setPdfInvoiceHeader}
+          setPdfInvoiceFooter={setPdfInvoiceFooter}
         />
       )}
     </Container>
