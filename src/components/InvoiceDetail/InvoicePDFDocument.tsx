@@ -631,12 +631,12 @@ const renderHeader = (
     </View>
     <View style={styles.inquiryInfoWrap}>
       <View style={styles.inquiryInfoColumn}>
-        <View style={styles.inquiryInfoBox}>
+        <View style={[styles.inquiryInfoBox, { paddingBottom: 10 }]}>
           <View style={styles.inquiryInfoText}>
             <Text style={styles.inquiryInfoTitle}>MESSRS</Text>
           </View>
           <View style={styles.inquiryInfoText}>
-            <Text style={{ lineHeight: 1.2 }}>{pdfHeader?.messrs || ""}</Text>
+            <Text style={{ lineHeight: 1.5 }}>{pdfHeader?.messrs || ""}</Text>
           </View>
         </View>
         <View style={styles.inquiryInfoBox}>

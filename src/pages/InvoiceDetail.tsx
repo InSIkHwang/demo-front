@@ -1,6 +1,15 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Button, Checkbox, Divider, Input, message, Modal, Select } from "antd";
+import {
+  Alert,
+  Button,
+  Checkbox,
+  Divider,
+  Input,
+  message,
+  Modal,
+  Select,
+} from "antd";
 import styled from "styled-components";
 import dayjs, { Dayjs } from "dayjs";
 import {
@@ -83,7 +92,7 @@ const InvoiceDetail = () => {
     totalProfitPercent: 0,
   });
   const [showPDFPreview, setShowPDFPreview] = useState(false);
-  const [language, setLanguage] = useState<string>("KOR");
+  const [language, setLanguage] = useState<string>("ENG");
   const [headerEditModalVisible, setHeaderEditModalVisible] =
     useState<boolean>(false);
   const [pdfType, setPdfType] = useState<string>("INVOICEORIGINAL");
@@ -504,8 +513,6 @@ const InvoiceDetail = () => {
 
   const handlePdfTypeChange = (value: string) => {
     setPdfType(value);
-    // OA 선택 시 영어로, PO 선택 시 한글로 자동 변경
-    setLanguage(value === "PO" ? "KOR" : "ENG");
   };
 
   const handlePDFDownload = async () => {
@@ -774,7 +781,7 @@ const InvoiceDetail = () => {
       {pdfType === "CREDITNOTE" &&
         showPDFPreview &&
         formValues &&
-        creditNoteAmount && (
+        (creditNoteAmount ? (
           <InvoicePDFDocument
             invoiceNumber={invoiceNumber}
             pdfType={pdfType}
@@ -788,7 +795,15 @@ const InvoiceDetail = () => {
             dcInfo={dcInfo}
             invChargeList={invChargeList}
           />
-        )}
+        ) : (
+          <Alert
+            message="Credit Note Error"
+            description="Credit Note amount is not set. Please click the Credit Note button to enter the amount."
+            type="warning"
+            showIcon
+            style={{ margin: "20px 0" }}
+          />
+        ))}
       {headerEditModalVisible && (
         <InvoiceHeaderEditModal
           open={headerEditModalVisible}
