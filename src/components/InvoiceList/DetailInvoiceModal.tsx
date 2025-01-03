@@ -10,13 +10,17 @@ import {
 } from "antd";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import { deleteQutation, fetchOrderDetail } from "../../api/api";
-import { OrderResponse } from "../../types/types";
+import {
+  deleteQutation,
+  fetchInvoiceDetail,
+  fetchOrderDetail,
+} from "../../api/api";
+import { InvoiceDetailIF, OrderResponse } from "../../types/types";
 
 interface DetailInvoiceModalProps {
   open: boolean;
   onClose: () => void;
-  orderId: number;
+  invoiceId: number;
   fetchData: () => Promise<void>;
 }
 
@@ -99,10 +103,12 @@ const currencySymbols = {
 const DetailInvoiceModal = ({
   open,
   onClose,
-  orderId,
+  invoiceId,
   fetchData,
 }: DetailInvoiceModalProps) => {
-  const [orderDetail, setOrderDetail] = useState<OrderResponse | null>(null);
+  const [invoiceDetail, setInvoiceDetail] = useState<InvoiceDetailIF | null>(
+    null
+  );
   const [loading, setLoading] = useState<boolean>(true);
   const [currencySymbol, setCurrencySymbol] = useState("");
   const navigate = useNavigate();
@@ -111,10 +117,10 @@ const DetailInvoiceModal = ({
     const fetchDetails = async () => {
       if (open) {
         try {
-          setOrderDetail(null);
-          const data = await fetchOrderDetail(orderId);
-          setOrderDetail(data);
-          const currencyType = orderDetail?.documentInfo.currencyType;
+          setInvoiceDetail(null);
+          const data = await fetchInvoiceDetail(invoiceId);
+          setInvoiceDetail(data);
+          const currencyType = invoiceDetail?.documentInfo.currencyType;
           if (
             currencyType &&
             currencySymbols[currencyType as keyof typeof currencySymbols]
@@ -134,30 +140,30 @@ const DetailInvoiceModal = ({
     };
 
     fetchDetails();
-  }, [open, orderId]);
+  }, [open, invoiceId]);
 
   // 총합 계산
-  const totalItem = orderDetail?.itemDetailList.reduce(
+  const totalItem = invoiceDetail?.itemDetailList.reduce(
     (acc, item) => (item.itemType === "ITEM" ? acc + 1 : acc),
     0
   );
 
-  const totalSalesAmountKrw = orderDetail?.itemDetailList.reduce(
+  const totalSalesAmountKrw = invoiceDetail?.itemDetailList.reduce(
     (acc, item) => acc + (item.salesAmountKRW || 0),
     0
   );
 
-  const totalPurchaseAmountKrw = orderDetail?.itemDetailList.reduce(
+  const totalPurchaseAmountKrw = invoiceDetail?.itemDetailList.reduce(
     (acc, item) => acc + (item.purchaseAmountKRW || 0),
     0
   );
 
-  const totalSalesAmountGlobal = orderDetail?.itemDetailList.reduce(
+  const totalSalesAmountGlobal = invoiceDetail?.itemDetailList.reduce(
     (acc, item) => acc + (item.salesAmountGlobal || 0),
     0
   );
 
-  const totalPurchaseAmountGlobal = orderDetail?.itemDetailList.reduce(
+  const totalPurchaseAmountGlobal = invoiceDetail?.itemDetailList.reduce(
     (acc, item) => acc + (item.purchaseAmountGlobal || 0),
     0
   );
@@ -190,7 +196,7 @@ const DetailInvoiceModal = ({
       cancelText: "Cancel",
       onOk: async () => {
         try {
-          await deleteQutation(orderId);
+          // await deleteInvoice(invoiceId);
           message.success("Deleted successfully.");
           onClose();
           fetchData();
@@ -320,7 +326,7 @@ const DetailInvoiceModal = ({
           type="primary"
           onClick={(e) => {
             e.stopPropagation();
-            navigate(`/invoice/${orderId}`);
+            navigate(`/invoice/${invoiceId}`);
           }}
         >
           Edit
@@ -337,40 +343,40 @@ const DetailInvoiceModal = ({
       {loading ? (
         <p>Loading...</p>
       ) : (
-        orderDetail && (
+        invoiceDetail && (
           <>
             <Descriptions bordered column={2} size="small">
               <Descriptions.Item label="Document Number">
-                {orderDetail.documentInfo.documentNumber}
+                {invoiceDetail.documentInfo.invoiceNumber}
               </Descriptions.Item>
               <Descriptions.Item label="Registration Date">
-                {orderDetail.documentInfo.registerDate}
+                {invoiceDetail.documentInfo.registerDate}
               </Descriptions.Item>
               <Descriptions.Item label="Customer Name">
-                {orderDetail.documentInfo.companyName}
+                {invoiceDetail.documentInfo.companyName}
               </Descriptions.Item>
               <Descriptions.Item label="REF NO.">
-                {orderDetail.documentInfo.refNumber}
+                {invoiceDetail.documentInfo.refNumber}
               </Descriptions.Item>
               <Descriptions.Item label="Currency">
-                {orderDetail.documentInfo.currencyType}
+                {invoiceDetail.documentInfo.currencyType}
               </Descriptions.Item>
               <Descriptions.Item label="Exchange Rate">
-                {`$${orderDetail.documentInfo.currency?.toFixed(0)}`}
+                {`$${invoiceDetail.documentInfo.currency?.toFixed(0)}`}
               </Descriptions.Item>
               <Descriptions.Item label="Vessel Name">
-                {orderDetail.documentInfo.vesselName}
+                {invoiceDetail.documentInfo.vesselName}
               </Descriptions.Item>
               <Descriptions.Item label="Document Manager">
-                {orderDetail.documentInfo.docManager}
+                {invoiceDetail.documentInfo.docManager}
               </Descriptions.Item>
               <Descriptions.Item label="Document Status">
                 <TagStyled color="blue">
-                  {orderDetail.documentInfo.documentStatus}
+                  {invoiceDetail.documentInfo.documentStatus}
                 </TagStyled>
               </Descriptions.Item>
               <Descriptions.Item label="Remark">
-                {orderDetail.documentInfo.docRemark}
+                {invoiceDetail.documentInfo.docRemark}
               </Descriptions.Item>
             </Descriptions>
             <Descriptions
@@ -438,7 +444,7 @@ const DetailInvoiceModal = ({
             </Divider>
             <TableStyled
               columns={columns}
-              dataSource={orderDetail.itemDetailList}
+              dataSource={invoiceDetail.itemDetailList}
               pagination={false}
               rowKey="position"
               scroll={{ y: 300 }}

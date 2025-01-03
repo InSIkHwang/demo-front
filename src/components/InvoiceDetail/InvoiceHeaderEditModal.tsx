@@ -10,7 +10,11 @@ import {
   AutoComplete,
 } from "antd";
 import styled from "styled-components";
-import { InvoiceHeaderFormData, orderRemark } from "../../types/types";
+import {
+  InvoiceHeaderFormData,
+  InvoiceRemarkDetail,
+  orderRemark,
+} from "../../types/types";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 
@@ -47,11 +51,14 @@ const StyledFormItem = styled(Form.Item)`
 interface HeaderEditModalProps {
   open: boolean;
   onClose: () => void;
-  onSave: (header: InvoiceHeaderFormData, footer: orderRemark[]) => void;
+  onSave: (
+    header: InvoiceHeaderFormData,
+    footer: InvoiceRemarkDetail[]
+  ) => void;
   pdfHeader: InvoiceHeaderFormData;
-  pdfFooter: orderRemark[];
+  pdfFooter: InvoiceRemarkDetail[];
   setPdfInvoiceHeader: (value: InvoiceHeaderFormData) => void;
-  setPdfInvoiceFooter: (value: orderRemark[]) => void;
+  setPdfInvoiceFooter: (value: InvoiceRemarkDetail[]) => void;
 }
 
 const REMARK_OPTIONS = [
@@ -79,7 +86,7 @@ const InvoiceHeaderEditModal = ({
   const [headerChk, setHeaderChk] = useState<boolean>(true);
   const [footerChk, setFooterChk] = useState<boolean>(true);
   const [form] = Form.useForm<InvoiceHeaderFormData>();
-  const [footerText, setFooterText] = useState<orderRemark[]>(
+  const [footerText, setFooterText] = useState<InvoiceRemarkDetail[]>(
     Array.isArray(pdfFooter) && pdfFooter.length > 0
       ? pdfFooter.map((item) => item || [])
       : []
@@ -93,7 +100,7 @@ const InvoiceHeaderEditModal = ({
   };
 
   const handleAddFooterLine = () => {
-    setFooterText([...footerText, { orderRemarkId: null, orderRemark: "" }]);
+    setFooterText([...footerText, { salesRemarkId: null, salesRemark: "" }]);
   };
 
   const handleRemoveFooterLine = (index: number) => {
@@ -103,8 +110,8 @@ const InvoiceHeaderEditModal = ({
   const handleFooterChange = (index: number, value: string) => {
     const newFooterText = [...footerText];
     newFooterText[index] = {
-      orderRemarkId: footerText[index].orderRemarkId || null,
-      orderRemark: value,
+      salesRemarkId: footerText[index].salesRemarkId || null,
+      salesRemark: value,
     };
     setFooterText(newFooterText);
   };
@@ -248,7 +255,7 @@ const InvoiceHeaderEditModal = ({
               {index + 1}.
             </div>
             <AutoComplete
-              value={text.orderRemark}
+              value={text.salesRemark}
               onChange={(value) => handleFooterChange(index, value)}
               options={REMARK_OPTIONS}
               style={{ flex: 1 }}

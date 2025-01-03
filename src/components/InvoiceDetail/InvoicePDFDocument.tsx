@@ -27,8 +27,8 @@ import {
   InvCharge,
   OrderItemDetail,
   OrderAckHeaderFormData,
-  Order,
-  orderRemark,
+  InvoiceDocument,
+  InvoiceRemarkDetail,
   InvoiceHeaderFormData,
 } from "../../types/types";
 
@@ -60,12 +60,12 @@ Font.register({
 Font.registerHyphenationCallback((word) => ["", word, ""]);
 
 interface InvoicePDFDocumentProps {
-  info: Order;
+  info: InvoiceDocument;
   items: OrderItemDetail[];
   pdfHeader: InvoiceHeaderFormData;
   viewMode: boolean;
   language: string;
-  pdfFooter: orderRemark[];
+  pdfFooter: InvoiceRemarkDetail[];
   finalTotals: {
     totalSalesAmountKRW: number;
     totalSalesAmountGlobal: number;
@@ -99,7 +99,8 @@ const baseTableCol = {
 
 const baseDashTableCol = {
   ...baseTableCol,
-  backgroundColor: COLORS.background,height: "100%",
+  backgroundColor: COLORS.background,
+  height: "100%",
 };
 
 // 컬럼 크기 설정
@@ -589,10 +590,7 @@ const renderTableRows = (items: OrderItemDetail[], language: string) => {
 // 헤더를 렌더링하는 함수
 const renderHeader = (
   logoUrl: string,
-  customerName: string,
   vesselName: string,
-  docNumber: string,
-  registerDate: string | dayjs.Dayjs,
   pdfHeader: InvoiceHeaderFormData,
   language: string,
   refNumber: string,
@@ -822,10 +820,7 @@ const InvoicePDFDocument = ({
         <View style={styles.contentWrapper}>
           {renderHeader(
             logoUrl,
-            info.companyName,
             info.vesselName,
-            info.documentNumber || "",
-            dayjs().format("YYYY-MM-DD"),
             headerMessage,
             language,
             info.refNumber,
@@ -887,10 +882,10 @@ const InvoicePDFDocument = ({
                         ]}
                       >
                         {pdfFooter.map((footer, index) => {
-                          const formattedText = footer.orderRemark
-                          .split("\n")
-                          .map((line) => line.trim())
-                          .join("\n");
+                          const formattedText = footer.salesRemark
+                            .split("\n")
+                            .map((line) => line.trim())
+                            .join("\n");
                           return (
                             <View
                               key={index}

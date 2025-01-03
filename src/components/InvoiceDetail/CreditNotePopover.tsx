@@ -52,7 +52,7 @@ const CreditNotePopover = ({
       content={content}
       title="Enter CREDIT NOTE Amount"
       trigger="click"
-      placement="bottom"
+      placement="top"
     >
       <Button style={{ marginLeft: 10 }} type="default">
         CREDIT NOTE

@@ -684,3 +684,58 @@ export interface InvoiceHeaderFormData {
   date: string | "";
   paymentTerms: string | "";
 }
+
+export interface InvoiceListIF {
+  salesId: number;
+  orderId: number;
+  documentId: number;
+  documentNumber: string;
+  registerDate: string;
+  shippingDate: string;
+  companyName: string;
+  refNumber: string;
+  currencyType: string;
+  currency: number;
+  vesselName: string;
+  docRemark: string;
+  docManager: string;
+  documentStatus: string;
+  customerId: number;
+  vesselId: number;
+  vesselHullNo: string;
+  imoNo: number;
+  discount: number;
+}
+
+export interface InvoiceDocument {
+  documentId: number;
+  documentNumber: string; // 추가 필요
+  salesId: number; // 추가 필요
+  invoiceNumber: string;
+  registerDate: string;
+  refNumber: string;
+  companyName: string;
+  vesselName: string;
+  currencyType: string;
+  currency: number;
+  docRemark: string;
+  docManager: string;
+  documentStatus: string;
+  customerId: number;
+  vesselId: number;
+  discount: number | null;
+  imoNo: number; // 추가 필요
+}
+
+export interface InvoiceRemarkDetail {
+  salesRemarkId: number | null;
+  salesRemark: string;
+}
+
+export interface InvoiceDetailIF {
+  documentInfo: InvoiceDocument;
+  invChargeList: InvCharge[];
+  suppliers: Supplier[];
+  itemDetailList: OrderItemDetail[];
+  salesRemarkDetailResponse: InvoiceRemarkDetail[];
+}

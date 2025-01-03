@@ -273,7 +273,7 @@ interface TableComponentProps {
     value: any,
     currency: number
   ) => void;
-  orderId: number;
+  invoiceId: number;
   invoiceNumber: string;
   // pdfUrl: string | null;
 }
@@ -345,7 +345,7 @@ const TableComponent = ({
   calculateTotalAmount,
   handleMarginChange,
   handlePriceInputChange,
-  orderId,
+  invoiceId,
   invoiceNumber,
 }: // pdfUrl,
 TableComponentProps) => {
@@ -418,7 +418,7 @@ TableComponentProps) => {
   const handleExportButtonClick = async () => {
     try {
       // 선택한 파일들의 름을 서버로 전송
-      const response = await handleOfferExport(orderId);
+      const response = await handleOfferExport(invoiceId);
 
       // 사용자가 경로를 설정하여 파일을 다운로드할 수 있도록 설정
       const link = document.createElement("a");

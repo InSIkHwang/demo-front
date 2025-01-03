@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Alert,
@@ -11,34 +11,25 @@ import {
   Select,
 } from "antd";
 import styled from "styled-components";
-import dayjs, { Dayjs } from "dayjs";
+import dayjs from "dayjs";
+import { fetchInvoiceDetail } from "../api/api";
 import {
-  editOrder,
-  fetchOrderDetail,
-  saveCIPLHeader,
-  saveOrderHeader,
-} from "../api/api";
-import {
-  CIPLHeaderFormData,
   InvCharge,
+  InvoiceDetailIF,
+  InvoiceDocument,
   InvoiceHeaderFormData,
-  Order,
-  OrderAckHeaderFormData,
   OrderItemDetail,
-  orderRemark,
-  OrderRequest,
-  OrderResponse,
-  OrderSupplier,
+  InvoiceRemarkDetail,
+  Supplier,
 } from "../types/types";
 import LoadingSpinner from "../components/LoadingSpinner";
-import FormComponent from "../components/orderDetail/FormComponent";
 import TotalCardsComponent from "../components/makeOffer/TotalCardsComponent";
-import OrderAckPDFDocument from "../components/orderDetail/OrderAckPDFDocument";
 import { pdf } from "@react-pdf/renderer";
 import TableComponent from "../components/InvoiceDetail/TableComponent";
 import InvoicePDFDocument from "../components/InvoiceDetail/InvoicePDFDocument";
 import InvoiceHeaderEditModal from "../components/InvoiceDetail/InvoiceHeaderEditModal";
 import CreditNotePopover from "../components/InvoiceDetail/CreditNotePopover";
+import FormComponent from "../components/InvoiceDetail/FormComponent";
 
 const Container = styled.div`
   position: relative;
@@ -66,12 +57,12 @@ const INITIAL_HEADER_VALUES: InvoiceHeaderFormData = {
 
 const InvoiceDetail = () => {
   const { invoiceId } = useParams();
-  const [formValues, setFormValues] = useState<Order>();
+  const [formValues, setFormValues] = useState<InvoiceDocument>();
   const [items, setItems] = useState<OrderItemDetail[]>([]);
-  const [supplier, setSupplier] = useState<OrderSupplier>();
-  const [invoiceNumber, setInvoiceNumber] = useState<string>("BAS-25-001");
+  const [supplier, setSupplier] = useState<Supplier>();
+  const [invoiceNumber, setInvoiceNumber] = useState<string>("");
   const navigate = useNavigate();
-  const [orderData, setOrderData] = useState<OrderResponse | null>(null);
+  const [invoiceData, setInvoiceData] = useState<InvoiceDetailIF | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [invChargeList, setInvChargeList] = useState<InvCharge[] | null>([]);
   const [dcInfo, setDcInfo] = useState({
@@ -98,17 +89,20 @@ const InvoiceDetail = () => {
   const [pdfType, setPdfType] = useState<string>("INVOICEORIGINAL");
   const [pdfInvoiceHeader, setPdfInvoiceHeader] =
     useState<InvoiceHeaderFormData>(INITIAL_HEADER_VALUES);
-  const [pdfInvoiceFooter, setPdfInvoiceFooter] = useState<orderRemark[]>([]);
+  const [pdfInvoiceFooter, setPdfInvoiceFooter] = useState<
+    InvoiceRemarkDetail[]
+  >([]);
   const [creditNoteAmount, setCreditNoteAmount] = useState<OrderItemDetail>();
 
   const loadOrderDetail = async () => {
     try {
-      const data: OrderResponse = await fetchOrderDetail(Number(invoiceId));
+      const data: InvoiceDetailIF = await fetchInvoiceDetail(Number(invoiceId));
 
       const sortedItems = data.itemDetailList.sort(
         (a, b) => a.position - b.position
       );
-      setOrderData(data);
+      setInvoiceNumber(data.documentInfo.invoiceNumber);
+      setInvoiceData(data);
       setFormValues(data.documentInfo);
       setItems(sortedItems);
       setSupplier(data.suppliers[0]);
@@ -122,7 +116,7 @@ const InvoiceDetail = () => {
         ...INITIAL_HEADER_VALUES,
         messrs: data.documentInfo.companyName,
       });
-      setPdfInvoiceFooter(data.orderHeaderResponse?.orderCustomerRemark || []);
+      setPdfInvoiceFooter(data.salesRemarkDetailResponse || []);
     } catch (error) {
       console.error("Order detail error:", error);
       message.error("Failed to load order detail.");
@@ -230,7 +224,7 @@ const InvoiceDetail = () => {
     const salesAmountKRW = calculateTotalAmount(salesPriceKRW, qty);
 
     const exchangeRate =
-      formValues?.currency || orderData?.documentInfo.currency || 1050;
+      formValues?.currency || invoiceData?.documentInfo.currency || 1050;
     const salesPriceGlobal = roundToTwoDecimalPlaces(
       salesPriceKRW / exchangeRate
     );
@@ -492,16 +486,16 @@ const InvoiceDetail = () => {
       return;
     }
 
-    const request: OrderRequest = {
-      orderId: Number(invoiceId),
-      supplierId: supplier?.supplierId || 0,
-      documentEditInfo: formValues,
-      invChargeList: invChargeList,
-      itemDetailList: items,
-    };
+    // const request: InvoiceRequest = {
+    //   invoiceId: Number(invoiceId),
+    //   supplierId: supplier?.supplierId || 0,
+    //   documentEditInfo: formValues,
+    //   invChargeList: invChargeList,
+    //   itemDetailList: items,
+    // };
 
     try {
-      await editOrder(Number(invoiceId), request);
+      // await editOrder(Number(invoiceId), request);
       message.success("Order saved successfully");
 
       loadOrderDetail();
@@ -544,16 +538,12 @@ const InvoiceDetail = () => {
       const pdfBlob = await pdf(doc).toBlob();
       let defaultFileName = "";
 
-      if (pdfType === "PO" && language === "KOR") {
-        defaultFileName = `${
-          supplier.korCompanyName || supplier.companyName
-        }_발주서_${formValues.documentNumber}.pdf`;
-      } else if (pdfType === "PO" && language === "ENG") {
-        defaultFileName = `${supplier.companyName}_Purchase_Order_${formValues.documentNumber}.pdf`;
-      } else if (pdfType === "OA" && language === "KOR") {
-        defaultFileName = `${formValues.refNumber}(주문확인서).pdf`;
-      } else if (pdfType === "OA" && language === "ENG") {
-        defaultFileName = `${formValues.refNumber}(ORDER_ACK).pdf`;
+      if (pdfType === "INVOICEORIGINAL") {
+        defaultFileName = `${formValues.invoiceNumber}_INVOICE_ORIGINAL.pdf`;
+      } else if (pdfType === "INVOICECOPY") {
+        defaultFileName = `${formValues.invoiceNumber}_INVOICE_COPY.pdf`;
+      } else if (pdfType === "CREDITNOTE") {
+        defaultFileName = `CREDIT_NOTE_${formValues.invoiceNumber}.pdf`;
       }
 
       let modalInstance: any;
@@ -613,7 +603,7 @@ const InvoiceDetail = () => {
 
   const commonSaveHeader = async (
     header: InvoiceHeaderFormData,
-    footer: orderRemark[]
+    footer: InvoiceRemarkDetail[]
   ) => {
     // const response = await saveInvoiceHeader(Number(invoiceId), header, footer);
 
@@ -651,8 +641,8 @@ const InvoiceDetail = () => {
     return <LoadingSpinner />;
   }
 
-  if (!orderData) {
-    return <div>Order not found.</div>;
+  if (!invoiceData) {
+    return <div>Invoice not found.</div>;
   }
 
   return (
@@ -668,12 +658,12 @@ const InvoiceDetail = () => {
           itemDetails={items}
           setItemDetails={setItems}
           handleInputChange={handleInputChange}
-          currency={orderData.documentInfo.currency}
+          currency={invoiceData.documentInfo.currency}
           roundToTwoDecimalPlaces={roundToTwoDecimalPlaces}
           calculateTotalAmount={calculateTotalAmount}
           handleMarginChange={handleMarginChange}
           handlePriceInputChange={handlePriceInputChange}
-          orderId={orderData.documentInfo.orderId || 0}
+          invoiceId={invoiceData.documentInfo.salesId || 0}
           invoiceNumber={invoiceNumber}
           // pdfUrl={pdfUrl}
           // supplierName={supplier.supplierName}
