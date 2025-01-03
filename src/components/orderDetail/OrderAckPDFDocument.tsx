@@ -96,7 +96,7 @@ const baseTableCol = {
 
 const baseDashTableCol = {
   ...baseTableCol,
-  backgroundColor: COLORS.background,
+  backgroundColor: COLORS.background,height: "100%",
 };
 
 // 컬럼 크기 설정
@@ -913,7 +913,7 @@ const OrderAckPDFDocument = ({
                         {pdfFooter.map((footer, index) => {
                           const formattedText = footer.orderRemark
                             .split("\n")
-                            .map((line) => line.replace(/ /g, "\u00A0"))
+                            .map((line) => line.trim())
                             .join("\n");
                           return (
                             <View

@@ -93,6 +93,7 @@ const baseTableCol = {
 const baseDashTableCol = {
   ...baseTableCol,
   backgroundColor: COLORS.background,
+  height: "100%",
 };
 
 // 컬럼 크기 설정

@@ -99,7 +99,7 @@ const baseTableCol = {
 
 const baseDashTableCol = {
   ...baseTableCol,
-  backgroundColor: COLORS.background,
+  backgroundColor: COLORS.background,height: "100%",
 };
 
 // 컬럼 크기 설정
@@ -888,9 +888,9 @@ const InvoicePDFDocument = ({
                       >
                         {pdfFooter.map((footer, index) => {
                           const formattedText = footer.orderRemark
-                            .split("\n")
-                            .map((line) => line.replace(/ /g, "\u00A0"))
-                            .join("\n");
+                          .split("\n")
+                          .map((line) => line.trim())
+                          .join("\n");
                           return (
                             <View
                               key={index}
