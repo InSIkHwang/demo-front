@@ -184,6 +184,9 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "column",
   },
+  inquiryTotalColumn: {
+    flexDirection: "column",
+  },
   inquiryPriceRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -866,56 +869,21 @@ const InvoicePDFDocument = ({
             </View>
             {renderTableRows(items, language)}
             <View wrap={false}>
-              <View style={[styles.inquiryInfoWrap, { marginTop: 20 }]}>
-                <View style={[styles.inquiryInfoColumn, { flex: 0.65 }]}>
-                  {pdfFooter.length > 0 && (
-                    <View style={[styles.inquiryInfoBox]} wrap>
-                      <View style={styles.inquiryInfoText}>
-                        <Text style={styles.inquiryInfoTitle}>REMARK</Text>
-                      </View>
-                      <View
-                        style={[
-                          styles.inquiryInfoText,
-                          {
-                            flexDirection: "column",
-                          },
-                        ]}
-                      >
-                        {pdfFooter.map((footer, index) => {
-                          const formattedText = footer.salesRemark
-                            .split("\n")
-                            .map((line) => line.trim())
-                            .join("\n");
-                          return (
-                            <View
-                              key={index}
-                              style={{
-                                flexDirection: "row",
-                                flexWrap: "wrap",
-                                marginBottom: 5,
-                              }}
-                            >
-                              <Text
-                                style={{
-                                  fontSize: 9,
-                                  lineHeight: 1.5,
-                                }}
-                              >
-                                {`${index + 1}. `}
-                                {formattedText}
-                              </Text>
-                            </View>
-                          );
-                        })}
-                      </View>
-                    </View>
-                  )}
-                </View>
+              <View
+                style={[
+                  styles.inquiryInfoWrap,
+                  { marginTop: 20, flexDirection: "column" },
+                ]}
+              >
                 {pdfType !== "CREDITNOTE" && (
                   <View
                     style={[
-                      styles.inquiryInfoColumn,
-                      { alignItems: "flex-end", flex: 0.35 },
+                      styles.inquiryTotalColumn,
+                      {
+                        alignItems: "flex-end",
+                        width: "50%",
+                        alignSelf: "flex-end",
+                      },
                     ]}
                   >
                     {(dcInfo.dcPercent ||
@@ -1028,8 +996,12 @@ const InvoicePDFDocument = ({
                 {pdfType === "CREDITNOTE" && (
                   <View
                     style={[
-                      styles.inquiryInfoColumn,
-                      { alignItems: "flex-end", flex: 0.35 },
+                      styles.inquiryTotalColumn,
+                      {
+                        alignItems: "flex-end",
+                        width: "50%",
+                        alignSelf: "flex-end",
+                      },
                     ]}
                   >
                     <View
@@ -1061,6 +1033,50 @@ const InvoicePDFDocument = ({
                     </View>
                   </View>
                 )}
+                <View style={[styles.inquiryTotalColumn]}>
+                  {pdfFooter.length > 0 && (
+                    <View style={[styles.inquiryInfoBox]} wrap>
+                      <View style={styles.inquiryInfoText}>
+                        <Text style={styles.inquiryInfoTitle}>REMARK</Text>
+                      </View>
+                      <View
+                        style={[
+                          styles.inquiryInfoText,
+                          {
+                            flexDirection: "column",
+                          },
+                        ]}
+                      >
+                        {pdfFooter.map((footer, index) => {
+                          const formattedText = footer.salesRemark
+                            .split("\n")
+                            .map((line) => line.trim())
+                            .join("\n");
+                          return (
+                            <View
+                              key={index}
+                              style={{
+                                flexDirection: "row",
+                                flexWrap: "wrap",
+                                marginBottom: 5,
+                              }}
+                            >
+                              <Text
+                                style={{
+                                  fontSize: 9,
+                                  lineHeight: 1.5,
+                                }}
+                              >
+                                {`${index + 1}. `}
+                                {formattedText}
+                              </Text>
+                            </View>
+                          );
+                        })}
+                      </View>
+                    </View>
+                  )}
+                </View>
               </View>
             </View>
           </View>

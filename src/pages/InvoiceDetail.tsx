@@ -94,7 +94,7 @@ const InvoiceDetail = () => {
   >([]);
   const [creditNoteAmount, setCreditNoteAmount] = useState<OrderItemDetail>();
 
-  const loadOrderDetail = async () => {
+  const loadInvoiceDetail = async () => {
     try {
       const data: InvoiceDetailIF = await fetchInvoiceDetail(Number(invoiceId));
 
@@ -126,7 +126,7 @@ const InvoiceDetail = () => {
   };
 
   useEffect(() => {
-    loadOrderDetail();
+    loadInvoiceDetail();
   }, [invoiceId]);
 
   const handleKeyboardSave = useCallback(
@@ -498,7 +498,7 @@ const InvoiceDetail = () => {
       // await editOrder(Number(invoiceId), request);
       message.success("Order saved successfully");
 
-      loadOrderDetail();
+      loadInvoiceDetail();
     } catch (error) {
       console.error("Error saving order:", error);
       message.error("Failed to save order. Please try again.");
@@ -550,7 +550,7 @@ const InvoiceDetail = () => {
       let localSendMailState = true; // 모달 내부에서 사용할 로컬 상태
 
       modalInstance = Modal.confirm({
-        title: "Quotation PDF File",
+        title: "Invoice PDF File",
         width: 500,
         content: (
           <div style={{ marginBottom: 20 }}>

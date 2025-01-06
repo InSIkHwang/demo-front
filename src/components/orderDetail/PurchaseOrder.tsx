@@ -178,6 +178,9 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "column",
   },
+  inquiryTotalColumn: {
+    flexDirection: "column",
+  },
   inquiryPriceRow: {
     flexDirection: "row",
     alignItems: "center",

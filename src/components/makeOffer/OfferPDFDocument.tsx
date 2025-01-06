@@ -182,6 +182,9 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "column",
   },
+  inquiryTotalColumn: {
+    flexDirection: "column",
+  },
   inquiryPriceRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -877,8 +880,129 @@ const OfferPDFDocument = ({
             </View>
             {renderTableRows(items, language)}
             <View wrap={false}>
-              <View style={[styles.inquiryInfoWrap, { marginTop: 20 }]}>
-                <View style={[styles.inquiryInfoColumn, { flex: 0.65 }]}>
+              <View
+                style={[
+                  styles.inquiryInfoWrap,
+                  { marginTop: 20, flexDirection: "column" },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.inquiryTotalColumn,
+                    {
+                      alignItems: "flex-end",
+                      width: "50%",
+                      alignSelf: "flex-end",
+                    },
+                  ]}
+                >
+                  {(dcInfo.dcPercent ||
+                    (invChargeList && invChargeList.length > 0)) && (
+                    <View
+                      style={[
+                        styles.inquiryPriceRow,
+                        { borderBottom: "1px dotted #000" },
+                      ]}
+                    >
+                      <Text style={styles.inquiryPriceLabel}>SUB TOTAL</Text>
+                      <Text style={styles.inquiryPriceValue}>
+                        {language === "KOR"
+                          ? totalSalesAmount?.toLocaleString("ko-KR", {
+                              style: "currency",
+                              currency: "KRW",
+                            })
+                          : totalSalesAmount?.toLocaleString("en-US", {
+                              style: "currency",
+                              currency: info.currencyType,
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                      </Text>
+                    </View>
+                  )}
+                  {dcInfo.dcPercent && dcInfo.dcPercent !== 0 && (
+                    <View style={styles.inquiryPriceRow}>
+                      <Text style={styles.inquiryPriceLabel}>
+                        DISCOUNT {dcInfo.dcPercent}%
+                      </Text>
+                      <Text style={styles.inquiryPriceValue}>
+                        -
+                        {language === "KOR"
+                          ? dcAmountGlobal?.toLocaleString("ko-KR", {
+                              style: "currency",
+                              currency: "KRW",
+                            })
+                          : dcAmountGlobal?.toLocaleString("en-US", {
+                              style: "currency",
+                              currency: info.currencyType,
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                      </Text>
+                    </View>
+                  )}
+                  {invChargeList &&
+                    invChargeList.length > 0 &&
+                    invChargeList.map((charge) => (
+                      <View style={styles.inquiryPriceRow}>
+                        <>
+                          <Text style={styles.inquiryPriceLabel}>
+                            {charge.customCharge}
+                          </Text>
+                          <Text style={styles.inquiryPriceValue}>
+                            {language === "KOR"
+                              ? Number(charge.chargePriceKRW)?.toLocaleString(
+                                  "ko-KR",
+                                  {
+                                    style: "currency",
+                                    currency: "KRW",
+                                  }
+                                )
+                              : Number(
+                                  charge.chargePriceGlobal
+                                )?.toLocaleString("en-US", {
+                                  style: "currency",
+                                  currency: info.currencyType,
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })}
+                          </Text>
+                        </>
+                      </View>
+                    ))}
+
+                  <View
+                    style={[
+                      styles.inquiryPriceRow,
+                      { borderTop: "1px dotted #000" },
+                    ]}
+                  >
+                    <Text style={styles.inquiryPriceLabel}>
+                      TOTAL AMOUNT(
+                      {language === "KOR" ? "KRW" : info.currencyType})
+                    </Text>
+                    <Text style={styles.inquiryPriceValue}>
+                      {language === "KOR"
+                        ? finalTotals.totalSalesAmountKRW?.toLocaleString(
+                            "ko-KR",
+                            {
+                              style: "currency",
+                              currency: "KRW",
+                            }
+                          )
+                        : finalTotals.totalSalesAmountGlobal?.toLocaleString(
+                            "en-US",
+                            {
+                              style: "currency",
+                              currency: info.currencyType,
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            }
+                          )}
+                    </Text>
+                  </View>
+                </View>
+                <View style={[styles.inquiryTotalColumn]}>
                   <View style={styles.inquiryInfoBox}>
                     <View style={styles.inquiryInfoText}>
                       <Text style={styles.inquiryInfoTitle}>
@@ -999,118 +1123,6 @@ const OfferPDFDocument = ({
                       </View>
                     </View>
                   )}
-                </View>
-                <View
-                  style={[
-                    styles.inquiryInfoColumn,
-                    { alignItems: "flex-end", flex: 0.35 },
-                  ]}
-                >
-                  {(dcInfo.dcPercent ||
-                    (invChargeList && invChargeList.length > 0)) && (
-                    <View
-                      style={[
-                        styles.inquiryPriceRow,
-                        { borderBottom: "1px dotted #000" },
-                      ]}
-                    >
-                      <Text style={styles.inquiryPriceLabel}>SUB TOTAL</Text>
-                      <Text style={styles.inquiryPriceValue}>
-                        {language === "KOR"
-                          ? totalSalesAmount?.toLocaleString("ko-KR", {
-                              style: "currency",
-                              currency: "KRW",
-                            })
-                          : totalSalesAmount?.toLocaleString("en-US", {
-                              style: "currency",
-                              currency: info.currencyType,
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
-                      </Text>
-                    </View>
-                  )}
-                  {dcInfo.dcPercent && dcInfo.dcPercent !== 0 && (
-                    <View style={styles.inquiryPriceRow}>
-                      <Text style={styles.inquiryPriceLabel}>
-                        DISCOUNT {dcInfo.dcPercent}%
-                      </Text>
-                      <Text style={styles.inquiryPriceValue}>
-                        -
-                        {language === "KOR"
-                          ? dcAmountGlobal?.toLocaleString("ko-KR", {
-                              style: "currency",
-                              currency: "KRW",
-                            })
-                          : dcAmountGlobal?.toLocaleString("en-US", {
-                              style: "currency",
-                              currency: info.currencyType,
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
-                      </Text>
-                    </View>
-                  )}
-                  {invChargeList &&
-                    invChargeList.length > 0 &&
-                    invChargeList.map((charge) => (
-                      <View style={styles.inquiryPriceRow}>
-                        <>
-                          <Text style={styles.inquiryPriceLabel}>
-                            {charge.customCharge}
-                          </Text>
-                          <Text style={styles.inquiryPriceValue}>
-                            {language === "KOR"
-                              ? Number(charge.chargePriceKRW)?.toLocaleString(
-                                  "ko-KR",
-                                  {
-                                    style: "currency",
-                                    currency: "KRW",
-                                  }
-                                )
-                              : Number(
-                                  charge.chargePriceGlobal
-                                )?.toLocaleString("en-US", {
-                                  style: "currency",
-                                  currency: info.currencyType,
-                                  minimumFractionDigits: 2,
-                                  maximumFractionDigits: 2,
-                                })}
-                          </Text>
-                        </>
-                      </View>
-                    ))}
-
-                  <View
-                    style={[
-                      styles.inquiryPriceRow,
-                      { borderTop: "1px dotted #000" },
-                    ]}
-                  >
-                    <Text style={styles.inquiryPriceLabel}>
-                      TOTAL AMOUNT(
-                      {language === "KOR" ? "KRW" : info.currencyType})
-                    </Text>
-                    <Text style={styles.inquiryPriceValue}>
-                      {language === "KOR"
-                        ? finalTotals.totalSalesAmountKRW?.toLocaleString(
-                            "ko-KR",
-                            {
-                              style: "currency",
-                              currency: "KRW",
-                            }
-                          )
-                        : finalTotals.totalSalesAmountGlobal?.toLocaleString(
-                            "en-US",
-                            {
-                              style: "currency",
-                              currency: info.currencyType,
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            }
-                          )}
-                    </Text>
-                  </View>
                 </View>
               </View>
             </View>
