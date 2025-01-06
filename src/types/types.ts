@@ -732,10 +732,18 @@ export interface InvoiceRemarkDetail {
   salesRemark: string;
 }
 
+export interface InvoiceChargeListIF {
+  invoiceChargeId: number | null;
+  customCharge: string;
+  chargePriceKRW: number;
+  chargePriceGlobal: number;
+}
+
 export interface InvoiceDetailIF {
   documentInfo: InvoiceDocument;
   invChargeList: InvCharge[];
   suppliers: Supplier[];
   itemDetailList: OrderItemDetail[];
   salesRemarkDetailResponse: InvoiceRemarkDetail[];
+  invoiceChargeList: InvoiceChargeListIF[];
 }

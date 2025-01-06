@@ -21,6 +21,8 @@ import NotoSansExtraBold from "../../assets/font/NotoSansExtraBold.ttf";
 import NotoSansBold from "../../assets/font/NotoSansBold.ttf";
 import logoUrl from "../../assets/logo/withoutTextLogo.png";
 import simpleLogoUrl from "../../assets/logo/simpleLogo.png";
+import ORIGINAL from "../../assets/img/ORIGINAL.png";
+import COPY from "../../assets/img/COPY.png";
 import {
   FormValuesType,
   HeaderFormData,
@@ -78,6 +80,7 @@ interface InvoicePDFDocumentProps {
   invChargeList: InvCharge[] | null;
   invoiceNumber: string;
   pdfType: string;
+  originalChecked: boolean;
 }
 
 const COLORS = {
@@ -406,13 +409,30 @@ const styles = StyleSheet.create({
     color: "#323232",
     fontFamily: "malgunGothicBold",
   },
+  stampWrapper: {
+    position: "relative",
+    marginTop: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 });
 
-const DiagonalLine = ({ language }: { language: string }) => (
-  <Svg width={350} height={8}>
-    <Path d="M4 0 L350 0 L350 8 L0 8 Z" fill="#142952" />
-  </Svg>
-);
+const DiagonalLine = ({
+  language,
+  pdfType,
+}: {
+  language: string;
+  pdfType: string;
+}) =>
+  pdfType === "PROFORMAINVOICE" ? (
+    <Svg width={200} height={8}>
+      <Path d="M4 0 L200 0 L200 8 L0 8 Z" fill="#142952" />
+    </Svg>
+  ) : (
+    <Svg width={350} height={8}>
+      <Path d="M4 0 L350 0 L350 8 L0 8 Z" fill="#142952" />
+    </Svg>
+  );
 
 const DescriptionIcon = () => (
   <Svg width={12} height={12} style={{ marginLeft: 25, bottom: 5 }}>
@@ -599,15 +619,20 @@ const renderHeader = (
   refNumber: string,
   imoNo: string,
   invoiceNumber: string,
-  pdfType: string
+  pdfType: string,
+  originalChecked: boolean
 ) => (
   <>
     <View style={styles.header}>
       <View style={styles.titleContainer}>
         <Text style={styles.logoTitle}>
-          {language === "KOR" ? "INVOICE" : "INVOICE"}
+          {pdfType === "INVOICE"
+            ? "INVOICE"
+            : pdfType === "PROFORMAINVOICE"
+            ? "PROFORMA INVOICE"
+            : "CREDIT NOTE"}
         </Text>
-        <DiagonalLine language={language} />
+        <DiagonalLine language={language} pdfType={pdfType} />
       </View>
       <View style={styles.titleContainer}>
         <Text></Text>
@@ -741,18 +766,16 @@ const renderHeader = (
           </Svg>
           <Text style={styles.headerInfo}>info@bas-korea.com</Text>
         </View>
-        <Text
-          style={{
-            fontSize: 26,
-            border: "2px solid #172952",
-            padding: "5px 10px",
-            fontFamily: "NotoSerifKR",
-            color: "#172952",
-            marginTop: 20,
-          }}
-        >
-          {pdfType === "INVOICEORIGINAL" ? "ORIGINAL" : "C O P Y"}
-        </Text>
+        <View style={styles.stampWrapper}>
+          <Image
+            src={originalChecked ? ORIGINAL : COPY}
+            style={{
+              width: 180,
+              height: 60,
+              objectFit: "contain",
+            }}
+          />
+        </View>
       </View>
     </View>
   </>
@@ -805,6 +828,7 @@ const InvoicePDFDocument = ({
   invChargeList,
   invoiceNumber,
   pdfType,
+  originalChecked,
 }: InvoicePDFDocumentProps) => {
   const headerMessage = pdfHeader;
   const calculateTotalSalesAmount = (items: OrderItemDetail[]) => {
@@ -829,7 +853,8 @@ const InvoicePDFDocument = ({
             info.refNumber,
             info.imoNo + "",
             invoiceNumber || "",
-            pdfType
+            pdfType,
+            originalChecked
           )}
           <View style={styles.table}>
             <View

@@ -21,6 +21,7 @@ import {
   OrderItemDetail,
   InvoiceRemarkDetail,
   Supplier,
+  InvoiceChargeListIF,
 } from "../types/types";
 import LoadingSpinner from "../components/LoadingSpinner";
 import TotalCardsComponent from "../components/makeOffer/TotalCardsComponent";
@@ -86,13 +87,19 @@ const InvoiceDetail = () => {
   const [language, setLanguage] = useState<string>("ENG");
   const [headerEditModalVisible, setHeaderEditModalVisible] =
     useState<boolean>(false);
-  const [pdfType, setPdfType] = useState<string>("INVOICEORIGINAL");
+  const [pdfType, setPdfType] = useState<string>("INVOICE");
+  const [itemType, setItemType] = useState<string>("DEFAULT");
+  const [itemTypeOption, setItemTypeOption] = useState<string[]>(["DEFAULT"]);
   const [pdfInvoiceHeader, setPdfInvoiceHeader] =
     useState<InvoiceHeaderFormData>(INITIAL_HEADER_VALUES);
   const [pdfInvoiceFooter, setPdfInvoiceFooter] = useState<
     InvoiceRemarkDetail[]
   >([]);
   const [creditNoteAmount, setCreditNoteAmount] = useState<OrderItemDetail>();
+  const [invoiceChargeList, setInvoiceChargeList] = useState<
+    InvoiceChargeListIF[]
+  >([]);
+  const [originalChecked, setOriginalChecked] = useState<boolean>(true);
 
   const loadInvoiceDetail = async () => {
     try {
@@ -117,6 +124,11 @@ const InvoiceDetail = () => {
         messrs: data.documentInfo.companyName,
       });
       setPdfInvoiceFooter(data.salesRemarkDetailResponse || []);
+      setInvoiceChargeList(data.invoiceChargeList || []);
+      setItemTypeOption([
+        "DEFAULT",
+        ...data.invoiceChargeList.map((item) => item.customCharge),
+      ]);
     } catch (error) {
       console.error("Order detail error:", error);
       message.error("Failed to load order detail.");
@@ -517,7 +529,7 @@ const InvoiceDetail = () => {
 
     try {
       let doc;
-      if (pdfType === "INVOICEORIGINAL") {
+      if (pdfType === "INVOICE") {
         doc = (
           <InvoicePDFDocument
             invoiceNumber={invoiceNumber}
@@ -531,6 +543,7 @@ const InvoiceDetail = () => {
             finalTotals={finalTotals}
             dcInfo={dcInfo}
             invChargeList={invChargeList}
+            originalChecked={originalChecked}
           />
         );
       }
@@ -538,9 +551,9 @@ const InvoiceDetail = () => {
       const pdfBlob = await pdf(doc).toBlob();
       let defaultFileName = "";
 
-      if (pdfType === "INVOICEORIGINAL") {
+      if (pdfType === "INVOICE" && originalChecked) {
         defaultFileName = `${formValues.invoiceNumber}_INVOICE_ORIGINAL.pdf`;
-      } else if (pdfType === "INVOICECOPY") {
+      } else if (pdfType === "INVOICE" && !originalChecked) {
         defaultFileName = `${formValues.invoiceNumber}_INVOICE_COPY.pdf`;
       } else if (pdfType === "CREDITNOTE") {
         defaultFileName = `CREDIT_NOTE_${formValues.invoiceNumber}.pdf`;
@@ -706,16 +719,33 @@ const InvoiceDetail = () => {
         </Select>
         <span style={{ marginLeft: 20 }}>DOCUMENT TYPE: </span>
         <Select
-          style={{ width: 280, marginLeft: 10 }}
+          style={{ width: 200, marginLeft: 10 }}
           value={pdfType}
           onChange={handlePdfTypeChange}
         >
-          <Select.Option value="INVOICEORIGINAL">
-            INVOICE ORIGINAL
+          <Select.Option value="INVOICE">INVOICE</Select.Option>
+          <Select.Option value="PROFORMAINVOICE">
+            PROFORMA INVOICE
           </Select.Option>
-          <Select.Option value="INVOICECOPY">INVOICE COPY</Select.Option>
           <Select.Option value="CREDITNOTE">CREDIT NOTE</Select.Option>
         </Select>
+        <span style={{ marginLeft: 20 }}>ITEMS: </span>
+        <Select
+          style={{ width: 150, marginLeft: 10 }}
+          value={itemType}
+          onChange={setItemType}
+        >
+          {itemTypeOption.map((item) => (
+            <Select.Option value={item}>{item}</Select.Option>
+          ))}
+        </Select>
+        <Checkbox
+          checked={originalChecked}
+          onChange={() => setOriginalChecked(!originalChecked)}
+          style={{ marginLeft: 10 }}
+        >
+          ORIGINAL
+        </Checkbox>
         <Button
           style={{ marginLeft: 10 }}
           onClick={handlePDFPreview}
@@ -735,25 +765,7 @@ const InvoiceDetail = () => {
           onApply={handleCreditNoteApply}
         />
       </div>
-      {pdfType === "INVOICEORIGINAL" &&
-        showPDFPreview &&
-        formValues &&
-        supplier && (
-          <InvoicePDFDocument
-            invoiceNumber={invoiceNumber}
-            pdfType={pdfType}
-            info={formValues}
-            items={items}
-            pdfHeader={pdfInvoiceHeader}
-            viewMode={true}
-            language={language}
-            pdfFooter={pdfInvoiceFooter}
-            finalTotals={finalTotals}
-            dcInfo={dcInfo}
-            invChargeList={invChargeList}
-          />
-        )}
-      {pdfType === "INVOICECOPY" && showPDFPreview && formValues && (
+      {pdfType !== "CREDITNOTE" && showPDFPreview && formValues && supplier && (
         <InvoicePDFDocument
           invoiceNumber={invoiceNumber}
           pdfType={pdfType}
@@ -766,6 +778,7 @@ const InvoiceDetail = () => {
           finalTotals={finalTotals}
           dcInfo={dcInfo}
           invChargeList={invChargeList}
+          originalChecked={originalChecked}
         />
       )}
       {pdfType === "CREDITNOTE" &&
@@ -784,6 +797,7 @@ const InvoiceDetail = () => {
             finalTotals={finalTotals}
             dcInfo={dcInfo}
             invChargeList={invChargeList}
+            originalChecked={originalChecked}
           />
         ) : (
           <Alert

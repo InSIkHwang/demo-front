@@ -3,7 +3,7 @@ import { Button, Input } from "antd";
 import { Popover } from "antd";
 import { useState } from "react";
 
-const CreditNotePopover = ({
+const CreditNoteChargePopover = ({
   currency,
   onApply,
 }: {
@@ -50,15 +50,15 @@ const CreditNotePopover = ({
   return (
     <Popover
       content={content}
-      title="Enter CREDIT NOTE Amount"
+      title="Enter CREDIT NOTE / CHARGE Amount"
       trigger="click"
       placement="top"
     >
       <Button style={{ marginLeft: 10 }} type="default">
-        CREDIT NOTE
+        CREDIT NOTE / CHARGE
       </Button>
     </Popover>
   );
 };
 
-export default CreditNotePopover;
+export default CreditNoteChargePopover;
