@@ -716,7 +716,7 @@ const OrderDetail = () => {
       let localSendMailState = true; // 모달 내부에서 사용할 로컬 상태
 
       modalInstance = Modal.confirm({
-        title: "Quotation PDF File",
+        title: "Order PDF File",
         width: 500,
         content: (
           <div style={{ marginBottom: 20 }}>

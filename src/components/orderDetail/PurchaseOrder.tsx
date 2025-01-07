@@ -94,6 +94,7 @@ const baseTableCol = {
 const baseDashTableCol = {
   ...baseTableCol,
   backgroundColor: COLORS.background,
+  height: "100%",
 };
 
 // 컬럼 크기 설정
@@ -175,6 +176,9 @@ const styles = StyleSheet.create({
   },
   inquiryInfoColumn: {
     flex: 1,
+    flexDirection: "column",
+  },
+  inquiryTotalColumn: {
     flexDirection: "column",
   },
   inquiryPriceRow: {

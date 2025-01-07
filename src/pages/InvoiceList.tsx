@@ -13,10 +13,10 @@ import {
 } from "antd";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import styled from "styled-components";
-import { fetchOrderList, searchOrderList } from "../api/api";
+import { fetchInvoiceList, searchInvoiceList } from "../api/api";
 import type { ColumnsType } from "antd/es/table";
-import { OfferSearchParams, Order, orderAllResponses } from "../types/types";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { InvoiceListIF, OfferSearchParams } from "../types/types";
+import { useSearchParams } from "react-router-dom";
 import dayjs from "dayjs";
 import Checkbox, { CheckboxChangeEvent } from "antd/es/checkbox";
 import DetailInvoiceModal from "../components/InvoiceList/DetailInvoiceModal";
@@ -103,7 +103,7 @@ const StyledTag = styled(Tag)`
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
 `;
 
-const columns: ColumnsType<Order> = [
+const columns: ColumnsType<InvoiceListIF> = [
   {
     title: "Document Number",
     dataIndex: "documentNumber",
@@ -164,7 +164,7 @@ const columns: ColumnsType<Order> = [
 ];
 
 const InvoiceList = () => {
-  const [data, setData] = useState<Order[]>([]);
+  const [data, setData] = useState<InvoiceListIF[]>([]);
   const [searchParams, setSearchParams] = useSearchParams();
   const [totalCount, setTotalCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
@@ -186,7 +186,9 @@ const InvoiceList = () => {
   const [itemsPerPage, setItemsPerPage] = useState<number>(
     Number(searchParams.get("pageSize")) || 100
   );
-  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState<number | null>(
+    null
+  );
   const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
   const [registerStartDate, setRegisterStartDate] = useState<string>(
     searchParams.get("startDate") ||
@@ -226,12 +228,12 @@ const InvoiceList = () => {
       viewMyOfferOnly,
     });
     try {
-      const response = await fetchOrderList(
+      const response = await fetchInvoiceList(
         currentPage,
         itemsPerPage,
         viewMyOfferOnly
       );
-      setData(response.orderList);
+      setData(response.salesList);
       setTotalCount(response.totalCount);
     } catch (error) {
       console.error("OrderList fetchData error", error);
@@ -299,9 +301,9 @@ const InvoiceList = () => {
         }),
       };
 
-      const response = await searchOrderList(searchParams);
+      const response = await searchInvoiceList(searchParams);
 
-      setData(response.orderList);
+      setData(response.salesList);
       setTotalCount(response.totalCount);
     } catch (error) {
       message.error("Error occurred while searching");
@@ -326,8 +328,8 @@ const InvoiceList = () => {
     }
   };
 
-  const handleRowClick = (record: Order) => {
-    setSelectedOrderId(record.orderId ?? null);
+  const handleRowClick = (record: InvoiceListIF) => {
+    setSelectedInvoiceId(record.salesId ?? null);
     setIsDetailModalOpen(true);
   };
 
@@ -488,11 +490,11 @@ const InvoiceList = () => {
           <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
         )}
       </Container>
-      {selectedOrderId !== null && (
+      {selectedInvoiceId !== null && (
         <DetailInvoiceModal
           open={isDetailModalOpen}
           onClose={() => setIsDetailModalOpen(false)}
-          orderId={selectedOrderId}
+          invoiceId={selectedInvoiceId}
           fetchData={fetchData}
         />
       )}

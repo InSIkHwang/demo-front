@@ -7,12 +7,13 @@ import {
   Customer,
   HeaderFormData,
   Inquiry,
+  InvoiceChargeListIF,
+  InvoiceListIF,
   Item,
   ItemDataType,
   OfferSearchParams,
   Order,
   OrderAckHeaderFormData,
-  orderAllResponses,
   orderRemark,
   OrderRequest,
   Quotation,
@@ -1024,6 +1025,55 @@ export const saveCIPLHeader = async (
   orderHeader: CIPLHeaderFormData
 ) => {
   const response = await axios.put(`/api/orders/ci-pl/${orderId}`, orderHeader);
+
+  return response.data;
+};
+
+//----------------------------------------------------------------------------------
+// INVOICE 조회 관련
+
+//INVOICE 조회
+export const fetchInvoiceList = async (
+  page: number,
+  pageSize: number,
+  viewMyOfferOnly: boolean
+) => {
+  const response = await axios.get<{
+    totalCount: number;
+    salesList: InvoiceListIF[];
+  }>("/api/sales", {
+    params: {
+      page: page - 1, // 페이지는 0부터 시작
+      pageSize: pageSize, // 페이지당 아이템 수
+      writer: viewMyOfferOnly ? "MY" : "ALL",
+    },
+  });
+
+  return response.data;
+};
+
+//INVOICE 상세 정보 조회
+export const fetchInvoiceDetail = async (invoiceId: number) => {
+  const response = await axios.get(`/api/sales/${invoiceId}`);
+
+  return response.data;
+};
+
+//INVOICE 검색
+export const searchInvoiceList = async (searchParams: OfferSearchParams) => {
+  const response = await axios.post(`/api/sales/search`, searchParams);
+
+  return response.data;
+};
+
+//Invoice Charge 생성 및 업데이트
+export const updateInvoiceCharge = async (
+  salesId: number,
+  invoiceChargeList: InvoiceChargeListIF[]
+) => {
+  const response = await axios.put(`/api/sales/invoice-charge/${salesId}`, {
+    invoiceChargeList,
+  });
 
   return response.data;
 };

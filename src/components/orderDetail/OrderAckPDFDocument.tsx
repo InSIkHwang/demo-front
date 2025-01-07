@@ -97,6 +97,7 @@ const baseTableCol = {
 const baseDashTableCol = {
   ...baseTableCol,
   backgroundColor: COLORS.background,
+  height: "100%",
 };
 
 // 컬럼 크기 설정
@@ -178,6 +179,9 @@ const styles = StyleSheet.create({
   },
   inquiryInfoColumn: {
     flex: 1,
+    flexDirection: "column",
+  },
+  inquiryTotalColumn: {
     flexDirection: "column",
   },
   inquiryPriceRow: {
@@ -848,103 +852,20 @@ const OrderAckPDFDocument = ({
             </View>
             {renderTableRows(items, language)}
             <View wrap={false}>
-              <View style={[styles.inquiryInfoWrap, { marginTop: 20 }]}>
-                <View style={[styles.inquiryInfoColumn, { flex: 0.65 }]}>
-                  <View style={styles.inquiryInfoBox}>
-                    <View style={styles.inquiryInfoText}>
-                      <Text style={styles.inquiryInfoTitle}>
-                        TERMS AND CONDITIONS
-                      </Text>
-                    </View>
-                    {pdfHeader?.portOfShipment && (
-                      <View style={styles.inquiryInfoText}>
-                        <Text style={{ lineHeight: 1.2, padding: "2px 0" }}>
-                          PORT OF SHIPMENT :{" "}
-                          <Text style={styles.inquiryInfoValueBold}>
-                            {pdfHeader.portOfShipment}
-                          </Text>
-                        </Text>
-                      </View>
-                    )}
-                    {pdfHeader?.incoterms && (
-                      <View style={styles.inquiryInfoText}>
-                        <Text style={{ lineHeight: 1.2, padding: "2px 0" }}>
-                          DELIVERY TERMS :{" "}
-                          <Text style={styles.inquiryInfoValueBold}>
-                            {pdfHeader.incoterms}
-                          </Text>
-                        </Text>
-                      </View>
-                    )}
-                    {pdfHeader?.deliveryTime && (
-                      <View style={styles.inquiryInfoText}>
-                        <Text style={{ lineHeight: 1.2, padding: "2px 0" }}>
-                          DELIVERY TIME :{" "}
-                          <Text style={styles.inquiryInfoValueBold}>
-                            {pdfHeader.deliveryTime}
-                          </Text>
-                        </Text>
-                      </View>
-                    )}
-                    {pdfHeader?.termsOfPayment && (
-                      <View style={styles.inquiryInfoText}>
-                        <Text style={{ lineHeight: 1.2, padding: "2px 0" }}>
-                          PAYMENT TERMS :{" "}
-                          <Text style={styles.inquiryInfoValueBold}>
-                            {pdfHeader.termsOfPayment}
-                          </Text>
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-                  {pdfFooter.length > 0 && (
-                    <View style={[styles.inquiryInfoBox]} wrap>
-                      <View style={styles.inquiryInfoText}>
-                        <Text style={styles.inquiryInfoTitle}>REMARK</Text>
-                      </View>
-                      <View
-                        style={[
-                          styles.inquiryInfoText,
-                          {
-                            flexDirection: "column",
-                          },
-                        ]}
-                      >
-                        {pdfFooter.map((footer, index) => {
-                          const formattedText = footer.orderRemark
-                            .split("\n")
-                            .map((line) => line.replace(/ /g, "\u00A0"))
-                            .join("\n");
-                          return (
-                            <View
-                              key={index}
-                              style={{
-                                flexDirection: "row",
-                                flexWrap: "wrap",
-                                marginBottom: 5,
-                              }}
-                            >
-                              <Text
-                                style={{
-                                  fontSize: 9,
-                                  lineHeight: 1.5,
-                                  backgroundColor: "#d1ebf9",
-                                }}
-                              >
-                                {`${index + 1}. `}
-                                {formattedText}
-                              </Text>
-                            </View>
-                          );
-                        })}
-                      </View>
-                    </View>
-                  )}
-                </View>
+              <View
+                style={[
+                  styles.inquiryInfoWrap,
+                  { marginTop: 20, flexDirection: "column" },
+                ]}
+              >
                 <View
                   style={[
-                    styles.inquiryInfoColumn,
-                    { alignItems: "flex-end", flex: 0.35 },
+                    styles.inquiryTotalColumn,
+                    {
+                      alignItems: "flex-end",
+                      width: "50%",
+                      alignSelf: "flex-end",
+                    },
                   ]}
                 >
                   {(dcInfo.dcPercent ||
@@ -1052,6 +973,98 @@ const OrderAckPDFDocument = ({
                           )}
                     </Text>
                   </View>
+                </View>
+                <View style={[styles.inquiryTotalColumn]}>
+                  <View style={styles.inquiryInfoBox}>
+                    <View style={styles.inquiryInfoText}>
+                      <Text style={styles.inquiryInfoTitle}>
+                        TERMS AND CONDITIONS
+                      </Text>
+                    </View>
+                    {pdfHeader?.portOfShipment && (
+                      <View style={styles.inquiryInfoText}>
+                        <Text style={{ lineHeight: 1.2, padding: "2px 0" }}>
+                          PORT OF SHIPMENT :{" "}
+                          <Text style={styles.inquiryInfoValueBold}>
+                            {pdfHeader.portOfShipment}
+                          </Text>
+                        </Text>
+                      </View>
+                    )}
+                    {pdfHeader?.incoterms && (
+                      <View style={styles.inquiryInfoText}>
+                        <Text style={{ lineHeight: 1.2, padding: "2px 0" }}>
+                          DELIVERY TERMS :{" "}
+                          <Text style={styles.inquiryInfoValueBold}>
+                            {pdfHeader.incoterms}
+                          </Text>
+                        </Text>
+                      </View>
+                    )}
+                    {pdfHeader?.deliveryTime && (
+                      <View style={styles.inquiryInfoText}>
+                        <Text style={{ lineHeight: 1.2, padding: "2px 0" }}>
+                          DELIVERY TIME :{" "}
+                          <Text style={styles.inquiryInfoValueBold}>
+                            {pdfHeader.deliveryTime}
+                          </Text>
+                        </Text>
+                      </View>
+                    )}
+                    {pdfHeader?.termsOfPayment && (
+                      <View style={styles.inquiryInfoText}>
+                        <Text style={{ lineHeight: 1.2, padding: "2px 0" }}>
+                          PAYMENT TERMS :{" "}
+                          <Text style={styles.inquiryInfoValueBold}>
+                            {pdfHeader.termsOfPayment}
+                          </Text>
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                  {pdfFooter.length > 0 && (
+                    <View style={[styles.inquiryInfoBox]} wrap>
+                      <View style={styles.inquiryInfoText}>
+                        <Text style={styles.inquiryInfoTitle}>REMARK</Text>
+                      </View>
+                      <View
+                        style={[
+                          styles.inquiryInfoText,
+                          {
+                            flexDirection: "column",
+                          },
+                        ]}
+                      >
+                        {pdfFooter.map((footer, index) => {
+                          const formattedText = footer.orderRemark
+                            .split("\n")
+                            .map((line) => line.trim())
+                            .join("\n");
+                          return (
+                            <View
+                              key={index}
+                              style={{
+                                flexDirection: "row",
+                                flexWrap: "wrap",
+                                marginBottom: 5,
+                              }}
+                            >
+                              <Text
+                                style={{
+                                  fontSize: 9,
+                                  lineHeight: 1.5,
+                                  backgroundColor: "#d1ebf9",
+                                }}
+                              >
+                                {`${index + 1}. `}
+                                {formattedText}
+                              </Text>
+                            </View>
+                          );
+                        })}
+                      </View>
+                    </View>
+                  )}
                 </View>
               </View>
             </View>

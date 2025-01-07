@@ -1,35 +1,36 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Button, Checkbox, Divider, Input, message, Modal, Select } from "antd";
+import {
+  Alert,
+  Button,
+  Checkbox,
+  Divider,
+  Input,
+  message,
+  Modal,
+  Select,
+} from "antd";
 import styled from "styled-components";
-import dayjs, { Dayjs } from "dayjs";
+import dayjs from "dayjs";
+import { fetchInvoiceDetail, updateInvoiceCharge } from "../api/api";
 import {
-  editOrder,
-  fetchOrderDetail,
-  saveCIPLHeader,
-  saveOrderHeader,
-} from "../api/api";
-import {
-  CIPLHeaderFormData,
   InvCharge,
+  InvoiceDetailIF,
+  InvoiceDocument,
   InvoiceHeaderFormData,
-  Order,
-  OrderAckHeaderFormData,
   OrderItemDetail,
-  orderRemark,
-  OrderRequest,
-  OrderResponse,
-  OrderSupplier,
+  InvoiceRemarkDetail,
+  Supplier,
+  InvoiceChargeListIF,
 } from "../types/types";
 import LoadingSpinner from "../components/LoadingSpinner";
-import FormComponent from "../components/orderDetail/FormComponent";
 import TotalCardsComponent from "../components/makeOffer/TotalCardsComponent";
-import OrderAckPDFDocument from "../components/orderDetail/OrderAckPDFDocument";
 import { pdf } from "@react-pdf/renderer";
 import TableComponent from "../components/InvoiceDetail/TableComponent";
 import InvoicePDFDocument from "../components/InvoiceDetail/InvoicePDFDocument";
 import InvoiceHeaderEditModal from "../components/InvoiceDetail/InvoiceHeaderEditModal";
-import CreditNotePopover from "../components/InvoiceDetail/CreditNotePopover";
+import CreditNoteChargePopover from "../components/InvoiceDetail/CreditNoteChargePopover";
+import FormComponent from "../components/InvoiceDetail/FormComponent";
 
 const Container = styled.div`
   position: relative;
@@ -57,12 +58,12 @@ const INITIAL_HEADER_VALUES: InvoiceHeaderFormData = {
 
 const InvoiceDetail = () => {
   const { invoiceId } = useParams();
-  const [formValues, setFormValues] = useState<Order>();
+  const [formValues, setFormValues] = useState<InvoiceDocument>();
   const [items, setItems] = useState<OrderItemDetail[]>([]);
-  const [supplier, setSupplier] = useState<OrderSupplier>();
-  const [invoiceNumber, setInvoiceNumber] = useState<string>("BAS-25-001");
+  const [supplier, setSupplier] = useState<Supplier>();
+  const [invoiceNumber, setInvoiceNumber] = useState<string>("");
   const navigate = useNavigate();
-  const [orderData, setOrderData] = useState<OrderResponse | null>(null);
+  const [invoiceData, setInvoiceData] = useState<InvoiceDetailIF | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [invChargeList, setInvChargeList] = useState<InvCharge[] | null>([]);
   const [dcInfo, setDcInfo] = useState({
@@ -83,23 +84,31 @@ const InvoiceDetail = () => {
     totalProfitPercent: 0,
   });
   const [showPDFPreview, setShowPDFPreview] = useState(false);
-  const [language, setLanguage] = useState<string>("KOR");
+  const [language, setLanguage] = useState<string>("ENG");
   const [headerEditModalVisible, setHeaderEditModalVisible] =
     useState<boolean>(false);
-  const [pdfType, setPdfType] = useState<string>("INVOICEORIGINAL");
+  const [pdfType, setPdfType] = useState<string>("INVOICE");
+  const [itemType, setItemType] = useState<string>("DEFAULT");
+  const [itemTypeOption, setItemTypeOption] = useState<string[]>(["DEFAULT"]);
   const [pdfInvoiceHeader, setPdfInvoiceHeader] =
     useState<InvoiceHeaderFormData>(INITIAL_HEADER_VALUES);
-  const [pdfInvoiceFooter, setPdfInvoiceFooter] = useState<orderRemark[]>([]);
-  const [creditNoteAmount, setCreditNoteAmount] = useState<OrderItemDetail>();
+  const [pdfInvoiceFooter, setPdfInvoiceFooter] = useState<
+    InvoiceRemarkDetail[]
+  >([]);
+  const [invoiceChargeList, setInvoiceChargeList] = useState<
+    InvoiceChargeListIF[]
+  >([]);
+  const [originalChecked, setOriginalChecked] = useState<boolean>(true);
 
-  const loadOrderDetail = async () => {
+  const loadInvoiceDetail = async () => {
     try {
-      const data: OrderResponse = await fetchOrderDetail(Number(invoiceId));
+      const data: InvoiceDetailIF = await fetchInvoiceDetail(Number(invoiceId));
 
       const sortedItems = data.itemDetailList.sort(
         (a, b) => a.position - b.position
       );
-      setOrderData(data);
+      setInvoiceNumber(data.documentInfo.invoiceNumber);
+      setInvoiceData(data);
       setFormValues(data.documentInfo);
       setItems(sortedItems);
       setSupplier(data.suppliers[0]);
@@ -113,7 +122,12 @@ const InvoiceDetail = () => {
         ...INITIAL_HEADER_VALUES,
         messrs: data.documentInfo.companyName,
       });
-      setPdfInvoiceFooter(data.orderHeaderResponse?.orderCustomerRemark || []);
+      setPdfInvoiceFooter(data.salesRemarkDetailResponse || []);
+      setInvoiceChargeList(data.invoiceChargeList || []);
+      setItemTypeOption([
+        "DEFAULT",
+        ...data.invoiceChargeList.map((item) => item.customCharge),
+      ]);
     } catch (error) {
       console.error("Order detail error:", error);
       message.error("Failed to load order detail.");
@@ -123,7 +137,7 @@ const InvoiceDetail = () => {
   };
 
   useEffect(() => {
-    loadOrderDetail();
+    loadInvoiceDetail();
   }, [invoiceId]);
 
   const handleKeyboardSave = useCallback(
@@ -221,7 +235,7 @@ const InvoiceDetail = () => {
     const salesAmountKRW = calculateTotalAmount(salesPriceKRW, qty);
 
     const exchangeRate =
-      formValues?.currency || orderData?.documentInfo.currency || 1050;
+      formValues?.currency || invoiceData?.documentInfo.currency || 1050;
     const salesPriceGlobal = roundToTwoDecimalPlaces(
       salesPriceKRW / exchangeRate
     );
@@ -483,19 +497,19 @@ const InvoiceDetail = () => {
       return;
     }
 
-    const request: OrderRequest = {
-      orderId: Number(invoiceId),
-      supplierId: supplier?.supplierId || 0,
-      documentEditInfo: formValues,
-      invChargeList: invChargeList,
-      itemDetailList: items,
-    };
+    // const request: InvoiceRequest = {
+    //   invoiceId: Number(invoiceId),
+    //   supplierId: supplier?.supplierId || 0,
+    //   documentEditInfo: formValues,
+    //   invChargeList: invChargeList,
+    //   itemDetailList: items,
+    // };
 
     try {
-      await editOrder(Number(invoiceId), request);
+      // await editOrder(Number(invoiceId), request);
       message.success("Order saved successfully");
 
-      loadOrderDetail();
+      loadInvoiceDetail();
     } catch (error) {
       console.error("Error saving order:", error);
       message.error("Failed to save order. Please try again.");
@@ -504,8 +518,6 @@ const InvoiceDetail = () => {
 
   const handlePdfTypeChange = (value: string) => {
     setPdfType(value);
-    // OA 선택 시 영어로, PO 선택 시 한글로 자동 변경
-    setLanguage(value === "PO" ? "KOR" : "ENG");
   };
 
   const handlePDFDownload = async () => {
@@ -516,7 +528,7 @@ const InvoiceDetail = () => {
 
     try {
       let doc;
-      if (pdfType === "INVOICEORIGINAL") {
+      if (pdfType === "INVOICE") {
         doc = (
           <InvoicePDFDocument
             invoiceNumber={invoiceNumber}
@@ -530,6 +542,8 @@ const InvoiceDetail = () => {
             finalTotals={finalTotals}
             dcInfo={dcInfo}
             invChargeList={invChargeList}
+            originalChecked={originalChecked}
+            itemType={itemType}
           />
         );
       }
@@ -537,23 +551,19 @@ const InvoiceDetail = () => {
       const pdfBlob = await pdf(doc).toBlob();
       let defaultFileName = "";
 
-      if (pdfType === "PO" && language === "KOR") {
-        defaultFileName = `${
-          supplier.korCompanyName || supplier.companyName
-        }_발주서_${formValues.documentNumber}.pdf`;
-      } else if (pdfType === "PO" && language === "ENG") {
-        defaultFileName = `${supplier.companyName}_Purchase_Order_${formValues.documentNumber}.pdf`;
-      } else if (pdfType === "OA" && language === "KOR") {
-        defaultFileName = `${formValues.refNumber}(주문확인서).pdf`;
-      } else if (pdfType === "OA" && language === "ENG") {
-        defaultFileName = `${formValues.refNumber}(ORDER_ACK).pdf`;
+      if (pdfType === "INVOICE" && originalChecked) {
+        defaultFileName = `${formValues.invoiceNumber}_INVOICE_ORIGINAL.pdf`;
+      } else if (pdfType === "INVOICE" && !originalChecked) {
+        defaultFileName = `${formValues.invoiceNumber}_INVOICE_COPY.pdf`;
+      } else if (pdfType === "CREDITNOTE") {
+        defaultFileName = `CREDIT_NOTE_${formValues.invoiceNumber}.pdf`;
       }
 
       let modalInstance: any;
       let localSendMailState = true; // 모달 내부에서 사용할 로컬 상태
 
       modalInstance = Modal.confirm({
-        title: "Quotation PDF File",
+        title: "Invoice PDF File",
         width: 500,
         content: (
           <div style={{ marginBottom: 20 }}>
@@ -606,7 +616,7 @@ const InvoiceDetail = () => {
 
   const commonSaveHeader = async (
     header: InvoiceHeaderFormData,
-    footer: orderRemark[]
+    footer: InvoiceRemarkDetail[]
   ) => {
     // const response = await saveInvoiceHeader(Number(invoiceId), header, footer);
 
@@ -616,36 +626,138 @@ const InvoiceDetail = () => {
     setPdfInvoiceFooter(footer);
   };
 
-  const handleCreditNoteApply = (krwAmount: number, globalAmount: number) => {
-    setCreditNoteAmount({
+  const handleCreditNoteApply = async () => {
+    try {
+      const response = await updateInvoiceCharge(
+        Number(invoiceId),
+        invoiceChargeList
+      );
+
+      setItemTypeOption([
+        "DEFAULT",
+        ...invoiceChargeList.map(
+          (item: InvoiceChargeListIF) => item.customCharge
+        ),
+      ]);
+
+      message.success("Credit Note / Charge saved successfully");
+    } catch (error) {
+      console.error("Error saving order:", error);
+      message.error("Failed to save order. Please try again.");
+    }
+  };
+
+  const createChargeItem = (
+    chargeType: string,
+    invoiceChargeList: InvoiceChargeListIF[]
+  ): OrderItemDetail => {
+    // 기본 고정 값
+    const baseItem = {
       ordersItemId: null,
       itemType: "ITEM",
       itemCode: "",
-      itemName: "CREDIT NOTE",
       itemRemark: "",
       qty: 1,
       position: 1,
       unit: "EA",
       indexNo: null,
-      salesPriceKRW: krwAmount,
-      salesPriceGlobal: globalAmount,
-      salesAmountKRW: krwAmount,
-      salesAmountGlobal: globalAmount,
       margin: 0,
       purchasePriceKRW: 0,
       purchasePriceGlobal: 0,
       purchaseAmountKRW: 0,
       purchaseAmountGlobal: 0,
       deliveryDate: 0,
-    });
+    };
+
+    // invoiceChargeList에서 해당하는 charge 찾기
+    const selectedCharge = invoiceChargeList.find(
+      (charge) => charge.customCharge === chargeType
+    );
+
+    if (!selectedCharge) {
+      throw new Error("Invalid charge type");
+    }
+
+    // 선택된 charge 정보로 아이템 생성
+    return {
+      ...baseItem,
+      itemName: selectedCharge.customCharge.toUpperCase(),
+      salesPriceKRW: selectedCharge.chargePriceKRW,
+      salesPriceGlobal: selectedCharge.chargePriceGlobal,
+      salesAmountKRW: selectedCharge.chargePriceKRW,
+      salesAmountGlobal: selectedCharge.chargePriceGlobal,
+    };
+  };
+
+  const createChargeFinalTotals = (
+    chargeType: string,
+    invoiceChargeList: InvoiceChargeListIF[],
+    currency: number
+  ): {
+    totalSalesAmountKRW: number;
+    totalSalesAmountGlobal: number;
+    totalPurchaseAmountKRW: number;
+    totalPurchaseAmountGlobal: number;
+    totalSalesAmountUnDcKRW: number;
+    totalSalesAmountUnDcGlobal: number;
+    totalPurchaseAmountUnDcKRW: number;
+    totalPurchaseAmountUnDcGlobal: number;
+    totalProfit: number;
+    totalProfitPercent: number;
+  } => {
+    // invoiceChargeList에서 해당하는 charge 찾기
+    const selectedCharge = invoiceChargeList.find(
+      (charge) => charge.customCharge === chargeType
+    );
+
+    if (!selectedCharge) {
+      throw new Error("Invalid charge type");
+    }
+
+    const chargeCurrency = () => {
+      switch (formValues?.currencyType) {
+        case "USD":
+          return 1400;
+        case "EUR":
+          return 1500;
+        case "INR":
+          return 16;
+        default:
+          return 1400;
+      }
+    };
+
+    const salesAmountKRW = selectedCharge.chargePriceKRW;
+    const salesAmountGlobal = selectedCharge.chargePriceGlobal;
+    const purchaseAmountKRW = 0; // Charge 아이템은 구매가격이 0
+    const purchaseAmountGlobal = 0;
+
+    const totalProfit =
+      salesAmountGlobal * chargeCurrency() - purchaseAmountKRW;
+    const totalProfitPercent = Number(
+      ((totalProfit / (salesAmountGlobal * chargeCurrency())) * 100).toFixed(2)
+    );
+
+    return {
+      totalSalesAmountKRW: Math.round(salesAmountKRW),
+      totalSalesAmountGlobal: salesAmountGlobal,
+      totalPurchaseAmountKRW: purchaseAmountKRW,
+      totalPurchaseAmountGlobal: purchaseAmountGlobal,
+      totalSalesAmountUnDcKRW: Math.round(salesAmountKRW),
+      totalSalesAmountUnDcGlobal: salesAmountGlobal,
+      totalPurchaseAmountUnDcKRW: purchaseAmountKRW,
+      totalPurchaseAmountUnDcGlobal: purchaseAmountGlobal,
+      totalProfit: Math.round(totalProfit),
+      totalProfitPercent: totalProfitPercent,
+    };
   };
 
   if (isLoading) {
     return <LoadingSpinner />;
   }
 
-  if (!orderData) {
-    return <div>Order not found.</div>;
+  if (!invoiceData) {
+    return <div>Invoice not found.</div>;
   }
 
   return (
@@ -661,12 +773,12 @@ const InvoiceDetail = () => {
           itemDetails={items}
           setItemDetails={setItems}
           handleInputChange={handleInputChange}
-          currency={orderData.documentInfo.currency}
+          currency={invoiceData.documentInfo.currency}
           roundToTwoDecimalPlaces={roundToTwoDecimalPlaces}
           calculateTotalAmount={calculateTotalAmount}
           handleMarginChange={handleMarginChange}
           handlePriceInputChange={handlePriceInputChange}
-          orderId={orderData.documentInfo.orderId || 0}
+          invoiceId={invoiceData.documentInfo.salesId || 0}
           invoiceNumber={invoiceNumber}
           // pdfUrl={pdfUrl}
           // supplierName={supplier.supplierName}
@@ -707,18 +819,35 @@ const InvoiceDetail = () => {
           <Select.Option value="KOR">KOR</Select.Option>
           <Select.Option value="ENG">ENG</Select.Option>
         </Select>
-        <span style={{ marginLeft: 20 }}>DOCUMENT TYPE: </span>
+        <span style={{ marginLeft: 20 }}>INVOICE TYPE: </span>
         <Select
-          style={{ width: 280, marginLeft: 10 }}
+          style={{ width: 200, marginLeft: 10 }}
           value={pdfType}
           onChange={handlePdfTypeChange}
         >
-          <Select.Option value="INVOICEORIGINAL">
-            INVOICE ORIGINAL
+          <Select.Option value="INVOICE">INVOICE</Select.Option>
+          <Select.Option value="PROFORMAINVOICE">
+            PROFORMA INVOICE
           </Select.Option>
-          <Select.Option value="INVOICECOPY">INVOICE COPY</Select.Option>
           <Select.Option value="CREDITNOTE">CREDIT NOTE</Select.Option>
         </Select>
+        <span style={{ marginLeft: 20 }}>ITEMS: </span>
+        <Select
+          style={{ width: 150, marginLeft: 10 }}
+          value={itemType}
+          onChange={setItemType}
+        >
+          {itemTypeOption.map((item) => (
+            <Select.Option value={item}>{item}</Select.Option>
+          ))}
+        </Select>
+        <Checkbox
+          checked={originalChecked}
+          onChange={() => setOriginalChecked(!originalChecked)}
+          style={{ marginLeft: 10 }}
+        >
+          ORIGINAL
+        </Checkbox>
         <Button
           style={{ marginLeft: 10 }}
           onClick={handlePDFPreview}
@@ -733,12 +862,16 @@ const InvoiceDetail = () => {
         >
           PDF Download
         </Button>
-        <CreditNotePopover
+        <CreditNoteChargePopover
           currency={formValues?.currency || 1050}
+          invoiceChargeList={invoiceChargeList}
+          setInvoiceChargeList={setInvoiceChargeList}
           onApply={handleCreditNoteApply}
+          finalTotals={finalTotals}
         />
       </div>
-      {pdfType === "INVOICEORIGINAL" &&
+      {pdfType !== "CREDITNOTE" &&
+        itemType === "DEFAULT" &&
         showPDFPreview &&
         formValues &&
         supplier && (
@@ -754,41 +887,42 @@ const InvoiceDetail = () => {
             finalTotals={finalTotals}
             dcInfo={dcInfo}
             invChargeList={invChargeList}
+            originalChecked={originalChecked}
+            itemType={itemType}
           />
         )}
-      {pdfType === "INVOICECOPY" && showPDFPreview && formValues && (
-        <InvoicePDFDocument
-          invoiceNumber={invoiceNumber}
-          pdfType={pdfType}
-          info={formValues}
-          items={items}
-          pdfHeader={pdfInvoiceHeader}
-          viewMode={true}
-          language={language}
-          pdfFooter={pdfInvoiceFooter}
-          finalTotals={finalTotals}
-          dcInfo={dcInfo}
-          invChargeList={invChargeList}
-        />
-      )}
-      {pdfType === "CREDITNOTE" &&
+      {itemType !== "DEFAULT" &&
         showPDFPreview &&
         formValues &&
-        creditNoteAmount && (
+        (createChargeItem(itemType, invoiceChargeList) ? (
           <InvoicePDFDocument
             invoiceNumber={invoiceNumber}
             pdfType={pdfType}
             info={formValues}
-            items={[creditNoteAmount]}
+            items={[createChargeItem(itemType, invoiceChargeList)]}
             pdfHeader={pdfInvoiceHeader}
             viewMode={true}
             language={language}
             pdfFooter={pdfInvoiceFooter}
-            finalTotals={finalTotals}
+            finalTotals={createChargeFinalTotals(
+              itemType,
+              invoiceChargeList,
+              formValues?.currency || 1050
+            )}
             dcInfo={dcInfo}
             invChargeList={invChargeList}
+            originalChecked={originalChecked}
+            itemType={itemType}
           />
-        )}
+        ) : (
+          <Alert
+            message="Credit Note / Charge Error"
+            description="Credit Note / Charge amount is not set. Please click the Credit Note / Charge button to enter the amount."
+            type="warning"
+            showIcon
+            style={{ margin: "20px 0" }}
+          />
+        ))}
       {headerEditModalVisible && (
         <InvoiceHeaderEditModal
           open={headerEditModalVisible}

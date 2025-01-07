@@ -21,14 +21,16 @@ import NotoSansExtraBold from "../../assets/font/NotoSansExtraBold.ttf";
 import NotoSansBold from "../../assets/font/NotoSansBold.ttf";
 import logoUrl from "../../assets/logo/withoutTextLogo.png";
 import simpleLogoUrl from "../../assets/logo/simpleLogo.png";
+import ORIGINAL from "../../assets/img/ORIGINAL.png";
+import COPY from "../../assets/img/COPY.png";
 import {
   FormValuesType,
   HeaderFormData,
   InvCharge,
   OrderItemDetail,
   OrderAckHeaderFormData,
-  Order,
-  orderRemark,
+  InvoiceDocument,
+  InvoiceRemarkDetail,
   InvoiceHeaderFormData,
 } from "../../types/types";
 
@@ -60,12 +62,12 @@ Font.register({
 Font.registerHyphenationCallback((word) => ["", word, ""]);
 
 interface InvoicePDFDocumentProps {
-  info: Order;
+  info: InvoiceDocument;
   items: OrderItemDetail[];
   pdfHeader: InvoiceHeaderFormData;
   viewMode: boolean;
   language: string;
-  pdfFooter: orderRemark[];
+  pdfFooter: InvoiceRemarkDetail[];
   finalTotals: {
     totalSalesAmountKRW: number;
     totalSalesAmountGlobal: number;
@@ -78,6 +80,8 @@ interface InvoicePDFDocumentProps {
   invChargeList: InvCharge[] | null;
   invoiceNumber: string;
   pdfType: string;
+  originalChecked: boolean;
+  itemType: string;
 }
 
 const COLORS = {
@@ -100,6 +104,7 @@ const baseTableCol = {
 const baseDashTableCol = {
   ...baseTableCol,
   backgroundColor: COLORS.background,
+  height: "100%",
 };
 
 // 컬럼 크기 설정
@@ -181,6 +186,9 @@ const styles = StyleSheet.create({
   },
   inquiryInfoColumn: {
     flex: 1,
+    flexDirection: "column",
+  },
+  inquiryTotalColumn: {
     flexDirection: "column",
   },
   inquiryPriceRow: {
@@ -402,13 +410,30 @@ const styles = StyleSheet.create({
     color: "#323232",
     fontFamily: "malgunGothicBold",
   },
+  stampWrapper: {
+    position: "relative",
+    marginTop: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 });
 
-const DiagonalLine = ({ language }: { language: string }) => (
-  <Svg width={350} height={8}>
-    <Path d="M4 0 L350 0 L350 8 L0 8 Z" fill="#142952" />
-  </Svg>
-);
+const DiagonalLine = ({
+  language,
+  pdfType,
+}: {
+  language: string;
+  pdfType: string;
+}) =>
+  pdfType === "PROFORMAINVOICE" ? (
+    <Svg width={200} height={8}>
+      <Path d="M4 0 L200 0 L200 8 L0 8 Z" fill="#142952" />
+    </Svg>
+  ) : (
+    <Svg width={350} height={8}>
+      <Path d="M4 0 L350 0 L350 8 L0 8 Z" fill="#142952" />
+    </Svg>
+  );
 
 const DescriptionIcon = () => (
   <Svg width={12} height={12} style={{ marginLeft: 25, bottom: 5 }}>
@@ -589,24 +614,27 @@ const renderTableRows = (items: OrderItemDetail[], language: string) => {
 // 헤더를 렌더링하는 함수
 const renderHeader = (
   logoUrl: string,
-  customerName: string,
   vesselName: string,
-  docNumber: string,
-  registerDate: string | dayjs.Dayjs,
   pdfHeader: InvoiceHeaderFormData,
   language: string,
   refNumber: string,
   imoNo: string,
   invoiceNumber: string,
-  pdfType: string
+  pdfType: string,
+  originalChecked: boolean,
+  itemType: string
 ) => (
   <>
     <View style={styles.header}>
       <View style={styles.titleContainer}>
         <Text style={styles.logoTitle}>
-          {language === "KOR" ? "INVOICE" : "INVOICE"}
+          {pdfType === "INVOICE"
+            ? "INVOICE"
+            : pdfType === "PROFORMAINVOICE"
+            ? "PROFORMA INVOICE"
+            : "CREDIT NOTE"}
         </Text>
-        <DiagonalLine language={language} />
+        <DiagonalLine language={language} pdfType={pdfType} />
       </View>
       <View style={styles.titleContainer}>
         <Text></Text>
@@ -631,12 +659,12 @@ const renderHeader = (
     </View>
     <View style={styles.inquiryInfoWrap}>
       <View style={styles.inquiryInfoColumn}>
-        <View style={styles.inquiryInfoBox}>
+        <View style={[styles.inquiryInfoBox, { paddingBottom: 10 }]}>
           <View style={styles.inquiryInfoText}>
             <Text style={styles.inquiryInfoTitle}>MESSRS</Text>
           </View>
           <View style={styles.inquiryInfoText}>
-            <Text style={{ lineHeight: 1.2 }}>{pdfHeader?.messrs || ""}</Text>
+            <Text style={{ lineHeight: 1.5 }}>{pdfHeader?.messrs || ""}</Text>
           </View>
         </View>
         <View style={styles.inquiryInfoBox}>
@@ -660,8 +688,8 @@ const renderHeader = (
             <Text style={styles.inquiryInfoLabel}>Invoice No.</Text>
             <Text style={styles.inquiryInfoValue}>
               <Text style={styles.inquiryInfoValue}>
-                {pdfType === "CREDITNOTE"
-                  ? `${invoiceNumber}(CREDIT)`
+                {itemType !== "DEFAULT"
+                  ? `${invoiceNumber}-${itemType.charAt(0)}`
                   : invoiceNumber}
               </Text>
             </Text>
@@ -740,18 +768,16 @@ const renderHeader = (
           </Svg>
           <Text style={styles.headerInfo}>info@bas-korea.com</Text>
         </View>
-        <Text
-          style={{
-            fontSize: 26,
-            border: "2px solid #172952",
-            padding: "5px 10px",
-            fontFamily: "NotoSerifKR",
-            color: "#172952",
-            marginTop: 20,
-          }}
-        >
-          {pdfType === "INVOICEORIGINAL" ? "ORIGINAL" : "C O P Y"}
-        </Text>
+        <View style={styles.stampWrapper}>
+          <Image
+            src={originalChecked ? ORIGINAL : COPY}
+            style={{
+              width: 210,
+              height: 70,
+              objectFit: "contain",
+            }}
+          />
+        </View>
       </View>
     </View>
   </>
@@ -804,6 +830,8 @@ const InvoicePDFDocument = ({
   invChargeList,
   invoiceNumber,
   pdfType,
+  originalChecked,
+  itemType,
 }: InvoicePDFDocumentProps) => {
   const headerMessage = pdfHeader;
   const calculateTotalSalesAmount = (items: OrderItemDetail[]) => {
@@ -822,16 +850,15 @@ const InvoicePDFDocument = ({
         <View style={styles.contentWrapper}>
           {renderHeader(
             logoUrl,
-            info.companyName,
             info.vesselName,
-            info.documentNumber || "",
-            dayjs().format("YYYY-MM-DD"),
             headerMessage,
             language,
             info.refNumber,
             info.imoNo + "",
             invoiceNumber || "",
-            pdfType
+            pdfType,
+            originalChecked,
+            itemType
           )}
           <View style={styles.table}>
             <View
@@ -871,56 +898,21 @@ const InvoicePDFDocument = ({
             </View>
             {renderTableRows(items, language)}
             <View wrap={false}>
-              <View style={[styles.inquiryInfoWrap, { marginTop: 20 }]}>
-                <View style={[styles.inquiryInfoColumn, { flex: 0.65 }]}>
-                  {pdfFooter.length > 0 && (
-                    <View style={[styles.inquiryInfoBox]} wrap>
-                      <View style={styles.inquiryInfoText}>
-                        <Text style={styles.inquiryInfoTitle}>REMARK</Text>
-                      </View>
-                      <View
-                        style={[
-                          styles.inquiryInfoText,
-                          {
-                            flexDirection: "column",
-                          },
-                        ]}
-                      >
-                        {pdfFooter.map((footer, index) => {
-                          const formattedText = footer.orderRemark
-                            .split("\n")
-                            .map((line) => line.replace(/ /g, "\u00A0"))
-                            .join("\n");
-                          return (
-                            <View
-                              key={index}
-                              style={{
-                                flexDirection: "row",
-                                flexWrap: "wrap",
-                                marginBottom: 5,
-                              }}
-                            >
-                              <Text
-                                style={{
-                                  fontSize: 9,
-                                  lineHeight: 1.5,
-                                }}
-                              >
-                                {`${index + 1}. `}
-                                {formattedText}
-                              </Text>
-                            </View>
-                          );
-                        })}
-                      </View>
-                    </View>
-                  )}
-                </View>
+              <View
+                style={[
+                  styles.inquiryInfoWrap,
+                  { marginTop: 20, flexDirection: "column" },
+                ]}
+              >
                 {pdfType !== "CREDITNOTE" && (
                   <View
                     style={[
-                      styles.inquiryInfoColumn,
-                      { alignItems: "flex-end", flex: 0.35 },
+                      styles.inquiryTotalColumn,
+                      {
+                        alignItems: "flex-end",
+                        width: "50%",
+                        alignSelf: "flex-end",
+                      },
                     ]}
                   >
                     {(dcInfo.dcPercent ||
@@ -1033,8 +1025,12 @@ const InvoicePDFDocument = ({
                 {pdfType === "CREDITNOTE" && (
                   <View
                     style={[
-                      styles.inquiryInfoColumn,
-                      { alignItems: "flex-end", flex: 0.35 },
+                      styles.inquiryTotalColumn,
+                      {
+                        alignItems: "flex-end",
+                        width: "50%",
+                        alignSelf: "flex-end",
+                      },
                     ]}
                   >
                     <View
@@ -1066,6 +1062,50 @@ const InvoicePDFDocument = ({
                     </View>
                   </View>
                 )}
+                <View style={[styles.inquiryTotalColumn]}>
+                  {pdfFooter.length > 0 && (
+                    <View style={[styles.inquiryInfoBox]} wrap>
+                      <View style={styles.inquiryInfoText}>
+                        <Text style={styles.inquiryInfoTitle}>REMARK</Text>
+                      </View>
+                      <View
+                        style={[
+                          styles.inquiryInfoText,
+                          {
+                            flexDirection: "column",
+                          },
+                        ]}
+                      >
+                        {pdfFooter.map((footer, index) => {
+                          const formattedText = footer.salesRemark
+                            .split("\n")
+                            .map((line) => line.trim())
+                            .join("\n");
+                          return (
+                            <View
+                              key={index}
+                              style={{
+                                flexDirection: "row",
+                                flexWrap: "wrap",
+                                marginBottom: 5,
+                              }}
+                            >
+                              <Text
+                                style={{
+                                  fontSize: 9,
+                                  lineHeight: 1.5,
+                                }}
+                              >
+                                {`${index + 1}. `}
+                                {formattedText}
+                              </Text>
+                            </View>
+                          );
+                        })}
+                      </View>
+                    </View>
+                  )}
+                </View>
               </View>
             </View>
           </View>
