@@ -4,6 +4,7 @@ import { Button, Checkbox, Divider, Input, message, Modal, Select } from "antd";
 import styled from "styled-components";
 import dayjs, { Dayjs } from "dayjs";
 import {
+  confirmOrder,
   editOrder,
   fetchOrderDetail,
   saveCIPLHeader,
@@ -791,6 +792,17 @@ const OrderDetail = () => {
     setPdfCIPLHeader(response);
   };
 
+  const handleConfirmClick = async () => {
+    try {
+      await confirmOrder(Number(orderId));
+      message.success("Confirmed successfully.");
+      navigate("/invoiceList");
+    } catch (error) {
+      console.error("Error occurred while confirming:", error);
+      message.error("Failed to confirm. Please try again.");
+    }
+  };
+
   if (isLoading) {
     return <LoadingSpinner />;
   }
@@ -846,6 +858,9 @@ const OrderDetail = () => {
       <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
         <Button type="default" onClick={() => navigate(-1)}>
           Back
+        </Button>
+        <Button type="primary" onClick={handleConfirmClick}>
+          Confirm
         </Button>
         <Button type="primary" onClick={handleSave}>
           Save

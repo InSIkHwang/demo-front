@@ -10,7 +10,7 @@ import {
 } from "antd";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import { deleteQutation, fetchOrderDetail } from "../../api/api";
+import { confirmOrder, deleteQutation, fetchOrderDetail } from "../../api/api";
 import { OrderResponse } from "../../types/types";
 
 interface DetailOrderModalProps {
@@ -202,6 +202,18 @@ const DetailOrderModal = ({
     });
   };
 
+  const handleConfirmClick = async () => {
+    try {
+      await confirmOrder(orderId);
+      message.success("Confirmed successfully.");
+      onClose();
+      fetchData();
+    } catch (error) {
+      console.error("Error occurred while confirming:", error);
+      message.error("Failed to confirm. Please try again.");
+    }
+  };
+
   const columns = [
     {
       title: "Code",
@@ -316,6 +328,9 @@ const DetailOrderModal = ({
       open={open}
       onCancel={onClose}
       footer={[
+        <Button key="confirm" type="primary" onClick={handleConfirmClick}>
+          Confirm
+        </Button>,
         <Button
           type="primary"
           onClick={(e) => {
