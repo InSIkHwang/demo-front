@@ -653,6 +653,8 @@ const InvoiceDetail = () => {
         invoiceChargeList
       );
 
+      setInvoiceChargeList(response.invoiceChargeList);
+
       setItemTypeOption([
         "DEFAULT",
         ...invoiceChargeList.map(
