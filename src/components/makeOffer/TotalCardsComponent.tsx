@@ -1,6 +1,6 @@
 import { ReloadOutlined, UpOutlined } from "@ant-design/icons";
 import { Button } from "antd";
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import styled from "styled-components";
 import { InvCharge } from "../../types/types";
 import ChargeInputPopover from "./ChargeInputPopover";
@@ -171,6 +171,10 @@ const TotalCardsComponent = ({
   setInvChargeList,
 }: TotalCardsProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  useEffect(() => {
+    applyDcAndCharge(mode);
+  }, []);
 
   return (
     <TotalCardsWrapper $isCollapsed={isCollapsed}>

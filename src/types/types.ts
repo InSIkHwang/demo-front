@@ -678,13 +678,6 @@ export interface CIPLHeaderFormData {
   remark: string;
 }
 
-export interface InvoiceHeaderFormData {
-  invoiceHeaderId: number | null;
-  messrs: string | "";
-  date: string | "";
-  paymentTerms: string | "";
-}
-
 export interface InvoiceListIF {
   salesId: number;
   orderId: number;
@@ -727,6 +720,12 @@ export interface InvoiceDocument {
   imoNo: number; // 추가 필요
 }
 
+export interface InvoiceHeaderDetail {
+  date: string;
+  messrs: string;
+  termsOfPayment: string;
+}
+
 export interface InvoiceRemarkDetail {
   salesRemarkId: number | null;
   salesRemark: string;
@@ -744,6 +743,9 @@ export interface InvoiceDetailIF {
   invChargeList: InvCharge[];
   suppliers: Supplier[];
   itemDetailList: OrderItemDetail[];
-  salesRemarkDetailResponse: InvoiceRemarkDetail[];
+  salesHeaderResponse: {
+    salesHeader: InvoiceHeaderDetail;
+    salesRemark: InvoiceRemarkDetail[];
+  };
   invoiceChargeList: InvoiceChargeListIF[];
 }

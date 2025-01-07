@@ -11,7 +11,7 @@ import {
 } from "antd";
 import styled from "styled-components";
 import {
-  InvoiceHeaderFormData,
+  InvoiceHeaderDetail,
   InvoiceRemarkDetail,
   orderRemark,
 } from "../../types/types";
@@ -51,13 +51,10 @@ const StyledFormItem = styled(Form.Item)`
 interface HeaderEditModalProps {
   open: boolean;
   onClose: () => void;
-  onSave: (
-    header: InvoiceHeaderFormData,
-    footer: InvoiceRemarkDetail[]
-  ) => void;
-  pdfHeader: InvoiceHeaderFormData;
+  onSave: (header: InvoiceHeaderDetail, footer: InvoiceRemarkDetail[]) => void;
+  pdfHeader: InvoiceHeaderDetail;
   pdfFooter: InvoiceRemarkDetail[];
-  setPdfInvoiceHeader: (value: InvoiceHeaderFormData) => void;
+  setPdfInvoiceHeader: (value: InvoiceHeaderDetail) => void;
   setPdfInvoiceFooter: (value: InvoiceRemarkDetail[]) => void;
 }
 
@@ -85,7 +82,7 @@ const InvoiceHeaderEditModal = ({
 }: HeaderEditModalProps) => {
   const [headerChk, setHeaderChk] = useState<boolean>(true);
   const [footerChk, setFooterChk] = useState<boolean>(true);
-  const [form] = Form.useForm<InvoiceHeaderFormData>();
+  const [form] = Form.useForm<InvoiceHeaderDetail>();
   const [footerText, setFooterText] = useState<InvoiceRemarkDetail[]>(
     Array.isArray(pdfFooter) && pdfFooter.length > 0
       ? pdfFooter.map((item) => item || [])
@@ -132,16 +129,14 @@ const InvoiceHeaderEditModal = ({
     const headerData = headerChk
       ? {
           ...form.getFieldsValue(),
-          invoiceHeaderId: pdfHeader.invoiceHeaderId || null,
           messrs: form.getFieldValue("messrs"),
           date: form.getFieldValue("date"),
-          paymentTerms: form.getFieldValue("paymentTerms"),
+          termsOfPayment: form.getFieldValue("termsOfPayment"),
         }
       : {
-          invoiceHeaderId: pdfHeader.invoiceHeaderId || null,
           messrs: "",
           date: "",
-          paymentTerms: "",
+          termsOfPayment: "",
         };
     setPdfInvoiceHeader(headerData);
     setPdfInvoiceFooter(footerText);
@@ -204,11 +199,11 @@ const InvoiceHeaderEditModal = ({
                 <Input.TextArea />
               </AutoComplete>
             </StyledFormItem>
-            <StyledFormItem name="paymentTerms" label="PAYMENT TERMS">
+            <StyledFormItem name="termsOfPayment" label="PAYMENT TERMS">
               <AutoComplete
-                value={form.getFieldValue("paymentTerms")}
+                value={form.getFieldValue("termsOfPayment")}
                 onChange={(value) =>
-                  form.setFieldsValue({ paymentTerms: value })
+                  form.setFieldsValue({ termsOfPayment: value })
                 }
                 style={{ width: "100%" }}
                 placeholder="DAYS"

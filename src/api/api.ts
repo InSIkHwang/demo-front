@@ -8,7 +8,9 @@ import {
   HeaderFormData,
   Inquiry,
   InvoiceChargeListIF,
+  InvoiceHeaderDetail,
   InvoiceListIF,
+  InvoiceRemarkDetail,
   Item,
   ItemDataType,
   OfferSearchParams,
@@ -1073,6 +1075,24 @@ export const updateInvoiceCharge = async (
 ) => {
   const response = await axios.put(`/api/sales/invoice-charge/${salesId}`, {
     invoiceChargeList,
+  });
+
+  return response.data;
+};
+
+//INVOICE 헤더 저장
+export const saveInvoiceHeader = async (
+  invoiceId: number,
+  salesHeader: InvoiceHeaderDetail,
+  salesRemark: InvoiceRemarkDetail[]
+) => {
+  const response = await axios.put(`/api/sales/remarks/${invoiceId}`, {
+    salesHeader: {
+      messrs: salesHeader.messrs,
+      invoiceDate: salesHeader.date,
+      termsOfPayment: salesHeader.termsOfPayment,
+    },
+    salesRemark,
   });
 
   return response.data;

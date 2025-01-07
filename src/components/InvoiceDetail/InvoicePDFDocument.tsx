@@ -25,13 +25,12 @@ import ORIGINAL from "../../assets/img/ORIGINAL.png";
 import COPY from "../../assets/img/COPY.png";
 import {
   FormValuesType,
-  HeaderFormData,
   InvCharge,
   OrderItemDetail,
   OrderAckHeaderFormData,
   InvoiceDocument,
   InvoiceRemarkDetail,
-  InvoiceHeaderFormData,
+  InvoiceHeaderDetail,
 } from "../../types/types";
 
 // 한글 글꼴 등록
@@ -64,7 +63,7 @@ Font.registerHyphenationCallback((word) => ["", word, ""]);
 interface InvoicePDFDocumentProps {
   info: InvoiceDocument;
   items: OrderItemDetail[];
-  pdfHeader: InvoiceHeaderFormData;
+  pdfHeader: InvoiceHeaderDetail;
   viewMode: boolean;
   language: string;
   pdfFooter: InvoiceRemarkDetail[];
@@ -615,7 +614,7 @@ const renderTableRows = (items: OrderItemDetail[], language: string) => {
 const renderHeader = (
   logoUrl: string,
   vesselName: string,
-  pdfHeader: InvoiceHeaderFormData,
+  pdfHeader: InvoiceHeaderDetail,
   language: string,
   refNumber: string,
   imoNo: string,
@@ -708,7 +707,7 @@ const renderHeader = (
           <View style={styles.inquiryInfoText}>
             <Text style={styles.inquiryInfoLabel}>Payment Term</Text>
             <Text style={styles.inquiryInfoValue}>
-              {pdfHeader?.paymentTerms?.split("")}
+              {pdfHeader?.termsOfPayment?.split("")}
             </Text>
           </View>
         </View>

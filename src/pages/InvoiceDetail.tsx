@@ -12,12 +12,16 @@ import {
 } from "antd";
 import styled from "styled-components";
 import dayjs from "dayjs";
-import { fetchInvoiceDetail, updateInvoiceCharge } from "../api/api";
+import {
+  fetchInvoiceDetail,
+  saveInvoiceHeader,
+  updateInvoiceCharge,
+} from "../api/api";
 import {
   InvCharge,
   InvoiceDetailIF,
   InvoiceDocument,
-  InvoiceHeaderFormData,
+  InvoiceHeaderDetail,
   OrderItemDetail,
   InvoiceRemarkDetail,
   Supplier,
@@ -49,11 +53,10 @@ const Title = styled.h1`
   color: #333;
 `;
 
-const INITIAL_HEADER_VALUES: InvoiceHeaderFormData = {
-  invoiceHeaderId: null,
+const INITIAL_HEADER_VALUES: InvoiceHeaderDetail = {
   messrs: "",
   date: dayjs().format("DD MMM, YYYY").toUpperCase(),
-  paymentTerms: "DAYS",
+  termsOfPayment: "DAYS",
 };
 
 const InvoiceDetail = () => {
@@ -90,8 +93,9 @@ const InvoiceDetail = () => {
   const [pdfType, setPdfType] = useState<string>("INVOICE");
   const [itemType, setItemType] = useState<string>("DEFAULT");
   const [itemTypeOption, setItemTypeOption] = useState<string[]>(["DEFAULT"]);
-  const [pdfInvoiceHeader, setPdfInvoiceHeader] =
-    useState<InvoiceHeaderFormData>(INITIAL_HEADER_VALUES);
+  const [pdfInvoiceHeader, setPdfInvoiceHeader] = useState<InvoiceHeaderDetail>(
+    INITIAL_HEADER_VALUES
+  );
   const [pdfInvoiceFooter, setPdfInvoiceFooter] = useState<
     InvoiceRemarkDetail[]
   >([]);
@@ -118,11 +122,18 @@ const InvoiceDetail = () => {
         dcKrw: 0,
         dcGlobal: 0,
       });
-      setPdfInvoiceHeader({
-        ...INITIAL_HEADER_VALUES,
-        messrs: data.documentInfo.companyName,
-      });
-      setPdfInvoiceFooter(data.salesRemarkDetailResponse || []);
+      setPdfInvoiceHeader(
+        {
+          ...data.salesHeaderResponse.salesHeader,
+          messrs:
+            data.salesHeaderResponse.salesHeader.messrs ||
+            data.documentInfo.companyName,
+        } || {
+          ...INITIAL_HEADER_VALUES,
+          messrs: data.documentInfo.companyName,
+        }
+      );
+      setPdfInvoiceFooter(data.salesHeaderResponse.salesRemark || []);
       setInvoiceChargeList(data.invoiceChargeList || []);
       setItemTypeOption([
         "DEFAULT",
@@ -615,12 +626,20 @@ const InvoiceDetail = () => {
   };
 
   const commonSaveHeader = async (
-    header: InvoiceHeaderFormData,
+    header: InvoiceHeaderDetail,
     footer: InvoiceRemarkDetail[]
   ) => {
-    // const response = await saveInvoiceHeader(Number(invoiceId), header, footer);
-
-    console.log("header", header);
+    try {
+      const response = await saveInvoiceHeader(
+        Number(invoiceId),
+        header,
+        footer
+      );
+      message.success("Invoice Header saved successfully");
+    } catch (error) {
+      console.error("Error saving Invoice Header:", error);
+      message.error("Failed to save Invoice Header. Please try again.");
+    }
 
     setPdfInvoiceHeader(header);
     setPdfInvoiceFooter(footer);
