@@ -81,6 +81,7 @@ interface InvoicePDFDocumentProps {
   invoiceNumber: string;
   pdfType: string;
   originalChecked: boolean;
+  itemType: string;
 }
 
 const COLORS = {
@@ -620,7 +621,8 @@ const renderHeader = (
   imoNo: string,
   invoiceNumber: string,
   pdfType: string,
-  originalChecked: boolean
+  originalChecked: boolean,
+  itemType: string
 ) => (
   <>
     <View style={styles.header}>
@@ -686,8 +688,8 @@ const renderHeader = (
             <Text style={styles.inquiryInfoLabel}>Invoice No.</Text>
             <Text style={styles.inquiryInfoValue}>
               <Text style={styles.inquiryInfoValue}>
-                {pdfType === "CREDITNOTE"
-                  ? `${invoiceNumber}(CREDIT)`
+                {itemType !== "DEFAULT"
+                  ? `${invoiceNumber}-${itemType.charAt(0)}`
                   : invoiceNumber}
               </Text>
             </Text>
@@ -770,8 +772,8 @@ const renderHeader = (
           <Image
             src={originalChecked ? ORIGINAL : COPY}
             style={{
-              width: 180,
-              height: 60,
+              width: 210,
+              height: 70,
               objectFit: "contain",
             }}
           />
@@ -829,6 +831,7 @@ const InvoicePDFDocument = ({
   invoiceNumber,
   pdfType,
   originalChecked,
+  itemType,
 }: InvoicePDFDocumentProps) => {
   const headerMessage = pdfHeader;
   const calculateTotalSalesAmount = (items: OrderItemDetail[]) => {
@@ -854,7 +857,8 @@ const InvoicePDFDocument = ({
             info.imoNo + "",
             invoiceNumber || "",
             pdfType,
-            originalChecked
+            originalChecked,
+            itemType
           )}
           <View style={styles.table}>
             <View

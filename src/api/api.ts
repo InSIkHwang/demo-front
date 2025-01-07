@@ -7,6 +7,7 @@ import {
   Customer,
   HeaderFormData,
   Inquiry,
+  InvoiceChargeListIF,
   InvoiceListIF,
   Item,
   ItemDataType,
@@ -1061,6 +1062,18 @@ export const fetchInvoiceDetail = async (invoiceId: number) => {
 //INVOICE 검색
 export const searchInvoiceList = async (searchParams: OfferSearchParams) => {
   const response = await axios.post(`/api/sales/search`, searchParams);
+
+  return response.data;
+};
+
+//Invoice Charge 생성 및 업데이트
+export const updateInvoiceCharge = async (
+  salesId: number,
+  invoiceChargeList: InvoiceChargeListIF[]
+) => {
+  const response = await axios.put(`/api/sales/invoice-charge/${salesId}`, {
+    invoiceChargeList,
+  });
 
   return response.data;
 };
