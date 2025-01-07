@@ -870,6 +870,13 @@ const InvoiceDetail = () => {
         >
           ORIGINAL
         </Checkbox>
+        <CreditNoteChargePopover
+          currency={formValues?.currency || 1050}
+          invoiceChargeList={invoiceChargeList}
+          setInvoiceChargeList={setInvoiceChargeList}
+          onApply={handleCreditNoteApply}
+          finalTotals={finalTotals}
+        />
         <Button
           style={{ marginLeft: 10 }}
           onClick={handlePDFPreview}
@@ -884,13 +891,6 @@ const InvoiceDetail = () => {
         >
           PDF Download
         </Button>
-        <CreditNoteChargePopover
-          currency={formValues?.currency || 1050}
-          invoiceChargeList={invoiceChargeList}
-          setInvoiceChargeList={setInvoiceChargeList}
-          onApply={handleCreditNoteApply}
-          finalTotals={finalTotals}
-        />
       </div>
       {pdfType !== "CREDITNOTE" &&
         itemType === "DEFAULT" &&

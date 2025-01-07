@@ -749,3 +749,16 @@ export interface InvoiceDetailIF {
   };
   invoiceChargeList: InvoiceChargeListIF[];
 }
+
+
+export interface MakerSupplierList {
+  maker: string;
+  category: string;
+  supplierList: {
+    id: number;
+    code: string;
+    name: string;
+    korName: string;
+    email: string;
+  }[];
+}

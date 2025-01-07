@@ -19,6 +19,8 @@ import {
   searchSupplierUseMaker,
 } from "../../api/api";
 import CreateCompanyModal from "../company/CreateCompanyModal";
+import SearchMakerModal from "../makeInquiry/SearchMakerModal";
+import { MakerSupplierList } from "../../types/types";
 
 const InquiryItemForm = styled(Form.Item)`
   margin-bottom: 8px;
@@ -136,23 +138,19 @@ const FormComponent = ({
 
   const [autoSearchSupCompleteOptions, setAutoSearchSupCompleteOptions] =
     useState<{ value: string }[]>([]);
-  const [makerOptions, setMakerOptions] = useState<{ value: string }[]>([]);
+  const [makerOptions, setMakerOptions] = useState<
+    {
+      label: string;
+      value: string;
+    }[]
+  >([]);
   const [categoryOptions, setCategoryOptions] = useState<{ value: string }[]>(
     []
   );
   const [categoryWord, setCategoryWord] = useState<string>("");
   const [isSupplierModalOpen, setIsSupplierModalOpen] = useState(false);
   const [makerSupplierList, setMakerSupplierList] = useState<
-    {
-      maker: string;
-      supplierList: {
-        id: number;
-        code: string;
-        name: string;
-        korName: string;
-        email: string;
-      }[];
-    }[]
+    MakerSupplierList[]
   >([]);
 
   useEffect(() => {
@@ -243,6 +241,7 @@ const FormComponent = ({
         const data = await searchSupplierUseMaker(value, categoryType!.trim());
         const makerSupplierList = data.makerSupplierList.map((maker) => ({
           maker: maker.maker,
+          category: maker.category,
           supplierList: maker.supplierList.map((supplier) => ({
             name: supplier.companyName,
             korName: supplier.korCompanyName || supplier.companyName,
@@ -256,6 +255,7 @@ const FormComponent = ({
         // 상태 업데이트
         setMakerSupplierList(makerSupplierList);
         const makerOptions = data.makerSupplierList.map((maker) => ({
+          label: `${maker.maker} (${maker.category})`,
           value: maker.maker,
         }));
         setMakerOptions(makerOptions);
@@ -440,61 +440,22 @@ const FormComponent = ({
                 </div>
               </div>
               {selectedType === "MAKER" && (
-                <Modal
-                  title={"Search MAKER"}
-                  open={isModalVisible}
-                  onCancel={handleModalClose}
+                <SearchMakerModal
+                  isVisible={isModalVisible}
+                  onClose={handleModalClose}
                   onOk={handleAddSelectedSuppliers}
-                  okText="Add"
-                  cancelText="Cancel"
-                  width={800}
-                >
-                  <AutoComplete
-                    value={categoryWord}
-                    options={categoryOptions}
-                    style={{ width: "100%", marginBottom: 10 }}
-                    onChange={handleCategorySearch}
-                    placeholder="Search Category ex) ENGINE"
-                  >
-                    <Input />
-                  </AutoComplete>
-                  <AutoComplete
-                    value={makerSearch}
-                    onChange={(value) => handleSearch(value, categoryWord)}
-                    options={makerOptions}
-                    style={{ width: "100%", marginBottom: 10 }}
-                    placeholder="Search MAKER ex) HYUNDAI"
-                  >
-                    <Input />
-                  </AutoComplete>
-                  <List
-                    dataSource={removeListDuplicates(makerSupplierList)}
-                    renderItem={(item) => (
-                      <StyledListItem>
-                        <MakerTitle>{item.maker}</MakerTitle>
-                        <SupplierContainer>
-                          {item.supplierList.map(
-                            (supplier: { id: any; name?: any; code?: any }) => (
-                              <SupplierItem key={supplier.id}>
-                                <StyledCheckbox
-                                  onChange={() =>
-                                    handleCheckboxChange(supplier)
-                                  }
-                                  checked={checkedSuppliers.some(
-                                    (checkedItem) =>
-                                      checkedItem.id === supplier.id
-                                  )}
-                                >
-                                  {supplier.name || ""} ({supplier.code})
-                                </StyledCheckbox>
-                              </SupplierItem>
-                            )
-                          )}
-                        </SupplierContainer>
-                      </StyledListItem>
-                    )}
-                  />
-                </Modal>
+                  categoryWord={categoryWord}
+                  categoryOptions={categoryOptions}
+                  makerSearch={makerSearch}
+                  makerOptions={makerOptions}
+                  makerSupplierList={makerSupplierList}
+                  checkedSuppliers={checkedSuppliers}
+                  onCategorySearch={handleCategorySearch}
+                  onSearch={handleSearch}
+                  onCheckboxChange={handleCheckboxChange}
+                  removeListDuplicates={removeListDuplicates}
+                  setMakerSearch={setMakerSearch}
+                />
               )}
               <span style={{ marginRight: 10 }}>Searched Suppliers: </span>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
