@@ -138,8 +138,6 @@ const InvoiceHeaderEditModal = ({
           date: "",
           termsOfPayment: "",
         };
-    setPdfInvoiceHeader(headerData);
-    setPdfInvoiceFooter(footerText);
     onSave(headerData, footerText);
     onClose();
   };

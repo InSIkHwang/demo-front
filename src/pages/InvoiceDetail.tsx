@@ -635,14 +635,15 @@ const InvoiceDetail = () => {
         header,
         footer
       );
+
+      setPdfInvoiceHeader(response.salesHeader);
+      setPdfInvoiceFooter(response.salesRemark);
+
       message.success("Invoice Header saved successfully");
     } catch (error) {
       console.error("Error saving Invoice Header:", error);
       message.error("Failed to save Invoice Header. Please try again.");
     }
-
-    setPdfInvoiceHeader(header);
-    setPdfInvoiceFooter(footer);
   };
 
   const handleCreditNoteApply = async () => {
