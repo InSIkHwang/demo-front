@@ -199,7 +199,7 @@ const MakeOffer = () => {
 
   const handleKeyboardSave = useCallback(
     async (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.key === "s") {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
         event.preventDefault();
         event.stopPropagation();
 
@@ -216,7 +216,7 @@ const MakeOffer = () => {
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
         e.preventDefault();
         e.stopPropagation();
         handleKeyboardSave(e);

@@ -155,7 +155,7 @@ const InvoiceHeaderEditModal = ({
 
     try {
       // 날짜 형식 검증
-      const datePattern = /^(\d{2}) ([A-Za-z]{3}), (\d{4})$/;
+      const datePattern = /^(\d{2}) ([A-Za-z]{3}) (\d{4})$/;
       if (!datePattern.test(date)) {
         message.error("Invalid date format. (Example: 01 JAN, 2024)");
         return;
@@ -188,7 +188,7 @@ const InvoiceHeaderEditModal = ({
       const daysToAdd = parseInt(termsMatch[1]);
       const dueDate = parsedDate
         .add(daysToAdd, "day")
-        .format("DD MMM, YYYY")
+        .format("DD MMM YYYY")
         .toUpperCase();
 
       form.setFieldsValue({ dueDate });
@@ -270,11 +270,11 @@ const InvoiceHeaderEditModal = ({
                 }
                 onBlur={calculateDueDate}
                 style={{ width: "100%" }}
-                placeholder={dayjs().format("DD MMM, YYYY").toUpperCase()}
+                placeholder={dayjs().format("DD MMM YYYY").toUpperCase()}
                 options={[
                   {
-                    value: dayjs().format("DD MMM, YYYY").toUpperCase(),
-                    label: dayjs().format("DD MMM, YYYY").toUpperCase(),
+                    value: dayjs().format("DD MMM YYYY").toUpperCase(),
+                    label: dayjs().format("DD MMM YYYY").toUpperCase(),
                   },
                 ]}
               >

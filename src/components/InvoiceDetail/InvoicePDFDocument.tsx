@@ -689,7 +689,7 @@ const renderHeader = (
             <Text style={styles.inquiryInfoValue}>
               <Text style={styles.inquiryInfoValue}>
                 {itemType !== "DEFAULT"
-                  ? `${invoiceNumber}-${itemType.charAt(0)}`
+                  ? `${invoiceNumber}(${itemType})`
                   : invoiceNumber}
               </Text>
             </Text>
@@ -703,7 +703,7 @@ const renderHeader = (
             <Text style={styles.inquiryInfoValue}>
               {pdfHeader?.invoiceDate
                 ? dayjs(pdfHeader?.invoiceDate)
-                    .format("DD MMM, YYYY")
+                    .format("DD MMM YYYY")
                     .toUpperCase()
                 : ""}
             </Text>
@@ -718,7 +718,7 @@ const renderHeader = (
             <Text style={styles.inquiryInfoLabel}>Due Date</Text>
             <Text style={styles.inquiryInfoValue}>
               {pdfHeader?.dueDate
-                ? dayjs(pdfHeader?.dueDate).format("DD MMM, YYYY").toUpperCase()
+                ? dayjs(pdfHeader?.dueDate).format("DD MMM YYYY").toUpperCase()
                 : ""}
             </Text>
           </View>

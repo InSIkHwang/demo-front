@@ -685,8 +685,8 @@ const renderHeader = (
               {language === "KOR"
                 ? dayjs(registerDate).format("YYYY-MM-DD") ||
                   dayjs().format("YYYY-MM-DD")
-                : dayjs(registerDate).format("DD MMM, YYYY").toUpperCase() ||
-                  dayjs().format("DD MMM, YYYY").toUpperCase()}
+                : dayjs(registerDate).format("DD MMM YYYY").toUpperCase() ||
+                  dayjs().format("DD MMM YYYY").toUpperCase()}
             </Text>
           </View>
         </View>

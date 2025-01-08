@@ -295,7 +295,7 @@ const MakeComplexInquiry = () => {
 
   const handleKeyboardSave = useCallback(
     async (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.key === "s") {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
         event.preventDefault();
 
         // 문서번호 중복 체크

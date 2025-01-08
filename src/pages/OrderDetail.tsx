@@ -54,7 +54,7 @@ const Title = styled.h1`
 const INITIAL_HEADER_VALUES: OrderAckHeaderFormData = {
   orderHeaderId: null,
   portOfShipment: "BUSAN, KOREA",
-  deliveryTime: dayjs().format("DD MMM, YYYY").toUpperCase(),
+  deliveryTime: dayjs().format("DD MMM YYYY").toUpperCase(),
   termsOfPayment: "",
   incoterms: "EX WORKS",
   receiverType: "CUSTOMER",
@@ -153,7 +153,7 @@ const OrderDetail = () => {
 
   const handleKeyboardSave = useCallback(
     async (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.key === "s") {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
         event.preventDefault();
         event.stopPropagation();
 
@@ -170,7 +170,7 @@ const OrderDetail = () => {
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
         e.preventDefault();
         e.stopPropagation();
         handleKeyboardSave(e);
@@ -250,7 +250,7 @@ const OrderDetail = () => {
         vesselAndVoyage: data.documentInfo.vesselName,
         sailingOnOr: "",
         noAndDateOfInvoice: `${data.documentInfo.refNumber}, ${dayjs().format(
-          "DD MMM, YYYY"
+          "DD MMM YYYY"
         )}`,
         noAndDateOfPo: data.documentInfo.documentNumber,
         lcIssuingBank: data.documentInfo.companyName,
@@ -264,7 +264,7 @@ const OrderDetail = () => {
           forAccountAndRiskOfMessers: `MASTER OF ${data.documentInfo.vesselName}\nSHIP'S SPARES IN TRANSIT`,
           vesselAndVoyage: data.documentInfo.vesselName,
           noAndDateOfInvoice: `${data.documentInfo.refNumber}, ${dayjs().format(
-            "DD MMM, YYYY"
+            "DD MMM YYYY"
           )}`,
           noAndDateOfPo: data.documentInfo.documentNumber,
           lcIssuingBank: data.documentInfo.companyName,
