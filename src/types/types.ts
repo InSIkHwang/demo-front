@@ -721,9 +721,10 @@ export interface InvoiceDocument {
 }
 
 export interface InvoiceHeaderDetail {
-  date: string;
+  invoiceDate: string;
   messrs: string;
   termsOfPayment: string;
+  dueDate: string;
 }
 
 export interface InvoiceRemarkDetail {

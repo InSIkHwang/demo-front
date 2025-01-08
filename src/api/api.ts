@@ -1094,11 +1094,7 @@ export const saveInvoiceHeader = async (
   salesRemark: InvoiceRemarkDetail[]
 ) => {
   const response = await axios.put(`/api/sales/remarks/${invoiceId}`, {
-    salesHeader: {
-      messrs: salesHeader.messrs,
-      invoiceDate: salesHeader.date,
-      termsOfPayment: salesHeader.termsOfPayment,
-    },
+    salesHeader,
     salesRemark,
   });
 

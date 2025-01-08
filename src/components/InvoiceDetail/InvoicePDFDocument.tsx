@@ -700,14 +700,25 @@ const renderHeader = (
           <View style={styles.inquiryInfoText}>
             <Text style={styles.inquiryInfoLabel}>Date</Text>
             <Text style={styles.inquiryInfoValue}>
-              {dayjs(pdfHeader?.date).format("DD MMM, YYYY").toUpperCase() ||
-                dayjs().format("DD MMM, YYYY").toUpperCase()}
+              {pdfHeader?.invoiceDate
+                ? dayjs(pdfHeader?.invoiceDate)
+                    .format("DD MMM, YYYY")
+                    .toUpperCase()
+                : ""}
             </Text>
           </View>
           <View style={styles.inquiryInfoText}>
             <Text style={styles.inquiryInfoLabel}>Payment Term</Text>
             <Text style={styles.inquiryInfoValue}>
               {pdfHeader?.termsOfPayment?.split("")}
+            </Text>
+          </View>
+          <View style={styles.inquiryInfoText}>
+            <Text style={styles.inquiryInfoLabel}>Due Date</Text>
+            <Text style={styles.inquiryInfoValue}>
+              {pdfHeader?.dueDate
+                ? dayjs(pdfHeader?.dueDate).format("DD MMM, YYYY").toUpperCase()
+                : ""}
             </Text>
           </View>
         </View>
