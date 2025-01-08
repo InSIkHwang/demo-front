@@ -483,7 +483,7 @@ const renderTableRows = (items: ItemDetailType[], language: string) => {
             <View style={[styles.tableSmallCol, { alignItems: "flex-end" }]}>
               <Text style={styles.tableCell}>{item.qty}</Text>
             </View>
-            <View style={styles.tableSmallCol}>
+            <View style={[styles.tableSmallCol, { flex: 0.28 }]}>
               <Text style={styles.tableCell}>{item.unit}</Text>
             </View>
             <View style={[styles.tablePriceCol]}>
@@ -533,7 +533,7 @@ const renderTableRows = (items: ItemDetailType[], language: string) => {
             >
               <Text style={styles.tableCell}>{item.qty}</Text>
             </View>
-            <View style={styles.tableDashSmallCol}>
+            <View style={[styles.tableDashSmallCol, { flex: 0.28 }]}>
               <Text style={styles.tableCell}>{item.unit || " "}</Text>
             </View>
             <View style={[styles.tableDashPriceCol]}>
@@ -679,8 +679,8 @@ const renderHeader = (
               {language === "KOR"
                 ? dayjs(registerDate).format("YYYY-MM-DD") ||
                   dayjs().format("YYYY-MM-DD")
-                : dayjs(registerDate).format("DD MMM, YYYY").toUpperCase() ||
-                  dayjs().format("DD MMM, YYYY").toUpperCase()}
+                : dayjs(registerDate).format("DD MMM YYYY").toUpperCase() ||
+                  dayjs().format("DD MMM YYYY").toUpperCase()}
             </Text>
           </View>
         </View>

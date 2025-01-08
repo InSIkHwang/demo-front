@@ -8,7 +8,9 @@ import {
   HeaderFormData,
   Inquiry,
   InvoiceChargeListIF,
+  InvoiceHeaderDetail,
   InvoiceListIF,
+  InvoiceRemarkDetail,
   Item,
   ItemDataType,
   OfferSearchParams,
@@ -1029,6 +1031,13 @@ export const saveCIPLHeader = async (
   return response.data;
 };
 
+//ORDER 확정 (ORDER -> INVOICE)
+export const confirmOrder = async (orderId: number) => {
+  const response = await axios.post(`/api/orders/confirm/${orderId}`);
+
+  return response.data;
+};
+
 //----------------------------------------------------------------------------------
 // INVOICE 조회 관련
 
@@ -1073,6 +1082,32 @@ export const updateInvoiceCharge = async (
 ) => {
   const response = await axios.put(`/api/sales/invoice-charge/${salesId}`, {
     invoiceChargeList,
+  });
+
+  return response.data;
+};
+
+//INVOICE 헤더 저장
+export const saveInvoiceHeader = async (
+  invoiceId: number,
+  salesHeader: InvoiceHeaderDetail,
+  salesRemark: InvoiceRemarkDetail[]
+) => {
+  const response = await axios.put(`/api/sales/remarks/${invoiceId}`, {
+    salesHeader,
+    salesRemark,
+  });
+
+  return response.data;
+};
+
+//INVOICE No. 업데이트
+export const updateInvoiceNumber = async (
+  invoiceId: number,
+  invoiceNumber: string
+) => {
+  const response = await axios.put(`/api/sales/${invoiceId}`, {
+    invoiceNumber,
   });
 
   return response.data;

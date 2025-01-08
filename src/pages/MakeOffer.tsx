@@ -196,10 +196,12 @@ const MakeOffer = () => {
   useEffect(() => {
     loadOfferDetail();
   }, []);
+
   const handleKeyboardSave = useCallback(
     async (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.key === "s") {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
         event.preventDefault();
+        event.stopPropagation();
 
         if (!formValues.refNumber || formValues.refNumber.trim() === "") {
           message.error("Reference number is required");
@@ -209,13 +211,20 @@ const MakeOffer = () => {
         await handleSave(false, activeKey);
       }
     },
-    [formValues, activeKey, currentDetailItems, finalTotals]
+    [activeKey, formValues.refNumber]
   );
 
-  // 컴포넌트가 마운트될 때 이벤트 리스너 등록
   useEffect(() => {
-    document.addEventListener("keydown", handleKeyboardSave);
-    return () => document.removeEventListener("keydown", handleKeyboardSave);
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        e.stopPropagation();
+        handleKeyboardSave(e);
+      }
+    };
+
+    window.addEventListener("keydown", handler, true);
+    return () => window.removeEventListener("keydown", handler, true);
   }, [handleKeyboardSave]);
 
   // 소수점 둘째자리까지 반올림하는 함수

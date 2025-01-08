@@ -4,6 +4,7 @@ import { Button, Checkbox, Divider, Input, message, Modal, Select } from "antd";
 import styled from "styled-components";
 import dayjs, { Dayjs } from "dayjs";
 import {
+  confirmOrder,
   editOrder,
   fetchOrderDetail,
   saveCIPLHeader,
@@ -53,7 +54,7 @@ const Title = styled.h1`
 const INITIAL_HEADER_VALUES: OrderAckHeaderFormData = {
   orderHeaderId: null,
   portOfShipment: "BUSAN, KOREA",
-  deliveryTime: dayjs().format("DD MMM, YYYY").toUpperCase(),
+  deliveryTime: dayjs().format("DD MMM YYYY").toUpperCase(),
   termsOfPayment: "",
   incoterms: "EX WORKS",
   receiverType: "CUSTOMER",
@@ -150,6 +151,36 @@ const OrderDetail = () => {
     useState<CIPLHeaderFormData>(INITIAL_PL_VALUES);
   const [withLogo, setWithLogo] = useState<boolean>(true);
 
+  const handleKeyboardSave = useCallback(
+    async (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (!formValues?.refNumber || formValues?.refNumber.trim() === "") {
+          message.error("Reference number is required");
+          return;
+        }
+
+        await handleSave();
+      }
+    },
+    [formValues?.refNumber]
+  );
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        e.stopPropagation();
+        handleKeyboardSave(e);
+      }
+    };
+
+    window.addEventListener("keydown", handler, true);
+    return () => window.removeEventListener("keydown", handler, true);
+  }, [handleKeyboardSave]);
+
   useEffect(() => {
     if (language === "KOR") {
       setPdfPOHeader((prev) => ({
@@ -219,7 +250,7 @@ const OrderDetail = () => {
         vesselAndVoyage: data.documentInfo.vesselName,
         sailingOnOr: "",
         noAndDateOfInvoice: `${data.documentInfo.refNumber}, ${dayjs().format(
-          "DD MMM, YYYY"
+          "DD MMM YYYY"
         )}`,
         noAndDateOfPo: data.documentInfo.documentNumber,
         lcIssuingBank: data.documentInfo.companyName,
@@ -233,7 +264,7 @@ const OrderDetail = () => {
           forAccountAndRiskOfMessers: `MASTER OF ${data.documentInfo.vesselName}\nSHIP'S SPARES IN TRANSIT`,
           vesselAndVoyage: data.documentInfo.vesselName,
           noAndDateOfInvoice: `${data.documentInfo.refNumber}, ${dayjs().format(
-            "DD MMM, YYYY"
+            "DD MMM YYYY"
           )}`,
           noAndDateOfPo: data.documentInfo.documentNumber,
           lcIssuingBank: data.documentInfo.companyName,
@@ -250,28 +281,6 @@ const OrderDetail = () => {
   useEffect(() => {
     loadOrderDetail();
   }, [orderId]);
-
-  const handleKeyboardSave = useCallback(
-    async (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.key === "s") {
-        event.preventDefault();
-
-        if (!formValues?.refNumber || formValues?.refNumber.trim() === "") {
-          message.error("Reference number is required");
-          return;
-        }
-
-        await handleSave();
-      }
-    },
-    [formValues, items, finalTotals]
-  );
-
-  // 컴포넌트가 마운트될 때 이벤트 리스너 등록
-  useEffect(() => {
-    document.addEventListener("keydown", handleKeyboardSave);
-    return () => document.removeEventListener("keydown", handleKeyboardSave);
-  }, [handleKeyboardSave]);
 
   const handleInputChange = useCallback(
     (index: number, key: keyof OrderItemDetail, value: any) => {
@@ -791,6 +800,17 @@ const OrderDetail = () => {
     setPdfCIPLHeader(response);
   };
 
+  const handleConfirmClick = async () => {
+    try {
+      await confirmOrder(Number(orderId));
+      message.success("Confirmed successfully.");
+      navigate("/invoiceList");
+    } catch (error) {
+      console.error("Error occurred while confirming:", error);
+      message.error("Failed to confirm. Please try again.");
+    }
+  };
+
   if (isLoading) {
     return <LoadingSpinner />;
   }
@@ -846,6 +866,9 @@ const OrderDetail = () => {
       <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
         <Button type="default" onClick={() => navigate(-1)}>
           Back
+        </Button>
+        <Button type="primary" onClick={handleConfirmClick}>
+          Confirm
         </Button>
         <Button type="primary" onClick={handleSave}>
           Save

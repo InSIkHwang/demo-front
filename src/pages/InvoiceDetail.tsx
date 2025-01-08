@@ -12,12 +12,17 @@ import {
 } from "antd";
 import styled from "styled-components";
 import dayjs from "dayjs";
-import { fetchInvoiceDetail, updateInvoiceCharge } from "../api/api";
+import {
+  fetchInvoiceDetail,
+  saveInvoiceHeader,
+  updateInvoiceCharge,
+  updateInvoiceNumber,
+} from "../api/api";
 import {
   InvCharge,
   InvoiceDetailIF,
   InvoiceDocument,
-  InvoiceHeaderFormData,
+  InvoiceHeaderDetail,
   OrderItemDetail,
   InvoiceRemarkDetail,
   Supplier,
@@ -31,6 +36,8 @@ import InvoicePDFDocument from "../components/InvoiceDetail/InvoicePDFDocument";
 import InvoiceHeaderEditModal from "../components/InvoiceDetail/InvoiceHeaderEditModal";
 import CreditNoteChargePopover from "../components/InvoiceDetail/CreditNoteChargePopover";
 import FormComponent from "../components/InvoiceDetail/FormComponent";
+import { PDFDownloadItem } from "../components/InvoiceDetail/PDFDownloadTable";
+import PDFDownloadTable from "../components/InvoiceDetail/PDFDownloadTable";
 
 const Container = styled.div`
   position: relative;
@@ -49,11 +56,11 @@ const Title = styled.h1`
   color: #333;
 `;
 
-const INITIAL_HEADER_VALUES: InvoiceHeaderFormData = {
-  invoiceHeaderId: null,
+const INITIAL_HEADER_VALUES: InvoiceHeaderDetail = {
   messrs: "",
-  date: dayjs().format("DD MMM, YYYY").toUpperCase(),
-  paymentTerms: "DAYS",
+  invoiceDate: dayjs().format("DD MMM YYYY").toUpperCase(),
+  termsOfPayment: "DAYS",
+  dueDate: "",
 };
 
 const InvoiceDetail = () => {
@@ -90,8 +97,9 @@ const InvoiceDetail = () => {
   const [pdfType, setPdfType] = useState<string>("INVOICE");
   const [itemType, setItemType] = useState<string>("DEFAULT");
   const [itemTypeOption, setItemTypeOption] = useState<string[]>(["DEFAULT"]);
-  const [pdfInvoiceHeader, setPdfInvoiceHeader] =
-    useState<InvoiceHeaderFormData>(INITIAL_HEADER_VALUES);
+  const [pdfInvoiceHeader, setPdfInvoiceHeader] = useState<InvoiceHeaderDetail>(
+    INITIAL_HEADER_VALUES
+  );
   const [pdfInvoiceFooter, setPdfInvoiceFooter] = useState<
     InvoiceRemarkDetail[]
   >([]);
@@ -99,6 +107,37 @@ const InvoiceDetail = () => {
     InvoiceChargeListIF[]
   >([]);
   const [originalChecked, setOriginalChecked] = useState<boolean>(true);
+  const [isPDFTableVisible, setIsPDFTableVisible] = useState(false);
+
+  const handleKeyboardSave = useCallback(
+    async (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (!invoiceNumber) {
+          message.error("Invoice number is required");
+          return;
+        }
+
+        await handleSave();
+      }
+    },
+    [invoiceNumber]
+  );
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        e.stopPropagation();
+        handleKeyboardSave(e);
+      }
+    };
+
+    window.addEventListener("keydown", handler, true);
+    return () => window.removeEventListener("keydown", handler, true);
+  }, [handleKeyboardSave]);
 
   const loadInvoiceDetail = async () => {
     try {
@@ -118,11 +157,18 @@ const InvoiceDetail = () => {
         dcKrw: 0,
         dcGlobal: 0,
       });
-      setPdfInvoiceHeader({
-        ...INITIAL_HEADER_VALUES,
-        messrs: data.documentInfo.companyName,
-      });
-      setPdfInvoiceFooter(data.salesRemarkDetailResponse || []);
+      setPdfInvoiceHeader(
+        {
+          ...data.salesHeaderResponse.salesHeader,
+          messrs:
+            data.salesHeaderResponse.salesHeader.messrs ||
+            data.documentInfo.companyName,
+        } || {
+          ...INITIAL_HEADER_VALUES,
+          messrs: data.documentInfo.companyName,
+        }
+      );
+      setPdfInvoiceFooter(data.salesHeaderResponse.salesRemark || []);
       setInvoiceChargeList(data.invoiceChargeList || []);
       setItemTypeOption([
         "DEFAULT",
@@ -139,28 +185,6 @@ const InvoiceDetail = () => {
   useEffect(() => {
     loadInvoiceDetail();
   }, [invoiceId]);
-
-  const handleKeyboardSave = useCallback(
-    async (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.key === "s") {
-        event.preventDefault();
-
-        if (!formValues?.refNumber || formValues?.refNumber.trim() === "") {
-          message.error("Reference number is required");
-          return;
-        }
-
-        await handleSave();
-      }
-    },
-    [formValues, items, finalTotals]
-  );
-
-  // 컴포넌트가 마운트될 때 이벤트 리스너 등록
-  useEffect(() => {
-    document.addEventListener("keydown", handleKeyboardSave);
-    return () => document.removeEventListener("keydown", handleKeyboardSave);
-  }, [handleKeyboardSave]);
 
   const handleInputChange = useCallback(
     (index: number, key: keyof OrderItemDetail, value: any) => {
@@ -486,33 +510,22 @@ const InvoiceDetail = () => {
   };
 
   const handleSave = async () => {
-    if (
-      !formValues ||
-      !supplier ||
-      !invChargeList ||
-      !items ||
-      !supplier.supplierId
-    ) {
-      message.error("Please fill in all fields.");
+    if (!invoiceNumber) {
+      message.error("Please fill in Invoice Number");
       return;
     }
 
-    // const request: InvoiceRequest = {
-    //   invoiceId: Number(invoiceId),
-    //   supplierId: supplier?.supplierId || 0,
-    //   documentEditInfo: formValues,
-    //   invChargeList: invChargeList,
-    //   itemDetailList: items,
-    // };
-
     try {
-      // await editOrder(Number(invoiceId), request);
-      message.success("Order saved successfully");
+      const response = await updateInvoiceNumber(
+        Number(invoiceId),
+        invoiceNumber
+      );
+      message.success("Invoice No. saved successfully");
 
-      loadInvoiceDetail();
+      setInvoiceNumber(response.invoiceNumber);
     } catch (error) {
-      console.error("Error saving order:", error);
-      message.error("Failed to save order. Please try again.");
+      console.error("Error saving invoice No.:", error);
+      message.error("Failed to save invoice No. Please try again.");
     }
   };
 
@@ -520,110 +533,166 @@ const InvoiceDetail = () => {
     setPdfType(value);
   };
 
-  const handlePDFDownload = async () => {
-    if (!formValues || !supplier || !items || !supplier.supplierId) {
-      message.error("Please fill in all fields.");
-      return;
-    }
-
-    try {
-      let doc;
-      if (pdfType === "INVOICE") {
-        doc = (
-          <InvoicePDFDocument
-            invoiceNumber={invoiceNumber}
-            pdfType={pdfType}
-            info={formValues}
-            items={items}
-            pdfHeader={pdfInvoiceHeader}
-            viewMode={false}
-            language={language}
-            pdfFooter={pdfInvoiceFooter}
-            finalTotals={finalTotals}
-            dcInfo={dcInfo}
-            invChargeList={invChargeList}
-            originalChecked={originalChecked}
-            itemType={itemType}
-          />
-        );
+  const handleMultiplePDFDownload = useCallback(
+    async (downloadItems: PDFDownloadItem[]) => {
+      if (!formValues || !supplier || !items || !supplier.supplierId) {
+        message.error("Please fill in all fields.");
+        return;
       }
 
-      const pdfBlob = await pdf(doc).toBlob();
-      let defaultFileName = "";
-
-      if (pdfType === "INVOICE" && originalChecked) {
-        defaultFileName = `${formValues.invoiceNumber}_INVOICE_ORIGINAL.pdf`;
-      } else if (pdfType === "INVOICE" && !originalChecked) {
-        defaultFileName = `${formValues.invoiceNumber}_INVOICE_COPY.pdf`;
-      } else if (pdfType === "CREDITNOTE") {
-        defaultFileName = `CREDIT_NOTE_${formValues.invoiceNumber}.pdf`;
-      }
-
-      let modalInstance: any;
-      let localSendMailState = true; // 모달 내부에서 사용할 로컬 상태
-
-      modalInstance = Modal.confirm({
-        title: "Invoice PDF File",
-        width: 500,
-        content: (
-          <div style={{ marginBottom: 20 }}>
-            <span>File name: </span>
-            <Input
-              defaultValue={defaultFileName}
-              id="fileNameInput"
-              onPressEnter={() => {
-                modalInstance.destroy();
-              }}
-            />
-            <Divider variant="dashed" style={{ borderColor: "#007bff" }}>
-              Send mail or not
-            </Divider>
-            <Checkbox
-              defaultChecked={true}
-              onChange={(e) => {
-                localSendMailState = e.target.checked;
-              }}
-            >
-              I will send customer an e-mail immediately
-            </Checkbox>
-          </div>
-        ),
-        onOk: async () => {
-          const inputElement = document.getElementById(
-            "fileNameInput"
-          ) as HTMLInputElement;
-          const fileName = inputElement.value || defaultFileName;
-
-          const url = URL.createObjectURL(pdfBlob);
-          const link = document.createElement("a");
-          link.href = url;
-          link.download = fileName.endsWith(".pdf")
-            ? fileName
-            : `${fileName}.pdf`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
-        },
-        okText: "Download",
-        cancelText: "Cancel",
+      // 로딩 상태 시작
+      const loadingKey = "pdfDownloadLoading";
+      message.loading({
+        content: "PDF Files Downloading...",
+        key: loadingKey,
+        duration: 0,
       });
-    } catch (error) {
-      console.error("PDF Download Error:", error);
-      message.error("PDF Download Error");
-    }
-  };
+
+      try {
+        for (const item of downloadItems) {
+          let { pdfType, originChk, fileName, itemType = "DEFAULT" } = item;
+
+          if (itemType === "CREDIT NOTE") {
+            pdfType = "CREDIT NOTE";
+          }
+
+          if (originChk === "both" || originChk === "original") {
+            const doc = (
+              <InvoicePDFDocument
+                invoiceNumber={invoiceNumber}
+                pdfType={pdfType}
+                info={formValues}
+                items={
+                  itemType === "DEFAULT"
+                    ? items
+                    : [createChargeItem(itemType, invoiceChargeList)]
+                }
+                pdfHeader={pdfInvoiceHeader}
+                viewMode={false}
+                language={language}
+                pdfFooter={pdfInvoiceFooter}
+                finalTotals={
+                  itemType === "DEFAULT"
+                    ? finalTotals
+                    : createChargeFinalTotals(
+                        itemType,
+                        invoiceChargeList,
+                        formValues?.currency || 1050
+                      )
+                }
+                dcInfo={dcInfo}
+                invChargeList={invChargeList}
+                originalChecked={true}
+                itemType={itemType}
+              />
+            );
+
+            const pdfBlob = await pdf(doc).toBlob();
+            const downloadFileName = `${fileName}_ORIGINAL.pdf`;
+
+            const url = URL.createObjectURL(pdfBlob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = downloadFileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+          }
+
+          if (originChk === "both" || originChk === "copy") {
+            const doc = (
+              <InvoicePDFDocument
+                invoiceNumber={invoiceNumber}
+                pdfType={pdfType}
+                info={formValues}
+                items={
+                  itemType === "DEFAULT"
+                    ? items
+                    : [createChargeItem(itemType, invoiceChargeList)]
+                }
+                pdfHeader={pdfInvoiceHeader}
+                viewMode={false}
+                language={language}
+                pdfFooter={pdfInvoiceFooter}
+                finalTotals={
+                  itemType === "DEFAULT"
+                    ? finalTotals
+                    : createChargeFinalTotals(
+                        itemType,
+                        invoiceChargeList,
+                        formValues?.currency || 1050
+                      )
+                }
+                dcInfo={dcInfo}
+                invChargeList={invChargeList}
+                originalChecked={false}
+                itemType={itemType}
+              />
+            );
+
+            const pdfBlob = await pdf(doc).toBlob();
+            const downloadFileName = `${fileName}_COPY.pdf`;
+
+            const url = URL.createObjectURL(pdfBlob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = downloadFileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+          }
+        }
+
+        // 성공 메시지 표시 및 로딩 상태 종료
+        message.success({
+          content: "PDF Files Downloaded Successfully",
+          key: loadingKey,
+        });
+      } catch (error) {
+        console.error("PDF Download Error:", error);
+        // 에러 메시지 표시 및 로딩 상태 종료
+        message.error({
+          content: "PDF Download Error",
+          key: loadingKey,
+        });
+      }
+    },
+    [
+      formValues,
+      supplier,
+      items,
+      invoiceNumber,
+      language,
+      dcInfo,
+      invChargeList,
+      finalTotals,
+      pdfInvoiceHeader,
+      pdfInvoiceFooter,
+      invoiceChargeList,
+    ]
+  );
 
   const commonSaveHeader = async (
-    header: InvoiceHeaderFormData,
+    header: InvoiceHeaderDetail,
     footer: InvoiceRemarkDetail[]
   ) => {
-    // const response = await saveInvoiceHeader(Number(invoiceId), header, footer);
+    try {
+      const response = await saveInvoiceHeader(
+        Number(invoiceId),
+        header,
+        footer
+      );
 
-    console.log("header", header);
+      setPdfInvoiceHeader(response.salesHeader);
+      setPdfInvoiceFooter(response.salesRemark);
 
-    setPdfInvoiceHeader(header);
-    setPdfInvoiceFooter(footer);
+      message.success("Invoice Header saved successfully");
+    } catch (error) {
+      console.error("Error saving Invoice Header:", error);
+      message.error("Failed to save Invoice Header. Please try again.");
+    }
   };
 
   const handleCreditNoteApply = async () => {
@@ -632,6 +701,8 @@ const InvoiceDetail = () => {
         Number(invoiceId),
         invoiceChargeList
       );
+
+      setInvoiceChargeList(response.invoiceChargeList);
 
       setItemTypeOption([
         "DEFAULT",
@@ -752,6 +823,14 @@ const InvoiceDetail = () => {
     };
   };
 
+  const handlePDFButtonClick = () => {
+    setIsPDFTableVisible(true);
+  };
+
+  const handlePDFTableClose = () => {
+    setIsPDFTableVisible(false);
+  };
+
   if (isLoading) {
     return <LoadingSpinner />;
   }
@@ -780,6 +859,8 @@ const InvoiceDetail = () => {
           handlePriceInputChange={handlePriceInputChange}
           invoiceId={invoiceData.documentInfo.salesId || 0}
           invoiceNumber={invoiceNumber}
+          setInvoiceNumber={setInvoiceNumber}
+          handleSave={handleSave}
           // pdfUrl={pdfUrl}
           // supplierName={supplier.supplierName}
           // documentNumber={orderData.documentInfo.documentNumber}
@@ -801,9 +882,6 @@ const InvoiceDetail = () => {
       <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
         <Button type="default" onClick={() => navigate(-1)}>
           Back
-        </Button>
-        <Button type="primary" onClick={handleSave}>
-          Save
         </Button>
       </div>
       <div style={{ marginTop: 20 }}>
@@ -848,6 +926,13 @@ const InvoiceDetail = () => {
         >
           ORIGINAL
         </Checkbox>
+        <CreditNoteChargePopover
+          currency={formValues?.currency || 1050}
+          invoiceChargeList={invoiceChargeList}
+          setInvoiceChargeList={setInvoiceChargeList}
+          onApply={handleCreditNoteApply}
+          finalTotals={finalTotals}
+        />
         <Button
           style={{ marginLeft: 10 }}
           onClick={handlePDFPreview}
@@ -857,18 +942,27 @@ const InvoiceDetail = () => {
         </Button>
         <Button
           style={{ marginLeft: 10 }}
-          onClick={handlePDFDownload}
+          onClick={handlePDFButtonClick}
           type="default"
         >
           PDF Download
         </Button>
-        <CreditNoteChargePopover
-          currency={formValues?.currency || 1050}
-          invoiceChargeList={invoiceChargeList}
-          setInvoiceChargeList={setInvoiceChargeList}
-          onApply={handleCreditNoteApply}
-          finalTotals={finalTotals}
-        />
+        <Modal
+          title="PDF Download Options"
+          open={isPDFTableVisible}
+          onCancel={handlePDFTableClose}
+          footer={null}
+          width={1000}
+        >
+          <PDFDownloadTable
+            formValues={formValues}
+            itemTypeOption={itemTypeOption}
+            onDownload={(items) => {
+              handleMultiplePDFDownload(items);
+              handlePDFTableClose();
+            }}
+          />
+        </Modal>
       </div>
       {pdfType !== "CREDITNOTE" &&
         itemType === "DEFAULT" &&

@@ -20,18 +20,18 @@ import NotoSerifKR from "../../assets/font/NotoSerifKR-Medium.ttf";
 import NotoSansExtraBold from "../../assets/font/NotoSansExtraBold.ttf";
 import NotoSansBold from "../../assets/font/NotoSansBold.ttf";
 import logoUrl from "../../assets/logo/withoutTextLogo.png";
+import signUrl from "../../assets/img/signOld.png";
 import simpleLogoUrl from "../../assets/logo/simpleLogo.png";
 import ORIGINAL from "../../assets/img/ORIGINAL.png";
 import COPY from "../../assets/img/COPY.png";
 import {
   FormValuesType,
-  HeaderFormData,
   InvCharge,
   OrderItemDetail,
   OrderAckHeaderFormData,
   InvoiceDocument,
   InvoiceRemarkDetail,
-  InvoiceHeaderFormData,
+  InvoiceHeaderDetail,
 } from "../../types/types";
 
 // 한글 글꼴 등록
@@ -64,7 +64,7 @@ Font.registerHyphenationCallback((word) => ["", word, ""]);
 interface InvoicePDFDocumentProps {
   info: InvoiceDocument;
   items: OrderItemDetail[];
-  pdfHeader: InvoiceHeaderFormData;
+  pdfHeader: InvoiceHeaderDetail;
   viewMode: boolean;
   language: string;
   pdfFooter: InvoiceRemarkDetail[];
@@ -512,7 +512,7 @@ const renderTableRows = (items: OrderItemDetail[], language: string) => {
             <View style={[styles.tableSmallCol, { alignItems: "flex-end" }]}>
               <Text style={styles.tableCell}>{item.qty}</Text>
             </View>
-            <View style={styles.tableSmallCol}>
+            <View style={[styles.tableSmallCol, { flex: 0.28 }]}>
               <Text style={styles.tableCell}>{item.unit}</Text>
             </View>
             <View style={[styles.tablePriceCol]}>
@@ -555,7 +555,7 @@ const renderTableRows = (items: OrderItemDetail[], language: string) => {
             >
               <Text style={styles.tableCell}>{item.qty}</Text>
             </View>
-            <View style={styles.tableDashSmallCol}>
+            <View style={[styles.tableDashSmallCol, { flex: 0.28 }]}>
               <Text style={styles.tableCell}>{item.unit || " "}</Text>
             </View>
             <View style={[styles.tableDashPriceCol]}>
@@ -615,7 +615,7 @@ const renderTableRows = (items: OrderItemDetail[], language: string) => {
 const renderHeader = (
   logoUrl: string,
   vesselName: string,
-  pdfHeader: InvoiceHeaderFormData,
+  pdfHeader: InvoiceHeaderDetail,
   language: string,
   refNumber: string,
   imoNo: string,
@@ -689,7 +689,7 @@ const renderHeader = (
             <Text style={styles.inquiryInfoValue}>
               <Text style={styles.inquiryInfoValue}>
                 {itemType !== "DEFAULT"
-                  ? `${invoiceNumber}-${itemType.charAt(0)}`
+                  ? `${invoiceNumber}(${itemType})`
                   : invoiceNumber}
               </Text>
             </Text>
@@ -701,14 +701,25 @@ const renderHeader = (
           <View style={styles.inquiryInfoText}>
             <Text style={styles.inquiryInfoLabel}>Date</Text>
             <Text style={styles.inquiryInfoValue}>
-              {dayjs(pdfHeader?.date).format("DD MMM, YYYY").toUpperCase() ||
-                dayjs().format("DD MMM, YYYY").toUpperCase()}
+              {pdfHeader?.invoiceDate
+                ? dayjs(pdfHeader?.invoiceDate)
+                    .format("DD MMM YYYY")
+                    .toUpperCase()
+                : ""}
             </Text>
           </View>
           <View style={styles.inquiryInfoText}>
             <Text style={styles.inquiryInfoLabel}>Payment Term</Text>
             <Text style={styles.inquiryInfoValue}>
-              {pdfHeader?.paymentTerms?.split("")}
+              {pdfHeader?.termsOfPayment?.split("")}
+            </Text>
+          </View>
+          <View style={styles.inquiryInfoText}>
+            <Text style={styles.inquiryInfoLabel}>Due Date</Text>
+            <Text style={styles.inquiryInfoValue}>
+              {pdfHeader?.dueDate
+                ? dayjs(pdfHeader?.dueDate).format("DD MMM YYYY").toUpperCase()
+                : ""}
             </Text>
           </View>
         </View>
@@ -1105,6 +1116,21 @@ const InvoicePDFDocument = ({
                       </View>
                     </View>
                   )}
+                </View>
+                <View
+                  style={[
+                    styles.inquiryTotalColumn,
+                    { alignItems: "flex-end" },
+                  ]}
+                >
+                  <Image
+                    src={signUrl}
+                    style={{
+                      width: 136,
+                      height: 100,
+                      objectFit: "contain",
+                    }}
+                  />
                 </View>
               </View>
             </View>

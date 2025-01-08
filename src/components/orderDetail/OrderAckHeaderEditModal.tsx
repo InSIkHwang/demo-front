@@ -96,7 +96,7 @@ const OrderAckHeaderEditModal = ({
   const INITIAL_HEADER_VALUES = {
     quotationHeaderId: null,
     portOfShipment: "BUSAN, KOREA",
-    deliveryTime: dayjs().format("DD MMM, YYYY").toUpperCase(),
+    deliveryTime: dayjs().format("DD MMM YYYY").toUpperCase(),
     termsOfPayment: "",
     incoterms: "EX WORKS",
   };
@@ -207,7 +207,7 @@ const OrderAckHeaderEditModal = ({
               value={form.getFieldValue("deliveryTime")}
               onChange={(value) => form.setFieldsValue({ deliveryTime: value })}
               style={{ width: "100%" }}
-              placeholder={dayjs().format("DD MMM, YYYY").toUpperCase()}
+              placeholder={dayjs().format("DD MMM YYYY").toUpperCase()}
             >
               <Input.TextArea />
             </AutoComplete>

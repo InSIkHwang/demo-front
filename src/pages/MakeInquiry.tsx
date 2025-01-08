@@ -238,6 +238,46 @@ const MakeInquiry = () => {
   const [tables, setTables] = useState<InquiryTable[]>([]);
   const [currentTableNo, setCurrentTableNo] = useState<number>(1);
 
+  const handleKeyboardSave = useCallback(
+    async (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (formValues.docNumber) {
+          const isDuplicate = await chkDuplicateDocNum(
+            formValues.docNumber?.trim(),
+            Number(customerInquiryId)
+          );
+          setIsDocNumDuplicate(isDuplicate);
+
+          if (isDuplicate) {
+            message.error(
+              "Document number is duplicated. please enter another."
+            );
+            return;
+          }
+        }
+
+        await handleSubmit();
+      }
+    },
+    [customerInquiryId, formValues.docNumber]
+  );
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        e.stopPropagation();
+        handleKeyboardSave(e);
+      }
+    };
+
+    window.addEventListener("keydown", handler, true);
+    return () => window.removeEventListener("keydown", handler, true);
+  }, [handleKeyboardSave]);
+
   const modalActions = {
     header: [setHeaderEditModalVisible, () => {}],
     mail: [setIsMailSenderVisible, () => {}],
@@ -881,41 +921,6 @@ const MakeInquiry = () => {
     () => getAllTableSuppliers(),
     [getAllTableSuppliers]
   );
-
-  const handleKeyboardSave = useCallback(
-    async (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.key === "s") {
-        event.preventDefault();
-
-        // 문서번호 중복 체크
-        if (formValues.docNumber) {
-          const isDuplicate = await chkDuplicateDocNum(
-            formValues.docNumber?.trim(),
-            Number(customerInquiryId)
-          );
-          setIsDocNumDuplicate(isDuplicate);
-
-          if (isDuplicate) {
-            message.error(
-              "Document number is duplicated. please enter another."
-            );
-            return;
-          }
-        }
-
-        await handleSubmit();
-      }
-    },
-    [selectedVessel, selectedCustomerId, formValues, tables]
-  );
-
-  useEffect(() => {
-    // 로딩이 완료된 후에만 이벤트 리스너 등록
-    if (!docDataloading && !isLoading) {
-      document.addEventListener("keydown", handleKeyboardSave);
-      return () => document.removeEventListener("keydown", handleKeyboardSave);
-    }
-  }, [handleKeyboardSave, docDataloading, isLoading]);
 
   if (docDataloading || isLoading) {
     return <LoadingSpinner />;
