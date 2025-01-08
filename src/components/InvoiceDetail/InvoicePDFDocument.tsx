@@ -20,6 +20,7 @@ import NotoSerifKR from "../../assets/font/NotoSerifKR-Medium.ttf";
 import NotoSansExtraBold from "../../assets/font/NotoSansExtraBold.ttf";
 import NotoSansBold from "../../assets/font/NotoSansBold.ttf";
 import logoUrl from "../../assets/logo/withoutTextLogo.png";
+import signUrl from "../../assets/img/signOld.png";
 import simpleLogoUrl from "../../assets/logo/simpleLogo.png";
 import ORIGINAL from "../../assets/img/ORIGINAL.png";
 import COPY from "../../assets/img/COPY.png";
@@ -1115,6 +1116,21 @@ const InvoicePDFDocument = ({
                       </View>
                     </View>
                   )}
+                </View>
+                <View
+                  style={[
+                    styles.inquiryTotalColumn,
+                    { alignItems: "flex-end" },
+                  ]}
+                >
+                  <Image
+                    src={signUrl}
+                    style={{
+                      width: 136,
+                      height: 100,
+                      objectFit: "contain",
+                    }}
+                  />
                 </View>
               </View>
             </View>
