@@ -16,6 +16,7 @@ import {
   fetchInvoiceDetail,
   saveInvoiceHeader,
   updateInvoiceCharge,
+  updateInvoiceNumber,
 } from "../api/api";
 import {
   InvCharge,
@@ -111,15 +112,15 @@ const InvoiceDetail = () => {
         event.preventDefault();
         event.stopPropagation();
 
-        if (!formValues?.refNumber || formValues?.refNumber.trim() === "") {
-          message.error("Reference number is required");
+        if (!invoiceNumber) {
+          message.error("Invoice number is required");
           return;
         }
 
         await handleSave();
       }
     },
-    [formValues?.refNumber]
+    [invoiceNumber]
   );
 
   useEffect(() => {
@@ -506,33 +507,22 @@ const InvoiceDetail = () => {
   };
 
   const handleSave = async () => {
-    if (
-      !formValues ||
-      !supplier ||
-      !invChargeList ||
-      !items ||
-      !supplier.supplierId
-    ) {
-      message.error("Please fill in all fields.");
+    if (!invoiceNumber) {
+      message.error("Please fill in Invoice Number");
       return;
     }
 
-    // const request: InvoiceRequest = {
-    //   invoiceId: Number(invoiceId),
-    //   supplierId: supplier?.supplierId || 0,
-    //   documentEditInfo: formValues,
-    //   invChargeList: invChargeList,
-    //   itemDetailList: items,
-    // };
-
     try {
-      // await editOrder(Number(invoiceId), request);
-      message.success("Invoice saved successfully");
+      const response = await updateInvoiceNumber(
+        Number(invoiceId),
+        invoiceNumber
+      );
+      message.success("Invoice No. saved successfully");
 
-      loadInvoiceDetail();
+      setInvoiceNumber(response.invoiceNumber);
     } catch (error) {
-      console.error("Error saving order:", error);
-      message.error("Failed to save invoice. Please try again.");
+      console.error("Error saving invoice No.:", error);
+      message.error("Failed to save invoice No. Please try again.");
     }
   };
 
@@ -811,6 +801,8 @@ const InvoiceDetail = () => {
           handlePriceInputChange={handlePriceInputChange}
           invoiceId={invoiceData.documentInfo.salesId || 0}
           invoiceNumber={invoiceNumber}
+          setInvoiceNumber={setInvoiceNumber}
+          handleSave={handleSave}
           // pdfUrl={pdfUrl}
           // supplierName={supplier.supplierName}
           // documentNumber={orderData.documentInfo.documentNumber}
@@ -832,9 +824,6 @@ const InvoiceDetail = () => {
       <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
         <Button type="default" onClick={() => navigate(-1)}>
           Back
-        </Button>
-        <Button type="primary" onClick={handleSave}>
-          Save
         </Button>
       </div>
       <div style={{ marginTop: 20 }}>

@@ -275,6 +275,8 @@ interface TableComponentProps {
   ) => void;
   invoiceId: number;
   invoiceNumber: string;
+  setInvoiceNumber: Dispatch<SetStateAction<string>>;
+  handleSave: () => void;
   // pdfUrl: string | null;
 }
 
@@ -347,6 +349,8 @@ const TableComponent = ({
   handlePriceInputChange,
   invoiceId,
   invoiceNumber,
+  setInvoiceNumber,
+  handleSave,
 }: // pdfUrl,
 TableComponentProps) => {
   const inputRefs = useRef<(TextAreaRef | null)[][]>([]);
@@ -1431,7 +1435,14 @@ TableComponentProps) => {
         <div style={{ display: "flex", alignItems: "center" }}>
           <DocumentLabel>Invoice No.</DocumentLabel>
           <SupplierName>
-            <Input value={invoiceNumber} readOnly />
+            <Input
+              style={{ marginRight: "10px" }}
+              value={invoiceNumber}
+              onChange={(e) => setInvoiceNumber(e.target.value)}
+            />
+            <Button type="primary" onClick={handleSave}>
+              Save
+            </Button>
           </SupplierName>
         </div>
         <ButtonGroup>

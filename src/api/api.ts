@@ -1101,6 +1101,18 @@ export const saveInvoiceHeader = async (
   return response.data;
 };
 
+//INVOICE No. 업데이트
+export const updateInvoiceNumber = async (
+  invoiceId: number,
+  invoiceNumber: string
+) => {
+  const response = await axios.put(`/api/sales/${invoiceId}`, {
+    invoiceNumber,
+  });
+
+  return response.data;
+};
+
 //----------------------------------------------------------------------------------
 //휴지통
 
