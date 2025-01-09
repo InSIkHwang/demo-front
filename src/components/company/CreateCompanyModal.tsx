@@ -165,6 +165,7 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
   const [isAddingNewCategory, setIsAddingNewCategory] = useState(false);
   const [newCategory, setNewCategory] = useState("");
 
+  // 카테고리 목록 로드
   useEffect(() => {
     const fetchCategoryList = async () => {
       try {
@@ -182,6 +183,7 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
     fetchCategoryList();
   }, []);
 
+  // 입력 핸들러
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -199,6 +201,7 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
     }
   };
 
+  // 메이커 검색 핸들러
   const handleMakerSearch = async (
     value: string,
     categoryType: string | null
@@ -227,6 +230,7 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
     }
   };
 
+  // 카테고리 변경 핸들러
   const handleCategoryChange = (value: string) => {
     if (value === "add_new_category") {
       setIsAddingNewCategory(true);
@@ -237,6 +241,7 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
     }
   };
 
+  // 새로운 카테고리 추가 핸들러
   const handleAddNewCategory = () => {
     if (newCategory.trim()) {
       setCategoryList([...categoryList, newCategory]);
@@ -246,6 +251,7 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
     }
   };
 
+  // 메이커 추가 핸들러
   const handleAddMaker = () => {
     if (!selectedCategory || !makerSearch) {
       message.error("Please select a category and enter a maker.");
@@ -278,6 +284,7 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
     setMakerSearch("");
   };
 
+  // 메이커 태그 닫기 핸들러
   const handleTagClose = (category: string, maker: string) => {
     setMakerCategoryList((prevList) =>
       prevList.map((item) =>
@@ -288,6 +295,7 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
     );
   };
 
+  // 디바운스 함수
   const debounce = <T extends (...args: any[]) => void>(
     func: T,
     delay: number
@@ -299,6 +307,7 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
     };
   };
 
+  // 코드 고유성 검사 함수
   const checkCodeUnique = debounce(async () => {
     if ((formData.code + "").trim() === "") {
       setIsCodeUnique(true);
@@ -320,10 +329,12 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
     }
   }, 200);
 
+  // 코드 고유성 검사 효과
   useEffect(() => {
     checkCodeUnique();
   }, [formData.code]);
 
+  // 새 데이터 생성 함수
   const postCreate = async (values: {
     code: string;
     name: string;
@@ -380,6 +391,7 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
     }
   };
 
+  // 제출 핸들러
   const handleSubmit = async (values: any) => {
     if (!isCodeUnique) return; // 코드가 유효하지 않으면 제출하지 않음
     await postCreate(values);

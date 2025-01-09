@@ -122,6 +122,7 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
 
   const originalImoNumber = vessel.imoNumber;
 
+  // 코드 고유성 검사 효과
   useEffect(() => {
     const checkUnique = async (
       type: string,
@@ -144,6 +145,7 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
       }
     };
 
+    // IMO, HULL No. 고유성 검사 함수
     const checkImoAndHullUnique = async () => {
       const isImoValid =
         formData.imoNumber && (formData.imoNumber + "").toString().length >= 7
@@ -170,7 +172,7 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
     vessel.hullNumber,
   ]);
 
-  // Fetch customer suggestions
+  // 매출처 검색 함수
   const fetchCustomerSuggestions = async (customerName: string) => {
     if (!(customerName + "").trim()) {
       setCustomerSuggestions([]);
@@ -189,6 +191,7 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
     }
   };
 
+  // 매출처 검색 핸들러
   const handleSearch = (value: string) => {
     if (value !== selectedCustomer?.companyName) {
       setSelectedCustomer(null);
@@ -196,6 +199,7 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
     fetchCustomerSuggestions(value);
   };
 
+  // 매출처 선택 핸들러
   const handleSelectCustomer = (value: string, option: any) => {
     const selected = option as any;
     if (!value) {
@@ -271,6 +275,7 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
     });
   };
 
+  // 입력 핸들러
   const handleInputChange = (changedFields: any) => {
     setFormData((prevData) => ({
       ...prevData,

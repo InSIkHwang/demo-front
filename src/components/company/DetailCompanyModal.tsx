@@ -178,6 +178,7 @@ const DetailCompanyModal = ({
   const [isAddingNewCategory, setIsAddingNewCategory] = useState(false);
   const [newCategory, setNewCategory] = useState("");
 
+  // 카테고리 목록 로드
   useEffect(() => {
     const fetchCategoryList = async () => {
       try {
@@ -195,6 +196,7 @@ const DetailCompanyModal = ({
     fetchCategoryList();
   }, []);
 
+  // 매입처 상세 정보 가져오기
   const getCompanyDetails = async () => {
     setIsLoading(true);
     try {
@@ -215,6 +217,7 @@ const DetailCompanyModal = ({
     }
   }, []);
 
+  // 코드 고유성 검사 효과
   useEffect(() => {
     if (formData) {
       // formData가 null이 아닐 때만 실행
@@ -222,6 +225,7 @@ const DetailCompanyModal = ({
     }
   }, [formData?.code]);
 
+  // 메이커 검색 핸들러
   const handleMakerSearch = async (
     value: string,
     categoryType: string | null
@@ -250,6 +254,7 @@ const DetailCompanyModal = ({
     }
   };
 
+  // 카테고리 변경 핸들러
   const handleCategoryChange = (value: string) => {
     if (value === "add_new_category") {
       setIsAddingNewCategory(true);
@@ -260,6 +265,7 @@ const DetailCompanyModal = ({
     }
   };
 
+  // 새로운 카테고리 추가 핸들러
   const handleAddNewCategory = () => {
     if (newCategory.trim()) {
       setCategoryList([...categoryList, newCategory]);
@@ -269,6 +275,7 @@ const DetailCompanyModal = ({
     }
   };
 
+  // 메이커 추가 핸들러
   const handleAddMaker = async () => {
     if (!selectedCategory || !makerSearch) {
       message.error("Please select a category and enter a maker.");
@@ -303,6 +310,7 @@ const DetailCompanyModal = ({
     setMakerSearch("");
   };
 
+  // 메이커 태그 닫기 핸들러
   const handleTagClose = async (
     category: string,
     maker: string,
@@ -336,6 +344,7 @@ const DetailCompanyModal = ({
     }
   };
 
+  // 입력 핸들러
   const handleChange = (changedValues: any) => {
     if ("margin" in changedValues) {
       changedValues.margin = changedValues.margin
@@ -348,6 +357,7 @@ const DetailCompanyModal = ({
     });
   };
 
+  // 코드 고유성 검사 함수
   const checkCodeUnique = async () => {
     if (formData) {
       // formData가 null이 아닐 때만 실행
@@ -377,6 +387,7 @@ const DetailCompanyModal = ({
     }
   };
 
+  // 데이터 업데이트 함수
   const editData = async () => {
     if (formData) {
       try {
@@ -392,6 +403,7 @@ const DetailCompanyModal = ({
     }
   };
 
+  // 데이터 삭제 함수
   const deleteData = async () => {
     if (formData) {
       try {
@@ -407,6 +419,7 @@ const DetailCompanyModal = ({
     }
   };
 
+  // 제출 핸들러
   const handleSubmit = async () => {
     setLoading(true);
     await editData();
@@ -416,6 +429,7 @@ const DetailCompanyModal = ({
     getCompanyDetails();
   };
 
+  // 삭제 핸들러
   const handleDelete = async () => {
     Modal.confirm({
       title: "Are you sure you want to delete?",
