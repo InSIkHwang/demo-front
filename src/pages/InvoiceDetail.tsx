@@ -108,6 +108,9 @@ const InvoiceDetail = () => {
   >([]);
   const [originalChecked, setOriginalChecked] = useState<boolean>(true);
   const [isPDFTableVisible, setIsPDFTableVisible] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [downloadedFiles, setDownloadedFiles] = useState(0);
+  const [totalFiles, setTotalFiles] = useState(0);
 
   // 단축키 핸들러
   const handleKeyboardSave = useCallback(
@@ -548,23 +551,19 @@ const InvoiceDetail = () => {
 
   // 다중 PDF 다운로드 함수
   const handleMultiplePDFDownload = useCallback(
-    async (downloadItems: PDFDownloadItem[]) => {
+    async (
+      downloadItems: PDFDownloadItem[],
+      updateProgress: (downloaded: number) => void
+    ) => {
       if (!formValues || !supplier || !items || !supplier.supplierId) {
         message.error("Please fill in all fields.");
         return;
       }
 
-      // 로딩 상태 시작
-      const loadingKey = "pdfDownloadLoading";
-      message.loading({
-        content: "PDF Files Downloading...",
-        key: loadingKey,
-        duration: 0,
-      });
+      let downloadedCount = 0;
 
       try {
         for (const item of downloadItems) {
-          // 데이터 초기화
           let { pdfType, originChk, fileName, itemType = "DEFAULT" } = item;
 
           if (itemType === "CREDIT NOTE") {
@@ -603,16 +602,9 @@ const InvoiceDetail = () => {
             );
 
             const pdfBlob = await pdf(doc).toBlob();
-            const downloadFileName = `${fileName}_ORIGINAL.pdf`;
-
-            const url = URL.createObjectURL(pdfBlob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = downloadFileName;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
+            await downloadFile(pdfBlob, `${fileName}_ORIGINAL.pdf`);
+            downloadedCount++;
+            updateProgress(downloadedCount);
           }
 
           if (originChk === "both" || originChk === "copy") {
@@ -647,30 +639,19 @@ const InvoiceDetail = () => {
             );
 
             const pdfBlob = await pdf(doc).toBlob();
-            const downloadFileName = `${fileName}_COPY.pdf`;
-
-            const url = URL.createObjectURL(pdfBlob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = downloadFileName;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
+            await downloadFile(pdfBlob, `${fileName}_COPY.pdf`);
+            downloadedCount++;
+            updateProgress(downloadedCount);
           }
         }
 
-        // 성공 메시지 표시 및 로딩 상태 종료
         message.success({
           content: "PDF Files Downloaded Successfully",
-          key: loadingKey,
         });
       } catch (error) {
         console.error("PDF Download Error:", error);
-        // 에러 메시지 표시 및 로딩 상태 종료
         message.error({
           content: "PDF Download Error",
-          key: loadingKey,
         });
       }
     },
@@ -688,6 +669,22 @@ const InvoiceDetail = () => {
       invoiceChargeList,
     ]
   );
+
+  // 헤일 다운로드 유틸리티 함수
+  const downloadFile = async (blob: Blob, fileName: string): Promise<void> => {
+    return new Promise((resolve) => {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      // 다운로드 완료를 위한 약간의 지연
+      setTimeout(resolve, 500);
+    });
+  };
 
   // 헤더 저장 함수
   const commonSaveHeader = async (
@@ -976,10 +973,7 @@ const InvoiceDetail = () => {
           <PDFDownloadTable
             formValues={formValues}
             itemTypeOption={itemTypeOption}
-            onDownload={(items) => {
-              handleMultiplePDFDownload(items);
-              handlePDFTableClose();
-            }}
+            onDownload={handleMultiplePDFDownload}
           />
         </Modal>
       </div>
