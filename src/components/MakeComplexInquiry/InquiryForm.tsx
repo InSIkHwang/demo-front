@@ -193,6 +193,7 @@ const InquiryForm = ({
     MakerSupplierList[]
   >([]);
 
+  // 초기 렌더링 시 카테고리 데이터 조회
   useEffect(() => {
     const fetchCategoryList = async () => {
       try {
@@ -206,6 +207,7 @@ const InquiryForm = ({
     fetchCategoryList();
   }, []);
 
+  // 모달 열기 함수
   const showModal = (type: string) => {
     setSelectedType(type);
     setSupplierSearch("");
@@ -215,11 +217,13 @@ const InquiryForm = ({
     setIsModalVisible(true);
   };
 
+  // 모달 닫기 함수
   const handleModalClose = () => {
     setIsModalVisible(false);
     setMakerSearch("");
   };
 
+  // 선택된 매입처 추가 함수
   const handleAddSelectedSuppliers = () => {
     setSelectedSuppliers((prevSuppliers) => {
       const updatedSuppliers = [
@@ -238,6 +242,7 @@ const InquiryForm = ({
     handleModalClose();
   };
 
+  // 선택된 매입처 체크 함수
   const handleCheckboxChange = (supplier: { id: any }) => {
     setCheckedSuppliers((prevChecked) => {
       if (prevChecked.some((item) => item.id === supplier.id)) {
@@ -248,6 +253,7 @@ const InquiryForm = ({
     });
   };
 
+  // 매출처 검증 함수
   const validateCustomer = () => {
     if (customerUnreg) {
       return {
@@ -261,6 +267,7 @@ const InquiryForm = ({
     return { status: undefined, message: undefined };
   };
 
+  // 선박 검증 함수
   const validateVessel = () => {
     if (vesselUnreg) {
       return {
@@ -274,6 +281,7 @@ const InquiryForm = ({
     return { status: undefined, message: undefined };
   };
 
+  // 매입처 검색 함수
   const handleSupplierSearch = async (value: string) => {
     setSupplierSearch(value);
     if (value) {
@@ -305,6 +313,7 @@ const InquiryForm = ({
     }
   };
 
+  // 메이커 검색 함수
   const handleMakerSearch = async (
     value: string,
     categoryType: string | null
@@ -342,6 +351,7 @@ const InquiryForm = ({
     }
   };
 
+  // 검색 함수
   const handleSearch = (value: string, categoryType: string | null) => {
     if (selectedType === "SUPPLIER") {
       handleSupplierSearch(value);
@@ -350,6 +360,7 @@ const InquiryForm = ({
     }
   };
 
+  // 중복 제거 함수
   const removeListDuplicates = (list: any[]) => {
     const uniqueItems: any[] = [];
     const seenIds = new Set();
@@ -365,6 +376,7 @@ const InquiryForm = ({
     return uniqueItems;
   };
 
+  // 카테고리 검색 함수
   const handleCategorySearch = (searchText: string) => {
     setCategoryWord(searchText);
     if (searchText.length > 0) {

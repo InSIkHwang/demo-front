@@ -109,10 +109,12 @@ const ChangeSupplierModal = ({
     }
   }, [visible, supplierInfoList]);
 
+  // 공급처 선택 함수
   const handleSupplierSelect = (supplier: OrderSupplier) => {
     setSelectedSupplier(supplier);
   };
 
+  // 확인 함수
   const handleConfirm = () => {
     if (
       selectedSupplier?.supplierInquiryId &&
@@ -147,6 +149,7 @@ const ChangeSupplierModal = ({
     }
   };
 
+  // 공통 함수: 금액 포맷팅
   const formatAmount = (amount: number, isGlobal: boolean = false) => {
     return new Intl.NumberFormat(isGlobal ? "en-US" : "ko-KR", {
       style: "currency",

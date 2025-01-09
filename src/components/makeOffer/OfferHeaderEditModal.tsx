@@ -269,6 +269,12 @@ const OfferHeaderEditModal = ({
                 label: option,
               }))}
               placeholder="WORKING DAYS AFTER ORDER"
+              filterOption={(inputValue, option) => {
+                const optionValue =
+                  option?.value.toString().toLowerCase() || "";
+                const input = inputValue.toLowerCase();
+                return optionValue.startsWith(input);
+              }}
             >
               <Input.TextArea />
             </AutoComplete>

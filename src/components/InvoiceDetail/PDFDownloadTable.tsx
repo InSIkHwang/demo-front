@@ -22,6 +22,7 @@ const PDFDownloadTable = ({
   itemTypeOption,
   onDownload,
 }: PDFDownloadTableProps) => {
+  // 파일 이름 생성 함수
   const generateFileName = useCallback(
     (option: string, pdfType: string) => {
       const baseFileName = formValues?.refNumber || "";
@@ -60,6 +61,7 @@ const PDFDownloadTable = ({
     generateFileName,
   ]);
 
+  // PDF 유형 변경 함수
   const handlePdfTypeChange = (value: string) => {
     setHeaderPdfType(value);
     setItems(

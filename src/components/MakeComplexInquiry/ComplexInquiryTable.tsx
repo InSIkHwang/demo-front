@@ -296,6 +296,7 @@ const ComplexInquiryTable = ({
     }
   };
 
+  // 모든 행에 단위 적용 함수
   const applyUnitToAllRows = (selectedUnit: string) => {
     if (!items) return;
 
@@ -306,6 +307,7 @@ const ComplexInquiryTable = ({
     setItems(updatedItems);
   };
 
+  // 단위 입력 완료 시 단위 업데이트 함수
   const handleUnitBlur = (index: number, value: string) => {
     handleInputChange(index, "unit", value);
     setUnitOptions((prevOptions) =>
@@ -313,6 +315,7 @@ const ComplexInquiryTable = ({
     );
   };
 
+  // 모든 행에 마진 적용 함수
   const applyMarginToAllRows = (margin: number) => {
     if (!items) return;
 
@@ -325,6 +328,7 @@ const ComplexInquiryTable = ({
     setItems(updatedItems);
   };
 
+  // 모든 행에 납기일 적용 함수
   const applyDeliveryToAllRows = (deliveryValue: number) => {
     if (!items) return;
 
@@ -336,6 +340,7 @@ const ComplexInquiryTable = ({
     setItems(updatedItems);
   };
 
+  // 입력 값 변경 함수
   const handleInputChange = useCallback(
     (index: number, key: keyof ComplexInquiryItemDetail, value: any) => {
       const newItems = [...items];
@@ -369,6 +374,7 @@ const ComplexInquiryTable = ({
     [items, setItems]
   );
 
+  // 아이템 추가 함수
   const handleAddItem = useCallback(
     (index: number) => {
       const newItem: ComplexInquiryItemDetail = {
@@ -408,6 +414,7 @@ const ComplexInquiryTable = ({
     [items, setItems]
   );
 
+  // 아이템 삭제 함수
   const handleDeleteItem = useCallback(
     (index: number) => {
       const updatedItems = items
@@ -421,6 +428,7 @@ const ComplexInquiryTable = ({
     [items, setItems]
   );
 
+  // 단축키 핸들러
   const handleKeyDown = (
     e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>,
     rowIndex: number,
@@ -503,6 +511,7 @@ const ComplexInquiryTable = ({
     }
   };
 
+  // 범위 매출처 추가 함수
   const handleRangeSupplierAdd = (selectedId: number) => {
     if (!startItemNo || !endItemNo) {
       message.error("Please enter both start and end item numbers.");
@@ -567,6 +576,7 @@ const ComplexInquiryTable = ({
     );
   };
 
+  // 테이블 열 정의
   const columns: TableColumnType<ComplexInquiryItemDetail>[] = [
     {
       title: "Actions",

@@ -147,6 +147,7 @@ const InvoiceHeaderEditModal = ({
     setFooterText(newFooterText);
   };
 
+  // DUE DATE 계산 함수
   const calculateDueDate = () => {
     const date = form.getFieldValue("invoiceDate");
     const terms = form.getFieldValue("termsOfPayment");

@@ -113,6 +113,7 @@ const DetailInvoiceModal = ({
   const [currencySymbol, setCurrencySymbol] = useState("");
   const navigate = useNavigate();
 
+  // 모달 열기 시 데이터 로드
   useEffect(() => {
     const fetchDetails = async () => {
       if (open) {
@@ -188,6 +189,7 @@ const DetailInvoiceModal = ({
       ? ((totalMarginAmountKrw / purchaseMarginAmount) * 100).toFixed(2)
       : 0;
 
+  // 삭제 확인 모달 함수 - API 미완
   const handleDeleteClick = () => {
     Modal.confirm({
       title: "Delete Confirmation",

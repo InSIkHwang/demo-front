@@ -107,6 +107,7 @@ const DetailOrderModal = ({
   const [currencySymbol, setCurrencySymbol] = useState("");
   const navigate = useNavigate();
 
+  // 초기 렌더링 시 데이터 조회
   useEffect(() => {
     const fetchDetails = async () => {
       if (open) {
@@ -142,11 +143,13 @@ const DetailOrderModal = ({
     0
   );
 
+  // 매출액 계산
   const totalSalesAmountKrw = orderDetail?.itemDetailList.reduce(
     (acc, item) => acc + (item.salesAmountKRW || 0),
     0
   );
 
+  // 매입액 계산
   const totalPurchaseAmountKrw = orderDetail?.itemDetailList.reduce(
     (acc, item) => acc + (item.purchaseAmountKRW || 0),
     0
@@ -182,6 +185,7 @@ const DetailOrderModal = ({
       ? ((totalMarginAmountKrw / purchaseMarginAmount) * 100).toFixed(2)
       : 0;
 
+  // 삭제 확인 모달 핸들러
   const handleDeleteClick = () => {
     Modal.confirm({
       title: "Delete Confirmation",
@@ -202,6 +206,7 @@ const DetailOrderModal = ({
     });
   };
 
+  // 확정 핸들러
   const handleConfirmClick = async () => {
     try {
       await confirmOrder(orderId);
@@ -214,6 +219,7 @@ const DetailOrderModal = ({
     }
   };
 
+  // 테이블 열 정의
   const columns = [
     {
       title: "Code",

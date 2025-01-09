@@ -334,6 +334,7 @@ const DisplayInput = memo(
 
 DisplayInput.displayName = "DisplayInput";
 
+// 메모이제이션 컴포넌트
 const MemoizedDisplayInput = memo(DisplayInput, (prevProps, nextProps) => {
   return prevProps.value === nextProps.value;
 });
@@ -419,6 +420,7 @@ TableComponentProps) => {
     updateDataSource(mappedItems, true); // 덮어쓰기 작업
   };
 
+  // 엑셀 내보내기 함수 - OFFER 기준 수정 필요
   const handleExportButtonClick = async () => {
     try {
       // 선택한 파일들의 름을 서버로 전송
@@ -454,6 +456,7 @@ TableComponentProps) => {
   //   [itemDetails, setItemDetails]
   // );
 
+  // 아이템 자동완성 함수
   const debouncedFetchItemData = useMemo(
     () =>
       debounce(async (value: string, index: number) => {
@@ -485,6 +488,7 @@ TableComponentProps) => {
     []
   );
 
+  // 아이템 코드 변경 함수
   const handleItemCodeChange = async (index: number, value: string) => {
     const trimmedValue = (value + "").trim();
 
@@ -493,6 +497,7 @@ TableComponentProps) => {
     debouncedFetchItemData(trimmedValue, index);
   };
 
+  // 아이템 추가 함수
   const handleAddItem = (index: number) => {
     const newItem: OrderItemDetail = {
       position: index + 2,
@@ -528,6 +533,7 @@ TableComponentProps) => {
     setItemDetails(newItems as OrderItemDetail[]);
   };
 
+  // 아이템 삭제 함수
   const handleDeleteItem = (ordersItemId: number | null, position: number) => {
     // 선택한 항목을 삭제한 새로운 데이터 소스를 생성
     const updatedItemDetails = itemDetails.filter(
@@ -545,6 +551,7 @@ TableComponentProps) => {
     setItemDetails(reorderedItemDetails);
   };
 
+  // 단위 입력 완료 시 단위 업데이트 함수
   const handleUnitBlur = (index: number, value: string) => {
     handleInputChange(index, "unit", value);
     setUnitOptions((prevOptions) =>
@@ -552,6 +559,7 @@ TableComponentProps) => {
     );
   };
 
+  // 모든 행에 단위 적용 함수
   const applyUnitToAllRows = (selectedUnit: string) => {
     if (!itemDetails) return;
 
@@ -562,6 +570,7 @@ TableComponentProps) => {
     setItemDetails(updatedItems);
   };
 
+  // 모든 행에 마진 적용 함수
   const applyMarginToAllRows = (marginValue: number) => {
     const updatedData = itemDetails.map((row) => {
       const updatedRow = {
@@ -601,6 +610,7 @@ TableComponentProps) => {
     setItemDetails(updatedData); // 상태 업데이트
   };
 
+  // 모든 행에 납기일 적용 함수
   const applyDeliveryToAllRows = (deliveryValue: number) => {
     const updatedData = itemDetails.map((row) => ({
       ...row,
@@ -615,6 +625,7 @@ TableComponentProps) => {
     return purchasePrice * (1 + margin / 100); // 마진을 백분율로 적용
   };
 
+  // 단축키 핸들러
   const handleNextRowKeyDown = (
     e: React.KeyboardEvent<
       HTMLInputElement | HTMLDivElement | HTMLTextAreaElement

@@ -109,6 +109,7 @@ const InvoiceDetail = () => {
   const [originalChecked, setOriginalChecked] = useState<boolean>(true);
   const [isPDFTableVisible, setIsPDFTableVisible] = useState(false);
 
+  // 단축키 핸들러
   const handleKeyboardSave = useCallback(
     async (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
@@ -126,6 +127,7 @@ const InvoiceDetail = () => {
     [invoiceNumber]
   );
 
+  // 단축키 이벤트 리스너 등록
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
@@ -139,6 +141,7 @@ const InvoiceDetail = () => {
     return () => window.removeEventListener("keydown", handler, true);
   }, [handleKeyboardSave]);
 
+  // 초기 렌더링 시 데이터 로드
   const loadInvoiceDetail = async () => {
     try {
       const data: InvoiceDetailIF = await fetchInvoiceDetail(Number(invoiceId));
@@ -186,6 +189,7 @@ const InvoiceDetail = () => {
     loadInvoiceDetail();
   }, [invoiceId]);
 
+  // 아이템 입력 변경 함수
   const handleInputChange = useCallback(
     (index: number, key: keyof OrderItemDetail, value: any) => {
       setItems((prevItems: OrderItemDetail[]) => {
@@ -241,11 +245,13 @@ const InvoiceDetail = () => {
     [roundToTwoDecimalPlaces]
   );
 
+  // 총액 계산 함수
   const calculateTotalAmount = useCallback(
     (price: number, qty: number) => roundToTwoDecimalPlaces(price * qty),
     []
   );
 
+  // 마진 변경 함수
   const handleMarginChange = (index: number, marginValue: number) => {
     const updatedItems = [...items];
     const currentItem = updatedItems[index];
@@ -277,6 +283,7 @@ const InvoiceDetail = () => {
     setItems(updatedItems);
   };
 
+  // 가격 입력 변경 함수
   const handlePriceInputChange = (
     index: number,
     key: keyof OrderItemDetail,
@@ -361,7 +368,7 @@ const InvoiceDetail = () => {
     setItems(updatedItems);
   };
 
-  // 공 함수: reduce를 사용한 합계 계산
+  // 공통 함수: reduce를 사용한 합계 계산
   const calculatePriceTotal = (
     data: Array<any>,
     key: string,
@@ -384,6 +391,7 @@ const InvoiceDetail = () => {
   const convertToGlobal = (amount: number, exchangeRate: number) =>
     roundToTwoDecimalPlaces(amount / exchangeRate);
 
+  // 공통 함수: 할인 및 차지 적용
   const applyDcAndCharge = (mode: string) => {
     if (items.length === 0) {
       message.warning("There");
@@ -529,6 +537,7 @@ const InvoiceDetail = () => {
     }
   };
 
+  // PDF 유형 변경 함수
   const handlePdfTypeChange = (value: string) => {
     setPdfType(value);
 
@@ -537,6 +546,7 @@ const InvoiceDetail = () => {
     }
   };
 
+  // 다중 PDF 다운로드 함수
   const handleMultiplePDFDownload = useCallback(
     async (downloadItems: PDFDownloadItem[]) => {
       if (!formValues || !supplier || !items || !supplier.supplierId) {
@@ -554,6 +564,7 @@ const InvoiceDetail = () => {
 
       try {
         for (const item of downloadItems) {
+          // 데이터 초기화
           let { pdfType, originChk, fileName, itemType = "DEFAULT" } = item;
 
           if (itemType === "CREDIT NOTE") {
@@ -678,6 +689,7 @@ const InvoiceDetail = () => {
     ]
   );
 
+  // 헤더 저장 함수
   const commonSaveHeader = async (
     header: InvoiceHeaderDetail,
     footer: InvoiceRemarkDetail[]
@@ -699,6 +711,7 @@ const InvoiceDetail = () => {
     }
   };
 
+  // 크레딧 노트 / 차지 적용 함수
   const handleCreditNoteApply = async () => {
     try {
       const response = await updateInvoiceCharge(
@@ -722,6 +735,7 @@ const InvoiceDetail = () => {
     }
   };
 
+  // 차지 아이템 생성 함수
   const createChargeItem = (
     chargeType: string,
     invoiceChargeList: InvoiceChargeListIF[]
@@ -764,6 +778,7 @@ const InvoiceDetail = () => {
     };
   };
 
+  // 크레딧 노트 / 차지 문서 생성 시 넘기는 총액(finalTotals)을 계산하는 함수
   const createChargeFinalTotals = (
     chargeType: string,
     invoiceChargeList: InvoiceChargeListIF[],

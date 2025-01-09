@@ -78,6 +78,7 @@ const CreditNoteChargePopover = ({
     setInvoiceChargeList(newList);
   };
 
+  // 차지 아이템 추가 함수
   const addCharge = () => {
     setInvoiceChargeList([
       ...invoiceChargeList,
@@ -90,6 +91,7 @@ const CreditNoteChargePopover = ({
     ]);
   };
 
+  // 차지 아이템 삭제 함수
   const removeCharge = (index: number) => {
     const newList = invoiceChargeList.filter((_, i) => i !== index);
     setInvoiceChargeList(newList);
