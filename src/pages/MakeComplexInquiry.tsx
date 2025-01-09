@@ -293,6 +293,7 @@ const MakeComplexInquiry = () => {
     }[]
   >([]);
 
+  // 단축키 핸들러
   const handleKeyboardSave = useCallback(
     async (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
@@ -335,6 +336,7 @@ const MakeComplexInquiry = () => {
     }
   }, [handleKeyboardSave, isLoading]);
 
+  // 모달 열기/닫기 핸들러
   const modalActions = {
     header: [setHeaderEditModalVisible, () => {}],
     mail: [setIsMailSenderVisible, () => {}],
@@ -368,6 +370,7 @@ const MakeComplexInquiry = () => {
     setShowPDFPreview(false);
   };
 
+  // 데이터 조회 함수
   const fetchDetail = useCallback(async () => {
     try {
       const data = await fetchComplexInquiryDetail(Number(complexInquiryId));
@@ -379,7 +382,7 @@ const MakeComplexInquiry = () => {
     }
   }, [complexInquiryId]);
 
-  // Load document data
+  // 문서 데이터 로드 함수
   const loadDocData = useCallback(async () => {
     try {
       const docData = await fetchDocData();
@@ -540,6 +543,7 @@ const MakeComplexInquiry = () => {
     setInvChargeList(invChargeList || []);
   }, [docDataloading, complexInquiryId, inquiryDetail]);
 
+  // 문서번호 중복 체크 함수
   const checkDuplicateOnMount = useCallback(async () => {
     if (formValues.docNumber) {
       const isDuplicate = await chkDuplicateDocNum(
@@ -554,6 +558,7 @@ const MakeComplexInquiry = () => {
     checkDuplicateOnMount();
   }, [checkDuplicateOnMount]);
 
+  // 회사 데이터 초기화 함수
   useEffect(() => {
     const resetCompanyData = () => {
       setSelectedCustomerId(null);
@@ -573,6 +578,7 @@ const MakeComplexInquiry = () => {
       setVesselList(selectedCustomer.vesselList);
     };
 
+    // 매출처 이름 검색 함수
     const searchCompanyName = async (customerName: string) => {
       try {
         const { isExist, customerDetailResponse } = await fetchCompanyNames(
@@ -608,6 +614,7 @@ const MakeComplexInquiry = () => {
     customerName ? searchCompanyName(customerName) : resetCompanyData();
   }, [formValues.customer, isCustomerModalOpen, isVesselModalOpen]);
 
+  // 선박 선택 함수
   useEffect(() => {
     const updateSelectedVessel = () => {
       const vessel = vesselList.find(
@@ -619,6 +626,7 @@ const MakeComplexInquiry = () => {
     updateSelectedVessel();
   }, [formValues.vesselName, vesselList]);
 
+  // 매출처 자동 완성 옵션 필터링 함수
   useEffect(() => {
     const getFilteredCompanyOptions = () => {
       const searchTerm = formValues.customer.toLowerCase();
@@ -639,6 +647,7 @@ const MakeComplexInquiry = () => {
     setAutoCompleteOptions(filteredOptions);
   }, [companyNameList, formValues.customer]);
 
+  // 폼 값 변경 함수
   const handleFormChange = <K extends keyof typeof formValues>(
     key: K,
     value: (typeof formValues)[K]
@@ -646,6 +655,7 @@ const MakeComplexInquiry = () => {
     setFormValues((prev) => ({ ...prev, [key]: value }));
   };
 
+  // 저장 함수
   const handleSubmit = async (): Promise<number | null> => {
     if (formValues.docNumber) {
       const isDuplicate = await chkDuplicateDocNum(
@@ -798,10 +808,12 @@ const MakeComplexInquiry = () => {
     }
   };
 
+  // INQUIRY 헤더 저장 함수
   const handleInquiryHeaderSave = (text: string) => {
     setInquiryPdfHeader(text);
   };
 
+  // QUOTATION 헤더 저장 함수
   const handleQuotationHeaderSave = async (
     header: HeaderFormData,
     footer: { quotationRemarkId: number | null; quotationRemark: string }[]
@@ -820,14 +832,17 @@ const MakeComplexInquiry = () => {
     }
   };
 
+  // PDF 미리보기 함수
   const handlePDFPreview = () => {
     setShowPDFPreview((prevState) => !prevState);
   };
 
+  // 언어 변경 함수
   const handleLanguageChange = (value: string) => {
     setLanguage(value);
   };
 
+  // 메이커 검색 함수
   const fetchInquirySearchResults = async () => {
     if (!inquirySearchMakerName) return;
     try {
@@ -842,6 +857,7 @@ const MakeComplexInquiry = () => {
     fetchInquirySearchResults(); // 검색 수행
   };
 
+  // 중복 제거 함수
   const removeDuplicates = (
     arr: {
       code: string;
@@ -863,8 +879,10 @@ const MakeComplexInquiry = () => {
     });
   };
 
+  // 중복 제거 함수
   const uniqueSuppliers = removeDuplicates(selectedSuppliers);
 
+  // 선택된 매출처 아이템 조회 함수
   const getSelectedSupplierItems = useCallback(
     (supplierId?: number) => {
       if (
@@ -1237,6 +1255,7 @@ const MakeComplexInquiry = () => {
     }
   };
 
+  // 매입처 별 아이템 조회 함수
   const getSuppliersByItems = useCallback(() => {
     const supplierMap = new Map();
 
@@ -1261,10 +1280,12 @@ const MakeComplexInquiry = () => {
     setSupplierTags(Array.from(supplierMap.values()));
   }, [items]);
 
+  // 매입처 별 아이템 조회 함수 메모이제이션
   useEffect(() => {
     getSuppliersByItems();
   }, [getSuppliersByItems]);
 
+  // PDF 다운로드 함수
   const handlePDFDownload = async () => {
     if (documentInfo) {
       try {

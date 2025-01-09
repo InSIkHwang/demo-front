@@ -151,6 +151,7 @@ const OrderDetail = () => {
     useState<CIPLHeaderFormData>(INITIAL_PL_VALUES);
   const [withLogo, setWithLogo] = useState<boolean>(true);
 
+  // 단축키 핸들러
   const handleKeyboardSave = useCallback(
     async (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
@@ -168,6 +169,7 @@ const OrderDetail = () => {
     [formValues?.refNumber]
   );
 
+  // 단축키 이벤트 리스너 등록
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
@@ -181,6 +183,7 @@ const OrderDetail = () => {
     return () => window.removeEventListener("keydown", handler, true);
   }, [handleKeyboardSave]);
 
+  // 언어 변경 시 PDF 헤더 및 푸터 업데이트
   useEffect(() => {
     if (language === "KOR") {
       setPdfPOHeader((prev) => ({
@@ -204,6 +207,7 @@ const OrderDetail = () => {
     }
   }, [language]);
 
+  // 주문 상세 데이터 로드 함수
   const loadOrderDetail = async () => {
     try {
       const data: OrderResponse = await fetchOrderDetail(Number(orderId));
@@ -278,10 +282,12 @@ const OrderDetail = () => {
     }
   };
 
+  // 주문 상세 데이터 로드 함수
   useEffect(() => {
     loadOrderDetail();
   }, [orderId]);
 
+  // 입력 값 변경 함수
   const handleInputChange = useCallback(
     (index: number, key: keyof OrderItemDetail, value: any) => {
       setItems((prevItems: OrderItemDetail[]) => {
@@ -337,11 +343,13 @@ const OrderDetail = () => {
     [roundToTwoDecimalPlaces]
   );
 
+  // 총액 계산 함수
   const calculateTotalAmount = useCallback(
     (price: number, qty: number) => roundToTwoDecimalPlaces(price * qty),
     []
   );
 
+  // 마진 변경 함수
   const handleMarginChange = (index: number, marginValue: number) => {
     const updatedItems = [...items];
     const currentItem = updatedItems[index];
@@ -373,6 +381,7 @@ const OrderDetail = () => {
     setItems(updatedItems);
   };
 
+  // 가격 입력 변경 함수
   const handlePriceInputChange = (
     index: number,
     key: keyof OrderItemDetail,
@@ -457,7 +466,7 @@ const OrderDetail = () => {
     setItems(updatedItems);
   };
 
-  // 공 함수: reduce를 사용한 합계 계산
+  // 공통 함수: reduce를 사용한 합계 계산
   const calculatePriceTotal = (
     data: Array<any>,
     key: string,
@@ -480,6 +489,7 @@ const OrderDetail = () => {
   const convertToGlobal = (amount: number, exchangeRate: number) =>
     roundToTwoDecimalPlaces(amount / exchangeRate);
 
+  // 공통 함수: 할인 및 차지 적용
   const applyDcAndCharge = (mode: string) => {
     if (items.length === 0) {
       message.warning("There");
@@ -650,6 +660,7 @@ const OrderDetail = () => {
     setLanguage(value === "PO" ? "KOR" : "ENG");
   };
 
+  // 공통 함수: PDF 다운로드
   const handlePDFDownload = async () => {
     if (!formValues || !supplier || !items || !supplier.supplierId) {
       message.error("Please fill in all fields.");
@@ -776,6 +787,7 @@ const OrderDetail = () => {
     }
   };
 
+  // 공통 함수: 헤더 저장
   const commonSaveHeader = async (
     header:
       | OrderAckHeaderFormData
@@ -795,11 +807,13 @@ const OrderDetail = () => {
     }
   };
 
+  // CIPL 헤더 저장
   const SaveCIPLHeader = async (header: CIPLHeaderFormData) => {
     const response = await saveCIPLHeader(Number(orderId), header);
     setPdfCIPLHeader(response);
   };
 
+  // 주문 컨펌 함수(ORDER -> INVOICE)
   const handleConfirmClick = async () => {
     try {
       await confirmOrder(Number(orderId));

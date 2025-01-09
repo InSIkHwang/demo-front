@@ -202,6 +202,7 @@ const OrderList = () => {
     searchParams.get("showItemSearch") === "true"
   );
 
+  // 초기 렌더링 시 파라미터가 있으면 검색, 없으면 데이터 조회
   useEffect(() => {
     if (searchParams.toString()) {
       handleSearch();
@@ -210,6 +211,7 @@ const OrderList = () => {
     }
   }, []);
 
+  // 페이지 변경 또는 옵션 변경 시 검색 또는 데이터 조회
   useEffect(() => {
     if ((searchText || searchSubText) && registerStartDate && registerEndDate) {
       handleSearch();
@@ -218,6 +220,7 @@ const OrderList = () => {
     }
   }, [currentPage, itemsPerPage, viewMyOfferOnly, showItemSearch]);
 
+  // 데이터 조회 함수
   const fetchData = async () => {
     setLoading(true);
     updateSearchParams({
@@ -240,6 +243,7 @@ const OrderList = () => {
     }
   };
 
+  // 모달 열기/닫기 시 스크롤 제어
   useEffect(() => {
     if (isDetailModalOpen) {
       document.body.style.overflow = "hidden";
@@ -252,6 +256,7 @@ const OrderList = () => {
     };
   }, [isDetailModalOpen]);
 
+  // 검색 파라미터 업데이트 함수
   const updateSearchParams = (
     params: Record<string, string | number | boolean>
   ) => {
@@ -268,6 +273,7 @@ const OrderList = () => {
     setSearchParams(newSearchParams);
   };
 
+  // 검색 함수
   const handleSearch = async () => {
     setLoading(true);
     updateSearchParams({
@@ -310,11 +316,13 @@ const OrderList = () => {
     }
   };
 
+  // 내 문서만 보기 체크 핸들러
   const handleViewMyOfferOnlyChange = (e: CheckboxChangeEvent) => {
     setViewMyOfferOnly(e.target.checked);
     updateSearchParams({ viewMyOfferOnly: e.target.checked });
   };
 
+  // 아이템 검색 옵션 토글 핸들러
   const handleItemSearchToggle = (e: CheckboxChangeEvent) => {
     setShowItemSearch(e.target.checked);
     if (!e.target.checked) {
@@ -326,16 +334,19 @@ const OrderList = () => {
     }
   };
 
+  // 행 클릭 시 모달 열기
   const handleRowClick = (record: Order) => {
     setSelectedOrderId(record.orderId ?? null);
     setIsDetailModalOpen(true);
   };
 
+  // 페이지 변경 핸들러
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     updateSearchParams({ page });
   };
 
+  // 페이지 사이즈 변경 핸들러
   const handlePageSizeChange = (current: number, size: number) => {
     setItemsPerPage(size);
     setCurrentPage(1);

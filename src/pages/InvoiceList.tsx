@@ -204,6 +204,7 @@ const InvoiceList = () => {
     searchParams.get("showItemSearch") === "true"
   );
 
+  // 초기 렌더링 시 검색 조건 적용 or 데이터 로드
   useEffect(() => {
     if (searchParams.toString()) {
       handleSearch();
@@ -212,6 +213,7 @@ const InvoiceList = () => {
     }
   }, []);
 
+  // 페이지 변경 시 검색 조건 적용 or 데이터 로드
   useEffect(() => {
     if ((searchText || searchSubText) && registerStartDate && registerEndDate) {
       handleSearch();
@@ -242,6 +244,7 @@ const InvoiceList = () => {
     }
   };
 
+  // 모달 열기 시 스크롤 방지
   useEffect(() => {
     if (isDetailModalOpen) {
       document.body.style.overflow = "hidden";
@@ -254,6 +257,7 @@ const InvoiceList = () => {
     };
   }, [isDetailModalOpen]);
 
+  // 검색 조건 업데이트 함수
   const updateSearchParams = (
     params: Record<string, string | number | boolean>
   ) => {
@@ -270,6 +274,7 @@ const InvoiceList = () => {
     setSearchParams(newSearchParams);
   };
 
+  // 검색 함수
   const handleSearch = async () => {
     setLoading(true);
     updateSearchParams({
@@ -312,11 +317,13 @@ const InvoiceList = () => {
     }
   };
 
+  // 내 문서만 보기 체크 함수
   const handleViewMyOfferOnlyChange = (e: CheckboxChangeEvent) => {
     setViewMyOfferOnly(e.target.checked);
     updateSearchParams({ viewMyOfferOnly: e.target.checked });
   };
 
+  // 아이템 검색 옵션 체크 함수
   const handleItemSearchToggle = (e: CheckboxChangeEvent) => {
     setShowItemSearch(e.target.checked);
     if (!e.target.checked) {
@@ -328,6 +335,7 @@ const InvoiceList = () => {
     }
   };
 
+  // 행 클릭 시 모달 열기
   const handleRowClick = (record: InvoiceListIF) => {
     setSelectedInvoiceId(record.salesId ?? null);
     setIsDetailModalOpen(true);
