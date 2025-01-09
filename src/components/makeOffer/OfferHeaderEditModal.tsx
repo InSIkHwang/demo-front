@@ -131,6 +131,7 @@ const OfferHeaderEditModal = ({
     packing: "UNPACKED",
   };
 
+  // 푸터 추가 핸들러
   const handleAddFooterLine = () => {
     setFooterText([
       ...footerText,
@@ -138,10 +139,12 @@ const OfferHeaderEditModal = ({
     ]);
   };
 
+  // 푸터 삭제 핸들러
   const handleRemoveFooterLine = (index: number) => {
     setFooterText(footerText.filter((_, i) => i !== index));
   };
 
+  // 푸터 변경 핸들러
   const handleFooterChange = (index: number, value: string) => {
     const newFooterText = [...footerText];
     newFooterText[index] = {
@@ -151,6 +154,7 @@ const OfferHeaderEditModal = ({
     setFooterText(newFooterText);
   };
 
+  // 푸터 체크 상태 업데이트
   useEffect(() => {
     if (pdfFooter.length > 0) {
       setFooterChk(true);
@@ -159,6 +163,7 @@ const OfferHeaderEditModal = ({
     }
   }, [pdfFooter]);
 
+  // 푸터 체크 해제 시 초기화
   useEffect(() => {
     if (!footerChk) {
       setFooterText([]);
@@ -167,10 +172,12 @@ const OfferHeaderEditModal = ({
     }
   }, [footerChk, pdfFooter]);
 
+  // 헤더 초기값 설정
   useEffect(() => {
     form.setFieldsValue(pdfHeader);
   }, [form, pdfHeader]);
 
+  // 저장 핸들러
   const handleSave = () => {
     const headerData = headerChk
       ? {

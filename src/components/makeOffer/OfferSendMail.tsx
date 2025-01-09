@@ -89,6 +89,7 @@ const OfferMailSender = ({
     content: mailData?.content ?? "",
   };
 
+  // 메일 데이터 초기화
   useEffect(() => {
     if (inquiryFormValues) {
       form.setFieldsValue({
@@ -103,6 +104,7 @@ const OfferMailSender = ({
     }
   }, [inquiryFormValues, mailData, form]);
 
+  // 메일 전송 핸들러
   const onFinish = async (values: any) => {
     setLoading(true);
 
@@ -131,6 +133,7 @@ const OfferMailSender = ({
         ...restValues, // values from the form excluding documentNumber
       };
 
+      // 메일 데이터 생성
       const mailDataToSend = {
         emailSend: {
           toRecipient: updateMailData.toRecipient,
@@ -162,11 +165,13 @@ const OfferMailSender = ({
     }
   };
 
+  // 파일 업로드 핸들러
   const handleFileUpload = (file: any) => {
     setUploadFile((prevFileData) => [...prevFileData, file]);
     return false;
   };
 
+  // 파일 삭제 핸들러
   const handleFileRemove = (fileIndex: number) => {
     setUploadFile((prevFileData) =>
       prevFileData.filter((_, index) => index !== fileIndex)

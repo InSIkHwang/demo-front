@@ -306,6 +306,7 @@ const DisplayInput = memo(
         }
       }, [value, formatter]);
 
+      // 입력 값 변경 시 핸들러
       const handleChange = useCallback(
         (e: React.ChangeEvent<HTMLInputElement>) => {
           const rawValue = e.target.value;
@@ -333,6 +334,7 @@ const DisplayInput = memo(
 
 DisplayInput.displayName = "DisplayInput";
 
+// 메모이제이션된 DisplayInput 컴포넌트
 const MemoizedDisplayInput = memo(DisplayInput, (prevProps, nextProps) => {
   return prevProps.value === nextProps.value;
 });
@@ -383,6 +385,7 @@ const TableComponent = ({
   const MIN_ZOOM = 0.5;
   const MAX_ZOOM = 1.5;
 
+  // 확대/축소 핸들러
   const handleZoomIn = () => {
     setZoomLevel((prev) => Math.min(prev + ZOOM_STEP, MAX_ZOOM));
   };
@@ -391,6 +394,7 @@ const TableComponent = ({
     setZoomLevel((prev) => Math.max(prev - ZOOM_STEP, MIN_ZOOM));
   };
 
+  // 초기 렌더링 시 마진 옵션 설정
   useEffect(() => {
     if (itemDetails && itemDetails.length > 0) {
       const firstItemMargin = itemDetails[0].margin;
@@ -473,6 +477,7 @@ const TableComponent = ({
   //   [itemDetails, setItemDetails]
   // );
 
+  // 아이템 코드 검색 디바운스 함수
   const debouncedFetchItemData = useMemo(
     () =>
       debounce(async (value: string, index: number) => {
@@ -504,6 +509,7 @@ const TableComponent = ({
     []
   );
 
+  // 아이템 코드 변경 핸들러
   const handleItemCodeChange = async (index: number, value: string) => {
     const trimmedValue = (value + "").trim();
 
@@ -512,6 +518,7 @@ const TableComponent = ({
     debouncedFetchItemData(trimmedValue, index);
   };
 
+  // 아이템 추가 핸들러
   const handleAddItem = (index: number) => {
     const newItem: ItemDetailType = {
       position: index + 2,
@@ -548,6 +555,7 @@ const TableComponent = ({
     setItemDetails(newItems);
   };
 
+  // 아이템 삭제 핸들러
   const handleDeleteItem = (itemDetailId: number | null, position: number) => {
     // 선택한 항목을 삭제한 새로운 데이터 소스를 생성
     const updatedItemDetails = itemDetails.filter(
@@ -565,6 +573,7 @@ const TableComponent = ({
     setItemDetails(reorderedItemDetails);
   };
 
+  // 단위 변경 핸들러
   const handleUnitBlur = (index: number, value: string) => {
     handleInputChange(index, "unit", value);
     setUnitOptions((prevOptions) =>
@@ -572,6 +581,7 @@ const TableComponent = ({
     );
   };
 
+  // 모든 행에 단위 적용 핸들러
   const applyUnitToAllRows = (selectedUnit: string) => {
     if (!itemDetails) return;
 
@@ -582,6 +592,7 @@ const TableComponent = ({
     setItemDetails(updatedItems);
   };
 
+  // 모든 행에 마진 적용 핸들러
   const applyMarginToAllRows = (marginValue: number) => {
     const updatedData = itemDetails.map((row) => {
       const updatedRow = {
@@ -621,6 +632,7 @@ const TableComponent = ({
     setItemDetails(updatedData); // 상태 업데이트
   };
 
+  // 배송일 변경 핸들러
   const handleDeliveryBlur = (value: string) => {
     const parsedValue = value ? parseInt(value.replace(/[^0-9]/g, "")) : 0;
     const finalValue = isNaN(parsedValue) ? 0 : parsedValue;
@@ -635,6 +647,7 @@ const TableComponent = ({
     applyDeliveryToAllRows(finalValue);
   };
 
+  // 모든 행에 배송일 적용 핸들러
   const applyDeliveryToAllRows = (deliveryValue: number) => {
     const updatedData = itemDetails.map((row) => ({
       ...row,
@@ -644,11 +657,12 @@ const TableComponent = ({
     setItemDetails(updatedData);
   };
 
-  // 마진에 따라 매출가격을 계산하는 함수 예시
+  // 마진에 따라 매출가격을 계산하는 함수
   const calculateSalesPrice = (purchasePrice: number, margin: number) => {
     return purchasePrice * (1 + margin / 100); // 마진을 백분율로 적용
   };
 
+  // 단축키 핸들러
   const handleNextRowKeyDown = (
     e: React.KeyboardEvent<
       HTMLInputElement | HTMLDivElement | HTMLTextAreaElement
@@ -702,6 +716,7 @@ const TableComponent = ({
     }
   };
 
+  // PDF 다운로드 핸들러
   const handleDownloadPdf = (
     pdfUrl: string,
     supplierName: string,
@@ -725,6 +740,7 @@ const TableComponent = ({
     }
   };
 
+  // DESC 행 추가 핸들러
   const handleAddDescRow = (index: number) => {
     const newItem: ItemDetailType = {
       position: index + 2,
@@ -761,6 +777,7 @@ const TableComponent = ({
     setItemDetails(newItems);
   };
 
+  // 테이블 열 정의
   const columns: ColumnsType<any> = [
     {
       title: "Action",
@@ -851,6 +868,7 @@ const TableComponent = ({
               }}
               onBlur={(e) => {
                 const value = (e.target as HTMLInputElement).value;
+                // 빈 문자열인 경우 아이템 정보 초기화
                 if (value === "") {
                   setItemDetails((prev) => {
                     const updated = [...prev];
@@ -862,6 +880,7 @@ const TableComponent = ({
                     return updated;
                   });
                 } else {
+                  // 아이템 코드 변경 핸들러
                   handleItemCodeChange(index, value);
                 }
               }}
@@ -1101,6 +1120,7 @@ const TableComponent = ({
             ? 0
             : text;
 
+        // 아이템 행 인덱스 계산
         const filteredIndex = itemDetails
           .filter((item: any) => item.itemType === "ITEM")
           .indexOf(record);
@@ -1149,6 +1169,7 @@ const TableComponent = ({
                   (indicator as HTMLElement).style.opacity = "0";
                 }
 
+                // 입력 값 포맷 변경 및 처리
                 const value = e.target.value;
                 const unformattedValue = value.replace(/,/g, "");
                 const updatedValue = isNaN(Number(unformattedValue))
@@ -1200,8 +1221,8 @@ const TableComponent = ({
               No.{rowNumber}
             </RowNumberIndicator>
             <MemoizedDisplayInput
-              type="text" // Change to "text" to handle formatted input
-              value={value?.toLocaleString("en-US")} // Display formatted value
+              type="text"
+              value={value?.toLocaleString("en-US")} // 포맷 변경 핸들러
               ref={(el) => {
                 if (!inputRefs.current[index]) {
                   inputRefs.current[index] = [];
@@ -1557,6 +1578,7 @@ const TableComponent = ({
     },
   ];
 
+  // 문서번호 변경 핸들러
   const handleSupplierInquiryNameChange = (
     e: React.ChangeEvent<HTMLInputElement>,
     currentOfferId: number
