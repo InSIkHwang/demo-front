@@ -106,7 +106,6 @@ const InvoiceDetail = () => {
   const [invoiceChargeList, setInvoiceChargeList] = useState<
     InvoiceChargeListIF[]
   >([]);
-  const [originalChecked, setOriginalChecked] = useState<boolean>(true);
   const [isPDFTableVisible, setIsPDFTableVisible] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [downloadedFiles, setDownloadedFiles] = useState(0);
@@ -564,85 +563,44 @@ const InvoiceDetail = () => {
 
       try {
         for (const item of downloadItems) {
-          let { pdfType, originChk, fileName, itemType = "DEFAULT" } = item;
+          let { pdfType, fileName, itemType = "DEFAULT" } = item;
 
           if (itemType === "CREDIT NOTE") {
             pdfType = "CREDIT NOTE";
           }
+          const doc = (
+            <InvoicePDFDocument
+              invoiceNumber={invoiceNumber}
+              pdfType={pdfType}
+              info={formValues}
+              items={
+                itemType === "DEFAULT"
+                  ? items
+                  : [createChargeItem(itemType, invoiceChargeList)]
+              }
+              pdfHeader={pdfInvoiceHeader}
+              viewMode={false}
+              language={language}
+              pdfFooter={pdfInvoiceFooter}
+              finalTotals={
+                itemType === "DEFAULT"
+                  ? finalTotals
+                  : createChargeFinalTotals(
+                      itemType,
+                      invoiceChargeList,
+                      formValues?.currency || 1050
+                    )
+              }
+              dcInfo={dcInfo}
+              invChargeList={invChargeList}
+              itemType={itemType}
+            />
+          );
 
-          if (originChk === "both" || originChk === "original") {
-            const doc = (
-              <InvoicePDFDocument
-                invoiceNumber={invoiceNumber}
-                pdfType={pdfType}
-                info={formValues}
-                items={
-                  itemType === "DEFAULT"
-                    ? items
-                    : [createChargeItem(itemType, invoiceChargeList)]
-                }
-                pdfHeader={pdfInvoiceHeader}
-                viewMode={false}
-                language={language}
-                pdfFooter={pdfInvoiceFooter}
-                finalTotals={
-                  itemType === "DEFAULT"
-                    ? finalTotals
-                    : createChargeFinalTotals(
-                        itemType,
-                        invoiceChargeList,
-                        formValues?.currency || 1050
-                      )
-                }
-                dcInfo={dcInfo}
-                invChargeList={invChargeList}
-                originalChecked={true}
-                itemType={itemType}
-              />
-            );
-
-            const pdfBlob = await pdf(doc).toBlob();
-            await downloadFile(pdfBlob, `${fileName}_ORIGINAL.pdf`);
-            downloadedCount++;
-            updateProgress(downloadedCount);
-          }
-
-          if (originChk === "both" || originChk === "copy") {
-            const doc = (
-              <InvoicePDFDocument
-                invoiceNumber={invoiceNumber}
-                pdfType={pdfType}
-                info={formValues}
-                items={
-                  itemType === "DEFAULT"
-                    ? items
-                    : [createChargeItem(itemType, invoiceChargeList)]
-                }
-                pdfHeader={pdfInvoiceHeader}
-                viewMode={false}
-                language={language}
-                pdfFooter={pdfInvoiceFooter}
-                finalTotals={
-                  itemType === "DEFAULT"
-                    ? finalTotals
-                    : createChargeFinalTotals(
-                        itemType,
-                        invoiceChargeList,
-                        formValues?.currency || 1050
-                      )
-                }
-                dcInfo={dcInfo}
-                invChargeList={invChargeList}
-                originalChecked={false}
-                itemType={itemType}
-              />
-            );
-
-            const pdfBlob = await pdf(doc).toBlob();
-            await downloadFile(pdfBlob, `${fileName}_COPY.pdf`);
-            downloadedCount++;
-            updateProgress(downloadedCount);
-          }
+          const pdfBlob = await pdf(doc).toBlob();
+          await downloadFile(pdfBlob, `${fileName}.pdf`);
+          downloadedCount++;
+          updateProgress(downloadedCount);
         }
 
         message.success({
@@ -670,7 +628,7 @@ const InvoiceDetail = () => {
     ]
   );
 
-  // 헤일 다운로드 유틸리티 함수
+  // PDF 다운로드 유틸리티 함수
   const downloadFile = async (blob: Blob, fileName: string): Promise<void> => {
     return new Promise((resolve) => {
       const url = URL.createObjectURL(blob);
@@ -935,13 +893,6 @@ const InvoiceDetail = () => {
             <Select.Option value={item}>{item}</Select.Option>
           ))}
         </Select>
-        <Checkbox
-          checked={originalChecked}
-          onChange={() => setOriginalChecked(!originalChecked)}
-          style={{ marginLeft: 10 }}
-        >
-          ORIGINAL
-        </Checkbox>
         <CreditNoteChargePopover
           currency={formValues?.currency || 1050}
           invoiceChargeList={invoiceChargeList}
@@ -994,7 +945,6 @@ const InvoiceDetail = () => {
             finalTotals={finalTotals}
             dcInfo={dcInfo}
             invChargeList={invChargeList}
-            originalChecked={originalChecked}
             itemType={itemType}
           />
         )}
@@ -1018,7 +968,6 @@ const InvoiceDetail = () => {
             )}
             dcInfo={dcInfo}
             invChargeList={invChargeList}
-            originalChecked={originalChecked}
             itemType={itemType}
           />
         ) : (

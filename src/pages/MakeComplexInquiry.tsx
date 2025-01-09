@@ -980,45 +980,6 @@ const MakeComplexInquiry = () => {
     []
   );
 
-  // 아이템 매핑 함수 최적화
-  // const handleItemIdMapping = useCallback(async (): Promise<
-  //   ComplexInquiryItemDetail[]
-  // > => {
-  //   const updatedItems = await Promise.all(
-  //     items.map(async (item) => {
-  //       if (item.itemType !== "ITEM" && item.itemType !== "DASH") return item;
-
-  //       const trimmedCode = item.itemCode.trim();
-  //       const trimmedName = item.itemName.trim();
-  //       if (!trimmedCode) return item;
-
-  //       try {
-  //         const { items: searchResult } = await fetchItemData(trimmedCode);
-  //         const foundItem = Array.isArray(searchResult)
-  //           ? searchResult.find(
-  //               (result) =>
-  //                 result.itemCode.trim() === trimmedCode &&
-  //                 result.itemName.trim() === trimmedName
-  //             )
-  //           : searchResult?.itemCode.trim() === trimmedCode &&
-  //             searchResult?.itemName.trim() === trimmedName
-  //           ? searchResult
-  //           : null;
-
-  //         return foundItem?.itemId
-  //           ? { ...item, itemId: foundItem.itemId }
-  //           : item;
-  //       } catch (error) {
-  //         console.error(`Error mapping item code ${trimmedCode}:`, error);
-  //         return item;
-  //       }
-  //     })
-  //   );
-
-  //   setItems(updatedItems);
-  //   return updatedItems;
-  // }, [items]);
-
   // 총액 계산 함수 메모이제이션
   const calculateTotal = useCallback(
     (data: Array<any>, key: string, qtyKey: string = "qty") => {

@@ -7,7 +7,6 @@ import { useCallback, useEffect, useState } from "react";
 export interface PDFDownloadItem {
   pdfType: string;
   downloadChk: boolean;
-  originChk: string;
   fileName: string;
   itemType?: string;
 }
@@ -118,32 +117,6 @@ const PDFDownloadTable = ({
       width: 50,
     },
     {
-      title: (
-        <Select
-          defaultValue="both"
-          onChange={(value) => handleHeaderOriginChange(value)}
-          style={{ width: "100%" }}
-        >
-          <Select.Option value="both">Both</Select.Option>
-          <Select.Option value="original">Original</Select.Option>
-          <Select.Option value="copy">Copy</Select.Option>
-        </Select>
-      ),
-      dataIndex: "originChk",
-      render: (value: string, _: any, index: number) => (
-        <Select
-          value={value}
-          onChange={(value) => handleItemChange(index, "originChk", value)}
-          style={{ width: "100%" }}
-        >
-          <Select.Option value="both">Both</Select.Option>
-          <Select.Option value="original">Original</Select.Option>
-          <Select.Option value="copy">Copy</Select.Option>
-        </Select>
-      ),
-      width: 150,
-    },
-    {
       title: "File Name",
       dataIndex: "fileName",
       render: (text: string, _: any, index: number) => (
@@ -158,18 +131,6 @@ const PDFDownloadTable = ({
   const handleCheckAll = (checked: boolean) => {
     setAllChecked(checked);
     setItems(items.map((item) => ({ ...item, downloadChk: checked })));
-  };
-
-  const handleHeaderOriginChange = (value: string) => {
-    setHeaderOriginChk(value);
-    // originChk만 업데이트하고 다른 속성은 유지
-    setItems(
-      items.map((item) => ({
-        ...item,
-        originChk: value,
-        downloadChk: item.downloadChk, // 기존 downloadChk 값 유지
-      }))
-    );
   };
 
   const handleItemChange = (
@@ -198,11 +159,7 @@ const PDFDownloadTable = ({
 
     setDownloading(true);
     setDownloadedFiles(0);
-    setTotalFiles(
-      selectedItems.reduce((total, item) => {
-        return total + (item.originChk === "both" ? 2 : 1);
-      }, 0)
-    );
+    setTotalFiles(selectedItems.length);
 
     try {
       await onDownload(selectedItems, setDownloadedFiles);

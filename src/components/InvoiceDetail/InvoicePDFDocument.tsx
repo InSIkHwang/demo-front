@@ -80,7 +80,6 @@ interface InvoicePDFDocumentProps {
   invChargeList: InvCharge[] | null;
   invoiceNumber: string;
   pdfType: string;
-  originalChecked: boolean;
   itemType: string;
 }
 
@@ -621,7 +620,7 @@ const renderHeader = (
   imoNo: string,
   invoiceNumber: string,
   pdfType: string,
-  originalChecked: boolean,
+  isOriginal: boolean,
   itemType: string
 ) => (
   <>
@@ -714,14 +713,19 @@ const renderHeader = (
               {pdfHeader?.termsOfPayment?.split("")}
             </Text>
           </View>
-          <View style={styles.inquiryInfoText}>
-            <Text style={styles.inquiryInfoLabel}>Due Date</Text>
-            <Text style={styles.inquiryInfoValue}>
-              {pdfHeader?.dueDate
-                ? dayjs(pdfHeader?.dueDate).format("DD MMM YYYY").toUpperCase()
-                : ""}
-            </Text>
-          </View>
+          {pdfHeader?.dueDate !== "IN ADVANCE" &&
+            pdfHeader?.termsOfPayment !== "IN ADVANCE" && (
+              <View style={styles.inquiryInfoText}>
+                <Text style={styles.inquiryInfoLabel}>Due Date</Text>
+                <Text style={styles.inquiryInfoValue}>
+                  {pdfHeader?.dueDate
+                    ? dayjs(pdfHeader?.dueDate)
+                        .format("DD MMM YYYY")
+                        .toUpperCase()
+                    : ""}
+                </Text>
+              </View>
+            )}
         </View>
       </View>
       <View
@@ -781,7 +785,7 @@ const renderHeader = (
         </View>
         <View style={styles.stampWrapper}>
           <Image
-            src={originalChecked ? ORIGINAL : COPY}
+            src={isOriginal ? ORIGINAL : COPY}
             style={{
               width: 210,
               height: 70,
@@ -841,7 +845,6 @@ const InvoicePDFDocument = ({
   invChargeList,
   invoiceNumber,
   pdfType,
-  originalChecked,
   itemType,
 }: InvoicePDFDocumentProps) => {
   const headerMessage = pdfHeader;
@@ -855,289 +858,286 @@ const InvoicePDFDocument = ({
   const totalSalesAmount = calculateTotalSalesAmount(items);
   const dcAmountGlobal = totalSalesAmount * (dcInfo.dcPercent / 100);
 
-  const pdfBody = (
-    <Document>
-      <Page size="A4" style={styles.page}>
-        <View style={styles.contentWrapper}>
-          {renderHeader(
-            logoUrl,
-            info.vesselName,
-            headerMessage,
-            language,
-            info.refNumber,
-            info.imoNo + "",
-            invoiceNumber || "",
-            pdfType,
-            originalChecked,
-            itemType
-          )}
-          <View style={styles.table}>
+  const renderPage = (isOriginal: boolean) => (
+    <Page size="A4" style={styles.page}>
+      <View style={styles.contentWrapper}>
+        {renderHeader(
+          logoUrl,
+          info.vesselName,
+          headerMessage,
+          language,
+          info.refNumber,
+          info.imoNo + "",
+          invoiceNumber || "",
+          pdfType,
+          isOriginal,
+          itemType
+        )}
+        <View style={styles.table}>
+          <View
+            style={[
+              styles.tableRow,
+              {
+                borderTop: "none",
+                borderBottom: "2px solid #142952",
+                color: "#142952",
+              },
+            ]}
+            fixed
+          >
+            <View style={[styles.tableSmallCol, { flex: 0.28 }]}>
+              <Text style={styles.tableHeaderCell}>No.</Text>
+            </View>
+            <View style={styles.tableMedCol}>
+              <Text style={styles.tableHeaderCell}>Part No.</Text>
+            </View>
+            <View style={styles.tableBigCol}>
+              <Text style={styles.tableHeaderCell}>Description</Text>
+            </View>
+            <View style={[styles.tableSmallCol, { alignItems: "flex-start" }]}>
+              <Text style={styles.tableHeaderCell}>Qty</Text>
+            </View>
+            <View style={[styles.tableSmallCol]}>
+              <Text style={styles.tableHeaderCell}>Unit</Text>
+            </View>
+            <View style={[styles.tablePriceCol]}>
+              <Text style={styles.tableHeaderCell}>U/Price</Text>
+            </View>
+            <View style={[styles.tablePriceCol]}>
+              <Text style={styles.tableHeaderCell}>Amount</Text>
+            </View>
+          </View>
+          {renderTableRows(items, language)}
+          <View wrap={false}>
             <View
               style={[
-                styles.tableRow,
-                {
-                  borderTop: "none",
-                  borderBottom: "2px solid #142952",
-                  color: "#142952",
-                },
+                styles.inquiryInfoWrap,
+                { marginTop: 20, flexDirection: "column" },
               ]}
-              fixed
             >
-              <View style={[styles.tableSmallCol, { flex: 0.28 }]}>
-                <Text style={styles.tableHeaderCell}>No.</Text>
-              </View>
-              <View style={styles.tableMedCol}>
-                <Text style={styles.tableHeaderCell}>Part No.</Text>
-              </View>
-              <View style={styles.tableBigCol}>
-                <Text style={styles.tableHeaderCell}>Description</Text>
-              </View>
-              <View
-                style={[styles.tableSmallCol, { alignItems: "flex-start" }]}
-              >
-                <Text style={styles.tableHeaderCell}>Qty</Text>
-              </View>
-              <View style={[styles.tableSmallCol]}>
-                <Text style={styles.tableHeaderCell}>Unit</Text>
-              </View>
-              <View style={[styles.tablePriceCol]}>
-                <Text style={styles.tableHeaderCell}>U/Price</Text>
-              </View>
-              <View style={[styles.tablePriceCol]}>
-                <Text style={styles.tableHeaderCell}>Amount</Text>
-              </View>
-            </View>
-            {renderTableRows(items, language)}
-            <View wrap={false}>
-              <View
-                style={[
-                  styles.inquiryInfoWrap,
-                  { marginTop: 20, flexDirection: "column" },
-                ]}
-              >
-                {pdfType !== "CREDITNOTE" && (
-                  <View
-                    style={[
-                      styles.inquiryTotalColumn,
-                      {
-                        alignItems: "flex-end",
-                        width: "50%",
-                        alignSelf: "flex-end",
-                      },
-                    ]}
-                  >
-                    {(dcInfo.dcPercent ||
-                      (invChargeList && invChargeList.length > 0)) && (
-                      <View
-                        style={[
-                          styles.inquiryPriceRow,
-                          { borderBottom: "1px dotted #000" },
-                        ]}
-                      >
-                        <Text style={styles.inquiryPriceLabel}>SUB TOTAL</Text>
-                        <Text style={styles.inquiryPriceValue}>
-                          {language === "KOR"
-                            ? totalSalesAmount?.toLocaleString("ko-KR", {
-                                style: "currency",
-                                currency: "KRW",
-                              })
-                            : totalSalesAmount?.toLocaleString("en-US", {
-                                style: "currency",
-                                currency: info.currencyType,
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}
-                        </Text>
-                      </View>
-                    )}
-                    {dcInfo.dcPercent && dcInfo.dcPercent !== 0 && (
-                      <View style={styles.inquiryPriceRow}>
-                        <Text style={styles.inquiryPriceLabel}>
-                          DISCOUNT {dcInfo.dcPercent}%
-                        </Text>
-                        <Text style={styles.inquiryPriceValue}>
-                          -
-                          {language === "KOR"
-                            ? dcAmountGlobal?.toLocaleString("ko-KR", {
-                                style: "currency",
-                                currency: "KRW",
-                              })
-                            : dcAmountGlobal?.toLocaleString("en-US", {
-                                style: "currency",
-                                currency: info.currencyType,
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}
-                        </Text>
-                      </View>
-                    )}
-                    {invChargeList &&
-                      invChargeList.length > 0 &&
-                      invChargeList.map((charge) => (
-                        <View style={styles.inquiryPriceRow}>
-                          <>
-                            <Text style={styles.inquiryPriceLabel}>
-                              {charge.customCharge}
-                            </Text>
-                            <Text style={styles.inquiryPriceValue}>
-                              {language === "KOR"
-                                ? Number(charge.chargePriceKRW)?.toLocaleString(
-                                    "ko-KR",
-                                    {
-                                      style: "currency",
-                                      currency: "KRW",
-                                    }
-                                  )
-                                : Number(
-                                    charge.chargePriceGlobal
-                                  )?.toLocaleString("en-US", {
-                                    style: "currency",
-                                    currency: info.currencyType,
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2,
-                                  })}
-                            </Text>
-                          </>
-                        </View>
-                      ))}
-
-                    <View
-                      style={[
-                        styles.inquiryPriceRow,
-                        { borderTop: "1px dotted #000" },
-                      ]}
-                    >
-                      <Text style={styles.inquiryPriceLabel}>
-                        TOTAL AMOUNT(
-                        {language === "KOR" ? "KRW" : info.currencyType})
-                      </Text>
-                      <Text style={styles.inquiryPriceValue}>
-                        {language === "KOR"
-                          ? finalTotals.totalSalesAmountKRW?.toLocaleString(
-                              "ko-KR",
-                              {
-                                style: "currency",
-                                currency: "KRW",
-                              }
-                            )
-                          : finalTotals.totalSalesAmountGlobal?.toLocaleString(
-                              "en-US",
-                              {
-                                style: "currency",
-                                currency: info.currencyType,
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              }
-                            )}
-                      </Text>
-                    </View>
-                  </View>
-                )}
-                {pdfType === "CREDITNOTE" && (
-                  <View
-                    style={[
-                      styles.inquiryTotalColumn,
-                      {
-                        alignItems: "flex-end",
-                        width: "50%",
-                        alignSelf: "flex-end",
-                      },
-                    ]}
-                  >
-                    <View
-                      style={[
-                        styles.inquiryPriceRow,
-                        { borderTop: "1px dotted #000" },
-                      ]}
-                    >
-                      <Text style={styles.inquiryPriceLabel}>
-                        TOTAL AMOUNT(
-                        {language === "KOR" ? "KRW" : info.currencyType})
-                      </Text>
-                      <Text style={styles.inquiryPriceValue}>
-                        {language === "KOR"
-                          ? items[0]?.salesAmountKRW?.toLocaleString("ko-KR", {
-                              style: "currency",
-                              currency: "KRW",
-                            })
-                          : items[0]?.salesAmountGlobal?.toLocaleString(
-                              "en-US",
-                              {
-                                style: "currency",
-                                currency: info.currencyType,
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              }
-                            )}
-                      </Text>
-                    </View>
-                  </View>
-                )}
-                <View style={[styles.inquiryTotalColumn]}>
-                  {pdfFooter.length > 0 && (
-                    <View style={[styles.inquiryInfoBox]} wrap>
-                      <View style={styles.inquiryInfoText}>
-                        <Text style={styles.inquiryInfoTitle}>REMARK</Text>
-                      </View>
-                      <View
-                        style={[
-                          styles.inquiryInfoText,
-                          {
-                            flexDirection: "column",
-                          },
-                        ]}
-                      >
-                        {pdfFooter.map((footer, index) => {
-                          const formattedText = footer.salesRemark
-                            .split("\n")
-                            .map((line) => line.trim())
-                            .join("\n");
-                          return (
-                            <View
-                              key={index}
-                              style={{
-                                flexDirection: "row",
-                                flexWrap: "wrap",
-                                marginBottom: 5,
-                              }}
-                            >
-                              <Text
-                                style={{
-                                  fontSize: 9,
-                                  lineHeight: 1.5,
-                                }}
-                              >
-                                {`${index + 1}. `}
-                                {formattedText}
-                              </Text>
-                            </View>
-                          );
-                        })}
-                      </View>
-                    </View>
-                  )}
-                </View>
+              {pdfType !== "CREDITNOTE" && (
                 <View
                   style={[
                     styles.inquiryTotalColumn,
-                    { alignItems: "flex-end" },
+                    {
+                      alignItems: "flex-end",
+                      width: "50%",
+                      alignSelf: "flex-end",
+                    },
                   ]}
                 >
-                  <Image
-                    src={signUrl}
-                    style={{
-                      width: 136,
-                      height: 100,
-                      objectFit: "contain",
-                    }}
-                  />
+                  {(dcInfo.dcPercent ||
+                    (invChargeList && invChargeList.length > 0)) && (
+                    <View
+                      style={[
+                        styles.inquiryPriceRow,
+                        { borderBottom: "1px dotted #000" },
+                      ]}
+                    >
+                      <Text style={styles.inquiryPriceLabel}>SUB TOTAL</Text>
+                      <Text style={styles.inquiryPriceValue}>
+                        {language === "KOR"
+                          ? totalSalesAmount?.toLocaleString("ko-KR", {
+                              style: "currency",
+                              currency: "KRW",
+                            })
+                          : totalSalesAmount?.toLocaleString("en-US", {
+                              style: "currency",
+                              currency: info.currencyType,
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                      </Text>
+                    </View>
+                  )}
+                  {dcInfo.dcPercent && dcInfo.dcPercent !== 0 && (
+                    <View style={styles.inquiryPriceRow}>
+                      <Text style={styles.inquiryPriceLabel}>
+                        DISCOUNT {dcInfo.dcPercent}%
+                      </Text>
+                      <Text style={styles.inquiryPriceValue}>
+                        -
+                        {language === "KOR"
+                          ? dcAmountGlobal?.toLocaleString("ko-KR", {
+                              style: "currency",
+                              currency: "KRW",
+                            })
+                          : dcAmountGlobal?.toLocaleString("en-US", {
+                              style: "currency",
+                              currency: info.currencyType,
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                      </Text>
+                    </View>
+                  )}
+                  {invChargeList &&
+                    invChargeList.length > 0 &&
+                    invChargeList.map((charge) => (
+                      <View style={styles.inquiryPriceRow}>
+                        <>
+                          <Text style={styles.inquiryPriceLabel}>
+                            {charge.customCharge}
+                          </Text>
+                          <Text style={styles.inquiryPriceValue}>
+                            {language === "KOR"
+                              ? Number(charge.chargePriceKRW)?.toLocaleString(
+                                  "ko-KR",
+                                  {
+                                    style: "currency",
+                                    currency: "KRW",
+                                  }
+                                )
+                              : Number(
+                                  charge.chargePriceGlobal
+                                )?.toLocaleString("en-US", {
+                                  style: "currency",
+                                  currency: info.currencyType,
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })}
+                          </Text>
+                        </>
+                      </View>
+                    ))}
+
+                  <View
+                    style={[
+                      styles.inquiryPriceRow,
+                      { borderTop: "1px dotted #000" },
+                    ]}
+                  >
+                    <Text style={styles.inquiryPriceLabel}>
+                      TOTAL AMOUNT(
+                      {language === "KOR" ? "KRW" : info.currencyType})
+                    </Text>
+                    <Text style={styles.inquiryPriceValue}>
+                      {language === "KOR"
+                        ? finalTotals.totalSalesAmountKRW?.toLocaleString(
+                            "ko-KR",
+                            {
+                              style: "currency",
+                              currency: "KRW",
+                            }
+                          )
+                        : finalTotals.totalSalesAmountGlobal?.toLocaleString(
+                            "en-US",
+                            {
+                              style: "currency",
+                              currency: info.currencyType,
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            }
+                          )}
+                    </Text>
+                  </View>
                 </View>
+              )}
+              {pdfType === "CREDITNOTE" && (
+                <View
+                  style={[
+                    styles.inquiryTotalColumn,
+                    {
+                      alignItems: "flex-end",
+                      width: "50%",
+                      alignSelf: "flex-end",
+                    },
+                  ]}
+                >
+                  <View
+                    style={[
+                      styles.inquiryPriceRow,
+                      { borderTop: "1px dotted #000" },
+                    ]}
+                  >
+                    <Text style={styles.inquiryPriceLabel}>
+                      TOTAL AMOUNT(
+                      {language === "KOR" ? "KRW" : info.currencyType})
+                    </Text>
+                    <Text style={styles.inquiryPriceValue}>
+                      {language === "KOR"
+                        ? items[0]?.salesAmountKRW?.toLocaleString("ko-KR", {
+                            style: "currency",
+                            currency: "KRW",
+                          })
+                        : items[0]?.salesAmountGlobal?.toLocaleString("en-US", {
+                            style: "currency",
+                            currency: info.currencyType,
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                    </Text>
+                  </View>
+                </View>
+              )}
+              <View style={[styles.inquiryTotalColumn]}>
+                {pdfFooter.length > 0 && (
+                  <View style={[styles.inquiryInfoBox]} wrap>
+                    <View style={styles.inquiryInfoText}>
+                      <Text style={styles.inquiryInfoTitle}>REMARK</Text>
+                    </View>
+                    <View
+                      style={[
+                        styles.inquiryInfoText,
+                        {
+                          flexDirection: "column",
+                        },
+                      ]}
+                    >
+                      {pdfFooter.map((footer, index) => {
+                        const formattedText = footer.salesRemark
+                          .split("\n")
+                          .map((line) => line.trim())
+                          .join("\n");
+                        return (
+                          <View
+                            key={index}
+                            style={{
+                              flexDirection: "row",
+                              flexWrap: "wrap",
+                              marginBottom: 5,
+                            }}
+                          >
+                            <Text
+                              style={{
+                                fontSize: 9,
+                                lineHeight: 1.5,
+                              }}
+                            >
+                              {`${index + 1}. `}
+                              {formattedText}
+                            </Text>
+                          </View>
+                        );
+                      })}
+                    </View>
+                  </View>
+                )}
+              </View>
+              <View
+                style={[styles.inquiryTotalColumn, { alignItems: "flex-end" }]}
+              >
+                <Image
+                  src={signUrl}
+                  style={{
+                    width: 136,
+                    height: 100,
+                    objectFit: "contain",
+                  }}
+                />
               </View>
             </View>
           </View>
         </View>
-        <Footer />
-      </Page>
+      </View>
+      <Footer />
+    </Page>
+  );
+
+  const pdfBody = (
+    <Document>
+      {renderPage(true)}
+      {renderPage(false)}
     </Document>
   );
 

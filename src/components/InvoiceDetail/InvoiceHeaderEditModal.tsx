@@ -164,7 +164,7 @@ const InvoiceHeaderEditModal = ({
 
       // IN ADVANCE인 경우 DATE 그대로 사용
       if (terms === "IN ADVANCE") {
-        form.setFieldsValue({ dueDate: date });
+        form.setFieldsValue({ dueDate: "IN ADVANCE" });
         return;
       }
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import styled from "styled-components";
 import { Button, Divider, FloatButton, message, Modal, Select } from "antd";
 import {
@@ -12,7 +12,6 @@ import dayjs, { Dayjs } from "dayjs";
 import {
   fetchDocData,
   fetchCompanyNames,
-  fetchItemData,
   submitInquiry,
   fetchInquiryDetail,
   searchInquiryWithMaker,
@@ -803,37 +802,9 @@ const MakeInquiry = () => {
         updateItemId(index, null);
         return;
       }
-
-      try {
-        const itemArray = await fetchAndProcessItemData(value);
-
-        // 아이템 코드 옵션 업데이트
-        updateItemCodeOptions(itemArray);
-      } catch (error) {
-        console.error("Error fetching item codes and suppliers:", error);
-      }
     },
     [handleInputChange]
   );
-
-  // 아이템 코드 검색
-  const fetchAndProcessItemData = async (value: string) => {
-    const { items } = await fetchItemData(value);
-    return Array.isArray(items) ? items : [items];
-  };
-
-  // 아이템 코드 옵션 업데이트
-  const updateItemCodeOptions = (itemArray: Item[]) => {
-    setItemCodeOptions(
-      itemArray.map((item) => ({
-        value: item.itemCode,
-        name: item.itemName,
-        key: item.itemId.toString(),
-        label: `${item.itemCode}: ${item.itemName}`,
-        itemId: item.itemId,
-      }))
-    );
-  };
 
   // 헤더 저장 핸들러
   const handleHeaderSave = (text: string) => {
