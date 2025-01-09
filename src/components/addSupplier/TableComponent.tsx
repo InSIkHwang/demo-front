@@ -60,11 +60,13 @@ const TableComponent = ({ items, setItems }: TableComponentProps) => {
   const [unitOptions, setUnitOptions] = useState<string[]>(["", "PCS", "SET"]);
   const inputRefs = useRef<(TextAreaRef | null)[][]>([]);
 
+  // 아이템 정렬
   useEffect(() => {
     const sorted = [...items].sort((a, b) => a.position! - b.position!);
     setItems(sorted);
   }, []);
 
+  // 아이템 변경 핸들러
   const handleInputChange = useCallback(
     (index: number, key: string, value: any) => {
       setItems((prev) => {
@@ -79,6 +81,7 @@ const TableComponent = ({ items, setItems }: TableComponentProps) => {
     []
   );
 
+  // 단위 변경 핸들러
   const handleUnitBlur = useCallback(
     (index: number, value: string) => {
       handleInputChange(index, "unit", value);
@@ -89,6 +92,7 @@ const TableComponent = ({ items, setItems }: TableComponentProps) => {
     [handleInputChange]
   );
 
+  // 모든 행에 단위 적용
   const applyUnitToAllRows = useCallback((selectedUnit: string) => {
     setItems((prev) =>
       prev.map((item) => ({
@@ -98,6 +102,7 @@ const TableComponent = ({ items, setItems }: TableComponentProps) => {
     );
   }, []);
 
+  // 다음 행 포커스 핸들러
   const handleNextRowKeyDown = useCallback(
     (
       e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -135,6 +140,7 @@ const TableComponent = ({ items, setItems }: TableComponentProps) => {
     []
   );
 
+  // 아이템 추가 핸들러
   const handleAddItem = useCallback((index: number) => {
     setItems((prev) => {
       const newItems = [...prev];
@@ -164,6 +170,7 @@ const TableComponent = ({ items, setItems }: TableComponentProps) => {
     });
   }, []);
 
+  // 아이템 삭제 핸들러
   const handleDeleteItem = useCallback((index: number) => {
     setItems((prev) => {
       const newItems = prev.filter((_, idx) => idx !== index);
@@ -176,6 +183,7 @@ const TableComponent = ({ items, setItems }: TableComponentProps) => {
     });
   }, []);
 
+  // 테이블 열 정의
   const columns: ColumnsType<any> = [
     {
       title: "Actions",
@@ -207,6 +215,7 @@ const TableComponent = ({ items, setItems }: TableComponentProps) => {
       key: "no",
       width: 60,
       render: (_: any, record: any, index: number) => {
+        // 아이템 필터링 후 인덱스 계산
         const filteredIndex = items
           .filter((item: any) => item.itemType === "ITEM")
           .indexOf(record);

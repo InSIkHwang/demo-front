@@ -7,9 +7,6 @@ import {
   AutoComplete,
   Tag,
   message,
-  List,
-  Modal,
-  Checkbox,
   Tooltip,
 } from "antd";
 import styled from "styled-components";
@@ -37,39 +34,6 @@ const SearchBox = styled.div`
   margin-top: 10px;
   display: flex;
   align-items: baseline;
-`;
-
-const StyledListItem = styled(List.Item)`
-  display: flex;
-  padding: 12px 0;
-  color: rgba(0, 0, 0, 0.88);
-  justify-content: flex-start;
-  align-items: flex-start;
-  flex-wrap: wrap;
-`;
-
-const MakerTitle = styled.h3`
-  width: 100%;
-  margin: 0;
-  position: relative;
-  font-size: 16px;
-  color: #333;
-`;
-
-const SupplierContainer = styled.div`
-  margin-top: 8px;
-  display: flex;
-  flex-wrap: wrap;
-`;
-
-const SupplierItem = styled.div`
-  display: flex;
-  align-items: center;
-  margin: 8px 0;
-`;
-
-const StyledCheckbox = styled(Checkbox)`
-  margin-right: 8px;
 `;
 
 const StyledTag = styled(Tag)`
@@ -153,6 +117,7 @@ const FormComponent = ({
     MakerSupplierList[]
   >([]);
 
+  // 카테고리 목록 로드
   useEffect(() => {
     const fetchCategoryList = async () => {
       try {
@@ -166,6 +131,7 @@ const FormComponent = ({
     fetchCategoryList();
   }, []);
 
+  // 모달 열기
   const showModal = (type: string) => {
     setSelectedType(type);
     setSupplierSearch("");
@@ -175,11 +141,13 @@ const FormComponent = ({
     setIsModalVisible(true);
   };
 
+  // 모달 닫기
   const handleModalClose = () => {
     setIsModalVisible(false);
     setMakerSearch("");
   };
 
+  // 선택된 매입처 추가
   const handleAddSelectedSuppliers = () => {
     setSelectedSuppliers((prevSuppliers) => {
       const uniqueIds = new Set(prevSuppliers.map((supplier) => supplier.id));
@@ -192,6 +160,7 @@ const FormComponent = ({
     handleModalClose();
   };
 
+  // 체크박스 변경 핸들러
   const handleCheckboxChange = (supplier: { id: any }) => {
     setCheckedSuppliers((prevChecked) => {
       if (prevChecked.some((item) => item.id === supplier.id)) {
@@ -202,6 +171,7 @@ const FormComponent = ({
     });
   };
 
+  // 매입처 검색 핸들러
   const handleSupplierSearch = async (value: string) => {
     setSupplierSearch(value);
     if (value) {
@@ -231,6 +201,7 @@ const FormComponent = ({
     }
   };
 
+  // 메이커 검색 핸들러
   const handleMakerSearch = async (
     value: string,
     categoryType: string | null
@@ -267,6 +238,7 @@ const FormComponent = ({
     }
   };
 
+  // 검색 핸들러
   const handleSearch = (value: string, categoryType: string | null) => {
     if (selectedType === "SUPPLIER") {
       handleSupplierSearch(value);
@@ -275,6 +247,7 @@ const FormComponent = ({
     }
   };
 
+  // 중복 제거 함수
   const removeListDuplicates = (list: any[]) => {
     const uniqueItems: any[] = [];
     const seenIds = new Set();
@@ -290,6 +263,7 @@ const FormComponent = ({
     return uniqueItems;
   };
 
+  // 카테고리 검색 핸들러
   const handleCategorySearch = (searchText: string) => {
     setCategoryWord(searchText);
     if (searchText.length > 0) {

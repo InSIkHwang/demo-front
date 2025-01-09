@@ -97,6 +97,7 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
     id: number;
   } | null>(null);
 
+  // 입력 핸들러
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
@@ -119,8 +120,8 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
       }
     };
 
+    // 7자리 이상일 때만 imoNumber 검사
     const checkImoAndHullUnique = async () => {
-      // 7자리 이상일 때만 imoNumber 검사
       const isImoValid =
         formData.imoNumber && (formData.imoNumber + "").toString().length >= 7
           ? await checkUnique("imo-number", formData.imoNumber)
@@ -135,7 +136,7 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
     checkImoAndHullUnique();
   }, [formData.imoNumber, formData.hullNumber]);
 
-  // Fetch customer suggestions
+  // 매입처 검색 함수
   const fetchCustomerSuggestions = async (customerName: string) => {
     if (!(customerName + "").trim()) {
       setCustomerSuggestions([]);
@@ -157,6 +158,7 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
     }
   };
 
+  // 매입처 검색 핸들러
   const handleSearch = (value: string) => {
     if (value !== selectedCustomer?.companyName) {
       setSelectedCustomer(null);
@@ -164,6 +166,7 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
     fetchCustomerSuggestions(value);
   };
 
+  // 매입처 선택 핸들러
   const handleSelectCustomer = (value: string, option: any) => {
     const selected = option as any;
     setFormData({
@@ -176,9 +179,10 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
       id: selected.id,
     });
     setCustomerSuggestions([]);
-    setCustomerError(null); // Clear any previous error when a customer is selected
+    setCustomerError(null); // 이전 오류 제거
   };
 
+  // 데이터 생성 함수
   const postCreate = async () => {
     try {
       await axios.post(`/api/vessels`, {
@@ -203,6 +207,7 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
     }
   };
 
+  // 제출 핸들러
   const handleSubmit = async (values: any) => {
     // if (!isImoUnique) return;
 
