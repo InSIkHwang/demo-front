@@ -43,8 +43,8 @@ const PDFDownloadTable = ({
   const [headerPdfType, setHeaderPdfType] = useState<string>("INVOICE");
   const [headerOriginChk, setHeaderOriginChk] = useState<string>("both");
 
-  // itemTypeOption이 변경될 때마다 items 상태 업데이트
-  useEffect(() => {
+  // 아이템 초기화를 위한 별도 함수
+  const initializeItems = useCallback(() => {
     const newItems = itemTypeOption.map((option) => ({
       pdfType: headerPdfType,
       downloadChk: allChecked,
@@ -53,13 +53,12 @@ const PDFDownloadTable = ({
       itemType: option,
     }));
     setItems(newItems);
-  }, [
-    itemTypeOption,
-    headerPdfType,
-    headerOriginChk,
-    allChecked,
-    generateFileName,
-  ]);
+  }, [itemTypeOption]);
+
+  // useEffect에서는 itemTypeOption이 변경될 때만 초기화
+  useEffect(() => {
+    initializeItems();
+  }, [itemTypeOption, initializeItems]);
 
   // PDF 유형 변경 함수
   const handlePdfTypeChange = (value: string) => {
@@ -156,7 +155,14 @@ const PDFDownloadTable = ({
 
   const handleHeaderOriginChange = (value: string) => {
     setHeaderOriginChk(value);
-    setItems(items.map((item) => ({ ...item, originChk: value })));
+    // originChk만 업데이트하고 다른 속성은 유지
+    setItems(
+      items.map((item) => ({
+        ...item,
+        originChk: value,
+        downloadChk: item.downloadChk, // 기존 downloadChk 값 유지
+      }))
+    );
   };
 
   const handleItemChange = (

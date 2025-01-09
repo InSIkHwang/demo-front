@@ -48,7 +48,8 @@ const CreditNoteChargePopover = ({
   const [form] = Form.useForm();
   const [open, setOpen] = useState(false);
 
-  const handleChargeChange = (
+  // 입력 값 변경 시 해당 필드만 업데이트
+  const handleChargeInputChange = (
     index: number,
     field: keyof InvoiceChargeListIF,
     value: string | number
@@ -56,22 +57,38 @@ const CreditNoteChargePopover = ({
     const newList = [...invoiceChargeList];
     const charge = { ...newList[index] };
 
-    if (field === "chargePriceKRW") {
-      charge.chargePriceKRW = Number(value);
-      charge.chargePriceGlobal = Number((Number(value) / currency).toFixed(2));
-    } else if (field === "chargePriceGlobal") {
-      charge.chargePriceGlobal = Number(value);
-      charge.chargePriceKRW = Math.round(Number(value) * currency);
-    } else if (field === "customCharge" && value === "CREDIT NOTE") {
+    if (field === "customCharge" && value === "CREDIT NOTE") {
       charge.customCharge = "CREDIT NOTE";
+    } else {
+      (charge[field] as string | number) = value;
+    }
+
+    newList[index] = charge;
+    setInvoiceChargeList(newList);
+  };
+
+  // blur 이벤트 발생 시 계산 로직 실행
+  const handleChargeBlur = (
+    index: number,
+    field: keyof InvoiceChargeListIF
+  ) => {
+    const newList = [...invoiceChargeList];
+    const charge = { ...newList[index] };
+
+    if (field === "chargePriceKRW") {
+      const krwValue = Number(charge.chargePriceKRW);
+      charge.chargePriceKRW = krwValue;
+      charge.chargePriceGlobal = Number((krwValue / currency).toFixed(2));
+    } else if (field === "chargePriceGlobal") {
+      const globalValue = Number(charge.chargePriceGlobal);
+      charge.chargePriceGlobal = globalValue;
+      charge.chargePriceKRW = Math.round(globalValue * currency);
+    } else if (charge.customCharge === "CREDIT NOTE") {
       // 총액의 10%로 계산하고 소수점 셋째자리에서 반올림
       charge.chargePriceKRW = Math.round(finalTotals.totalSalesAmountKRW * 0.1);
       charge.chargePriceGlobal = Number(
         (finalTotals.totalSalesAmountGlobal * 0.1).toFixed(2)
       );
-    } else {
-      //필드 타입 명시적으로 추가
-      (charge[field] as string | number) = value;
     }
 
     newList[index] = charge;
@@ -111,8 +128,9 @@ const CreditNoteChargePopover = ({
               <AutoComplete
                 value={charge.customCharge}
                 onChange={(value) =>
-                  handleChargeChange(index, "customCharge", value)
+                  handleChargeInputChange(index, "customCharge", value)
                 }
+                onBlur={() => handleChargeBlur(index, "customCharge")}
                 style={{ width: "100%" }}
                 options={[
                   { value: "CREDIT NOTE", label: "CREDIT NOTE" },
@@ -130,8 +148,13 @@ const CreditNoteChargePopover = ({
                   type="number"
                   value={charge.chargePriceKRW}
                   onChange={(e) =>
-                    handleChargeChange(index, "chargePriceKRW", e.target.value)
+                    handleChargeInputChange(
+                      index,
+                      "chargePriceKRW",
+                      e.target.value
+                    )
                   }
+                  onBlur={() => handleChargeBlur(index, "chargePriceKRW")}
                   placeholder="KRW Amount"
                   addonAfter="₩"
                 />
@@ -140,12 +163,13 @@ const CreditNoteChargePopover = ({
                   type="number"
                   value={charge.chargePriceGlobal}
                   onChange={(e) =>
-                    handleChargeChange(
+                    handleChargeInputChange(
                       index,
                       "chargePriceGlobal",
                       e.target.value
                     )
                   }
+                  onBlur={() => handleChargeBlur(index, "chargePriceGlobal")}
                   placeholder="Global Amount"
                   addonAfter="F"
                 />
