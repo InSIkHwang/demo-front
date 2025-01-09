@@ -197,6 +197,7 @@ const MakeOffer = () => {
     loadOfferDetail();
   }, []);
 
+  // 단축키 저장 핸들러
   const handleKeyboardSave = useCallback(
     async (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
@@ -214,6 +215,7 @@ const MakeOffer = () => {
     [activeKey, formValues.refNumber]
   );
 
+  // 단축키 저장 이벤트 핸들러 등록
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
@@ -247,6 +249,7 @@ const MakeOffer = () => {
     [roundToTwoDecimalPlaces]
   );
 
+  // 입력 핸들러
   const handleInputChange = useCallback(
     (index: number, key: keyof ItemDetailType, value: any) => {
       setCurrentDetailItems((prevItems: ItemDetailType[]) => {
@@ -254,6 +257,7 @@ const MakeOffer = () => {
         if (prevItems[index][key] === value) return prevItems;
 
         const newItems = [...prevItems];
+        // 타입, 리마크 변경 시 가격 초기화
         const shouldResetPrices =
           (key === "itemType" && value !== "ITEM" && value !== "DASH") ||
           (key === "itemRemark" && value);
@@ -285,11 +289,14 @@ const MakeOffer = () => {
     []
   );
 
+  // 총 금액 계산 함수
   const calculateTotalAmount = useCallback(
     (price: number, qty: number) => roundToTwoDecimalPlaces(price * qty),
     []
   );
 
+  //환율 변경 시 모든 아이템의 글로벌 가격을 업데이트하는 함수
+  //KRW 가격을 기준으로 현재 설정된 환율에 따라 글로벌 가격을 재계산
   const updateGlobalPrices = useCallback(() => {
     setCurrentDetailItems((prevItems) => {
       if (!prevItems || !currentSupplierInfo) return prevItems;
@@ -491,12 +498,14 @@ const MakeOffer = () => {
     setIsLoading(false);
   };
 
+  // 가격 입력 핸들러
   const handlePriceInputChange = (
     index: number,
     key: keyof ItemDetailType,
     value: any,
     currency: number
   ) => {
+    // 현재 선택된 아이템의 가격을 업데이트하는 함수
     setCurrentDetailItems((prevItems) => {
       const currentItem = prevItems[index];
       if (!currentItem) return prevItems;
@@ -602,6 +611,7 @@ const MakeOffer = () => {
     });
   };
 
+  // 폼 변경 핸들러
   const handleFormChange = <K extends keyof typeof formValues>(
     key: K,
     value: (typeof formValues)[K]
@@ -610,13 +620,16 @@ const MakeOffer = () => {
     setNewDocumentInfo((prev) => (prev ? { ...prev, [key]: value } : null));
   };
 
+  // 마진 변경 핸들러
   const handleMarginChange = (index: number, marginValue: number) => {
     const updatedItems = [...currentDetailItems];
     const currentItem = updatedItems[index];
 
+    // 현재 아이템의 매입 가격과 수량을 가져옴
     const purchasePriceKRW = currentItem.purchasePriceKRW || 0;
     const qty = currentItem.qty || 0;
 
+    // 마진 변경 시 판매가격 계산
     const salesPriceKRW = Math.round(
       purchasePriceKRW * (1 + marginValue / 100)
     );
@@ -640,14 +653,17 @@ const MakeOffer = () => {
     setCurrentDetailItems(updatedItems);
   };
 
+  // 저장 핸들러
   const handleSave = async (tabChange: boolean, activeKeyParam: string) => {
     if (!currentDetailItems || currentDetailItems.length === 0) {
       message.error("Please add an item");
       return;
     }
 
+    // 저장 전에 할인 및 수수료 적용
     applyDcAndCharge("single");
 
+    // 현재 아이템 데이터를 포맷팅하여 저장
     const formattedData = currentDetailItems.map((item: ItemDetailType) => ({
       position: item.position,
       itemDetailId: item.itemDetailId,
@@ -759,23 +775,28 @@ const MakeOffer = () => {
     }
   };
 
+  // PDF 미리보기 핸들러
   const handlePDFPreview = () => {
     applyDcAndCharge("multiple");
     setShowPDFPreview((prevState) => !prevState);
   };
 
+  // 언어 변경 핸들러
   const handleLanguageChange = (value: string) => {
     setLanguage(value);
   };
 
+  // 헤더 모달 열기 핸들러
   const handleOpenHeaderModal = () => {
     setHeaderEditModalVisible(true);
   };
 
+  // 헤더 모달 닫기 핸들러
   const handleCloseHeaderModal = () => {
     setHeaderEditModalVisible(false);
   };
 
+  // 헤더 저장 핸들러
   const handleHeaderSave = async (
     header: HeaderFormData,
     footer: { quotationRemarkId: number | null; quotationRemark: string }[]
@@ -815,14 +836,17 @@ const MakeOffer = () => {
     }
   };
 
+  // 메일 발송 모달 열기 핸들러
   const showMailSenderModal = () => {
     setIsMailSenderVisible(true);
   };
 
+  // 메일 발송 모달 확인 핸들러
   const handleMailSenderOk = () => {
     setIsMailSenderVisible(false);
   };
 
+  // 메일 발송 모달 취소 핸들러
   const handleMailSenderCancel = () => {
     setIsMailSenderVisible(false);
   };
@@ -850,6 +874,7 @@ const MakeOffer = () => {
   const convertToGlobal = (amount: number, exchangeRate: number) =>
     roundToTwoDecimalPlaces(amount / exchangeRate);
 
+  // 공통 함수: 할인 및 수수료 적용
   const applyDcAndCharge = (mode: string) => {
     if (mode === "single" && !currentDetailItems) return;
     if (mode === "multiple" && combinedItemDetails.length === 0) {
@@ -928,6 +953,7 @@ const MakeOffer = () => {
       "chargePriceGlobal"
     );
 
+    // 할인 및 수수료 적용된 총액 계산
     const updatedTotalSalesAmountKRW =
       newTotalSalesAmountKRW + chargePriceKRWTotal;
     const updatedTotalSalesAmountGlobal =
@@ -1006,6 +1032,7 @@ const MakeOffer = () => {
     }
   }, [combinedItemDetails, activeKey]);
 
+  // 환율 변경 시 실행되는 useEffect
   useEffect(() => {
     if (combinedItemDetails.length > 0) {
       const timer = setTimeout(() => {
@@ -1024,6 +1051,7 @@ const MakeOffer = () => {
   ): boolean => {
     if (currentItems.length !== savedItems.length) return false;
 
+    // 모든 아이템을 순회하며 비교
     return currentItems.every((currentItem, index) => {
       const savedItem = savedItems[index];
       return (
@@ -1147,6 +1175,7 @@ const MakeOffer = () => {
 
     setSelectedSupplierIds(values);
 
+    // 모든 아이템을 순회하며 비교
     if (dataSource?.response) {
       const selectedItems = dataSource.response
         .filter((resp) =>
@@ -1208,10 +1237,12 @@ const MakeOffer = () => {
     setCombinedItemDetails(memoizedItems);
   }, [memoizedItems, dataSource?.response, selectedSupplierIds]);
 
+  // 매입처 탭 렌더링 함수
   const renderSupplierTabs = () => {
     if (!dataSource?.response || !currentDetailItems || !currentSupplierInfo)
       return null;
 
+    // 매입처 탭 추가 핸들러
     const handleAddSupplierTab = (mode: string) => {
       if (!dataSource?.documentInfo?.documentNumber) {
         message.error("Document number is missing.");
@@ -1236,6 +1267,7 @@ const MakeOffer = () => {
       );
     };
 
+    // 매입처 탭 삭제 핸들러
     const handleDeleteSupplier = async (
       inquiryId: number,
       supplierName: string
@@ -1259,6 +1291,7 @@ const MakeOffer = () => {
       });
     };
 
+    // 매입처 탭 렌더링
     const items = dataSource.response.map((supplier) => ({
       key: supplier.inquiryId.toString(),
       label: (
@@ -1360,6 +1393,7 @@ const MakeOffer = () => {
     );
   };
 
+  // PDF 다운로드 핸들러
   const clickPdfDownload = async () => {
     applyDcAndCharge("multiple");
 
@@ -1385,10 +1419,9 @@ const MakeOffer = () => {
     }
   };
 
+  // PDF 다운로드 핸들러
   const handlePDFDownload = async () => {
     try {
-      console.log(pdfHeader);
-
       const doc = (
         <OfferPDFDocument
           info={newDocumentInfo!}

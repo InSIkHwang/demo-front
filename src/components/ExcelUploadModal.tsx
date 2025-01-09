@@ -62,6 +62,7 @@ const ExcelUploadModal = ({
   ];
 
   const handleExcelUpload = (file: any) => {
+    // 데이터 초기화
     setExcelData([]);
     setFileList([file]);
 
@@ -99,6 +100,7 @@ const ExcelUploadModal = ({
     return false;
   };
 
+  // 가격 계산 함수
   const calculatePricing = (mappedRow: any, currency: number, type: string) => {
     const purchasePriceKRW = parseFloat(mappedRow.purchasePriceKRW) || 0;
     const purchasePriceGlobal = parseFloat(mappedRow.purchasePriceGlobal) || 0;
@@ -115,11 +117,13 @@ const ExcelUploadModal = ({
           Math.round(purchasePriceGlobal * currency) || 0;
       }
 
+      // 매입 금액 계산
       mappedRow.purchaseAmountKRW =
         Math.round(mappedRow.purchasePriceKRW * qty) || 0; // 소수점 제거
       mappedRow.purchaseAmountGlobal =
         parseFloat((mappedRow.purchasePriceGlobal * qty).toFixed(2)) || 0;
 
+      // 마진 계산
       if (marginPercent) {
         const marginValueKRW = (purchasePriceKRW * marginPercent) / 100;
         const marginValueGlobal = (purchasePriceGlobal * marginPercent) / 100;
@@ -172,6 +176,7 @@ const ExcelUploadModal = ({
         mappedRow.margin = marginPercent;
       }
 
+      // 매출 금액 계산
       mappedRow.salesAmountKRW = Math.round(mappedRow.salesPriceKRW * qty) || 0; // 소수점 제거
       mappedRow.salesAmountGlobal =
         parseFloat((mappedRow.salesPriceGlobal * qty).toFixed(2)) || 0;
@@ -188,7 +193,9 @@ const ExcelUploadModal = ({
     mappedRow.salesAmountGlobal = mappedRow.salesAmountGlobal || 0;
   };
 
+  // 적용 핸들러
   const handleApplyExcelData = () => {
+    // 데이터 매핑
     const mappedData = excelData
       .map((row) => {
         const mappedRow: any = {};
@@ -213,6 +220,7 @@ const ExcelUploadModal = ({
           }
         });
 
+        // itemType 기본값 설정
         if (
           mappedRow["itemType"] === "+" ||
           mappedRow["itemType"] === "MAKER"
@@ -242,6 +250,7 @@ const ExcelUploadModal = ({
     onApply(mappedData);
   };
 
+  // 덮어쓰기 핸들러
   const handleOverwriteExcelData = () => {
     const mappedData = excelData
       .map((row) => {
@@ -297,6 +306,7 @@ const ExcelUploadModal = ({
     onOverWrite(mappedData);
   };
 
+  // 매핑 변경 핸들러
   const handleMappingChange = (fileHeader: string, selectedHeader: string) => {
     setHeaderMapping((prev) => ({
       ...prev,
@@ -304,12 +314,14 @@ const ExcelUploadModal = ({
     }));
   };
 
+  // 행 삭제 핸들러
   const handleDeleteRow = (index: number) => {
     const newData = [...excelData];
     newData.splice(index, 1); // 선택한 인덱스의 행 삭제
     setExcelData(newData); // 새로운 데이터로 상태 업데이트
   };
 
+  // 표시할 헤더 설정
   const displayHeaders = availableHeaders.map((header) => {
     return header === "itemCode" ? "partNo" : header;
   });

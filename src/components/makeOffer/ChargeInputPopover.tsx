@@ -58,10 +58,12 @@ const ChargeInputPopover = ({
   applyDcAndCharge,
   finalTotals,
 }: ChargeComponentProps) => {
+  // 할인 계산 함수
   const calculateDcKrw = (totalSalesAmountKRW: number, value: number) => {
     return Math.round(totalSalesAmountKRW * (value / 100));
   };
 
+  // 할인 계산 함수
   const calculateDcPercentFromKrw = (
     value: number,
     totalSalesAmountKRW: number
@@ -69,10 +71,12 @@ const ChargeInputPopover = ({
     return Number(((value / totalSalesAmountKRW) * 100).toFixed(2));
   };
 
+  // 할인 계산 함수
   const calculateDcGlobal = (totalSalesAmount: number, dcPercent: number) => {
     return Number((totalSalesAmount * (dcPercent / 100)).toFixed(2));
   };
 
+  // 할인율 변경 핸들러
   const handleDcChange = useCallback(
     (key: string, value: number) => {
       setDcInfo((prevInfo) => {
@@ -80,6 +84,7 @@ const ChargeInputPopover = ({
         const { totalSalesAmountUnDcKRW, totalSalesAmountUnDcGlobal } =
           finalTotals;
 
+        // 할인율 변경 시 할인 금액 계산
         if (key === "dcPercent") {
           newDcInfo.dcKrw = calculateDcKrw(totalSalesAmountUnDcKRW, value);
           newDcInfo.dcGlobal = calculateDcGlobal(
@@ -87,6 +92,7 @@ const ChargeInputPopover = ({
             value
           );
         } else if (key === "dcKrw") {
+          // 할인 금액 변경 시 할인율 계산
           newDcInfo.dcPercent = calculateDcPercentFromKrw(
             value,
             totalSalesAmountUnDcKRW
@@ -96,6 +102,7 @@ const ChargeInputPopover = ({
             newDcInfo.dcPercent
           );
         } else if (key === "dcGlobal") {
+          // 할인 금액 변경 시 할인율 계산
           newDcInfo.dcPercent = Number(
             ((value / totalSalesAmountUnDcGlobal) * 100).toFixed(2)
           );
@@ -111,6 +118,7 @@ const ChargeInputPopover = ({
     [finalTotals, setDcInfo]
   );
 
+  // 차지 변경 핸들러
   const handleChargeChange = (
     index: number,
     key: string,
@@ -121,7 +129,7 @@ const ChargeInputPopover = ({
         if (idx === index) {
           const newCharge = { ...charge, [key]: value };
 
-          // Calculate the other field based on the conversion rate
+          // 환율 변경 시 차지 계산
           if (key === "chargePriceKRW") {
             newCharge.chargePriceGlobal = Number(
               ((value as number) / currency).toFixed(2)
@@ -139,6 +147,7 @@ const ChargeInputPopover = ({
     );
   };
 
+  // 새로운 차지 추가 핸들러
   const addNewCharge = () => {
     const newCharge = {
       invChargeId: null,
@@ -150,10 +159,12 @@ const ChargeInputPopover = ({
     setInvChargeList((prevList) => [...prevList!, newCharge]);
   };
 
+  // 차지 삭제 핸들러
   const removeCharge = (index: number) => {
     setInvChargeList((prevList) => prevList!.filter((_, idx) => idx !== index));
   };
 
+  // 할인율, 금액 변경 시 할인 금액 계산
   useEffect(() => {
     handleDcChange("dcPercent", Number(dcInfo.dcPercent));
   }, [finalTotals, handleDcChange, dcInfo.dcPercent]);

@@ -49,6 +49,7 @@ const ShipListModal = ({ isVisible, onClose }: ShipListModalProps) => {
   const [selectedVessel, setSelectedVessel] = useState<Vessel | null>(null);
   const [totalCount, setTotalCount] = useState<number>();
 
+  // 데이터 로드 효과
   useEffect(() => {
     if (searchText) {
       fetchFilteredData();
@@ -57,6 +58,7 @@ const ShipListModal = ({ isVisible, onClose }: ShipListModalProps) => {
     }
   }, [currentPage, itemsPerPage]);
 
+  // 모달 열기 효과
   useEffect(() => {
     if (isDetailVesselModalOpen) {
       document.body.style.overflow = "hidden";
@@ -69,6 +71,7 @@ const ShipListModal = ({ isVisible, onClose }: ShipListModalProps) => {
     };
   }, [, isDetailVesselModalOpen]);
 
+  // 데이터 로드 함수
   const fetchData = async () => {
     try {
       const response = await axios.get("/api/vessels", {
@@ -87,6 +90,7 @@ const ShipListModal = ({ isVisible, onClose }: ShipListModalProps) => {
     }
   };
 
+  // 필터링된 데이터 로드 함수
   const fetchFilteredData = async () => {
     try {
       const params: any = {
@@ -114,6 +118,7 @@ const ShipListModal = ({ isVisible, onClose }: ShipListModalProps) => {
     }
   };
 
+  // 테이블 열 정의
   const columns = [
     {
       title: "Vessel Name",
@@ -143,15 +148,18 @@ const ShipListModal = ({ isVisible, onClose }: ShipListModalProps) => {
     },
   ];
 
+  // 페이지 변경 핸들러
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
+  // 페이지 크기 변경 핸들러
   const handlePageSizeChange = (current: number, size: number) => {
     setItemsPerPage(size);
     setCurrentPage(1);
   };
 
+  // 선박 상세 모달 열기 함수
   const openDetailVesselModal = (category: Vessel) => {
     setSelectedVessel(category);
     setIsDetailVesselModalOpen(true);

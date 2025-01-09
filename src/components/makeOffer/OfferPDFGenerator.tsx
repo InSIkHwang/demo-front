@@ -63,6 +63,7 @@ const OfferPDFGenerator = ({
     id: number | null;
   }>({ name: null, id: null, email: null });
 
+  // 매출처 정보 가져오기
   const fetchCustomerInfo = useCallback(async () => {
     const response = await fetchCustomerDetail(customerTag.id);
     const mappedResponse = {
@@ -73,8 +74,9 @@ const OfferPDFGenerator = ({
     setCustomerInfo(mappedResponse);
   }, [customerTag.id]);
 
+  // PDF 생성 및 메일 데이터 생성
   const generateAndSendPDFs = useCallback(async () => {
-    // Ensure customerInfo is correctly populated
+    // 매출처 정보가 완전하지 않은 경우 오류 메시지 표시
     if (customerInfo === null) {
       message.error("Customer info is incomplete.");
       return;
@@ -154,6 +156,7 @@ Thanks & Best Regards`,
     setPdfFileData,
   ]);
 
+  // 매출처 정보 가져오기
   useEffect(() => {
     fetchCustomerInfo();
   }, [fetchCustomerInfo]);

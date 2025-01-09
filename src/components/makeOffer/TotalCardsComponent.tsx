@@ -172,6 +172,7 @@ const TotalCardsComponent = ({
 }: TotalCardsProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
+  // 초기 렌더링 시 할인 및 차지 적용
   useEffect(() => {
     applyDcAndCharge(mode);
   }, []);
