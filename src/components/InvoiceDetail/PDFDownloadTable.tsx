@@ -1,4 +1,5 @@
 import { Button, Checkbox, Input, message, Select } from "antd";
+import PDFDownloadProgress from "./PDFDownloadProgress";
 
 import { Table } from "antd";
 import { useCallback, useEffect, useState } from "react";
@@ -14,7 +15,10 @@ export interface PDFDownloadItem {
 interface PDFDownloadTableProps {
   formValues: any;
   itemTypeOption: string[];
-  onDownload: (items: PDFDownloadItem[]) => void;
+  onDownload: (
+    items: PDFDownloadItem[],
+    updateProgress: (downloaded: number) => void
+  ) => Promise<void>;
 }
 
 const PDFDownloadTable = ({
@@ -42,6 +46,9 @@ const PDFDownloadTable = ({
   const [allChecked, setAllChecked] = useState(false);
   const [headerPdfType, setHeaderPdfType] = useState<string>("INVOICE");
   const [headerOriginChk, setHeaderOriginChk] = useState<string>("both");
+  const [downloading, setDownloading] = useState(false);
+  const [downloadedFiles, setDownloadedFiles] = useState(0);
+  const [totalFiles, setTotalFiles] = useState(0);
 
   // 아이템 초기화를 위한 별도 함수
   const initializeItems = useCallback(() => {
@@ -175,14 +182,33 @@ const PDFDownloadTable = ({
     setItems(newItems);
   };
 
-  const handleDownload = (e: React.MouseEvent<HTMLElement>) => {
+  const resetDownloadState = useCallback(() => {
+    setDownloading(false);
+    setDownloadedFiles(0);
+    setTotalFiles(0);
+  }, []);
+
+  const handleDownload = async (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault();
     const selectedItems = items.filter((item) => item.downloadChk);
     if (selectedItems.length === 0) {
       message.warning("Please select items to download.");
       return;
     }
-    onDownload(selectedItems);
+
+    setDownloading(true);
+    setDownloadedFiles(0);
+    setTotalFiles(
+      selectedItems.reduce((total, item) => {
+        return total + (item.originChk === "both" ? 2 : 1);
+      }, 0)
+    );
+
+    try {
+      await onDownload(selectedItems, setDownloadedFiles);
+    } finally {
+      setTimeout(resetDownloadState, 1000); // 1초 후 상태 초기화
+    }
   };
 
   return (
@@ -193,12 +219,17 @@ const PDFDownloadTable = ({
         pagination={false}
         rowKey={(record, index) => index?.toString() || ""}
       />
-      <div
-        style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}
-      >
-        <Button type="primary" onClick={handleDownload}>
-          Download Selected PDFs
-        </Button>
+      <div style={{ marginTop: 16 }}>
+        <PDFDownloadProgress
+          downloading={downloading}
+          downloadedFiles={downloadedFiles}
+          totalFiles={totalFiles}
+        />
+        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          <Button type="primary" onClick={handleDownload} loading={downloading}>
+            Download Selected PDFs
+          </Button>
+        </div>
       </div>
     </div>
   );
