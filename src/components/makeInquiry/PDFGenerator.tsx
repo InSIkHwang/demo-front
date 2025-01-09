@@ -40,6 +40,7 @@ const generateMailData = async (
 ) => {
   const mailDataList: emailSendData[] = [];
 
+  // 매입처별 메일 데이터 생성
   for (const supplierTag of selectedSupplierTag) {
     const supplierDetail = await fetchSupplierDetail(
       supplierTag.id,
@@ -105,19 +106,20 @@ const generateMailData = async (
           ? supplierTag.name
           : supplierTag.korName,
     };
-
+    // 메일 데이터 리스트에 추가
     mailDataList.push(mailData);
   }
+  // 메일 데이터 리스트 업데이트
   setMailDataList(mailDataList);
 };
 
+// PDF 파일 생성 함수
 export const generatePDFs = async (
   selectedSupplierTag: PDFGeneratorProps["selectedSupplierTag"],
   formValues: FormValues,
   getItemsForSupplier: (supplierId: number) => InquiryItem[],
   vesselInfo: VesselList | null,
   pdfHeader: string
-  // selectedSupplierIndex 파라미터 제거
 ): Promise<File[]> => {
   const updatedFiles: File[] = [];
   // 단일 공급처만 처리하도록 수정
@@ -128,14 +130,17 @@ export const generatePDFs = async (
     return [];
   }
 
+  // 매입처별 아이템 데이터 가져오기
   const supplierItems = getItemsForSupplier(supplierTag.id);
 
+  // 아이템 데이터 존재 여부 확인
   if (supplierItems.length < 1) {
     message.error(`No items selected for supplier: ${supplierTag.name}`);
     return [];
   }
 
   try {
+    // PDF 문서 생성
     const doc = (
       <PDFDocument
         formValues={formValues}
@@ -147,16 +152,20 @@ export const generatePDFs = async (
       />
     );
 
+    // PDF 문서를 Blob으로 변환
     const pdfBlob = await pdf(doc).toBlob();
+    // 파일 이름 생성
     const fileName =
       supplierTag.communicationLanguage === "ENG"
         ? `${supplierTag.name} REQUEST FOR QUOTATION ${formValues.docNumber}.pdf`
         : `${supplierTag.korName} 견적의뢰서 ${formValues.docNumber}.pdf`;
 
+    // 파일 생성
     const newFile = new File([pdfBlob], fileName, {
       type: "application/pdf",
     });
 
+    // 파일 리스트에 추가
     updatedFiles.push(newFile);
     return updatedFiles;
   } catch (error) {
@@ -176,7 +185,6 @@ const PDFGenerator = ({
   setMailDataList,
 }: PDFGeneratorProps) => {
   // 메일 데이터 생성 로직을 useEffect에서 실행
-
   useEffect(() => {
     generateMailData(
       selectedSupplierTag,

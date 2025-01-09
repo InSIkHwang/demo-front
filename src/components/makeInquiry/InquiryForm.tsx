@@ -165,6 +165,7 @@ interface InquiryFormProps {
 
 type Presets = Required<ColorPickerProps>["presets"][number];
 
+// 컬러 피커 프리셋
 const customPresets = {
   rainbow: [
     "#FF3333",
@@ -187,17 +188,20 @@ const customPresets = {
   default: ["#ffffff"],
 };
 
+// 컬러 피커 프리셋 생성
 const genPresets = (presets = presetPalettes) =>
   Object.entries(presets).map<Presets>(([label, colors]) => ({
     label,
     colors,
   }));
 
+// 컬러 피커 컴포넌트 속성
 interface ColorPickerComponentProps {
   onChange: (color: string) => void;
   defaultValue?: string;
 }
 
+// 컬러 피커 컴포넌트
 const ColorPickerComponent = ({
   onChange,
   defaultValue,
@@ -280,6 +284,7 @@ const InquiryForm = ({
     MakerSupplierList[]
   >([]);
 
+  // 카테고리 목록 로드
   useEffect(() => {
     const fetchCategoryList = async () => {
       try {
@@ -293,6 +298,7 @@ const InquiryForm = ({
     fetchCategoryList();
   }, []);
 
+  // 모달 표시 함수
   const showModal = (type: string) => {
     setSelectedType(type);
     setSupplierSearch("");
@@ -302,11 +308,13 @@ const InquiryForm = ({
     setIsModalVisible(true);
   };
 
+  // 모달 닫기 함수
   const handleModalClose = () => {
     setIsModalVisible(false);
     setMakerSearch("");
   };
 
+  // 선택된 매입처 추가 함수
   const handleAddSelectedSuppliers = () => {
     setSelectedSuppliers((prevSuppliers) => {
       const updatedSuppliers = [
@@ -335,6 +343,7 @@ const InquiryForm = ({
     });
   };
 
+  // 매입처 검증 함수
   const validateCustomer = () => {
     if (customerUnreg) {
       return {
@@ -348,6 +357,7 @@ const InquiryForm = ({
     return { status: undefined, message: undefined };
   };
 
+  // 선박 검증 함수
   const validateVessel = () => {
     if (vesselUnreg) {
       return {
@@ -361,6 +371,7 @@ const InquiryForm = ({
     return { status: undefined, message: undefined };
   };
 
+  // 매입처 검색 함수
   const handleSupplierSearch = async (value: string) => {
     setSupplierSearch(value);
     if (value) {
@@ -392,6 +403,7 @@ const InquiryForm = ({
     }
   };
 
+  // 메이커를 이용한 매입처 검색 함수
   const handleMakerSearch = async (
     value: string,
     categoryType: string | null
@@ -428,6 +440,7 @@ const InquiryForm = ({
     }
   };
 
+  // 검색 함수
   const handleSearch = (value: string, categoryType: string | null) => {
     if (selectedType === "SUPPLIER") {
       handleSupplierSearch(value);
@@ -436,6 +449,7 @@ const InquiryForm = ({
     }
   };
 
+  // 메이커 검색 모달 중복 제거 함수
   const removeListDuplicates = (list: any[]) => {
     const uniqueItems: any[] = [];
     const seenIds = new Set();
@@ -451,6 +465,7 @@ const InquiryForm = ({
     return uniqueItems;
   };
 
+  // 카테고리 검색 함수
   const handleCategorySearch = (searchText: string) => {
     setCategoryWord(searchText);
     if (searchText.length > 0) {

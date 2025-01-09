@@ -133,6 +133,7 @@ const SearchMakerModal = ({
   removeListDuplicates,
   setMakerSearch,
 }: SearchMakerModalProps) => {
+  // 디바운스된 검색 함수 생성
   const debouncedSearch = useCallback(
     debounce((value: string, categoryWord: string) => {
       onSearch(value, categoryWord);

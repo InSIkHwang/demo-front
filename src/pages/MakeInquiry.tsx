@@ -57,8 +57,6 @@ const Title = styled.h1`
   color: #333;
 `;
 
-const BtnGroup = styled(FloatButton.Group)``;
-
 // Constants
 interface FormValues {
   documentId: number | null;
@@ -123,6 +121,7 @@ const INITIAL_TABLE_VALUES: InquiryItem[] = [
   },
 ];
 
+// 공급업체 맵 생성 함수
 const getSupplierMap = (
   itemDetails: InquiryItem[]
 ): {
@@ -134,6 +133,7 @@ const getSupplierMap = (
   communicationLanguage: string;
   supplierRemark: string;
 }[] => {
+  // 공급업체 맵 생성
   const supplierMap = new Map<
     number,
     {
@@ -146,6 +146,7 @@ const getSupplierMap = (
       supplierRemark: string;
     }
   >();
+  // 아이템 상세 데이터 순회
   itemDetails.forEach((item) =>
     item.suppliers?.forEach((supplier: InquiryListSupplier) =>
       supplierMap.set(supplier.supplierId, {
@@ -159,6 +160,7 @@ const getSupplierMap = (
       })
     )
   );
+  // 공급업체 맵 값을 배열로 변환
   return Array.from(supplierMap.values());
 };
 
@@ -238,6 +240,7 @@ const MakeInquiry = () => {
   const [tables, setTables] = useState<InquiryTable[]>([]);
   const [currentTableNo, setCurrentTableNo] = useState<number>(1);
 
+  // 키보드 저장 핸들러
   const handleKeyboardSave = useCallback(
     async (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
@@ -265,6 +268,7 @@ const MakeInquiry = () => {
     [customerInquiryId, formValues.docNumber]
   );
 
+  // 키보드 저장 핸들러 등록
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
@@ -278,6 +282,7 @@ const MakeInquiry = () => {
     return () => window.removeEventListener("keydown", handler, true);
   }, [handleKeyboardSave]);
 
+  // 모달 토글 함수
   const modalActions = {
     header: [setHeaderEditModalVisible, () => {}],
     mail: [setIsMailSenderVisible, () => {}],
@@ -297,6 +302,7 @@ const MakeInquiry = () => {
     shipList: [setIsShipListModalOpen, () => {}],
   };
 
+  // 모달 토글 함수
   const setModalVisibility = (
     modalType: keyof typeof modalActions,
     isVisible: boolean
@@ -304,6 +310,7 @@ const MakeInquiry = () => {
     modalActions[modalType][0](isVisible);
   };
 
+  // 모달 토글 함수
   const toggleModal = (
     modalType: keyof typeof modalActions,
     isVisible: boolean
@@ -311,6 +318,7 @@ const MakeInquiry = () => {
     setModalVisibility(modalType, isVisible);
   };
 
+  // 문서 상세 데이터 로드
   const fetchDetail = useCallback(async () => {
     try {
       const data = await fetchInquiryDetail(Number(customerInquiryId));
@@ -322,7 +330,7 @@ const MakeInquiry = () => {
     }
   }, [customerInquiryId]);
 
-  // Load document data
+  // 문서 데이터 로드
   const loadDocData = useCallback(async () => {
     try {
       const docData = await fetchDocData();
@@ -361,16 +369,19 @@ const MakeInquiry = () => {
 
     resetState();
 
+    //customerInquiryId가 없으면 생성 모드
     if (!customerInquiryId) {
       setIsEditMode(false);
       setDocDataLoading(true);
       loadDocData();
     } else {
+      //customerInquiryId가 있으면 수정 모드
       fetchDetail();
       setDocDataLoading(false);
     }
   }, [customerInquiryId, loadDocData, fetchDetail]);
 
+  // 데이터 초기화 및 로드
   useEffect(() => {
     initializeData();
   }, [initializeData]);
@@ -420,6 +431,7 @@ const MakeInquiry = () => {
         []
       );
 
+      // 아이템 상세 데이터 정렬 및 포맷팅
       return allItemDetails
         .sort((a, b) => a.position - b.position)
         .map((item) => ({
@@ -451,6 +463,7 @@ const MakeInquiry = () => {
     setIsLoading(false);
   }, [docDataloading, customerInquiryId, inquiryDetail]);
 
+  // 문서 번호 중복 체크
   const checkDuplicateOnMount = useCallback(async () => {
     if (formValues.docNumber) {
       const isDuplicate = await chkDuplicateDocNum(
@@ -461,10 +474,12 @@ const MakeInquiry = () => {
     }
   }, [formValues.docNumber, customerInquiryId]);
 
+  // 문서 번호 중복 체크
   useEffect(() => {
     checkDuplicateOnMount();
   }, [checkDuplicateOnMount]);
 
+  // 매출처 데이터 초기화
   useEffect(() => {
     const resetCompanyData = () => {
       setSelectedCustomerId(null);
@@ -472,6 +487,7 @@ const MakeInquiry = () => {
       setVesselList([]);
     };
 
+    // 매출처에 맞는 선박 데이터 업데이트
     const updateVesselData = (selectedCustomer: any) => {
       setSelectedCustomerId(selectedCustomer.id);
       setVesselNameList(
@@ -484,6 +500,7 @@ const MakeInquiry = () => {
       setVesselList(selectedCustomer.vesselList);
     };
 
+    // 매출처 검색
     const searchCompanyName = async (customerName: string) => {
       try {
         const { isExist, customerDetailResponse } = await fetchCompanyNames(
@@ -524,6 +541,7 @@ const MakeInquiry = () => {
     isShipListModalOpen,
   ]);
 
+  // 선박 선택 업데이트
   useEffect(() => {
     const updateSelectedVessel = () => {
       const vessel = vesselList.find(
@@ -535,6 +553,7 @@ const MakeInquiry = () => {
     updateSelectedVessel();
   }, [formValues.vesselName, vesselList]);
 
+  // 매출처 자동완성 옵션 업데이트
   useEffect(() => {
     const getFilteredCompanyOptions = () => {
       const searchTerm = formValues.customer.toLowerCase();
@@ -555,12 +574,14 @@ const MakeInquiry = () => {
     setAutoCompleteOptions(filteredOptions);
   }, [companyNameList, formValues.customer]);
 
+  // 아이템 입력 변경 핸들러
   const handleInputChange = useCallback(
     (index: number, field: keyof InquiryItem, value: string | number) => {
       const updateItem = (item: InquiryItem) => ({
         ...item,
         [field]: value,
       });
+      // 아이템 업데이트
       setItems((prevItems) => {
         const updatedItems = [...prevItems];
         const itemToUpdate = updatedItems.find(
@@ -573,6 +594,7 @@ const MakeInquiry = () => {
         return updatedItems;
       });
 
+      // 테이블 업데이트
       setTables((prevTables) =>
         prevTables.map((table, tableIndex) => {
           if (tableIndex + 1 !== currentTableNo) return table;
@@ -592,6 +614,7 @@ const MakeInquiry = () => {
     [currentTableNo]
   );
 
+  // 폼 값 업데이트
   const handleFormChange = <K extends keyof typeof formValues>(
     key: K,
     value: (typeof formValues)[K]
@@ -599,6 +622,7 @@ const MakeInquiry = () => {
     setFormValues((prev) => ({ ...prev, [key]: value }));
   };
 
+  // 저장 버튼 클릭 핸들러
   const handleSubmit = async (): Promise<number | null> => {
     if (formValues.docNumber) {
       const isDuplicate = await chkDuplicateDocNum(
@@ -739,10 +763,12 @@ const MakeInquiry = () => {
 
       message.success("Saved successfully!");
 
+      // 문서 상세 데이터 로드
       const newInquiryDetail = await fetchInquiryDetail(
         Number(isEditMode ? customerInquiryId : response)
       );
 
+      // 문서 상세 페이지로 이동
       navigate(`/makeinquiry/${response}`, {
         state: { inquiry: newInquiryDetail },
       });
@@ -767,10 +793,12 @@ const MakeInquiry = () => {
     });
   };
 
+  // 아이템 코드 변경 핸들러
   const handleItemCodeChange = useCallback(
     async (index: number, value: string) => {
       handleInputChange(index, "itemCode", value?.trim());
 
+      // 아이템 코드가 비어있으면 아이템 ID를 null로 설정
       if ((value + "")?.trim() === "") {
         updateItemId(index, null);
         return;
@@ -779,6 +807,7 @@ const MakeInquiry = () => {
       try {
         const itemArray = await fetchAndProcessItemData(value);
 
+        // 아이템 코드 옵션 업데이트
         updateItemCodeOptions(itemArray);
       } catch (error) {
         console.error("Error fetching item codes and suppliers:", error);
@@ -787,11 +816,13 @@ const MakeInquiry = () => {
     [handleInputChange]
   );
 
+  // 아이템 코드 검색
   const fetchAndProcessItemData = async (value: string) => {
     const { items } = await fetchItemData(value);
     return Array.isArray(items) ? items : [items];
   };
 
+  // 아이템 코드 옵션 업데이트
   const updateItemCodeOptions = (itemArray: Item[]) => {
     setItemCodeOptions(
       itemArray.map((item) => ({
@@ -804,14 +835,17 @@ const MakeInquiry = () => {
     );
   };
 
+  // 헤더 저장 핸들러
   const handleHeaderSave = (text: string) => {
     setPdfHeader(text);
   };
 
+  // PDF 미리보기 토글 핸들러
   const handlePDFPreview = () => {
     setShowPDFPreview((prevState) => !prevState);
   };
 
+  // 언어 변경 핸들러
   const handleLanguageChange = useCallback((value: string, id: number) => {
     // tables 상태 업데이트를 통해 한 번에 처리
     setTables((prevTables) =>
@@ -833,6 +867,7 @@ const MakeInquiry = () => {
     );
   }, []);
 
+  // 검색 결과 로드
   const fetchInquirySearchResults = async () => {
     if (!inquirySearchMakerName) return;
     try {
@@ -843,10 +878,12 @@ const MakeInquiry = () => {
     }
   };
 
+  // 검색 수행
   const handleInquirySearch = () => {
-    fetchInquirySearchResults(); // 검색 수행
+    fetchInquirySearchResults();
   };
 
+  // 매입처 중복 제거 함수
   const removeDuplicates = (
     arr: {
       code: string;
@@ -868,6 +905,7 @@ const MakeInquiry = () => {
     });
   };
 
+  // 매입처 중복 제거
   const uniqueSuppliers = removeDuplicates(selectedSuppliers);
 
   // 선택된 supplier의 테이블 아이템들을 찾는 함수 추가
@@ -917,6 +955,7 @@ const MakeInquiry = () => {
     return Array.from(supplierMap.values());
   }, [tables]);
 
+  // 매입처 메모이제이션
   const memoizedSuppliers = useMemo(
     () => getAllTableSuppliers(),
     [getAllTableSuppliers]

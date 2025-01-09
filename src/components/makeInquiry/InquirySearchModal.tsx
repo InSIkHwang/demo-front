@@ -53,6 +53,7 @@ const InquirySearchModal = ({
   handleInquirySearch,
   setSelectedSuppliers,
 }: InquirySearchModalProps) => {
+  // 검색 목록 컬럼 정의
   const searchListColumns: ColumnsType<any> = [
     {
       title: "Inquiry Item Type",
@@ -70,10 +71,12 @@ const InquirySearchModal = ({
       key: "supplierList",
       render: (text, record) => (
         <div>
+          {/* 매입처 목록 렌더링 */}
           {record.supplierList.map((supplier: InquirySearchMakerSupplier) => (
             <Tag
               key={supplier.id}
               onClick={() => {
+                // 매입처 선택 핸들러
                 const selectedSupplier = {
                   id: supplier.id,
                   name: supplier.companyName,
@@ -84,11 +87,11 @@ const InquirySearchModal = ({
                   supplierRemark: supplier.supplierRemark || "",
                 };
 
-                // 새로운 공급업체 추가
+                // 새로운 매입처 추가
                 setSelectedSuppliers((prevSuppliers) => {
                   const newSuppliers = [...prevSuppliers, selectedSupplier];
 
-                  return newSuppliers; // 업데이트된 공급업체 리스트 반환
+                  return newSuppliers; // 업데이트된 매입처 리스트 반환
                 });
               }}
               style={{ cursor: "pointer" }}
@@ -101,6 +104,7 @@ const InquirySearchModal = ({
     },
   ];
 
+  // 상위 매입처 목록 컬럼 정의
   const bestSupplierList: ColumnsType<any> = [
     {
       title: "Supplier Code",
@@ -119,11 +123,11 @@ const InquirySearchModal = ({
               supplierRemark: record.communicationLanguage || "",
             };
 
-            // 새로운 공급업체 추가
+            // 새로운 매입처 추가
             setSelectedSuppliers((prevSuppliers) => {
               const newSuppliers = [...prevSuppliers, selectedSupplier];
 
-              return newSuppliers; // 업데이트된 공급업체 리스트 반환
+              return newSuppliers; // 업데이트된 매입처 리스트 반환
             });
           }}
           style={{ cursor: "pointer" }}

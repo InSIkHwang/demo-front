@@ -531,6 +531,10 @@ const InvoiceDetail = () => {
 
   const handlePdfTypeChange = (value: string) => {
     setPdfType(value);
+
+    if (value === "CREDITNOTE") {
+      setItemType("CREDIT NOTE");
+    }
   };
 
   const handleMultiplePDFDownload = useCallback(

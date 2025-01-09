@@ -171,6 +171,7 @@ const MailSenderModal = ({
 
   const navigate = useNavigate();
 
+  // 메일 폼 데이터 업데이트
   const handleInputChange = (
     supplierId: number,
     field: string,
@@ -185,6 +186,7 @@ const MailSenderModal = ({
     }));
   };
 
+  // 메일 폼 데이터 초기화
   useEffect(() => {
     const initializeMailData = async () => {
       setIsDataLoading(true);
@@ -219,6 +221,7 @@ const MailSenderModal = ({
     initializeMailData();
   }, [isMailSenderVisible, selectedSupplierTag, mailDataList]);
 
+  // 메일 폼 데이터 업데이트
   useEffect(() => {
     if (Object.keys(mailFormData).length > 0) {
       form.setFieldsValue({
@@ -233,6 +236,7 @@ const MailSenderModal = ({
     }
   }, [mailFormData, selectedSupplierTag]);
 
+  // 메일 폼 데이터 검증 및 업데이트
   const validateAndUpdateFields = () => {
     const currentValues = mailFormData;
     const missingFields: { [key: string]: string[] } = {};
@@ -273,10 +277,12 @@ const MailSenderModal = ({
     );
   };
 
+  // 메일 폼 데이터 검증 및 업데이트
   useEffect(() => {
     validateAndUpdateFields();
   }, [mailFormData, selectedSupplierTag]);
 
+  // 모든 매입처 선택 핸들러
   const handleSelectAllChange = (e: CheckboxChangeEvent) => {
     if (e.target.checked) {
       setSelectedSuppliers(
@@ -292,6 +298,7 @@ const MailSenderModal = ({
     }
   };
 
+  // 매입처 선택 핸들러
   const handleMailSelectionChange = (
     supplier: SelectedSupplier,
     checked: boolean
@@ -311,6 +318,7 @@ const MailSenderModal = ({
     });
   };
 
+  // 메일 전송 완료 핸들러
   const onFinish = async (values: any) => {
     if (selectedSuppliers.size === 0) {
       return message.error("There is no selected mail destination");
@@ -332,19 +340,23 @@ const MailSenderModal = ({
     });
 
     try {
+      // 매입처 저장
       const savedInquiryId = await handleSubmit();
       const inquiryId: number | null = savedInquiryId as number | null;
 
+      // 매입처 저장 체크 후 메일 전송
       if (inquiryId || mode === "addSupplier") {
         const results = [];
         const selectedSuppliersArray = Array.from(selectedSuppliers);
 
+        // 선택된 매입처 데이터 처리
         const selectedMailsData = selectedSuppliersArray
           .map((selected) => {
             const currentSupplier = selectedSupplierTag.find(
               (s) => s.id === selected.supplierId
             );
 
+            // 매입처 존재 여부 확인
             if (!currentSupplier) {
               console.error(
                 `Supplier with ID ${selected.supplierId} not found.`
@@ -376,20 +388,19 @@ const MailSenderModal = ({
             }
 
             if (currentSupplier) {
+              return {
+                supplier: currentSupplier,
+                mailData: {
+                  toRecipient: formMailData.toRecipient,
+                  subject: formMailData.subject,
+                  content: formMailData.content,
+                  ccRecipient: formMailData.ccRecipient,
+                  bccRecipient: formMailData.bccRecipient,
+                  supplierName: currentSupplier.name,
+                  supplierId: formMailData.supplierId,
+                },
+              };
             }
-
-            return {
-              supplier: currentSupplier,
-              mailData: {
-                toRecipient: formMailData.toRecipient,
-                subject: formMailData.subject,
-                content: formMailData.content,
-                ccRecipient: formMailData.ccRecipient,
-                bccRecipient: formMailData.bccRecipient,
-                supplierName: currentSupplier.name,
-                supplierId: formMailData.supplierId,
-              },
-            };
           })
           .filter((item) => item !== null);
 
@@ -416,6 +427,7 @@ const MailSenderModal = ({
             );
           }
 
+          // PDF 파일 생성
           const updatedFileData = [...uploadFile];
           const pdfFiles = await generatePDFs(
             [mailData.supplier],
@@ -441,6 +453,7 @@ const MailSenderModal = ({
             );
           }
 
+          // 아이템 데이터 업데이트
           const updateItemData = getItemsForSupplier(mailData.supplier.id).map(
             (item: any) => ({
               itemCode: item.itemCode || "",
@@ -454,6 +467,7 @@ const MailSenderModal = ({
             })
           );
 
+          // 메일 전송
           await sendInquiryMail(
             mode,
             values.docNumber,
@@ -470,6 +484,7 @@ const MailSenderModal = ({
           });
         }
 
+        // 모든 메일 전송 성공 여부 확인
         const allSuccess = results.every((r) => r.success);
         if (allSuccess) {
           message.success("All emails sent successfully!");
@@ -487,6 +502,7 @@ const MailSenderModal = ({
       message.error("An error occurred while sending emails.");
       const err = error as Error;
 
+      // 오류 상세 정보 저장
       const errorDetails = {
         message: err.message,
         stack: err.stack,
@@ -504,6 +520,7 @@ const MailSenderModal = ({
     }
   };
 
+  // 파일 업로드 핸들러
   const handleFileUpload = (file: any) => {
     setUploadFile((prevFileData: any) => [...prevFileData, file]);
   };
@@ -518,6 +535,7 @@ const MailSenderModal = ({
     });
   };
 
+  // 매입처별 탭 생성
   const tabsItems = selectedSupplierTag.map((supplier, index) => ({
     key: index.toString(),
     label: supplier.name || `Supplier ${index + 1}`,
@@ -615,6 +633,7 @@ const MailSenderModal = ({
     ),
   }));
 
+  // 메일 폼 데이터 검증 함수
   const validateFormData = (data: any, index: number) => {
     let isValid = true;
 
@@ -663,6 +682,7 @@ const MailSenderModal = ({
     return isValid;
   };
 
+  // 메일 폼 데이터 초기화
   useEffect(() => {
     if (!isMailSenderVisible) {
       setMissingFieldsState(null);

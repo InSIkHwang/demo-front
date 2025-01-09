@@ -132,6 +132,7 @@ const DetailInquiryModal = ({
   const [newDocumentNumber, setNewDocumentNumber] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
 
+  // 문서 상세 정보를 가져오는 useEffect 훅
   useEffect(() => {
     const fetchDetails = async () => {
       if (open) {
@@ -139,8 +140,11 @@ const DetailInquiryModal = ({
           setInquiryDetail(null);
           let response;
 
+          // COMPLEX 타입일 경우의 처리
           if (documentType === "COMPLEX") {
             response = await fetchComplexInquiryDetail(inquiryId);
+
+            // 중복 공급업체 제거 로직
             const uniqueSuppliers = response.inquiryItemDetails
               .flatMap((item: ComplexInquiryItemDetail) => item.suppliers)
               .reduce(
@@ -160,6 +164,7 @@ const DetailInquiryModal = ({
                 []
               );
 
+            // 응답 데이터 포맷팅
             const formattedResponse: InquiryResponse = {
               documentInfo: response.documentInfo,
               table: [
@@ -182,6 +187,7 @@ const DetailInquiryModal = ({
             };
             setInquiryDetail(formattedResponse);
           } else {
+            // 일반 문서 타입 처리
             response = await fetchInquiryDetail(inquiryId);
             setInquiryDetail(response);
           }
@@ -196,6 +202,7 @@ const DetailInquiryModal = ({
     fetchDetails();
   }, [open, inquiryId, documentType]);
 
+  // 문서 수정 페이지로 이동하는 핸들러
   const handleEditClick = () => {
     if (inquiryDetail) {
       const basePath =
@@ -208,13 +215,16 @@ const DetailInquiryModal = ({
     }
   };
 
+  // 복사 모달을 여는 핸들러
   const handleCopyClick = () => {
     setNewDocumentNumber(inquiryDetail!.documentInfo.documentNumber);
     setIsModalVisible(true);
   };
 
+  // 복사 모달에서 확인 버튼 클릭 핸들러
   const handleCopyOk = async () => {
     try {
+      // 문서 번호 중복 체크
       const isDuplicate = await chkDuplicateDocNum(
         newDocumentNumber,
         inquiryId
@@ -226,6 +236,7 @@ const DetailInquiryModal = ({
         return; // 중복일 경우 처리 중단
       }
 
+      // 문서 복사 API 호출
       const { inquiryId: newInquiryId } = await copyInquiry(
         inquiryDetail!.documentInfo.documentNumber,
         newDocumentNumber
@@ -240,10 +251,12 @@ const DetailInquiryModal = ({
     }
   };
 
+  // 복사 모달을 닫는 핸들러
   const handleCopyCancel = () => {
     setIsModalVisible(false);
   };
 
+  // 문서 삭제 클릭 핸들러
   const handleDeleteClick = () => {
     Modal.confirm({
       title: "Delete Confirmation",
@@ -264,6 +277,7 @@ const DetailInquiryModal = ({
     });
   };
 
+  // 테이블 컬럼 정의
   const columns = [
     {
       title: "Item Code",

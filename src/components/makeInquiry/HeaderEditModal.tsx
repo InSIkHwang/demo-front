@@ -48,6 +48,7 @@ const HeaderEditModal = ({
   );
   const prevSupplierIdRef = useRef<number | undefined>(undefined);
 
+  // 매입처 데이터 로드
   useEffect(() => {
     if (open) {
       const currentSupplierId = pdfCompanyTag[0]?.id;
@@ -58,6 +59,7 @@ const HeaderEditModal = ({
     }
   }, [open, pdfCompanyTag]);
 
+  // 매입처 데이터 로드
   const fetchData = async () => {
     setLoading(true);
     try {
