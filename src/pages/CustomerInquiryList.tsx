@@ -114,12 +114,14 @@ const CheckboxWrapper = styled.div`
   border-left: 1px solid #f0f0f0;
 `;
 
+// 견적 요청 목록 테이블의 컬럼 정의
 const columns: ColumnsType<Inquiry> = [
   {
-    title: "Document Number",
+    title: "Document Number", // 문서 번호
     dataIndex: "documentNumber",
     key: "documentNumber",
     sorter: (a, b) => {
+      // 문서 번호 기준 정렬 로직
       if (!a.documentNumber && !b.documentNumber) return 0;
       if (!a.documentNumber) return 1;
       if (!b.documentNumber) return -1;
@@ -127,56 +129,59 @@ const columns: ColumnsType<Inquiry> = [
     },
   },
   {
-    title: "Registration Date",
+    title: "Registration Date", // 등록일
     dataIndex: "registerDate",
     key: "registerDate",
-    sorter: (a, b) =>
+    sorter: (
+      a,
+      b // 날짜 기준 정렬
+    ) =>
       new Date(a.registerDate).getTime() - new Date(b.registerDate).getTime(),
     sortDirections: ["ascend", "descend"],
   },
   {
-    title: "Customer",
+    title: "Customer", // 고객사명
     dataIndex: "companyName",
     key: "companyName",
-    sorter: (a, b) => a.companyName.localeCompare(b.companyName),
+    sorter: (a, b) => a.companyName.localeCompare(b.companyName), // 고객사명 기준 정렬
     sortDirections: ["ascend", "descend"],
   },
   {
-    title: "REF No.",
+    title: "REF No.", // 참조 번호
     dataIndex: "refNumber",
     key: "refNumber",
   },
-
   {
-    title: "Vessel Name",
+    title: "Vessel Name", // 선박명
     dataIndex: "vesselName",
     key: "vesselName",
   },
   {
-    title: "Remark",
+    title: "Remark", // 비고
     dataIndex: "remark",
     key: "remark",
-    sorter: (a, b) => a.remark.localeCompare(b.remark),
+    sorter: (a, b) => a.remark.localeCompare(b.remark), // 비고 기준 정렬
     sortDirections: ["ascend", "descend"],
   },
   {
-    title: "Manager",
+    title: "Manager", // 담당자
     dataIndex: "docManager",
     key: "docManager",
-    sorter: (a, b) => a.docManager.localeCompare(b.docManager),
+    sorter: (a, b) => a.docManager.localeCompare(b.docManager), // 담당자 기준 정렬
   },
   {
-    title: "Document Type",
+    title: "Document Type", // 문서 유형
     dataIndex: "documentType",
     key: "documentType",
-    sorter: (a, b) => a.documentType.localeCompare(b.documentType),
+    sorter: (a, b) => a.documentType.localeCompare(b.documentType), // 문서 유형 기준 정렬
     render: (type) => {
+      // 문서 유형별 태그 색상 지정
       let color;
       switch (type) {
-        case "GENERAL":
+        case "GENERAL": // 일반 문서
           color = "orange";
           break;
-        case "COMPLEX":
+        case "COMPLEX": // 복합 문서
           color = "blue";
           break;
         default:
@@ -186,21 +191,22 @@ const columns: ColumnsType<Inquiry> = [
     },
   },
   {
-    title: "Document Status",
+    title: "Document Status", // 문서 상태
     dataIndex: "documentStatus",
     key: "documentStatus",
-    sorter: (a, b) => a.documentStatus.localeCompare(b.documentStatus),
+    sorter: (a, b) => a.documentStatus.localeCompare(b.documentStatus), // 문서 상태 기준 정렬
     sortDirections: ["ascend", "descend"],
     render: (status) => {
+      // 문서 상태별 태그 색상 지정
       let color;
       switch (status) {
-        case "VENDOR_PENDING":
+        case "VENDOR_PENDING": // 공급업체 대기
           color = "orange";
           break;
-        case "VENDOR_SELECTED":
+        case "VENDOR_SELECTED": // 공급업체 선택
           color = "blue";
           break;
-        case "PRICE_PENDING":
+        case "PRICE_PENDING": // 가격 대기
           color = "cornflowerblue";
           break;
         default:
@@ -247,6 +253,7 @@ const CustomerInquiryList = () => {
     searchParams.get("documentStatus") || "ALL"
   );
 
+  // 컴포넌트 마운트 시 검색 파라미터 존재 여부에 따라 검색 또는 데이터 조회
   useEffect(() => {
     if (searchParams.toString()) {
       handleSearch();
@@ -255,6 +262,7 @@ const CustomerInquiryList = () => {
     }
   }, []);
 
+  // 페이지, 페이지 크기, 내 문서만 보기, 문서 상태 변경 시 데이터 재조회
   useEffect(() => {
     if (
       (searchText && registerStartDate && registerEndDate) ||
@@ -266,6 +274,7 @@ const CustomerInquiryList = () => {
     }
   }, [currentPage, itemsPerPage, viewMyInquiryOnly, documentStatus]);
 
+  // 견적 요청 목록 데이터 조회
   const fetchData = async () => {
     setLoading(true);
     updateSearchParams({
@@ -290,6 +299,7 @@ const CustomerInquiryList = () => {
     }
   };
 
+  // 상세 모달 열림/닫힘 상태에 따른 body 스크롤 제어
   useEffect(() => {
     if (isDetailModalOpen) {
       document.body.style.overflow = "hidden";
@@ -302,6 +312,7 @@ const CustomerInquiryList = () => {
     };
   }, [isDetailModalOpen]);
 
+  // URL 검색 파라미터 업데이트
   const updateSearchParams = (
     params: Record<string, string | number | boolean>
   ) => {
@@ -318,6 +329,7 @@ const CustomerInquiryList = () => {
     setSearchParams(newSearchParams);
   };
 
+  // 검색 조건에 따른 데이터 조회
   const handleSearch = async () => {
     setLoading(true);
     updateSearchParams({
@@ -354,23 +366,26 @@ const CustomerInquiryList = () => {
     }
   };
 
+  // 행 클릭 시 상세 모달 열기
   const handleRowClick = (record: Inquiry) => {
     setSelectedInquiryId(record.customerInquiryId);
     setIsDetailModalOpen(true);
   };
 
+  // 페이지 변경 처리
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     updateSearchParams({ page });
   };
 
+  // 페이지 크기 변경 처리
   const handlePageSizeChange = (current: number, size: number) => {
     setItemsPerPage(size);
     setCurrentPage(1);
     updateSearchParams({ pageSize: size, page: 1 });
   };
 
-  // 체크박스의 상태 변경 처리 함수
+  // 내 문서만 보기 체크박스 상태 변경 처리
   const handleViewMyInquiryOnlyChange = (e: CheckboxChangeEvent) => {
     setViewMyInquiryOnly(e.target.checked);
     updateSearchParams({ viewMyInquiryOnly: e.target.checked });
