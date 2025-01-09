@@ -72,6 +72,7 @@ interface ColorPickerComponentProps {
   defaultValue?: string;
 }
 
+// 색상 선택 컴포넌트
 const ColorPickerComponent = ({
   onChange,
   defaultValue,
@@ -150,6 +151,7 @@ const FormComponent = ({
   >([]);
   const [isRefNumDuplicate, setIsRefNumDuplicate] = useState<boolean>(false);
 
+  // 선택된 고객과 선박 정보를 상태로 관리
   useEffect(() => {
     if (selectedCustomerId && selectedVessel) {
       setCusVesIdList({
@@ -159,6 +161,7 @@ const FormComponent = ({
     }
   }, [selectedCustomerId, selectedVessel, setCusVesIdList]);
 
+  // 매출처 이름 자동 완성 기능
   useEffect(() => {
     const searchTerm = formValues.companyName?.toLowerCase();
 
@@ -176,6 +179,7 @@ const FormComponent = ({
     setAutoCompleteOptions(filteredOptions);
   }, [companyNameList, formValues.companyName]);
 
+  // 매출처 검색 시 매출처, 선박 정보 업데이트
   useEffect(() => {
     const searchCompanyName = async (companyName: string) => {
       try {
@@ -219,6 +223,7 @@ const FormComponent = ({
       }
     };
 
+    // 매출처 검색 시 500ms 지연 후 검색 실행
     const debouncedSearchCompanyName = debounce((companyName: string) => {
       if ((companyName + "").trim() !== "") {
         searchCompanyName(companyName);
@@ -237,6 +242,7 @@ const FormComponent = ({
     };
   }, [formValues.companyName, isCustomerModalOpen, isVesselModalOpen]);
 
+  // 선박 이름 변경 시 선박 정보 업데이트
   useEffect(() => {
     const selectedVessel = vesselList.find(
       (v) => v.vesselName === formValues.vesselName
@@ -245,6 +251,7 @@ const FormComponent = ({
     setSelectedVessel(selectedVessel ?? null);
   }, [formValues.vesselName, formValues.companyName, vesselList]);
 
+  // 매출처 유효성 검사
   const validateCustomer = () => {
     if (!cusVesIdList.customerId) {
       return {
@@ -258,6 +265,7 @@ const FormComponent = ({
     return { status: undefined, message: undefined };
   };
 
+  // 선박 유효성 검사
   const validateVessel = () => {
     if (!cusVesIdList.vesselId || !selectedVessel) {
       return {

@@ -359,8 +359,10 @@ const OfferList = () => {
     return tags;
   });
 
+  // 데이터 로드
   useEffect(() => {
     if (
+      // 검색 조건이 있는 경우
       ((searchText || searchSubText || searchTags.length > 0) &&
         registerStartDate &&
         registerEndDate) ||
@@ -372,6 +374,7 @@ const OfferList = () => {
     }
   }, [currentPage, itemsPerPage, viewMyOfferOnly, viewDocumentStatus]);
 
+  // 데이터 로드 함수
   const fetchData = async () => {
     updateSearchParams({
       page: currentPage,
@@ -396,6 +399,7 @@ const OfferList = () => {
     }
   };
 
+  // 검색 함수
   const handleSearch = async () => {
     setLoading(true);
 
@@ -437,6 +441,7 @@ const OfferList = () => {
         }),
       };
 
+      // 태그 추가
       searchTags.forEach((tag) => {
         searchParams[tag.category] = tag.value;
       });
@@ -459,6 +464,7 @@ const OfferList = () => {
     }
   };
 
+  // 아이템 검색 토글 함수
   const handleItemSearchToggle = (e: CheckboxChangeEvent) => {
     setShowItemSearch(e.target.checked);
     if (!e.target.checked) {
@@ -474,22 +480,26 @@ const OfferList = () => {
     }
   };
 
+  // 페이지 변경 함수
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     updateSearchParams({ page });
   };
 
+  // 페이지 크기 변경 함수
   const handlePageSizeChange = (current: number, size: number) => {
     setItemsPerPage(size);
     setCurrentPage(1);
     updateSearchParams({ pageSize: size, page: 1 });
   };
 
+  // 내가 작성한 문서만 보기 토글 함수
   const handleViewMyOfferOnlyChange = (e: CheckboxChangeEvent) => {
     setViewMyOfferOnly(e.target.checked);
     updateSearchParams({ viewMyOfferOnly: e.target.checked });
   };
 
+  // 견적 확인 함수 (OFFER -> ORDER)
   const handleConfirmClick = (supplierInquiryId: number) => {
     Modal.confirm({
       title: "Confirm Quotation",
@@ -509,6 +519,7 @@ const OfferList = () => {
     });
   };
 
+  // N/A 처리 함수
   const handleNAClick = (supplierInquiryId: number) => {
     Modal.confirm({
       title: "Handle N/A",
@@ -528,6 +539,7 @@ const OfferList = () => {
     });
   };
 
+  // 견적 삭제 함수
   const handleDelete = async (documentId: number) => {
     Modal.confirm({
       title: "Delete Offer",
@@ -548,6 +560,7 @@ const OfferList = () => {
     });
   };
 
+  // 공급처 삭제 함수
   const handleDeleteSupplier = async (
     inquiryId: number,
     supplierName: string
@@ -571,6 +584,7 @@ const OfferList = () => {
     });
   };
 
+  // 검색어 추가 핸들러
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.ctrlKey && e.key === "Enter") {
       e.preventDefault();
@@ -617,6 +631,7 @@ const OfferList = () => {
     }
   };
 
+  // 확장된 행 렌더링 함수
   const expandedRowRender = (record: SupplierInquiryListIF) => {
     return (
       <div>
@@ -798,6 +813,7 @@ const OfferList = () => {
     );
   };
 
+  // 검색 파라미터 업데이트 함수
   const updateSearchParams = (
     params: Record<string, string | number | boolean>
   ) => {
