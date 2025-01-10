@@ -391,7 +391,14 @@ const InvoiceChargeInputPopover = ({
         >
           Apply Discount & Charges
         </Button>
-        <Button type="primary" style={{ flex: 1 }} onClick={handleSave}>
+        <Button
+          type="primary"
+          style={{ flex: 1 }}
+          onClick={async () => {
+            await handleSave();
+            applyDcAndCharge("multiple");
+          }}
+        >
           Save
         </Button>
       </div>
