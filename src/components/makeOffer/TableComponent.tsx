@@ -5,7 +5,6 @@ import React, {
   useEffect,
   useRef,
   useState,
-  useMemo,
   memo,
   forwardRef,
 } from "react";
@@ -16,7 +15,6 @@ import {
   Button,
   AutoComplete,
   notification,
-  message,
   Tooltip,
   InputProps,
   InputRef,
@@ -38,10 +36,9 @@ import {
   ZoomOutOutlined,
   ZoomInOutlined,
 } from "@ant-design/icons";
-import { fetchItemData, handleOfferExport } from "../../api/api";
+import { handleOfferExport } from "../../api/api";
 import ExcelUploadModal from "../ExcelUploadModal";
 import { TextAreaRef } from "antd/es/input/TextArea";
-import { debounce } from "lodash";
 
 interface TableProps {
   $zoomLevel?: number;
@@ -477,45 +474,12 @@ const TableComponent = ({
   //   [itemDetails, setItemDetails]
   // );
 
-  // 아이템 코드 검색 디바운스 함수
-  const debouncedFetchItemData = useMemo(
-    () =>
-      debounce(async (value: string, index: number) => {
-        try {
-          const { items } = await fetchItemData(value);
-          if (!Array.isArray(items)) {
-            console.error("Items data is not an array:", items);
-            return;
-          }
-
-          setItemCodeOptions(
-            items.reduce((acc, item) => {
-              if (!acc?.some((option) => option.itemId === item.itemId)) {
-                acc.push({
-                  value: item.itemCode,
-                  name: item.itemName,
-                  key: item.itemId.toString(),
-                  label: `${item.itemCode}: ${item.itemName}`,
-                  itemId: item.itemId,
-                });
-              }
-              return acc;
-            }, [] as { value: string; name: string; key: string; label: string; itemId: number }[])
-          );
-        } catch (error) {
-          message.error("Error fetching item codes and suppliers:");
-        }
-      }, 300),
-    []
-  );
-
   // 아이템 코드 변경 핸들러
   const handleItemCodeChange = async (index: number, value: string) => {
     const trimmedValue = (value + "").trim();
 
     // 상태 업데이트를 한 번만 수행
     handleInputChange(index, "itemCode", trimmedValue);
-    debouncedFetchItemData(trimmedValue, index);
   };
 
   // 아이템 추가 핸들러

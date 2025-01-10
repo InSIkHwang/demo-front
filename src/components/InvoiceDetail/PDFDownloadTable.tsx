@@ -1,4 +1,5 @@
 import { Button, Checkbox, Input, message, Select } from "antd";
+import PDFDownloadProgress from "./PDFDownloadProgress";
 
 import { Table } from "antd";
 import { useCallback, useEffect, useState } from "react";
@@ -6,7 +7,6 @@ import { useCallback, useEffect, useState } from "react";
 export interface PDFDownloadItem {
   pdfType: string;
   downloadChk: boolean;
-  originChk: string;
   fileName: string;
   itemType?: string;
 }
@@ -14,7 +14,10 @@ export interface PDFDownloadItem {
 interface PDFDownloadTableProps {
   formValues: any;
   itemTypeOption: string[];
-  onDownload: (items: PDFDownloadItem[]) => void;
+  onDownload: (
+    items: PDFDownloadItem[],
+    updateProgress: (downloaded: number) => void
+  ) => Promise<void>;
 }
 
 const PDFDownloadTable = ({
@@ -42,9 +45,12 @@ const PDFDownloadTable = ({
   const [allChecked, setAllChecked] = useState(false);
   const [headerPdfType, setHeaderPdfType] = useState<string>("INVOICE");
   const [headerOriginChk, setHeaderOriginChk] = useState<string>("both");
+  const [downloading, setDownloading] = useState(false);
+  const [downloadedFiles, setDownloadedFiles] = useState(0);
+  const [totalFiles, setTotalFiles] = useState(0);
 
-  // itemTypeOption이 변경될 때마다 items 상태 업데이트
-  useEffect(() => {
+  // 아이템 초기화를 위한 별도 함수
+  const initializeItems = useCallback(() => {
     const newItems = itemTypeOption.map((option) => ({
       pdfType: headerPdfType,
       downloadChk: allChecked,
@@ -53,13 +59,12 @@ const PDFDownloadTable = ({
       itemType: option,
     }));
     setItems(newItems);
-  }, [
-    itemTypeOption,
-    headerPdfType,
-    headerOriginChk,
-    allChecked,
-    generateFileName,
-  ]);
+  }, [itemTypeOption]);
+
+  // useEffect에서는 itemTypeOption이 변경될 때만 초기화
+  useEffect(() => {
+    initializeItems();
+  }, [itemTypeOption, initializeItems]);
 
   // PDF 유형 변경 함수
   const handlePdfTypeChange = (value: string) => {
@@ -112,32 +117,6 @@ const PDFDownloadTable = ({
       width: 50,
     },
     {
-      title: (
-        <Select
-          defaultValue="both"
-          onChange={(value) => handleHeaderOriginChange(value)}
-          style={{ width: "100%" }}
-        >
-          <Select.Option value="both">Both</Select.Option>
-          <Select.Option value="original">Original</Select.Option>
-          <Select.Option value="copy">Copy</Select.Option>
-        </Select>
-      ),
-      dataIndex: "originChk",
-      render: (value: string, _: any, index: number) => (
-        <Select
-          value={value}
-          onChange={(value) => handleItemChange(index, "originChk", value)}
-          style={{ width: "100%" }}
-        >
-          <Select.Option value="both">Both</Select.Option>
-          <Select.Option value="original">Original</Select.Option>
-          <Select.Option value="copy">Copy</Select.Option>
-        </Select>
-      ),
-      width: 150,
-    },
-    {
       title: "File Name",
       dataIndex: "fileName",
       render: (text: string, _: any, index: number) => (
@@ -154,11 +133,6 @@ const PDFDownloadTable = ({
     setItems(items.map((item) => ({ ...item, downloadChk: checked })));
   };
 
-  const handleHeaderOriginChange = (value: string) => {
-    setHeaderOriginChk(value);
-    setItems(items.map((item) => ({ ...item, originChk: value })));
-  };
-
   const handleItemChange = (
     index: number,
     key: keyof PDFDownloadItem,
@@ -169,14 +143,29 @@ const PDFDownloadTable = ({
     setItems(newItems);
   };
 
-  const handleDownload = (e: React.MouseEvent<HTMLElement>) => {
+  const resetDownloadState = useCallback(() => {
+    setDownloading(false);
+    setDownloadedFiles(0);
+    setTotalFiles(0);
+  }, []);
+
+  const handleDownload = async (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault();
     const selectedItems = items.filter((item) => item.downloadChk);
     if (selectedItems.length === 0) {
       message.warning("Please select items to download.");
       return;
     }
-    onDownload(selectedItems);
+
+    setDownloading(true);
+    setDownloadedFiles(0);
+    setTotalFiles(selectedItems.length);
+
+    try {
+      await onDownload(selectedItems, setDownloadedFiles);
+    } finally {
+      setTimeout(resetDownloadState, 1000); // 1초 후 상태 초기화
+    }
   };
 
   return (
@@ -187,12 +176,17 @@ const PDFDownloadTable = ({
         pagination={false}
         rowKey={(record, index) => index?.toString() || ""}
       />
-      <div
-        style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}
-      >
-        <Button type="primary" onClick={handleDownload}>
-          Download Selected PDFs
-        </Button>
+      <div style={{ marginTop: 16 }}>
+        <PDFDownloadProgress
+          downloading={downloading}
+          downloadedFiles={downloadedFiles}
+          totalFiles={totalFiles}
+        />
+        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          <Button type="primary" onClick={handleDownload} loading={downloading}>
+            Download Selected PDFs
+          </Button>
+        </div>
       </div>
     </div>
   );

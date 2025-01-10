@@ -15,9 +15,10 @@ const FormRow = styled.div`
 
 interface InquiryFormProps {
   formValues: Order;
+  setFormValues: (values: Order) => void;
 }
 
-const FormComponent = ({ formValues }: InquiryFormProps) => {
+const FormComponent = ({ formValues, setFormValues }: InquiryFormProps) => {
   return (
     <>
       <Form layout="vertical" initialValues={formValues}>
@@ -30,7 +31,12 @@ const FormComponent = ({ formValues }: InquiryFormProps) => {
             <Input disabled />
           </InquiryItemForm>
           <InquiryItemForm style={{ flex: 2 }} label="Ref No." name="refNumber">
-            <Input value={formValues.refNumber} disabled />
+            <Input
+              value={formValues.refNumber}
+              onChange={(e) =>
+                setFormValues({ ...formValues, refNumber: e.target.value })
+              }
+            />
           </InquiryItemForm>
           <InquiryItemForm
             style={{ flex: 1 }}
