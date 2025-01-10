@@ -1033,7 +1033,7 @@ export const saveCIPLHeader = async (
 
 //ORDER 확정 (ORDER -> INVOICE)
 export const confirmOrder = async (orderId: number) => {
-  const response = await axios.post(`/api/orders/confirm/${orderId}`);
+  const response = await axios.put(`/api/orders/confirm/${orderId}`);
 
   return response.data;
 };
