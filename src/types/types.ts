@@ -453,6 +453,14 @@ export interface InvCharge {
   chargePriceGlobal: number;
 }
 
+export interface InvoiceCharge {
+  invChargeId: number | null; // invChargeId는 number 또는 null일 수 있습니다.
+  customCharge: string;
+  chargePriceKRW: number;
+  chargePriceGlobal: number;
+  isChecked: boolean;
+}
+
 export interface TrashItem {
   docNumber: string;
   registerDate: string;
@@ -732,25 +740,16 @@ export interface InvoiceRemarkDetail {
   salesRemark: string;
 }
 
-export interface InvoiceChargeListIF {
-  invoiceChargeId: number | null;
-  customCharge: string;
-  chargePriceKRW: number;
-  chargePriceGlobal: number;
-}
-
 export interface InvoiceDetailIF {
   documentInfo: InvoiceDocument;
-  invChargeList: InvCharge[];
+  invChargeList: InvoiceCharge[];
   suppliers: Supplier[];
   itemDetailList: OrderItemDetail[];
   salesHeaderResponse: {
     salesHeader: InvoiceHeaderDetail;
     salesRemark: InvoiceRemarkDetail[];
   };
-  invoiceChargeList: InvoiceChargeListIF[];
 }
-
 
 export interface MakerSupplierList {
   maker: string;

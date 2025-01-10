@@ -7,7 +7,7 @@ import {
   Customer,
   HeaderFormData,
   Inquiry,
-  InvoiceChargeListIF,
+  InvCharge,
   InvoiceHeaderDetail,
   InvoiceListIF,
   InvoiceRemarkDetail,
@@ -1075,18 +1075,6 @@ export const searchInvoiceList = async (searchParams: OfferSearchParams) => {
   return response.data;
 };
 
-//Invoice Charge 생성 및 업데이트
-export const updateInvoiceCharge = async (
-  salesId: number,
-  invoiceChargeList: InvoiceChargeListIF[]
-) => {
-  const response = await axios.put(`/api/sales/invoice-charge/${salesId}`, {
-    invoiceChargeList,
-  });
-
-  return response.data;
-};
-
 //INVOICE 헤더 저장
 export const saveInvoiceHeader = async (
   invoiceId: number,
@@ -1101,13 +1089,17 @@ export const saveInvoiceHeader = async (
   return response.data;
 };
 
-//INVOICE No. 업데이트
-export const updateInvoiceNumber = async (
+//INVOICE No., DC, CHARGE 업데이트
+export const updateInvoice = async (
   invoiceId: number,
-  invoiceNumber: string
+  invoiceNumber: string,
+  discount: number,
+  invChargeList: InvCharge[] | null
 ) => {
   const response = await axios.put(`/api/sales/${invoiceId}`, {
     invoiceNumber,
+    discount,
+    invChargeList,
   });
 
   return response.data;

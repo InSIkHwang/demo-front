@@ -1,8 +1,21 @@
 import React, { Dispatch, SetStateAction, useCallback, useEffect } from "react";
-import { Button, Popover, Input, Form, Tooltip, AutoComplete } from "antd";
+import {
+  Button,
+  Popover,
+  Input,
+  Form,
+  Tooltip,
+  AutoComplete,
+  Checkbox,
+  CheckboxChangeEvent,
+} from "antd";
 import styled from "styled-components";
-import { InvCharge } from "../../types/types";
-import { PercentageOutlined } from "@ant-design/icons";
+import { InvoiceCharge } from "../../types/types";
+import {
+  PercentageOutlined,
+  PlusOutlined,
+  DeleteOutlined,
+} from "@ant-design/icons";
 
 const InputGroup = styled.div`
   display: flex;
@@ -24,9 +37,10 @@ const ChargeBtn = styled(Button)`
   transition: all 0.3s;
 `;
 
-const CHARGE_OPTIONS = ["PACKING CHARGE", "FREIGHT CHARGE"];
+const CHARGE_OPTIONS = ["CREDIT NOTE", "PACKING CHARGE", "FREIGHT CHARGE"];
 
-interface ChargeComponentProps {
+interface InvoiceChargeInputPopoverProps {
+  handleSave: () => void;
   finalTotals: {
     totalSalesAmountKRW: number;
     totalSalesAmountGlobal: number;
@@ -44,20 +58,48 @@ interface ChargeComponentProps {
   setDcInfo: Dispatch<
     SetStateAction<{ dcPercent: number; dcKrw: number; dcGlobal: number }>
   >;
-  invChargeList: InvCharge[] | null;
-  setInvChargeList: Dispatch<SetStateAction<InvCharge[] | null>>;
+  invChargeList: InvoiceCharge[] | null;
+  setInvChargeList: Dispatch<SetStateAction<InvoiceCharge[] | null>>;
   applyDcAndCharge: (mode: string) => void;
 }
 
-const ChargeInputPopover = ({
+const ChargeItemWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  background: #fafafa;
+  margin-bottom: 10px;
+
+  &:hover {
+    border-color: #1890ff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+`;
+
+const ChargeItemHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+const ChargeItemBody = styled.div`
+  display: flex;
+  gap: 8px;
+`;
+
+const InvoiceChargeInputPopover = ({
   currency,
   dcInfo,
   setDcInfo,
   invChargeList,
   setInvChargeList,
   applyDcAndCharge,
+  handleSave,
   finalTotals,
-}: ChargeComponentProps) => {
+}: InvoiceChargeInputPopoverProps) => {
   // 할인 계산 함수
   const calculateDcKrw = (totalSalesAmountKRW: number, value: number) => {
     return Math.round(totalSalesAmountKRW * (value / 100));
@@ -122,7 +164,7 @@ const ChargeInputPopover = ({
   const handleChargeInputChange = (
     index: number,
     key: string,
-    value: string | number
+    value: string | number | boolean
   ) => {
     setInvChargeList((prevList) =>
       prevList!.map((charge, idx) => {
@@ -153,6 +195,13 @@ const ChargeInputPopover = ({
             newCharge.chargePriceKRW = Number(
               ((value as number) * currency).toFixed(2)
             );
+          } else if (key === "customCharge" && value === "CREDIT NOTE") {
+            newCharge.chargePriceKRW = Math.round(
+              finalTotals.totalSalesAmountUnDcKRW * 0.1
+            );
+            newCharge.chargePriceGlobal = Number(
+              (finalTotals.totalSalesAmountUnDcGlobal * 0.1).toFixed(2)
+            );
           }
 
           return newCharge;
@@ -169,9 +218,12 @@ const ChargeInputPopover = ({
       customCharge: "",
       chargePriceKRW: 0,
       chargePriceGlobal: 0,
+      isChecked: false,
     };
 
-    setInvChargeList((prevList) => [...prevList!, newCharge]);
+    setInvChargeList((prevList) =>
+      prevList ? [...prevList, newCharge] : [newCharge]
+    );
   };
 
   // 차지 삭제 핸들러
@@ -185,137 +237,164 @@ const ChargeInputPopover = ({
   }, [finalTotals, handleDcChange, dcInfo.dcPercent]);
 
   const content = (
-    <Form style={{ maxWidth: 600, paddingBottom: 40 }} layout="horizontal">
+    <Form style={{ width: 600, paddingBottom: 40 }} layout="horizontal">
       <Form.Item
-        label="D/C"
+        label="Discount"
         style={{ borderBottom: "1px solid #ccc", paddingBottom: 20 }}
       >
         <InputGroup>
           <Input
-            type="number" // type을 number로 설정
-            step="0.01" // 소수점 입력을 위해 step을 설정
+            type="number"
+            step="0.01"
             value={dcInfo.dcPercent}
             onChange={(e) =>
               handleDcChange("dcPercent", Number(e.target.value))
             }
-            placeholder="Enter D/C %"
+            placeholder="Discount %"
             addonAfter="%"
             onWheel={(e) => e.currentTarget.blur()}
           />
           <Input
-            type="number" // type을 number로 설정
-            step="0.01" // 소수점 입력을 위해 step을 설정
+            type="number"
+            step="0.01"
             value={dcInfo.dcKrw}
             onChange={(e) => handleDcChange("dcKrw", Number(e.target.value))}
-            placeholder="Enter D/C ₩"
+            placeholder="Discount (₩)"
             addonAfter="₩"
             onWheel={(e) => e.currentTarget.blur()}
           />
           <Input
-            type="number" // type을 number로 설정
-            step="0.01" // 소수점 입력을 위해 step을 설정
+            type="number"
+            step="0.01"
             value={dcInfo.dcGlobal}
             onChange={(e) => handleDcChange("dcGlobal", Number(e.target.value))}
-            placeholder="Enter D/C Global"
+            placeholder="Discount (F)"
             addonAfter="F"
             onWheel={(e) => e.currentTarget.blur()}
           />
         </InputGroup>
       </Form.Item>
+
       <ChargeBox style={{ borderBottom: "1px solid #ccc" }}>
         <Button
+          style={{ marginBottom: 10 }}
           type="default"
-          style={{ margin: "10px 0" }}
+          icon={<PlusOutlined />}
           onClick={addNewCharge}
         >
-          Add Charge
+          Add Additional Charge
         </Button>
+
         {invChargeList !== null && invChargeList?.length > 0 && (
-          <Form.Item label="Charge Info">
+          <Form.Item>
             {invChargeList.map((charge, index) => (
-              <InputGroup style={{ marginBottom: 5 }} key={index}>
-                <AutoComplete
-                  value={charge.customCharge}
-                  onChange={(value) =>
-                    handleChargeInputChange(index, "customCharge", value)
-                  }
-                  onBlur={(e: React.FocusEvent<HTMLInputElement>) =>
-                    handleChargeCalculation(
-                      index,
-                      "customCharge",
-                      e.target.value
-                    )
-                  }
-                  options={CHARGE_OPTIONS.map((option) => ({ value: option }))}
-                  placeholder="Enter charge name"
-                  filterOption={(inputValue, option) =>
-                    option!.value
-                      .toUpperCase()
-                      .indexOf(inputValue.toUpperCase()) !== -1
-                  }
-                />
-                <Input
-                  type="number" // type을 number로 설정
-                  step="0.01" // 소수점 입력을 위해 step을 설정
-                  value={charge.chargePriceKRW}
-                  onChange={(e) =>
-                    handleChargeInputChange(
-                      index,
-                      "chargePriceKRW",
-                      Number(e.target.value)
-                    )
-                  }
-                  onBlur={(e: React.FocusEvent<HTMLInputElement>) =>
-                    handleChargeCalculation(
-                      index,
-                      "chargePriceKRW",
-                      e.target.value
-                    )
-                  }
-                  placeholder="Enter charge value (₩)"
-                  addonAfter="₩"
-                />
-                <Input
-                  type="number" // type을 number로 설정
-                  step="0.01" // 소수점 입력을 위해 step을 설정
-                  value={charge.chargePriceGlobal}
-                  onChange={(e) =>
-                    handleChargeInputChange(
-                      index,
-                      "chargePriceGlobal",
-                      Number(e.target.value)
-                    )
-                  }
-                  onBlur={(e: React.FocusEvent<HTMLInputElement>) =>
-                    handleChargeCalculation(
-                      index,
-                      "chargePriceGlobal",
-                      e.target.value
-                    )
-                  }
-                  placeholder="Enter charge value (Global)"
-                  addonAfter="F"
-                />
-                <Button
-                  type="default"
-                  onClick={() => removeCharge(index)}
-                  style={{ marginLeft: 8 }}
-                >
-                  Delete
-                </Button>
-              </InputGroup>
+              <ChargeItemWrapper key={index}>
+                <ChargeItemHeader>
+                  <Checkbox
+                    checked={charge.isChecked}
+                    onChange={(e: CheckboxChangeEvent) =>
+                      handleChargeInputChange(
+                        index,
+                        "isChecked",
+                        e.target.checked
+                      )
+                    }
+                  >
+                    Separate on PDF
+                  </Checkbox>
+                  <AutoComplete
+                    style={{ flex: 1 }}
+                    value={charge.customCharge}
+                    onChange={(value) =>
+                      handleChargeInputChange(index, "customCharge", value)
+                    }
+                    onBlur={(e: React.FocusEvent<HTMLInputElement>) =>
+                      handleChargeCalculation(
+                        index,
+                        "customCharge",
+                        e.target.value
+                      )
+                    }
+                    options={CHARGE_OPTIONS.map((option) => ({
+                      value: option,
+                    }))}
+                    placeholder="Enter charge name"
+                    filterOption={(inputValue, option) =>
+                      option!.value
+                        .toUpperCase()
+                        .indexOf(inputValue.toUpperCase()) !== -1
+                    }
+                  />
+                  <Button
+                    type="text"
+                    danger
+                    icon={<DeleteOutlined />}
+                    onClick={() => removeCharge(index)}
+                  />
+                </ChargeItemHeader>
+
+                <ChargeItemBody>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={charge.chargePriceKRW}
+                    onChange={(e) =>
+                      handleChargeInputChange(
+                        index,
+                        "chargePriceKRW",
+                        Number(e.target.value)
+                      )
+                    }
+                    onBlur={(e) =>
+                      handleChargeCalculation(
+                        index,
+                        "chargePriceKRW",
+                        e.target.value
+                      )
+                    }
+                    placeholder="Amount (₩)"
+                    addonAfter="₩"
+                  />
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={charge.chargePriceGlobal}
+                    onChange={(e) =>
+                      handleChargeInputChange(
+                        index,
+                        "chargePriceGlobal",
+                        Number(e.target.value)
+                      )
+                    }
+                    onBlur={(e) =>
+                      handleChargeCalculation(
+                        index,
+                        "chargePriceGlobal",
+                        e.target.value
+                      )
+                    }
+                    placeholder="Amount (F)"
+                    addonAfter="F"
+                  />
+                </ChargeItemBody>
+              </ChargeItemWrapper>
             ))}
           </Form.Item>
         )}
       </ChargeBox>
 
-      <Button
-        type="primary"
-        style={{ marginTop: 10, width: "100%" }}
-        onClick={() => applyDcAndCharge("multiple")}
-      >
-        Apply D/C & Charge
-      </Button>
+      <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
+        <Button
+          type="default"
+          style={{ flex: 1 }}
+          onClick={() => applyDcAndCharge("multiple")}
+        >
+          Apply Discount & Charges
+        </Button>
+        <Button type="primary" style={{ flex: 1 }} onClick={handleSave}>
+          Save
+        </Button>
+      </div>
     </Form>
   );
 
@@ -335,4 +414,4 @@ const ChargeInputPopover = ({
   );
 };
 
-export default ChargeInputPopover;
+export default InvoiceChargeInputPopover;
