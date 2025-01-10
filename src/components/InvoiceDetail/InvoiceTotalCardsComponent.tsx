@@ -1,4 +1,4 @@
-import { ReloadOutlined, UpOutlined } from "@ant-design/icons";
+import { ReloadOutlined } from "@ant-design/icons";
 import { Button } from "antd";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import styled from "styled-components";

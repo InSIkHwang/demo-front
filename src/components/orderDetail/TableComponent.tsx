@@ -1419,7 +1419,7 @@ TableComponentProps) => {
               Load Excel File
             </Button>
           </Tooltip>
-          <Tooltip title="Export excel file on your table">
+          {/* <Tooltip title="Export excel file on your table">
             <Button
               type="dashed"
               icon={<ExportOutlined />}
@@ -1427,7 +1427,7 @@ TableComponentProps) => {
             >
               Export Excel
             </Button>
-          </Tooltip>
+          </Tooltip> */}
           {/* <Tooltip title="Download PDF file before you send">
             <Button
               type="dashed"
