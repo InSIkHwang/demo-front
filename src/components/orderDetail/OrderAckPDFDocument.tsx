@@ -873,7 +873,10 @@ const OrderAckPDFDocument = ({
                     <View
                       style={[
                         styles.inquiryPriceRow,
-                        { borderBottom: "1px dotted #000" },
+                        {
+                          borderBottom: "1px dotted #000",
+                          borderTop: "1px dotted #000",
+                        },
                       ]}
                     >
                       <Text style={styles.inquiryPriceLabel}>SUB TOTAL</Text>
@@ -974,6 +977,25 @@ const OrderAckPDFDocument = ({
                     </Text>
                   </View>
                 </View>
+              </View>
+            </View>
+            <View wrap={false}>
+              <View
+                style={[
+                  styles.inquiryInfoWrap,
+                  { marginTop: 20, flexDirection: "column" },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.inquiryTotalColumn,
+                    {
+                      alignItems: "flex-end",
+                      width: "50%",
+                      alignSelf: "flex-end",
+                    },
+                  ]}
+                ></View>
                 <View style={[styles.inquiryTotalColumn]}>
                   <View style={styles.inquiryInfoBox}>
                     <View style={styles.inquiryInfoText}>
