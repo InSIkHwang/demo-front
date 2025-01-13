@@ -7,6 +7,7 @@ import {
   Tag,
   Divider,
   message,
+  DatePicker,
 } from "antd";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
@@ -206,17 +207,76 @@ const DetailOrderModal = ({
     });
   };
 
-  // 확정 핸들러
-  const handleConfirmClick = async () => {
-    try {
-      await confirmOrder(orderId);
-      message.success("Confirmed successfully.");
-      onClose();
-      fetchData();
-    } catch (error) {
-      console.error("Error occurred while confirming:", error);
-      message.error("Failed to confirm. Please try again.");
-    }
+  // 주문 컨펌 함수
+  const handleConfirmClick = () => {
+    let localConfirmDates = {
+      expectedReceivingDate: "",
+      deliveryDate: "",
+    };
+
+    Modal.confirm({
+      title: "Confirm Order",
+      width: 500,
+      content: (
+        <div style={{ marginTop: 16 }}>
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ marginBottom: 8 }}>
+              Expected Receiving Date.(예상 입고일)
+            </div>
+            <DatePicker
+              style={{ width: "100%" }}
+              format="YYYY-MM-DD"
+              onChange={(date) => {
+                localConfirmDates.expectedReceivingDate = date
+                  ? date.format("YYYY-MM-DD")
+                  : "";
+              }}
+              placeholder="Expected Receiving Date.(예상 입고일)"
+            />
+          </div>
+          <div>
+            <div style={{ marginBottom: 8 }}>Delivery Date.(납기일)</div>
+            <DatePicker
+              style={{ width: "100%" }}
+              format="YYYY-MM-DD"
+              onChange={(date) => {
+                localConfirmDates.deliveryDate = date
+                  ? date.format("YYYY-MM-DD")
+                  : "";
+              }}
+              placeholder="Delivery Date.(납기일)"
+            />
+          </div>
+        </div>
+      ),
+      onOk: async () => {
+        if (
+          !localConfirmDates.expectedReceivingDate ||
+          !localConfirmDates.deliveryDate
+        ) {
+          message.error(
+            "Please fill in all fields.(날짜를 모두 입력해주세요.)"
+          );
+          return Promise.reject();
+        }
+
+        try {
+          await confirmOrder(
+            Number(orderId),
+            localConfirmDates.expectedReceivingDate,
+            localConfirmDates.deliveryDate
+          );
+          message.success("Order confirmed successfully.");
+          navigate("/orderlist");
+        } catch (error) {
+          console.error("Error occurred while confirming:", error);
+          message.error("Failed to confirm. Please try again.");
+          return Promise.reject();
+        }
+      },
+      okText: "Confirm",
+      cancelText: "Cancel",
+    });
   };
 
   // 테이블 열 정의

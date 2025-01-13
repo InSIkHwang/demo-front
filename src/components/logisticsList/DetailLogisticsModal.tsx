@@ -408,60 +408,21 @@ const DetailLogisticsModal = ({
               className="descriptions-totals"
               layout="vertical"
               bordered
-              column={7}
+              column={4}
               size="small"
               style={{ marginTop: 10 }}
             >
-              <Descriptions.Item label="Total Item">
-                {totalItem}
+              <Descriptions.Item label="Delivery Date(납기일)">
+                {logisticsDetail?.logisticsDate?.deliveryDate}
               </Descriptions.Item>
-              <Descriptions.Item label="Total Sales Amount">
-                <AmountTotal>
-                  <span>{`₩ ${totalSalesAmountKrw?.toLocaleString(
-                    "ko-KR"
-                  )}`}</span>
-                  <DividerStyled
-                    style={{ borderColor: "#ccc" }}
-                    type="vertical"
-                  />
-                  <span>{`${currencySymbol} ${totalSalesAmountGlobal?.toLocaleString(
-                    "en-US"
-                  )}`}</span>
-                </AmountTotal>
+              <Descriptions.Item label="Expected Receiving Date(예정 입고일)">
+                {logisticsDetail?.logisticsDate?.expectedReceivingDate}
               </Descriptions.Item>
-              <Descriptions.Item label="Total Purchase Amount">
-                <AmountTotal>
-                  <span>{`₩ ${totalPurchaseAmountKrw?.toLocaleString(
-                    "ko-KR"
-                  )}`}</span>
-                  <DividerStyled
-                    style={{ borderColor: "#ccc" }}
-                    type="vertical"
-                  />
-                  <span>{`${currencySymbol} ${totalPurchaseAmountGlobal?.toLocaleString(
-                    "en-US"
-                  )}`}</span>
-                </AmountTotal>
+              <Descriptions.Item label="Receiving Date(입고일)">
+                {logisticsDetail?.logisticsDate?.receivingDate}
               </Descriptions.Item>
-              <Descriptions.Item label="Total Margin Amount">
-                <AmountTotal>
-                  <span>{`₩ ${totalMarginAmountKrw?.toLocaleString(
-                    "ko-KR"
-                  )}`}</span>
-                  <DividerStyled
-                    style={{ borderColor: "#ccc" }}
-                    type="vertical"
-                  />
-                  <span>{`${currencySymbol} ${totalMarginAmountGlobal?.toLocaleString(
-                    "en-US"
-                  )}`}</span>
-                </AmountTotal>
-              </Descriptions.Item>
-              <Descriptions.Item label="Purchase Margin Rate">
-                {`${purchaseMarginRate}%`}
-              </Descriptions.Item>
-              <Descriptions.Item label="Sales Margin Rate">
-                {`${salesMarginRate}%`}
+              <Descriptions.Item label="Shipping Date(출고일)">
+                {logisticsDetail?.logisticsDate?.shippingDate}
               </Descriptions.Item>
             </Descriptions>
             <Divider variant="dashed" style={{ borderColor: "#007bff" }}>

@@ -102,6 +102,19 @@ const AddSupplierOnInquiry = () => {
   const [isInquirySearchModalVisible, setIsInquirySearchModalVisible] =
     useState(false);
 
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
+
   const setModalVisibility = (
     modalType: "header" | "mail" | "inquirySearch",
     isVisible: boolean

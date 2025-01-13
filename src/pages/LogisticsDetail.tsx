@@ -17,14 +17,16 @@ import {
   LogisticsResponse,
   Logistics,
   LogisticsItemDetail,
+  LogisticsDate,
 } from "../types/types";
 import LoadingSpinner from "../components/LoadingSpinner";
-import FormComponent from "../components/orderDetail/FormComponent";
+import FormComponent from "../components/logisticsDetail/FormComponent";
 import TableComponent from "../components/logisticsDetail/TableComponent";
 import TotalCardsComponent from "../components/makeOffer/TotalCardsComponent";
 import { pdf } from "@react-pdf/renderer";
 import CIPLDocument from "../components/logisticsDetail/CIPL";
 import CIPLHeaderEditModal from "../components/logisticsDetail/CIPLHeaderEditModal";
+import LogisticsDateComponent from "../components/logisticsDetail/LogisticsDateComponent";
 
 const Container = styled.div`
   position: relative;
@@ -99,6 +101,25 @@ const LogisticsDetail = () => {
   const [loadedCIPLHeader, setLoadedCIPLHeader] =
     useState<CIPLHeaderFormData>(INITIAL_PL_VALUES);
   const [withLogo, setWithLogo] = useState<boolean>(true);
+  const [logisticsDate, setLogisticsDate] = useState<LogisticsDate>({
+    deliveryDate: "",
+    expectedReceivingDate: "",
+    receivingDate: "",
+    shippingDate: "",
+  });
+
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
 
   // 단축키 핸들러
   const handleKeyboardSave = useCallback(
@@ -152,7 +173,14 @@ const LogisticsDetail = () => {
         dcKrw: 0,
         dcGlobal: 0,
       });
-
+      setLogisticsDate(
+        data.logisticsDate || {
+          deliveryDate: "",
+          expectedReceivingDate: "",
+          receivingDate: "",
+          shippingDate: "",
+        }
+      );
       setLoadedCIPLHeader({
         ciPlId: data?.ciPlResponse?.ciPlId || null,
         shipper:
@@ -543,6 +571,7 @@ const LogisticsDetail = () => {
       documentEditInfo: formValues,
       invChargeList: invChargeList,
       itemDetailList: items,
+      logisticsDate: logisticsDate,
     };
 
     try {
@@ -689,6 +718,13 @@ const LogisticsDetail = () => {
         <FormComponent formValues={formValues} setFormValues={setFormValues} />
       )}
       <Divider variant="dashed" style={{ borderColor: "#007bff" }}>
+        Logistics Date Information
+      </Divider>
+      <LogisticsDateComponent
+        logisticsDate={logisticsDate}
+        setLogisticsDate={setLogisticsDate}
+      />
+      <Divider variant="dashed" style={{ borderColor: "#007bff" }}>
         Logistics Item List
       </Divider>
       {items && supplier && (
@@ -796,7 +832,6 @@ const LogisticsDetail = () => {
             withLogo={withLogo}
           />
         )}
-
       {(pdfType === "CIPL" || pdfType === "PL") && headerEditModalVisible && (
         <CIPLHeaderEditModal
           open={headerEditModalVisible}

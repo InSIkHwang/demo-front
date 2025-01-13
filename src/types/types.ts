@@ -362,6 +362,13 @@ export interface Order {
   vesselName: string;
 }
 
+export interface LogisticsDate {
+  deliveryDate: string;
+  expectedReceivingDate: string;
+  receivingDate: string;
+  shippingDate: string;
+}
+
 export interface Logistics {
   companyName: string;
   currency: number;
@@ -485,6 +492,7 @@ export interface OrderResponse {
 
 export interface LogisticsResponse {
   documentInfo: Logistics;
+  logisticsDate: LogisticsDate;
   invChargeList: InvCharge[];
   itemDetailList: LogisticsItemDetail[];
   suppliers: OrderSupplier[];
@@ -506,6 +514,7 @@ export interface LogisticsRequest {
   documentEditInfo: Logistics;
   invChargeList: InvCharge[];
   itemDetailList: LogisticsItemDetail[];
+  logisticsDate: LogisticsDate;
 }
 
 export interface InvCharge {

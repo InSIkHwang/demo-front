@@ -1,6 +1,15 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Button, Checkbox, Divider, Input, message, Modal, Select } from "antd";
+import {
+  Button,
+  Checkbox,
+  Divider,
+  Input,
+  message,
+  Modal,
+  Select,
+  DatePicker,
+} from "antd";
 import styled from "styled-components";
 import dayjs from "dayjs";
 import {
@@ -106,6 +115,19 @@ const OrderDetail = () => {
   const [pdfOrderAckFooter, setPdfOrderAckFooter] = useState<orderRemark[]>([]);
   const [supplierInfoListModalVisible, setSupplierInfoListModalVisible] =
     useState<boolean>(false);
+
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
 
   // 단축키 핸들러
   const handleKeyboardSave = useCallback(
@@ -716,16 +738,77 @@ const OrderDetail = () => {
     }
   };
 
-  // 주문 컨펌 함수(ORDER -> INVOICE)
-  const handleConfirmClick = async () => {
-    try {
-      await confirmOrder(Number(orderId));
-      message.success("Confirmed successfully.");
-      navigate("/invoiceList");
-    } catch (error) {
-      console.error("Error occurred while confirming:", error);
-      message.error("Failed to confirm. Please try again.");
-    }
+  // 주문 컨펌 함수
+  const handleConfirmClick = () => {
+    let localConfirmDates = {
+      expectedReceivingDate: "",
+      deliveryDate: "",
+    };
+
+    Modal.confirm({
+      title: "Confirm Order",
+      width: 500,
+      content: (
+        <div style={{ marginTop: 16 }}>
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ marginBottom: 8 }}>
+              Expected Receiving Date.(예상 입고일)
+            </div>
+            <DatePicker
+              style={{ width: "100%" }}
+              format="YYYY-MM-DD"
+              onChange={(date) => {
+                localConfirmDates.expectedReceivingDate = date
+                  ? date.format("YYYY-MM-DD")
+                  : "";
+              }}
+              placeholder="Expected Receiving Date.(예상 입고일)"
+            />
+          </div>
+          <div>
+            <div style={{ marginBottom: 8 }}>Delivery Date.(납기일)</div>
+            <DatePicker
+              style={{ width: "100%" }}
+              format="YYYY-MM-DD"
+              onChange={(date) => {
+                localConfirmDates.deliveryDate = date
+                  ? date.format("YYYY-MM-DD")
+                  : "";
+              }}
+              placeholder="Delivery Date.(납기일)"
+            />
+          </div>
+        </div>
+      ),
+      onOk: async () => {
+        if (
+          !localConfirmDates.expectedReceivingDate ||
+          !localConfirmDates.deliveryDate
+        ) {
+          message.error(
+            "Please fill in all fields.(날짜를 모두 입력해주세요.)"
+          );
+          return Promise.reject();
+        }
+
+        try {
+          await confirmOrder(
+            Number(orderId),
+            localConfirmDates.expectedReceivingDate,
+            localConfirmDates.deliveryDate
+          );
+          console.log(localConfirmDates, "localConfirmDates");
+          message.success("Order confirmed successfully.");
+          navigate("/orderlist");
+        } catch (error) {
+          console.error("Error occurred while confirming:", error);
+          message.error("Failed to confirm. Please try again.");
+          return Promise.reject();
+        }
+      },
+      okText: "Confirm",
+      cancelText: "Cancel",
+    });
   };
 
   if (isLoading) {

@@ -955,9 +955,16 @@ export const saveOrderHeader = async (
   return response.data;
 };
 
-//ORDER 확정 (ORDER -> INVOICE)
-export const confirmOrder = async (orderId: number) => {
-  const response = await axios.put(`/api/orders/confirm/${orderId}`);
+//ORDER 확정 (ORDER -> LOGISTICS)
+export const confirmOrder = async (
+  orderId: number,
+  expectedReceivingDate: string,
+  deliveryDate: string
+) => {
+  const response = await axios.put(`/api/orders/confirm/${orderId}`, {
+    expectedReceivingDate,
+    deliveryDate,
+  });
 
   return response.data;
 };
@@ -1055,7 +1062,10 @@ export const searchLogisticsList = async ({
 };
 
 //LOGISTICS 수정
-export const editLogistics = async (logisticsId: number, request: LogisticsRequest) => {
+export const editLogistics = async (
+  logisticsId: number,
+  request: LogisticsRequest
+) => {
   const response = await axios.put(`/api/logistics/${logisticsId}`, request);
 
   return response.data;

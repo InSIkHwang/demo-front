@@ -293,6 +293,20 @@ const MakeComplexInquiry = () => {
     }[]
   >([]);
 
+  
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
+
   // 단축키 핸들러
   const handleKeyboardSave = useCallback(
     async (event: KeyboardEvent) => {

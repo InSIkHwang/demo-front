@@ -1,6 +1,6 @@
 import { Form, Input } from "antd";
 import styled from "styled-components";
-import { Order } from "../../types/types";
+import { Logistics } from "../../types/types";
 
 const InquiryItemForm = styled(Form.Item)`
   margin-bottom: 8px;
@@ -14,8 +14,8 @@ const FormRow = styled.div`
 `;
 
 interface InquiryFormProps {
-  formValues: Order;
-  setFormValues: (values: Order) => void;
+  formValues: Logistics;
+  setFormValues: (values: Logistics) => void;
 }
 
 const FormComponent = ({ formValues, setFormValues }: InquiryFormProps) => {
@@ -102,6 +102,40 @@ const FormComponent = ({ formValues, setFormValues }: InquiryFormProps) => {
             style={{ flex: 2 }}
           >
             <Input value={formValues.docRemark} disabled />
+          </InquiryItemForm>
+        </FormRow>
+        <FormRow>
+          <InquiryItemForm
+            label="Forwarder"
+            name="forwarder"
+            style={{ flex: 0.5 }}
+          >
+            <Input
+              value={formValues.forwarder}
+              onChange={(e) =>
+                setFormValues({ ...formValues, forwarder: e.target.value })
+              }
+            />
+          </InquiryItemForm>
+          <InquiryItemForm label="LOC" name="loc" style={{ flex: 0.5 }}>
+            <Input
+              value={formValues.loc}
+              onChange={(e) =>
+                setFormValues({ ...formValues, loc: e.target.value })
+              }
+            />
+          </InquiryItemForm>
+          <InquiryItemForm
+            label="Packing Details"
+            name="packingDetails"
+            style={{ flex: 1 }}
+          >
+            <Input
+              value={formValues.packingDetails}
+              onChange={(e) =>
+                setFormValues({ ...formValues, packingDetails: e.target.value })
+              }
+            />
           </InquiryItemForm>
         </FormRow>
       </Form>
