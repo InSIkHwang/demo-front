@@ -15,7 +15,6 @@ import theme from "./style/Theme";
 import { refreshToken, removeTokens } from "./api/auth";
 import LoadingSpinner from "./components/LoadingSpinner";
 import OfferList from "./pages/OfferList";
-import QuotationList from "./pages/QuotationList";
 import TrashList from "./pages/TrashList";
 import OrderList from "./pages/OrderList";
 import AddSupplierOnInquiry from "./pages/AddSupplierOnInquiry";
@@ -150,12 +149,6 @@ const App = () => {
             path="/makeoffer/:documentId"
             element={
               isAuthenticated ? <MakeOffer /> : <Navigate to="/userlogin" />
-            }
-          />
-          <Route
-            path="/quotationlist"
-            element={
-              isAuthenticated ? <QuotationList /> : <Navigate to="/userlogin" />
             }
           />
           <Route

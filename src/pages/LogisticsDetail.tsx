@@ -3,7 +3,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button, Checkbox, Divider, Input, message, Modal, Select } from "antd";
 import styled from "styled-components";
 import dayjs from "dayjs";
-import { fetchLogisticsDetail, saveCIPLHeader } from "../api/api";
+import {
+  confirmLogistics,
+  editLogistics,
+  fetchLogisticsDetail,
+  saveCIPLHeader,
+} from "../api/api";
 import {
   CIPLHeaderFormData,
   InvCharge,
@@ -84,15 +89,13 @@ const LogisticsDetail = () => {
     totalProfitPercent: 0,
   });
   const [showPDFPreview, setShowPDFPreview] = useState(false);
-  const [language, setLanguage] = useState<string>("KOR");
+  const [language, setLanguage] = useState<string>("ENG");
   const [headerEditModalVisible, setHeaderEditModalVisible] =
     useState<boolean>(false);
   const [pdfType, setPdfType] = useState<string>("CIPL");
 
   const [pdfCIPLHeader, setPdfCIPLHeader] =
     useState<CIPLHeaderFormData>(INITIAL_PL_VALUES);
-  const [supplierInfoListModalVisible, setSupplierInfoListModalVisible] =
-    useState<boolean>(false);
   const [loadedCIPLHeader, setLoadedCIPLHeader] =
     useState<CIPLHeaderFormData>(INITIAL_PL_VALUES);
   const [withLogo, setWithLogo] = useState<boolean>(true);
@@ -151,7 +154,7 @@ const LogisticsDetail = () => {
       });
 
       setLoadedCIPLHeader({
-        ciPlId: data?.orderCiPlResponse?.ciPlId || null,
+        ciPlId: data?.ciPlResponse?.ciPlId || null,
         shipper:
           "BAS KOREA CO.\n43-4, Gyeongjeoncheol-ro 24beon-gil,\nGangseo-gu, Busan, Korea / 46719\nTel: +82-51-977-7070, Fax: +82-51-793-0635",
         forAccountAndRiskOfMessers: `MASTER OF ${data.documentInfo.vesselName}\nSHIP'S SPARES IN TRANSIT`,
@@ -170,7 +173,7 @@ const LogisticsDetail = () => {
       });
 
       setPdfCIPLHeader(
-        data.orderCiPlResponse || {
+        data.ciPlResponse || {
           ...INITIAL_PL_VALUES,
           forAccountAndRiskOfMessers: `MASTER OF ${data.documentInfo.vesselName}\nSHIP'S SPARES IN TRANSIT`,
           vesselAndVoyage: data.documentInfo.vesselName,
@@ -543,7 +546,7 @@ const LogisticsDetail = () => {
     };
 
     try {
-      // await editOrder(Number(logisticsId), request);
+      await editLogistics(Number(logisticsId), request);
       message.success("Logistics saved successfully");
 
       loadLogisticsDetail();
@@ -551,14 +554,6 @@ const LogisticsDetail = () => {
       console.error("Error saving logistics:", error);
       message.error("Failed to save logistics. Please try again.");
     }
-  };
-
-  const handleChangeSupplier = () => {
-    setSupplierInfoListModalVisible(true);
-  };
-
-  const handleCloseSupplierInfoListModal = () => {
-    setSupplierInfoListModalVisible(false);
   };
 
   const handlePdfTypeChange = (value: string) => {
@@ -657,14 +652,20 @@ const LogisticsDetail = () => {
 
   // CIPL 헤더 저장
   const SaveCIPLHeader = async (header: CIPLHeaderFormData) => {
-    const response = await saveCIPLHeader(Number(logisticsId), header);
-    setPdfCIPLHeader(response);
+    try {
+      const response = await saveCIPLHeader(Number(logisticsId), header);
+      setPdfCIPLHeader(response);
+      message.success("Header saved successfully");
+    } catch (error) {
+      console.error("Error occurred while saving Header:", error);
+      message.error("Failed to save Header. Please try again.");
+    }
   };
 
   // 주문 컨펌 함수(ORDER -> LOGISTICS)
   const handleConfirmClick = async () => {
     try {
-      // await confirmOrder(Number(logisticsId));
+      await confirmLogistics(Number(logisticsId));
       message.success("Confirmed successfully.");
       navigate("/logisticsList");
     } catch (error) {
@@ -690,13 +691,6 @@ const LogisticsDetail = () => {
       <Divider variant="dashed" style={{ borderColor: "#007bff" }}>
         Logistics Item List
       </Divider>
-      <Button
-        type="primary"
-        onClick={handleChangeSupplier}
-        style={{ marginBottom: 10 }}
-      >
-        Change Supplier
-      </Button>
       {items && supplier && (
         <TableComponent
           itemDetails={items}

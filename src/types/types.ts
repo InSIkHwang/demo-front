@@ -294,12 +294,7 @@ export interface Quotation {
 }
 
 export interface QuotationDetail {
-  invChargeList?: {
-    invChargeId: number;
-    customCharge: string;
-    chargePriceKRW: number;
-    chargePriceGlobal: number;
-  }[];
+  invChargeList?: InvCharge[];
   quotationDocumentDetail: {
     quotationId: number;
     docNumber: string;
@@ -388,6 +383,9 @@ export interface Logistics {
   vesselHullNo?: string;
   vesselId?: number;
   vesselName: string;
+  forwarder?: string;
+  loc?: string;
+  packingDetails?: string;
 }
 
 export interface orderAllResponses {
@@ -415,6 +413,7 @@ export interface OrderItemDetail {
   purchaseAmountKRW: number;
   purchaseAmountGlobal: number;
   deliveryDate: number;
+  supplier?: OrderSupplier;
 }
 
 export interface LogisticsItemDetail {
@@ -437,6 +436,7 @@ export interface LogisticsItemDetail {
   purchaseAmountKRW: number;
   purchaseAmountGlobal: number;
   deliveryDate: number;
+  supplier?: OrderSupplier;
 }
 
 export interface OrderSupplier {
@@ -481,7 +481,6 @@ export interface OrderResponse {
   suppliers: OrderSupplier[];
   supplierInfoList: OrderSupplier[];
   orderHeaderResponse: orderHeaderResponse;
-  orderCiPlResponse: CIPLHeaderFormData;
 }
 
 export interface LogisticsResponse {
@@ -490,7 +489,7 @@ export interface LogisticsResponse {
   itemDetailList: LogisticsItemDetail[];
   suppliers: OrderSupplier[];
   supplierInfoList: OrderSupplier[];
-  orderCiPlResponse: CIPLHeaderFormData;
+  ciPlResponse: CIPLHeaderFormData;
 }
 
 export interface OrderRequest {

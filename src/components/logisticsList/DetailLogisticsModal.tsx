@@ -324,7 +324,7 @@ const DetailLogisticsModal = ({
         if (isSpecialItemType(record.itemType)) {
           return null;
         }
-        return text;
+        return record.supplier?.companyName;
       },
     },
   ];
@@ -393,6 +393,15 @@ const DetailLogisticsModal = ({
               </Descriptions.Item>
               <Descriptions.Item label="Remark">
                 {logisticsDetail.documentInfo.docRemark}
+              </Descriptions.Item>
+              <Descriptions.Item label="Forwarder">
+                {logisticsDetail.documentInfo.forwarder}
+              </Descriptions.Item>
+              <Descriptions.Item label="Loc">
+                {logisticsDetail.documentInfo.loc}
+              </Descriptions.Item>
+              <Descriptions.Item label="Packing Details">
+                {logisticsDetail.documentInfo.packingDetails}
               </Descriptions.Item>
             </Descriptions>
             <Descriptions

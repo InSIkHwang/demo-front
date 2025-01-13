@@ -21,7 +21,6 @@ import logoUrl from "../../assets/logo/withoutTextLogo.png";
 import simpleLogoUrl from "../../assets/logo/simpleLogo.png";
 import {
   InvCharge,
-  OrderItemDetail,
   Order,
   CIPLHeaderFormData,
   LogisticsItemDetail,

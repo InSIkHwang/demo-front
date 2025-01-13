@@ -10,7 +10,7 @@ import {
 } from "antd";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import { confirmOrder, deleteQutation, fetchOrderDetail } from "../../api/api";
+import { confirmOrder, fetchOrderDetail } from "../../api/api";
 import { OrderResponse } from "../../types/types";
 
 interface DetailOrderModalProps {
@@ -323,7 +323,7 @@ const DetailOrderModal = ({
         if (isSpecialItemType(record.itemType)) {
           return null;
         }
-        return text;
+        return record.supplier?.companyName;
       },
     },
   ];

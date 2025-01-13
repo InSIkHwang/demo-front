@@ -462,7 +462,7 @@ const OrderList = () => {
           </SearchBar>
         </TableHeader>
         <Divider />
-        {data.length > 0 ? ( // 데이터가 있을 때만 페이지네이션을 표시
+        {data?.length > 0 ? ( // 데이터가 있을 때만 페이지네이션을 표시
           <>
             <Table
               columns={columns}

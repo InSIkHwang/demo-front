@@ -236,7 +236,7 @@ const LogisticsList = () => {
         itemsPerPage,
         viewMyOfferOnly
       );
-      setData(response.logisticsList);
+      setData(response.orderList);
       setTotalCount(response.totalCount);
     } catch (error) {
       console.error("Logistics List fetchData error", error);
@@ -338,7 +338,7 @@ const LogisticsList = () => {
 
   // 행 클릭 시 모달 열기
   const handleRowClick = (record: Logistics) => {
-    setSelectedLogisticsId(record.documentId ?? null);
+    setSelectedLogisticsId(record.logisticsId ?? null);
     setIsDetailModalOpen(true);
   };
 
@@ -464,7 +464,7 @@ const LogisticsList = () => {
           </SearchBar>
         </TableHeader>
         <Divider />
-        {data.length > 0 ? ( // 데이터가 있을 때만 페이지네이션을 표시
+        {data?.length > 0 ? ( // 데이터가 있을 때만 페이지네이션을 표시
           <>
             <Table
               columns={columns}
