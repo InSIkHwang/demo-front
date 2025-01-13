@@ -223,7 +223,7 @@ const ShipListModal = ({ isVisible, onClose }: ShipListModalProps) => {
           })}
           style={{ cursor: "pointer" }}
         />
-        {data.length > 0 && (
+        {data?.length > 0 && (
           <PaginationWrapper
             current={currentPage}
             pageSize={itemsPerPage}

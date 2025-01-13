@@ -13,6 +13,8 @@ import {
   InvoiceRemarkDetail,
   Item,
   ItemDataType,
+  Logistics,
+  LogisticsRequest,
   OfferSearchParams,
   Order,
   OrderAckHeaderFormData,
@@ -837,81 +839,12 @@ export const saveOfferHeader = async (
 };
 
 //----------------------------------------------------------------------------------
-// QUOTATION 조회 관련
-
-//QUOTATION 조회
-export const fetchQuotationList = async (page: number, pageSize: number) => {
-  const response = await axios.get<{
-    totalCount: number;
-    quotationList: Quotation[];
-  }>("/api/quotations", {
-    params: {
-      page: page - 1, // 페이지는 0부터 시작
-      pageSize: pageSize, // 페이지당 아이템 수
-    },
-  });
-
-  return response.data;
-};
-
-//QUOTATION 상세 정보 조회
-export const fetchQuotationDetail = async (quotationId: number) => {
-  const response = await axios.get(`/api/quotations/${quotationId}`);
-
-  return response.data;
-};
-
-//QUOTATION 검색
-export const searchQutationList = async (
-  registerStartDate: string = "",
-  registerEndDate: string = "",
-  documentNumber: string = "",
-  refNumber: string = "",
-  customerName: string = "",
-  page: number,
-  pageSize: number
-): Promise<{
-  totalCount: number;
-  quotationList: Quotation[];
-}> => {
-  // Query parameters를 객체로 정의
-  const queryParams: { [key: string]: string } = {
-    registerStartDate,
-    registerEndDate,
-    documentNumber,
-    refNumber,
-    customerName,
-    page: (page - 1).toString(), // 페이지는 0부터 시작
-    pageSize: pageSize.toString(), // 페이지당 아이템 수
-  };
-
-  // 쿼리 문자열을 생성
-  const queryString = Object.keys(queryParams)
-    .filter((key) => queryParams[key] !== "") // 빈 문자열 필터링
-    .map((key) => `${key}=${encodeURIComponent(queryParams[key])}`)
-    .join("&");
-
-  // GET 요청을 보냄 (POST가 아닌 GET으로 보내야 할 경우)
-  const response = await axios.post<{
-    totalCount: number;
-    quotationList: Quotation[];
-  }>(`/api/quotations/search?${queryString}`);
-
-  return response.data;
-};
-
-//QUOTATION 삭제
-export const deleteQutation = async (quotationId: number) => {
-  await axios.put(`/api/quotations/${quotationId}/trash`);
-};
+// ORDER 조회 관련
 
 //QUOTATION 확정
 export const confirmQutation = async (supplierInquiryId: number) => {
   await axios.post(`/api/quotation/confirm/${supplierInquiryId}`);
 };
-
-//----------------------------------------------------------------------------------
-// ORDER 조회 관련
 
 //ORDER 조회
 export const fetchOrderList = async (
@@ -1022,18 +955,125 @@ export const saveOrderHeader = async (
   return response.data;
 };
 
-export const saveCIPLHeader = async (
+//ORDER 확정 (ORDER -> LOGISTICS)
+export const confirmOrder = async (
   orderId: number,
-  orderHeader: CIPLHeaderFormData
+  expectedReceivingDate: string,
+  deliveryDate: string
 ) => {
-  const response = await axios.put(`/api/orders/ci-pl/${orderId}`, orderHeader);
+  const response = await axios.put(`/api/orders/confirm/${orderId}`, {
+    expectedReceivingDate,
+    deliveryDate,
+  });
 
   return response.data;
 };
 
-//ORDER 확정 (ORDER -> INVOICE)
-export const confirmOrder = async (orderId: number) => {
-  const response = await axios.put(`/api/orders/confirm/${orderId}`);
+//----------------------------------------------------------------------------------
+// LOGISTICS 조회 관련
+
+//LOGISTICS 조회
+export const fetchLogisticsList = async (
+  page: number,
+  pageSize: number,
+  viewMyOfferOnly: boolean
+) => {
+  const response = await axios.get<{
+    totalCount: number;
+    orderList: Logistics[];
+  }>("/api/logistics", {
+    params: {
+      page: page - 1, // 페이지는 0부터 시작
+      pageSize: pageSize, // 페이지당 아이템 수
+      writer: viewMyOfferOnly ? "MY" : "ALL",
+    },
+  });
+
+  return response.data;
+};
+
+//LOGISTICS 상세 정보 조회
+export const fetchLogisticsDetail = async (logisticsId: number) => {
+  const response = await axios.get(`/api/logistics/${logisticsId}`);
+
+  return response.data;
+};
+
+//CIPL 헤더 저장
+export const saveCIPLHeader = async (
+  orderId: number,
+  orderHeader: CIPLHeaderFormData
+) => {
+  const response = await axios.put(
+    `/api/logistics/ci-pl/${orderId}`,
+    orderHeader
+  );
+
+  return response.data;
+};
+
+//LOGISTICS 검색
+export const searchLogisticsList = async ({
+  registerStartDate = "",
+  registerEndDate = "",
+  query = "",
+  documentNumber = "",
+  refNumber = "",
+  customerName = "",
+  supplierName = "",
+  page,
+  pageSize,
+  writer,
+  itemName = "",
+  itemCode = "",
+  vesselName = "",
+}: OfferSearchParams): Promise<{
+  totalCount: number;
+  logisticsList: Logistics[];
+}> => {
+  const queryParams = {
+    registerStartDate,
+    registerEndDate,
+    query,
+    documentNumber,
+    refNumber,
+    customerName,
+    supplierName,
+    page: (page - 1).toString(),
+    pageSize: pageSize.toString(),
+    writer,
+    itemName,
+    itemCode,
+    vesselName,
+  };
+
+  const queryString = new URLSearchParams(
+    Object.entries(queryParams)
+      .filter(([_, value]) => value !== "")
+      .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {})
+  ).toString();
+
+  const response = await axios.post<{
+    totalCount: number;
+    logisticsList: Logistics[];
+  }>(`/api/logistics/search?${queryString}`);
+
+  return response.data;
+};
+
+//LOGISTICS 수정
+export const editLogistics = async (
+  logisticsId: number,
+  request: LogisticsRequest
+) => {
+  const response = await axios.put(`/api/logistics/${logisticsId}`, request);
+
+  return response.data;
+};
+
+//LOGISTICS 확정
+export const confirmLogistics = async (logisticsId: number) => {
+  const response = await axios.put(`/api/logistics/confirm/${logisticsId}`);
 
   return response.data;
 };

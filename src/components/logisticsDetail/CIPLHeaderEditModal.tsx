@@ -1,23 +1,15 @@
-import React, { useState, useEffect } from "react";
+import { useEffect } from "react";
 import {
   Modal,
   Button,
   Input,
-  Checkbox,
   Form,
-  Select,
-  Divider,
   AutoComplete,
 } from "antd";
 import styled from "styled-components";
 import {
   CIPLHeaderFormData,
-  HeaderFormData,
-  OrderAckHeaderFormData,
-  orderRemark,
 } from "../../types/types";
-import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
-import dayjs from "dayjs";
 
 const StyledModal = styled(Modal)`
   .ant-modal-content {

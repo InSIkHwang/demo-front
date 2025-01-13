@@ -239,6 +239,19 @@ const MakeInquiry = () => {
   const [tables, setTables] = useState<InquiryTable[]>([]);
   const [currentTableNo, setCurrentTableNo] = useState<number>(1);
 
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
+
   // 키보드 저장 핸들러
   const handleKeyboardSave = useCallback(
     async (event: KeyboardEvent) => {
@@ -264,7 +277,14 @@ const MakeInquiry = () => {
         await handleSubmit();
       }
     },
-    [customerInquiryId, formValues.docNumber]
+    [
+      customerInquiryId,
+      formValues,
+      items,
+      vesselList,
+      selectedCustomerId,
+      selectedSuppliers,
+    ]
   );
 
   // 키보드 저장 핸들러 등록

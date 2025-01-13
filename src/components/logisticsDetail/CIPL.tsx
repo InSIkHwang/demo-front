@@ -21,9 +21,9 @@ import logoUrl from "../../assets/logo/withoutTextLogo.png";
 import simpleLogoUrl from "../../assets/logo/simpleLogo.png";
 import {
   InvCharge,
-  OrderItemDetail,
   Order,
   CIPLHeaderFormData,
+  LogisticsItemDetail,
 } from "../../types/types";
 
 // 한글 글꼴 등록
@@ -56,7 +56,7 @@ Font.registerHyphenationCallback((word) => ["", word, ""]);
 interface CIPLDocumentProps {
   mode: string;
   info: Order;
-  items: OrderItemDetail[];
+  items: LogisticsItemDetail[];
   pdfHeader: CIPLHeaderFormData;
   viewMode: boolean;
   language: string;
@@ -371,6 +371,7 @@ const styles = StyleSheet.create({
     fontSize: 9,
     color: "#142952",
     lineHeight: 1.8,
+    paddingRight: 50,
   },
 
   footer: {
@@ -454,7 +455,7 @@ const getDisplayNo = (itemType: string, itemIndex: number, indexNo: string) => {
 
 // 테이블 행을 렌더링하는 함수
 const renderTableRows = (
-  items: OrderItemDetail[],
+  items: LogisticsItemDetail[],
   language: string,
   mode: string
 ) => {
@@ -973,7 +974,7 @@ const CIPLDocument = ({
   withLogo,
 }: CIPLDocumentProps) => {
   const headerMessage = pdfHeader;
-  const calculateTotalSalesAmount = (items: OrderItemDetail[]) => {
+  const calculateTotalSalesAmount = (items: LogisticsItemDetail[]) => {
     if (language === "KOR") {
       return items.reduce((total, item) => total + item.salesAmountKRW, 0);
     } else {

@@ -113,7 +113,15 @@ const InvoiceDetail = () => {
         await handleSave();
       }
     },
-    [invoiceNumber]
+    [
+      invoiceNumber,
+      formValues,
+      items,
+      finalTotals,
+      invChargeList,
+      dcInfo,
+      nonSelectedChargeList,
+    ]
   );
 
   // 단축키 이벤트 리스너 등록

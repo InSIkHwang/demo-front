@@ -294,12 +294,7 @@ export interface Quotation {
 }
 
 export interface QuotationDetail {
-  invChargeList?: {
-    invChargeId: number;
-    customCharge: string;
-    chargePriceKRW: number;
-    chargePriceGlobal: number;
-  }[];
+  invChargeList?: InvCharge[];
   quotationDocumentDetail: {
     quotationId: number;
     docNumber: string;
@@ -367,10 +362,44 @@ export interface Order {
   vesselName: string;
 }
 
+export interface LogisticsDate {
+  deliveryDate: string;
+  expectedReceivingDate: string;
+  receivingDate: string;
+  shippingDate: string;
+}
+
+export interface Logistics {
+  companyName: string;
+  currency: number;
+  currencyType: string;
+  customerId?: number; // optional
+  discount?: number | null;
+  docManager: string;
+  docRemark: string;
+  documentId: number;
+  documentNumber: string;
+  documentStatus: string;
+  imoNo?: number; // optional
+  invChargeList?: InvCharge[]; // optional
+  logisticsId?: number;
+  quotationId?: number;
+  refNumber: string;
+  registerDate: string;
+  shippingDate: string;
+  vesselHullNo?: string;
+  vesselId?: number;
+  vesselName: string;
+  forwarder?: string;
+  loc?: string;
+  packingDetails?: string;
+}
+
 export interface orderAllResponses {
   orderList: Order[];
   totalCount: number;
 }
+
 export interface OrderItemDetail {
   ordersItemId: number | null;
   itemType: "ITEM" | "MAKER" | "TYPE" | "DESC" | "DASH" | string;
@@ -391,6 +420,30 @@ export interface OrderItemDetail {
   purchaseAmountKRW: number;
   purchaseAmountGlobal: number;
   deliveryDate: number;
+  supplier?: OrderSupplier;
+}
+
+export interface LogisticsItemDetail {
+  logisticsItemId: number | null;
+  itemType: "ITEM" | "MAKER" | "TYPE" | "DESC" | "DASH" | string;
+  itemCode: string;
+  itemName: string;
+  itemRemark: string;
+  qty: number;
+  position: number;
+  unit: string;
+  indexNo: string | null;
+  salesPriceKRW: number;
+  salesPriceGlobal: number;
+  salesAmountKRW: number;
+  salesAmountGlobal: number;
+  margin: number;
+  purchasePriceKRW: number;
+  purchasePriceGlobal: number;
+  purchaseAmountKRW: number;
+  purchaseAmountGlobal: number;
+  deliveryDate: number;
+  supplier?: OrderSupplier;
 }
 
 export interface OrderSupplier {
@@ -435,7 +488,16 @@ export interface OrderResponse {
   suppliers: OrderSupplier[];
   supplierInfoList: OrderSupplier[];
   orderHeaderResponse: orderHeaderResponse;
-  orderCiPlResponse: CIPLHeaderFormData;
+}
+
+export interface LogisticsResponse {
+  documentInfo: Logistics;
+  logisticsDate: LogisticsDate;
+  invChargeList: InvCharge[];
+  itemDetailList: LogisticsItemDetail[];
+  suppliers: OrderSupplier[];
+  supplierInfoList: OrderSupplier[];
+  ciPlResponse: CIPLHeaderFormData;
 }
 
 export interface OrderRequest {
@@ -444,6 +506,15 @@ export interface OrderRequest {
   documentEditInfo: Order;
   invChargeList: InvCharge[];
   itemDetailList: OrderItemDetail[];
+}
+
+export interface LogisticsRequest {
+  logisticsId: number;
+  supplierId: number;
+  documentEditInfo: Logistics;
+  invChargeList: InvCharge[];
+  itemDetailList: LogisticsItemDetail[];
+  logisticsDate: LogisticsDate;
 }
 
 export interface InvCharge {

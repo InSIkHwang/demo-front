@@ -194,6 +194,19 @@ const MakeOffer = () => {
     useState<boolean>(false);
 
   useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
+
+  useEffect(() => {
     loadOfferDetail();
   }, []);
 
@@ -212,7 +225,14 @@ const MakeOffer = () => {
         await handleSave(false, activeKey);
       }
     },
-    [activeKey, formValues.refNumber]
+    [
+      formValues,
+      currentDetailItems,
+      activeKey,
+      finalTotals,
+      invChargeList,
+      dcInfo,
+    ]
   );
 
   // 단축키 저장 이벤트 핸들러 등록

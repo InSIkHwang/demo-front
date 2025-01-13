@@ -1,43 +1,32 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import {
-  Button,
-  Checkbox,
-  Divider,
-  Input,
-  message,
-  Modal,
-  Select,
-  DatePicker,
-} from "antd";
+import { Button, Checkbox, Divider, Input, message, Modal, Select } from "antd";
 import styled from "styled-components";
 import dayjs from "dayjs";
 import {
-  confirmOrder,
-  editOrder,
-  fetchOrderDetail,
-  saveOrderHeader,
+  confirmLogistics,
+  editLogistics,
+  fetchLogisticsDetail,
+  saveCIPLHeader,
 } from "../api/api";
 import {
+  CIPLHeaderFormData,
   InvCharge,
-  Order,
-  OrderAckHeaderFormData,
-  OrderItemDetail,
-  orderRemark,
-  OrderRequest,
-  OrderResponse,
+  LogisticsRequest,
   OrderSupplier,
+  LogisticsResponse,
+  Logistics,
+  LogisticsItemDetail,
+  LogisticsDate,
 } from "../types/types";
 import LoadingSpinner from "../components/LoadingSpinner";
-import FormComponent from "../components/orderDetail/FormComponent";
-import TableComponent from "../components/orderDetail/TableComponent";
+import FormComponent from "../components/logisticsDetail/FormComponent";
+import TableComponent from "../components/logisticsDetail/TableComponent";
 import TotalCardsComponent from "../components/makeOffer/TotalCardsComponent";
-import PurchaseOrderPDFDocument from "../components/orderDetail/PurchaseOrder";
-import POHeaderEditModal from "../components/orderDetail/POHeaderEditModal";
-import OrderAckHeaderEditModal from "../components/orderDetail/OrderAckHeaderEditModal";
-import OrderAckPDFDocument from "../components/orderDetail/OrderAckPDFDocument";
-import ChangeSupplierModal from "../components/orderDetail/ChangeSupplierModal";
 import { pdf } from "@react-pdf/renderer";
+import CIPLDocument from "../components/logisticsDetail/CIPL";
+import CIPLHeaderEditModal from "../components/logisticsDetail/CIPLHeaderEditModal";
+import LogisticsDateComponent from "../components/logisticsDetail/LogisticsDateComponent";
 
 const Container = styled.div`
   position: relative;
@@ -56,23 +45,32 @@ const Title = styled.h1`
   color: #333;
 `;
 
-const INITIAL_HEADER_VALUES: OrderAckHeaderFormData = {
-  orderHeaderId: null,
-  portOfShipment: "BUSAN, KOREA",
-  deliveryTime: dayjs().format("DD MMM YYYY").toUpperCase(),
-  termsOfPayment: "",
-  incoterms: "EX WORKS",
-  receiverType: "CUSTOMER",
-  packing: "UNPACKED",
+const INITIAL_PL_VALUES: CIPLHeaderFormData = {
+  ciPlId: null,
+  shipper:
+    "BAS KOREA CO.\n43-4, Gyeongjeoncheol-ro 24beon-gil,\nGangseo-gu, Busan, Korea / 46719\nTel: +82-51-977-7070, Fax: +82-51-793-0635",
+  forAccountAndRiskOfMessers: "MASTER OF \nSHIP'S SPARES IN TRANSIT",
+  notifyParty: "",
+  portOfLoading: "BUSAN, KOREA",
+  finalDestination: "",
+  vesselAndVoyage: "",
+  sailingOnOr: "",
+  noAndDateOfInvoice: "",
+  noAndDateOfPo: "",
+  lcIssuingBank: "",
+  remark:
+    "SHIPS SPARES IN TRANSIT\nPACKING DETAILS\n\nHS CODE: 8409.99-9000\nCOUNTRY OF ORIGIN: KOREA",
 };
 
-const OrderDetail = () => {
-  const { orderId } = useParams();
-  const [formValues, setFormValues] = useState<Order>();
-  const [items, setItems] = useState<OrderItemDetail[]>([]);
+const LogisticsDetail = () => {
+  const { logisticsId } = useParams();
+  const [formValues, setFormValues] = useState<Logistics>();
+  const [items, setItems] = useState<LogisticsItemDetail[]>([]);
   const [supplier, setSupplier] = useState<OrderSupplier>();
   const navigate = useNavigate();
-  const [orderData, setOrderData] = useState<OrderResponse | null>(null);
+  const [logisticsData, setLogisticsData] = useState<LogisticsResponse | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [invChargeList, setInvChargeList] = useState<InvCharge[] | null>([]);
   const [dcInfo, setDcInfo] = useState({
@@ -80,7 +78,6 @@ const OrderDetail = () => {
     dcKrw: 0,
     dcGlobal: 0,
   });
-  const [supplierInfoList, setSupplierInfoList] = useState<OrderSupplier[]>([]);
   const [finalTotals, setFinalTotals] = useState({
     totalSalesAmountKRW: 0,
     totalSalesAmountGlobal: 0,
@@ -94,27 +91,22 @@ const OrderDetail = () => {
     totalProfitPercent: 0,
   });
   const [showPDFPreview, setShowPDFPreview] = useState(false);
-  const [language, setLanguage] = useState<string>("KOR");
+  const [language, setLanguage] = useState<string>("ENG");
   const [headerEditModalVisible, setHeaderEditModalVisible] =
     useState<boolean>(false);
-  const [pdfType, setPdfType] = useState<string>("PO");
-  const [pdfPOHeader, setPdfPOHeader] = useState<{
-    orderHeaderId: number | null;
-    receiverType: string;
-  }>({
-    orderHeaderId: null,
-    receiverType: "SUPPLIER",
+  const [pdfType, setPdfType] = useState<string>("CIPL");
+
+  const [pdfCIPLHeader, setPdfCIPLHeader] =
+    useState<CIPLHeaderFormData>(INITIAL_PL_VALUES);
+  const [loadedCIPLHeader, setLoadedCIPLHeader] =
+    useState<CIPLHeaderFormData>(INITIAL_PL_VALUES);
+  const [withLogo, setWithLogo] = useState<boolean>(true);
+  const [logisticsDate, setLogisticsDate] = useState<LogisticsDate>({
+    deliveryDate: "",
+    expectedReceivingDate: "",
+    receivingDate: "",
+    shippingDate: "",
   });
-  const [pdfPOFooter, setPdfPOFooter] = useState<orderRemark>({
-    orderRemarkId: null,
-    orderRemark:
-      "1. 귀사의 무궁한 발전을 기원합니다.\n2. 상기와 같이 발주하오니 업무에 참조하시기 바랍니다.\n3. 세금 계산서 - 법인\n4. 희망 납기일 - 월 일\n5. 예정 납기일 포함된 발주서 접수 회신 메일 부탁 드립니다. 감사합니다.",
-  });
-  const [pdfOrderAckHeader, setPdfOrderAckHeader] =
-    useState<OrderAckHeaderFormData>(INITIAL_HEADER_VALUES);
-  const [pdfOrderAckFooter, setPdfOrderAckFooter] = useState<orderRemark[]>([]);
-  const [supplierInfoListModalVisible, setSupplierInfoListModalVisible] =
-    useState<boolean>(false);
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -161,39 +153,17 @@ const OrderDetail = () => {
     return () => window.removeEventListener("keydown", handler, true);
   }, [handleKeyboardSave]);
 
-  // 언어 변경 시 PDF 헤더 및 푸터 업데이트
-  useEffect(() => {
-    if (language === "KOR") {
-      setPdfPOHeader((prev) => ({
-        orderHeaderId: prev.orderHeaderId,
-        receiverType: "SUPPLIER",
-      }));
-      setPdfPOFooter((prev) => ({
-        orderRemarkId: prev.orderRemarkId,
-        orderRemark:
-          "1. 귀사의 무궁한 발전을 기원합니다.\n2. 상기와 같이 발주하오니 업무에 참조하시기 바랍니다.\n3. 세금 계산서 - 법인\n4. 희망 납기일 - 월 일 \n5. 예정 납기일 포함된 발주서 접수 회신 메일 부탁 드립니다. 감사합니다.",
-      }));
-    } else {
-      setPdfPOHeader((prev) => ({
-        orderHeaderId: prev.orderHeaderId,
-        receiverType: "SUPPLIER",
-      }));
-      setPdfPOFooter((prev) => ({
-        orderRemarkId: prev.orderRemarkId,
-        orderRemark: "EXPECTED DELIVERY DATE : ",
-      }));
-    }
-  }, [language]);
-
   // 주문 상세 데이터 로드 함수
-  const loadOrderDetail = async () => {
+  const loadLogisticsDetail = async () => {
     try {
-      const data: OrderResponse = await fetchOrderDetail(Number(orderId));
+      const data: LogisticsResponse = await fetchLogisticsDetail(
+        Number(logisticsId)
+      );
 
       const sortedItems = data.itemDetailList.sort(
         (a, b) => a.position - b.position
       );
-      setOrderData(data);
+      setLogisticsData(data);
       setFormValues(data.documentInfo);
       setItems(sortedItems);
       setSupplier(data.suppliers[0]);
@@ -203,26 +173,48 @@ const OrderDetail = () => {
         dcKrw: 0,
         dcGlobal: 0,
       });
-      setSupplierInfoList(data.supplierInfoList);
-      setPdfOrderAckHeader(
-        data.orderHeaderResponse?.orderCustomerHeader || INITIAL_HEADER_VALUES
+      setLogisticsDate(
+        data.logisticsDate || {
+          deliveryDate: "",
+          expectedReceivingDate: "",
+          receivingDate: "",
+          shippingDate: "",
+        }
       );
-      setPdfOrderAckFooter(data.orderHeaderResponse?.orderCustomerRemark || []);
-      setPdfPOHeader({
-        orderHeaderId:
-          data.orderHeaderResponse?.orderSupplierHeader?.orderHeaderId || null,
-        receiverType: "SUPPLIER",
+      setLoadedCIPLHeader({
+        ciPlId: data?.ciPlResponse?.ciPlId || null,
+        shipper:
+          "BAS KOREA CO.\n43-4, Gyeongjeoncheol-ro 24beon-gil,\nGangseo-gu, Busan, Korea / 46719\nTel: +82-51-977-7070, Fax: +82-51-793-0635",
+        forAccountAndRiskOfMessers: `MASTER OF ${data.documentInfo.vesselName}\nSHIP'S SPARES IN TRANSIT`,
+        notifyParty: "",
+        portOfLoading: "BUSAN, KOREA",
+        finalDestination: "",
+        vesselAndVoyage: data.documentInfo.vesselName,
+        sailingOnOr: "",
+        noAndDateOfInvoice: `${data.documentInfo.refNumber}, ${dayjs().format(
+          "DD MMM YYYY"
+        )}`,
+        noAndDateOfPo: data.documentInfo.documentNumber,
+        lcIssuingBank: data.documentInfo.companyName,
+        remark:
+          "SHIPS SPARES IN TRANSIT\nPACKING DETAILS\n\nHS CODE: 8409.99-9000\nCOUNTRY OF ORIGIN: KOREA",
       });
-      setPdfPOFooter(
-        data.orderHeaderResponse?.orderSupplierRemark[0] || {
-          orderRemarkId: null,
-          orderRemark:
-            "1. 귀사의 무궁한 발전을 기원합니다.\n2. 상기와 같이 발주하오니 업무에 참조하시기 바랍니다.\n3. 세금 계산서 - 법인\n4. 희망 납기일 - 월 일 \n5. 예정 납기일 포함된 발주서 접수 회신 메일 부탁 드립니다. 감사합니다.",
+
+      setPdfCIPLHeader(
+        data.ciPlResponse || {
+          ...INITIAL_PL_VALUES,
+          forAccountAndRiskOfMessers: `MASTER OF ${data.documentInfo.vesselName}\nSHIP'S SPARES IN TRANSIT`,
+          vesselAndVoyage: data.documentInfo.vesselName,
+          noAndDateOfInvoice: `${data.documentInfo.refNumber}, ${dayjs().format(
+            "DD MMM YYYY"
+          )}`,
+          noAndDateOfPo: data.documentInfo.documentNumber,
+          lcIssuingBank: data.documentInfo.companyName,
         }
       );
     } catch (error) {
-      console.error("Order detail error:", error);
-      message.error("Failed to load order detail.");
+      console.error("Logistics detail error:", error);
+      message.error("Failed to load logistics detail.");
     } finally {
       setIsLoading(false);
     }
@@ -230,13 +222,13 @@ const OrderDetail = () => {
 
   // 주문 상세 데이터 로드 함수
   useEffect(() => {
-    loadOrderDetail();
-  }, [orderId]);
+    loadLogisticsDetail();
+  }, [logisticsId]);
 
   // 입력 값 변경 함수
   const handleInputChange = useCallback(
-    (index: number, key: keyof OrderItemDetail, value: any) => {
-      setItems((prevItems: OrderItemDetail[]) => {
+    (index: number, key: keyof LogisticsItemDetail, value: any) => {
+      setItems((prevItems: LogisticsItemDetail[]) => {
         if (!prevItems?.[index]) return prevItems;
         if (prevItems[index][key] === value) return prevItems;
 
@@ -309,7 +301,7 @@ const OrderDetail = () => {
     const salesAmountKRW = calculateTotalAmount(salesPriceKRW, qty);
 
     const exchangeRate =
-      formValues?.currency || orderData?.documentInfo.currency || 1050;
+      formValues?.currency || logisticsData?.documentInfo.currency || 1050;
     const salesPriceGlobal = roundToTwoDecimalPlaces(
       salesPriceKRW / exchangeRate
     );
@@ -330,7 +322,7 @@ const OrderDetail = () => {
   // 가격 입력 변경 함수
   const handlePriceInputChange = (
     index: number,
-    key: keyof OrderItemDetail,
+    key: keyof LogisticsItemDetail,
     value: any,
     currency: number
   ) => {
@@ -573,37 +565,28 @@ const OrderDetail = () => {
       return;
     }
 
-    const request: OrderRequest = {
-      orderId: Number(orderId),
+    const request: LogisticsRequest = {
+      logisticsId: Number(logisticsId),
       supplierId: supplier?.supplierId || 0,
       documentEditInfo: formValues,
       invChargeList: invChargeList,
       itemDetailList: items,
+      logisticsDate: logisticsDate,
     };
 
     try {
-      await editOrder(Number(orderId), request);
-      message.success("Order saved successfully");
+      await editLogistics(Number(logisticsId), request);
+      message.success("Logistics saved successfully");
 
-      loadOrderDetail();
+      loadLogisticsDetail();
     } catch (error) {
-      console.error("Error saving order:", error);
-      message.error("Failed to save order. Please try again.");
+      console.error("Error saving logistics:", error);
+      message.error("Failed to save logistics. Please try again.");
     }
-  };
-
-  const handleChangeSupplier = () => {
-    setSupplierInfoListModalVisible(true);
-  };
-
-  const handleCloseSupplierInfoListModal = () => {
-    setSupplierInfoListModalVisible(false);
   };
 
   const handlePdfTypeChange = (value: string) => {
     setPdfType(value);
-    // OA 선택 시 영어로, PO 선택 시 한글로 자동 변경
-    setLanguage(value === "PO" ? "KOR" : "ENG");
   };
 
   // 공통 함수: PDF 다운로드
@@ -615,31 +598,19 @@ const OrderDetail = () => {
 
     try {
       let doc;
-      if (pdfType === "PO") {
+      if (pdfType === "CIPL" || pdfType === "PL") {
         doc = (
-          <PurchaseOrderPDFDocument
+          <CIPLDocument
+            mode={pdfType}
             info={formValues}
             items={items}
-            pdfHeader={pdfPOHeader}
+            pdfHeader={pdfCIPLHeader}
             viewMode={false}
             language={language}
-            pdfFooter={pdfPOFooter}
-            finalTotals={finalTotals}
-            supplier={supplier}
-          />
-        );
-      } else if (pdfType === "OA") {
-        doc = (
-          <OrderAckPDFDocument
-            info={formValues}
-            items={items}
-            pdfHeader={pdfOrderAckHeader}
-            viewMode={false}
-            language={language}
-            pdfFooter={pdfOrderAckFooter}
             finalTotals={finalTotals}
             dcInfo={dcInfo}
             invChargeList={invChargeList}
+            withLogo={withLogo}
           />
         );
       }
@@ -647,18 +618,8 @@ const OrderDetail = () => {
       const pdfBlob = await pdf(doc).toBlob();
       let defaultFileName = "";
 
-      if (pdfType === "PO" && language === "KOR") {
-        defaultFileName = `${
-          supplier.korCompanyName || supplier.companyName
-        }_발주서_${formValues.documentNumber}.pdf`;
-      } else if (pdfType === "PO" && language === "ENG") {
-        defaultFileName = `${supplier.companyName}_Purchase_Order_${formValues.documentNumber}.pdf`;
-      } else if (pdfType === "OA" && language === "KOR") {
-        defaultFileName = `${formValues.refNumber}(주문확인서).pdf`;
-      } else if (pdfType === "OA" && language === "ENG") {
-        defaultFileName = `${formValues.refNumber}(ORDER_ACK).pdf`;
-      } else if (pdfType === "CIPL") {
-        defaultFileName = `${formValues.refNumber}(INVOICE/PACKING LIST).pdf`;
+      if (pdfType === "CIPL") {
+        defaultFileName = `${formValues.refNumber}(COMMERCIAL INVOICE/PACKING LIST).pdf`;
       } else if (pdfType === "PL") {
         defaultFileName = `${formValues.refNumber}(PACKING LIST).pdf`;
       }
@@ -667,7 +628,7 @@ const OrderDetail = () => {
       let localSendMailState = true; // 모달 내부에서 사용할 로컬 상태
 
       modalInstance = Modal.confirm({
-        title: "Order PDF File",
+        title: "Logistics PDF File",
         width: 500,
         content: (
           <div style={{ marginBottom: 20 }}>
@@ -718,134 +679,65 @@ const OrderDetail = () => {
     }
   };
 
-  // 공통 함수: 헤더 저장
-  const commonSaveHeader = async (
-    header:
-      | OrderAckHeaderFormData
-      | {
-          orderHeaderId: number | null;
-          receiverType: string;
-        },
-    footer: orderRemark[]
-  ) => {
-    const response = await saveOrderHeader(Number(orderId), header, footer);
-    if (header.receiverType === "PO") {
-      setPdfPOHeader(response.orderSupplierHeader);
-      setPdfPOFooter(response.orderSupplierRemark);
-    } else if (header.receiverType === "OA") {
-      setPdfOrderAckHeader(response.orderCustomerHeader);
-      setPdfOrderAckFooter(response.orderCustomerRemark);
+  // CIPL 헤더 저장
+  const SaveCIPLHeader = async (header: CIPLHeaderFormData) => {
+    try {
+      const response = await saveCIPLHeader(Number(logisticsId), header);
+      setPdfCIPLHeader(response);
+      message.success("Header saved successfully");
+    } catch (error) {
+      console.error("Error occurred while saving Header:", error);
+      message.error("Failed to save Header. Please try again.");
     }
   };
 
-  // 주문 컨펌 함수
-  const handleConfirmClick = () => {
-    let localConfirmDates = {
-      expectedReceivingDate: "",
-      deliveryDate: "",
-    };
-
-    Modal.confirm({
-      title: "Confirm Order",
-      width: 500,
-      content: (
-        <div style={{ marginTop: 16 }}>
-          <div style={{ marginBottom: 16 }}>
-            <div style={{ marginBottom: 8 }}>
-              Expected Receiving Date.(예상 입고일)
-            </div>
-            <DatePicker
-              style={{ width: "100%" }}
-              format="YYYY-MM-DD"
-              onChange={(date) => {
-                localConfirmDates.expectedReceivingDate = date
-                  ? date.format("YYYY-MM-DD")
-                  : "";
-              }}
-              placeholder="Expected Receiving Date.(예상 입고일)"
-            />
-          </div>
-          <div>
-            <div style={{ marginBottom: 8 }}>Delivery Date.(납기일)</div>
-            <DatePicker
-              style={{ width: "100%" }}
-              format="YYYY-MM-DD"
-              onChange={(date) => {
-                localConfirmDates.deliveryDate = date
-                  ? date.format("YYYY-MM-DD")
-                  : "";
-              }}
-              placeholder="Delivery Date.(납기일)"
-            />
-          </div>
-        </div>
-      ),
-      onOk: async () => {
-        if (
-          !localConfirmDates.expectedReceivingDate ||
-          !localConfirmDates.deliveryDate
-        ) {
-          message.error(
-            "Please fill in all fields.(날짜를 모두 입력해주세요.)"
-          );
-          return Promise.reject();
-        }
-
-        try {
-          await confirmOrder(
-            Number(orderId),
-            localConfirmDates.expectedReceivingDate,
-            localConfirmDates.deliveryDate
-          );
-          console.log(localConfirmDates, "localConfirmDates");
-          message.success("Order confirmed successfully.");
-          navigate("/orderlist");
-        } catch (error) {
-          console.error("Error occurred while confirming:", error);
-          message.error("Failed to confirm. Please try again.");
-          return Promise.reject();
-        }
-      },
-      okText: "Confirm",
-      cancelText: "Cancel",
-    });
+  // 주문 컨펌 함수(ORDER -> LOGISTICS)
+  const handleConfirmClick = async () => {
+    try {
+      await confirmLogistics(Number(logisticsId));
+      message.success("Confirmed successfully.");
+      navigate("/logisticsList");
+    } catch (error) {
+      console.error("Error occurred while confirming:", error);
+      message.error("Failed to confirm. Please try again.");
+    }
   };
 
   if (isLoading) {
     return <LoadingSpinner />;
   }
 
-  if (!orderData) {
-    return <div>Order not found.</div>;
+  if (!logisticsData) {
+    return <div>Logistics not found.</div>;
   }
 
   return (
     <Container>
-      <Title>Order Detail</Title>
+      <Title>Logistics Detail</Title>
       {formValues && (
         <FormComponent formValues={formValues} setFormValues={setFormValues} />
       )}
       <Divider variant="dashed" style={{ borderColor: "#007bff" }}>
-        Order Item List
+        Logistics Date Information
       </Divider>
-      <Button
-        type="primary"
-        onClick={handleChangeSupplier}
-        style={{ marginBottom: 10 }}
-      >
-        Change Supplier
-      </Button>
+      <LogisticsDateComponent
+        logisticsDate={logisticsDate}
+        setLogisticsDate={setLogisticsDate}
+      />
+      <Divider variant="dashed" style={{ borderColor: "#007bff" }}>
+        Logistics Item List
+      </Divider>
       {items && supplier && (
         <TableComponent
           itemDetails={items}
           setItemDetails={setItems}
           handleInputChange={handleInputChange}
-          currency={orderData.documentInfo.currency}
+          currency={logisticsData.documentInfo.currency}
           roundToTwoDecimalPlaces={roundToTwoDecimalPlaces}
           calculateTotalAmount={calculateTotalAmount}
           handleMarginChange={handleMarginChange}
           handlePriceInputChange={handlePriceInputChange}
-          orderId={orderData.documentInfo.orderId || 0}
+          logisticsId={logisticsData.documentInfo.logisticsId || 0}
           supplier={supplier}
           // pdfUrl={pdfUrl}
           // supplierName={supplier.supplierName}
@@ -895,8 +787,10 @@ const OrderDetail = () => {
           value={pdfType}
           onChange={handlePdfTypeChange}
         >
-          <Select.Option value="PO">PURCHASE ORDER</Select.Option>
-          <Select.Option value="OA">ORDER ACKNOWLEDGEMENT</Select.Option>
+          <Select.Option value="CIPL">
+            COMMERCIAL INVOICE / PACKING LIST
+          </Select.Option>
+          <Select.Option value="PL">PACKING LIST</Select.Option>
         </Select>
         <Button
           style={{ marginLeft: 10 }}
@@ -912,68 +806,44 @@ const OrderDetail = () => {
         >
           PDF Download
         </Button>
+        {(pdfType === "CIPL" || pdfType === "PL") && (
+          <Checkbox
+            checked={withLogo}
+            onChange={() => setWithLogo(!withLogo)}
+            style={{ marginLeft: 10 }}
+          >
+            With Logo
+          </Checkbox>
+        )}
       </div>
-      {pdfType === "PO" && showPDFPreview && formValues && supplier && (
-        <PurchaseOrderPDFDocument
-          info={formValues}
-          items={items}
-          pdfHeader={pdfPOHeader}
-          viewMode={true}
-          language={language}
-          pdfFooter={pdfPOFooter}
-          finalTotals={finalTotals}
-          supplier={supplier}
-        />
-      )}
-      {pdfType === "OA" && showPDFPreview && formValues && (
-        <OrderAckPDFDocument
-          info={formValues}
-          items={items}
-          pdfHeader={pdfOrderAckHeader}
-          viewMode={true}
-          language={language}
-          pdfFooter={pdfOrderAckFooter}
-          finalTotals={finalTotals}
-          dcInfo={dcInfo}
-          invChargeList={invChargeList}
-        />
-      )}
-
-      {pdfType === "PO" && headerEditModalVisible && (
-        <POHeaderEditModal
-          visible={headerEditModalVisible}
-          onClose={handleCloseHeaderModal}
-          pdfPOHeader={pdfPOHeader}
-          pdfPOFooter={pdfPOFooter}
-          setPdfPOHeader={setPdfPOHeader}
-          setPdfPOFooter={setPdfPOFooter}
-          language={language}
-          setLanguage={setLanguage}
-          commonSaveHeader={commonSaveHeader}
-        />
-      )}
-      {pdfType === "OA" && headerEditModalVisible && (
-        <OrderAckHeaderEditModal
+      {(pdfType === "CIPL" || pdfType === "PL") &&
+        showPDFPreview &&
+        formValues && (
+          <CIPLDocument
+            mode={pdfType}
+            info={formValues}
+            items={items}
+            pdfHeader={pdfCIPLHeader}
+            viewMode={true}
+            language={language}
+            finalTotals={finalTotals}
+            dcInfo={dcInfo}
+            invChargeList={invChargeList}
+            withLogo={withLogo}
+          />
+        )}
+      {(pdfType === "CIPL" || pdfType === "PL") && headerEditModalVisible && (
+        <CIPLHeaderEditModal
           open={headerEditModalVisible}
-          onSave={commonSaveHeader}
+          onSave={SaveCIPLHeader}
           onClose={handleCloseHeaderModal}
-          pdfHeader={pdfOrderAckHeader}
-          pdfFooter={pdfOrderAckFooter}
-          setPdfOrderAckHeader={setPdfOrderAckHeader}
-          setPdfOrderAckFooter={setPdfOrderAckFooter}
-        />
-      )}
-
-      {supplierInfoListModalVisible && (
-        <ChangeSupplierModal
-          visible={supplierInfoListModalVisible}
-          onClose={handleCloseSupplierInfoListModal}
-          supplierInfoList={supplierInfoList}
-          setItems={setItems}
+          pdfCIPLHeader={pdfCIPLHeader}
+          setPdfCIPLHeader={setPdfCIPLHeader}
+          loadedCIPLHeader={loadedCIPLHeader}
         />
       )}
     </Container>
   );
 };
 
-export default OrderDetail;
+export default LogisticsDetail;

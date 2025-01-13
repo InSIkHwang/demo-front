@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Modal,
   Descriptions,
@@ -7,17 +7,16 @@ import {
   Tag,
   Divider,
   message,
-  DatePicker,
 } from "antd";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import { confirmOrder, fetchOrderDetail } from "../../api/api";
-import { OrderResponse } from "../../types/types";
+import { confirmOrder, fetchLogisticsDetail } from "../../api/api";
+import { LogisticsResponse } from "../../types/types";
 
-interface DetailOrderModalProps {
+interface DetailLogisticsModalProps {
   open: boolean;
   onClose: () => void;
-  orderId: number;
+  logisticsId: number;
   fetchData: () => Promise<void>;
 }
 
@@ -97,13 +96,14 @@ const currencySymbols = {
   JPY: "¥",
 } as const;
 
-const DetailOrderModal = ({
+const DetailLogisticsModal = ({
   open,
   onClose,
-  orderId,
+  logisticsId,
   fetchData,
-}: DetailOrderModalProps) => {
-  const [orderDetail, setOrderDetail] = useState<OrderResponse | null>(null);
+}: DetailLogisticsModalProps) => {
+  const [logisticsDetail, setLogisticsDetail] =
+    useState<LogisticsResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [currencySymbol, setCurrencySymbol] = useState("");
   const navigate = useNavigate();
@@ -113,10 +113,10 @@ const DetailOrderModal = ({
     const fetchDetails = async () => {
       if (open) {
         try {
-          setOrderDetail(null);
-          const data = await fetchOrderDetail(orderId);
-          setOrderDetail(data);
-          const currencyType = orderDetail?.documentInfo.currencyType;
+          setLogisticsDetail(null);
+          const data = await fetchLogisticsDetail(logisticsId);
+          setLogisticsDetail(data);
+          const currencyType = logisticsDetail?.documentInfo.currencyType;
           if (
             currencyType &&
             currencySymbols[currencyType as keyof typeof currencySymbols]
@@ -136,32 +136,32 @@ const DetailOrderModal = ({
     };
 
     fetchDetails();
-  }, [open, orderId]);
+  }, [open, logisticsId]);
 
   // 총합 계산
-  const totalItem = orderDetail?.itemDetailList.reduce(
+  const totalItem = logisticsDetail?.itemDetailList.reduce(
     (acc, item) => (item.itemType === "ITEM" ? acc + 1 : acc),
     0
   );
 
   // 매출액 계산
-  const totalSalesAmountKrw = orderDetail?.itemDetailList.reduce(
+  const totalSalesAmountKrw = logisticsDetail?.itemDetailList.reduce(
     (acc, item) => acc + (item.salesAmountKRW || 0),
     0
   );
 
   // 매입액 계산
-  const totalPurchaseAmountKrw = orderDetail?.itemDetailList.reduce(
+  const totalPurchaseAmountKrw = logisticsDetail?.itemDetailList.reduce(
     (acc, item) => acc + (item.purchaseAmountKRW || 0),
     0
   );
 
-  const totalSalesAmountGlobal = orderDetail?.itemDetailList.reduce(
+  const totalSalesAmountGlobal = logisticsDetail?.itemDetailList.reduce(
     (acc, item) => acc + (item.salesAmountGlobal || 0),
     0
   );
 
-  const totalPurchaseAmountGlobal = orderDetail?.itemDetailList.reduce(
+  const totalPurchaseAmountGlobal = logisticsDetail?.itemDetailList.reduce(
     (acc, item) => acc + (item.purchaseAmountGlobal || 0),
     0
   );
@@ -195,7 +195,7 @@ const DetailOrderModal = ({
       cancelText: "Cancel",
       onOk: async () => {
         try {
-          // await deleteQutation(orderId);
+          // await deleteQutation(logisticsId);
           message.success("Deleted successfully.");
           onClose();
           fetchData();
@@ -207,76 +207,17 @@ const DetailOrderModal = ({
     });
   };
 
-  // 주문 컨펌 함수
-  const handleConfirmClick = () => {
-    let localConfirmDates = {
-      expectedReceivingDate: "",
-      deliveryDate: "",
-    };
-
-    Modal.confirm({
-      title: "Confirm Order",
-      width: 500,
-      content: (
-        <div style={{ marginTop: 16 }}>
-          <div style={{ marginBottom: 16 }}>
-            <div style={{ marginBottom: 8 }}>
-              Expected Receiving Date.(예상 입고일)
-            </div>
-            <DatePicker
-              style={{ width: "100%" }}
-              format="YYYY-MM-DD"
-              onChange={(date) => {
-                localConfirmDates.expectedReceivingDate = date
-                  ? date.format("YYYY-MM-DD")
-                  : "";
-              }}
-              placeholder="Expected Receiving Date.(예상 입고일)"
-            />
-          </div>
-          <div>
-            <div style={{ marginBottom: 8 }}>Delivery Date.(납기일)</div>
-            <DatePicker
-              style={{ width: "100%" }}
-              format="YYYY-MM-DD"
-              onChange={(date) => {
-                localConfirmDates.deliveryDate = date
-                  ? date.format("YYYY-MM-DD")
-                  : "";
-              }}
-              placeholder="Delivery Date.(납기일)"
-            />
-          </div>
-        </div>
-      ),
-      onOk: async () => {
-        if (
-          !localConfirmDates.expectedReceivingDate ||
-          !localConfirmDates.deliveryDate
-        ) {
-          message.error(
-            "Please fill in all fields.(날짜를 모두 입력해주세요.)"
-          );
-          return Promise.reject();
-        }
-
-        try {
-          await confirmOrder(
-            Number(orderId),
-            localConfirmDates.expectedReceivingDate,
-            localConfirmDates.deliveryDate
-          );
-          message.success("Order confirmed successfully.");
-          navigate("/orderlist");
-        } catch (error) {
-          console.error("Error occurred while confirming:", error);
-          message.error("Failed to confirm. Please try again.");
-          return Promise.reject();
-        }
-      },
-      okText: "Confirm",
-      cancelText: "Cancel",
-    });
+  // 확정 핸들러
+  const handleConfirmClick = async () => {
+    try {
+      // await confirmOrder(logisticsId);
+      message.success("Confirmed successfully.");
+      onClose();
+      fetchData();
+    } catch (error) {
+      console.error("Error occurred while confirming:", error);
+      message.error("Failed to confirm. Please try again.");
+    }
   };
 
   // 테이블 열 정의
@@ -401,7 +342,7 @@ const DetailOrderModal = ({
           type="primary"
           onClick={(e) => {
             e.stopPropagation();
-            navigate(`/order/${orderId}`);
+            navigate(`/logistics/${logisticsId}`);
           }}
         >
           Edit
@@ -418,100 +359,70 @@ const DetailOrderModal = ({
       {loading ? (
         <p>Loading...</p>
       ) : (
-        orderDetail && (
+        logisticsDetail && (
           <>
             <Descriptions bordered column={2} size="small">
               <Descriptions.Item label="Document Number">
-                {orderDetail.documentInfo.documentNumber}
+                {logisticsDetail.documentInfo.documentNumber}
               </Descriptions.Item>
               <Descriptions.Item label="Registration Date">
-                {orderDetail.documentInfo.registerDate}
+                {logisticsDetail.documentInfo.registerDate}
               </Descriptions.Item>
               <Descriptions.Item label="Customer Name">
-                {orderDetail.documentInfo.companyName}
+                {logisticsDetail.documentInfo.companyName}
               </Descriptions.Item>
               <Descriptions.Item label="REF NO.">
-                {orderDetail.documentInfo.refNumber}
+                {logisticsDetail.documentInfo.refNumber}
               </Descriptions.Item>
               <Descriptions.Item label="Currency">
-                {orderDetail.documentInfo.currencyType}
+                {logisticsDetail.documentInfo.currencyType}
               </Descriptions.Item>
               <Descriptions.Item label="Exchange Rate">
-                {`$${orderDetail.documentInfo.currency?.toFixed(0)}`}
+                {`$${logisticsDetail.documentInfo.currency?.toFixed(0)}`}
               </Descriptions.Item>
               <Descriptions.Item label="Vessel Name">
-                {orderDetail.documentInfo.vesselName}
+                {logisticsDetail.documentInfo.vesselName}
               </Descriptions.Item>
               <Descriptions.Item label="Document Manager">
-                {orderDetail.documentInfo.docManager}
+                {logisticsDetail.documentInfo.docManager}
               </Descriptions.Item>
               <Descriptions.Item label="Document Status">
                 <TagStyled color="blue">
-                  {orderDetail.documentInfo.documentStatus}
+                  {logisticsDetail.documentInfo.documentStatus}
                 </TagStyled>
               </Descriptions.Item>
               <Descriptions.Item label="Remark">
-                {orderDetail.documentInfo.docRemark}
+                {logisticsDetail.documentInfo.docRemark}
+              </Descriptions.Item>
+              <Descriptions.Item label="Forwarder">
+                {logisticsDetail.documentInfo.forwarder}
+              </Descriptions.Item>
+              <Descriptions.Item label="Loc">
+                {logisticsDetail.documentInfo.loc}
+              </Descriptions.Item>
+              <Descriptions.Item label="Packing Details">
+                {logisticsDetail.documentInfo.packingDetails}
               </Descriptions.Item>
             </Descriptions>
             <Descriptions
               className="descriptions-totals"
               layout="vertical"
               bordered
-              column={7}
+              column={4}
               size="small"
               style={{ marginTop: 10 }}
             >
-              <Descriptions.Item label="Total Item">
-                {totalItem}
+              <Descriptions.Item label="Delivery Date(납기일)">
+                {logisticsDetail?.logisticsDate?.deliveryDate}
               </Descriptions.Item>
-              <Descriptions.Item label="Total Sales Amount">
-                <AmountTotal>
-                  <span>{`₩ ${totalSalesAmountKrw?.toLocaleString(
-                    "ko-KR"
-                  )}`}</span>
-                  <DividerStyled
-                    style={{ borderColor: "#ccc" }}
-                    type="vertical"
-                  />
-                  <span>{`${currencySymbol} ${totalSalesAmountGlobal?.toLocaleString(
-                    "en-US"
-                  )}`}</span>
-                </AmountTotal>
+              <Descriptions.Item label="Expected Receiving Date(예정 입고일)">
+                {logisticsDetail?.logisticsDate?.expectedReceivingDate}
               </Descriptions.Item>
-              <Descriptions.Item label="Total Purchase Amount">
-                <AmountTotal>
-                  <span>{`₩ ${totalPurchaseAmountKrw?.toLocaleString(
-                    "ko-KR"
-                  )}`}</span>
-                  <DividerStyled
-                    style={{ borderColor: "#ccc" }}
-                    type="vertical"
-                  />
-                  <span>{`${currencySymbol} ${totalPurchaseAmountGlobal?.toLocaleString(
-                    "en-US"
-                  )}`}</span>
-                </AmountTotal>
+              <Descriptions.Item label="Receiving Date(입고일)">
+                {logisticsDetail?.logisticsDate?.receivingDate}
               </Descriptions.Item>
-              <Descriptions.Item label="Total Margin Amount">
-                <AmountTotal>
-                  <span>{`₩ ${totalMarginAmountKrw?.toLocaleString(
-                    "ko-KR"
-                  )}`}</span>
-                  <DividerStyled
-                    style={{ borderColor: "#ccc" }}
-                    type="vertical"
-                  />
-                  <span>{`${currencySymbol} ${totalMarginAmountGlobal?.toLocaleString(
-                    "en-US"
-                  )}`}</span>
-                </AmountTotal>
-              </Descriptions.Item>
-              <Descriptions.Item label="Purchase Margin Rate">
-                {`${purchaseMarginRate}%`}
-              </Descriptions.Item>
-              <Descriptions.Item label="Sales Margin Rate">
-                {`${salesMarginRate}%`}
+              <Descriptions.Item label="Shipping Date(출고일)">
+                {logisticsDetail?.logisticsDate?.shippingDate}
               </Descriptions.Item>
             </Descriptions>
             <Divider variant="dashed" style={{ borderColor: "#007bff" }}>
@@ -519,7 +430,7 @@ const DetailOrderModal = ({
             </Divider>
             <TableStyled
               columns={columns}
-              dataSource={orderDetail.itemDetailList}
+              dataSource={logisticsDetail.itemDetailList}
               pagination={false}
               rowKey="position"
               scroll={{ y: 300 }}
@@ -533,4 +444,4 @@ const DetailOrderModal = ({
   );
 };
 
-export default DetailOrderModal;
+export default DetailLogisticsModal;

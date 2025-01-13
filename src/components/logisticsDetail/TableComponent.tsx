@@ -12,6 +12,7 @@ import {
   Table,
   Input,
   Select,
+  InputNumber,
   Button,
   AutoComplete,
   notification,
@@ -23,10 +24,10 @@ import {
 import { ColumnsType } from "antd/es/table";
 import styled from "styled-components";
 import {
-  FormValuesType,
-  InvCharge,
   ItemDetailType,
-  OfferResponse,
+  LogisticsItemDetail,
+  OrderItemDetail,
+  OrderSupplier,
 } from "../../types/types";
 import {
   DeleteOutlined,
@@ -44,21 +45,29 @@ interface TableProps {
   $zoomLevel?: number;
 }
 
-declare global {
-  interface Window {
-    marginTimer: NodeJS.Timeout | undefined;
-    deliveryTimer: NodeJS.Timeout | undefined;
-  }
-}
-
 const CustomTable = styled(Table)<TableProps>`
   // 기본 스타일
   .ant-table * {
     font-size: ${(props) => `${11 * (props.$zoomLevel || 1)}px`};
   }
 
-  .ant-table-row {
-    transition: background 0.2s !important;
+  // 기존 트랜지션 스타일 제거 (중복 방지)
+  .ant-table-row,
+  .ant-table-row *,
+  .ant-table-cell *,
+  .ant-table-cell-row-hover {
+    transition: none;
+  }
+
+  // 모든 테이블 셀 관련 요소에 동일한 트랜지션 적용
+  .ant-table-cell,
+  .ant-table-cell *,
+  .ant-table-cell-fix-left,
+  .ant-table-cell-fix-left-last,
+  .ant-table-cell-row-hover,
+  .ant-table-row,
+  .ant-table-row * {
+    transition: all 0.2s ease !important;
   }
 
   // 셀 스타일
@@ -86,6 +95,19 @@ const CustomTable = styled(Table)<TableProps>`
   .ant-input-group-addon,
   .ant-input-number-group-addon {
     padding: 0 2px !important;
+  }
+
+  // 고정 셀 스타일
+  .ant-table-cell-fix-left {
+    background: inherit !important;
+    z-index: 2 !important;
+    &-last {
+      box-shadow: 14px 0 10px -10px rgba(0, 0, 0, 0.05) !important;
+    }
+  }
+
+  tr .ant-table-cell-fix-left {
+    background: #fafafa !important;
   }
 
   // 행 타입별 스타일 믹스인
@@ -124,14 +146,6 @@ const CustomTable = styled(Table)<TableProps>`
     will-change: border-color;
   }
 
-  .ant-table-row .ant-table-cell-fix-left {
-    background: inherit !important;
-    z-index: 2;
-    &-last {
-      box-shadow: 14px 0 10px -10px rgba(0, 0, 0, 0.05) !important;
-    }
-  }
-
   // 포커스된 행 스타일 - transition 제거하고 즉시 변경
   .ant-table-row:focus-within {
     border-color: #1890ff;
@@ -146,6 +160,14 @@ const CustomTable = styled(Table)<TableProps>`
   .ant-select-focused .ant-select-selector,
   .ant-input-number-focused {
     position: relative;
+  }
+
+  .ant-table-row .ant-table-cell-fix-left {
+    background: inherit !important;
+    z-index: 2;
+    &-last {
+      box-shadow: 14px 0 10px -10px rgba(0, 0, 0, 0.05) !important;
+    }
   }
 `;
 
@@ -171,10 +193,11 @@ const DocumentLabel = styled.span`
   position: relative;
 `;
 
-const DocumentNumber = styled.span`
+const SupplierName = styled.span`
   position: relative;
 
   .ant-input {
+    width: 400px;
     color: #262626;
     font-size: 18px;
     font-weight: 600;
@@ -230,11 +253,11 @@ interface DisplayInputProps extends Omit<InputProps, "value" | "onChange"> {
 }
 
 interface TableComponentProps {
-  itemDetails: ItemDetailType[];
-  setItemDetails: Dispatch<SetStateAction<ItemDetailType[]>>;
+  itemDetails: LogisticsItemDetail[];
+  setItemDetails: Dispatch<SetStateAction<LogisticsItemDetail[]>>;
   handleInputChange: (
     index: number,
-    key: keyof ItemDetailType,
+    key: keyof LogisticsItemDetail,
     value: any
   ) => void;
   currency: number;
@@ -243,37 +266,13 @@ interface TableComponentProps {
   handleMarginChange: (index: number, marginValue: number) => void;
   handlePriceInputChange: (
     index: number,
-    key: keyof ItemDetailType,
+    key: keyof LogisticsItemDetail,
     value: any,
     currency: number
   ) => void;
-  offerId: number;
-  documentNumber: string;
-  supplierName: string;
-  pdfUrl: string | null;
-  tableTotals: {
-    totalSalesAmountKRW: number;
-    totalSalesAmountGlobal: number;
-    totalPurchaseAmountKRW: number;
-    totalPurchaseAmountGlobal: number;
-    totalSalesAmountUnDcKRW: number;
-    totalSalesAmountUnDcGlobal: number;
-    totalPurchaseAmountUnDcKRW: number;
-    totalPurchaseAmountUnDcGlobal: number;
-    totalProfit: number;
-    totalProfitPercent: number;
-  };
-  applyDcAndCharge: (mode: string) => void;
-  dcInfo: { dcPercent: number; dcKrw: number; dcGlobal: number };
-  setDcInfo: Dispatch<
-    SetStateAction<{ dcPercent: number; dcKrw: number; dcGlobal: number }>
-  >;
-  invChargeList: InvCharge[] | null;
-  setInvChargeList: Dispatch<SetStateAction<InvCharge[] | null>>;
-  supplierInquiryName: string;
-  setSupplierInquiryName: Dispatch<SetStateAction<string>>;
-  setNewDocumentInfo: Dispatch<SetStateAction<FormValuesType | null>>;
-  setDataSource: Dispatch<SetStateAction<OfferResponse | null>>;
+  logisticsId: number;
+  supplier: OrderSupplier;
+  // pdfUrl: string | null;
 }
 
 // DisplayInput 컴포넌트를 TableComponent 외부로 이동
@@ -303,7 +302,6 @@ const DisplayInput = memo(
         }
       }, [value, formatter]);
 
-      // 입력 값 변경 시 핸들러
       const handleChange = useCallback(
         (e: React.ChangeEvent<HTMLInputElement>) => {
           const rawValue = e.target.value;
@@ -331,7 +329,7 @@ const DisplayInput = memo(
 
 DisplayInput.displayName = "DisplayInput";
 
-// 메모이제이션된 DisplayInput 컴포넌트
+// 메모이제이션 컴포넌트
 const MemoizedDisplayInput = memo(DisplayInput, (prevProps, nextProps) => {
   return prevProps.value === nextProps.value;
 });
@@ -345,21 +343,10 @@ const TableComponent = ({
   calculateTotalAmount,
   handleMarginChange,
   handlePriceInputChange,
-  offerId,
-  tableTotals,
-  applyDcAndCharge,
-  dcInfo,
-  setDcInfo,
-  invChargeList,
-  setInvChargeList,
-  pdfUrl,
-  supplierName,
-  documentNumber,
-  supplierInquiryName,
-  setSupplierInquiryName,
-  setNewDocumentInfo,
-  setDataSource,
-}: TableComponentProps) => {
+  logisticsId,
+  supplier,
+}: // pdfUrl,
+TableComponentProps) => {
   const inputRefs = useRef<(TextAreaRef | null)[][]>([]);
   const [itemCodeOptions, setItemCodeOptions] = useState<
     {
@@ -373,16 +360,11 @@ const TableComponent = ({
   const [unitOptions, setUnitOptions] = useState<string[]>(["PCS", "SET"]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
-  const [marginOptions, setMarginOptions] = useState<{ value: string }[]>([]);
-  const [deliveryDateOptions, setDeliveryDateOptions] = useState<
-    { value: string }[]
-  >([]);
 
   const ZOOM_STEP = 0.1;
   const MIN_ZOOM = 0.5;
   const MAX_ZOOM = 1.5;
 
-  // 확대/축소 핸들러
   const handleZoomIn = () => {
     setZoomLevel((prev) => Math.min(prev + ZOOM_STEP, MAX_ZOOM));
   };
@@ -390,16 +372,6 @@ const TableComponent = ({
   const handleZoomOut = () => {
     setZoomLevel((prev) => Math.max(prev - ZOOM_STEP, MIN_ZOOM));
   };
-
-  // 초기 렌더링 시 마진 옵션 설정
-  useEffect(() => {
-    if (itemDetails && itemDetails.length > 0) {
-      const firstItemMargin = itemDetails[0].margin;
-      if (firstItemMargin !== undefined && firstItemMargin !== null) {
-        setMarginOptions([{ value: String(firstItemMargin) }]);
-      }
-    }
-  }, []);
 
   // 공통 데이터 처리 함수
   const updateDataSource = (
@@ -416,12 +388,14 @@ const TableComponent = ({
         ? mappedItems.map((item, idx) => ({
             ...item,
             position: idx + 1,
+            logisticsItemId: null,
           }))
         : [
             ...itemDetails,
             ...mappedItems.map((item, idx) => ({
               ...item,
               position: itemDetails.length + idx + 1,
+              logisticsItemId: null,
             })),
           ]
     );
@@ -439,10 +413,11 @@ const TableComponent = ({
     updateDataSource(mappedItems, true); // 덮어쓰기 작업
   };
 
+  // 백엔드 구현 완료 시 수정 필요 현재는 OFFER 기준으로 엑셀 내보내기
   const handleExportButtonClick = async () => {
     try {
       // 선택한 파일들의 름을 서버로 전송
-      const response = await handleOfferExport(offerId);
+      const response = await handleOfferExport(logisticsId);
 
       // 사용자가 경로를 설정하여 파일을 다운로드할 수 있도록 설정
       const link = document.createElement("a");
@@ -474,7 +449,7 @@ const TableComponent = ({
   //   [itemDetails, setItemDetails]
   // );
 
-  // 아이템 코드 변경 핸들러
+  // 아이템 코드 변경 함수
   const handleItemCodeChange = async (index: number, value: string) => {
     const trimmedValue = (value + "").trim();
 
@@ -482,13 +457,12 @@ const TableComponent = ({
     handleInputChange(index, "itemCode", trimmedValue);
   };
 
-  // 아이템 추가 핸들러
+  // 아이템 추가 함수
   const handleAddItem = (index: number) => {
-    const newItem: ItemDetailType = {
+    const newItem: OrderItemDetail = {
       position: index + 2,
       indexNo: null,
-      itemDetailId: null,
-      itemId: null,
+      ordersItemId: null,
       itemType: "ITEM",
       itemCode: "",
       itemName: "",
@@ -516,15 +490,20 @@ const TableComponent = ({
       })), // 기존 행 나머지의 position 업데이트
     ];
 
-    setItemDetails(newItems);
+    setItemDetails(newItems as LogisticsItemDetail[]);
   };
 
-  // 아이템 삭제 핸들러
-  const handleDeleteItem = (itemDetailId: number | null, position: number) => {
+  // 아이템 삭제 함수
+  const handleDeleteItem = (
+    logisticsItemId: number | null,
+    position: number
+  ) => {
     // 선택한 항목을 삭제한 새로운 데이터 소스를 생성
     const updatedItemDetails = itemDetails.filter(
       (item) =>
-        !(item.itemDetailId === itemDetailId && item.position === position)
+        !(
+          item.logisticsItemId === logisticsItemId && item.position === position
+        )
     );
 
     // 남은 항목들의 position 값을 1부터 다시 정렬
@@ -537,7 +516,7 @@ const TableComponent = ({
     setItemDetails(reorderedItemDetails);
   };
 
-  // 단위 변경 핸들러
+  // 단위 입력 완료 시 단위 업데이트 함수
   const handleUnitBlur = (index: number, value: string) => {
     handleInputChange(index, "unit", value);
     setUnitOptions((prevOptions) =>
@@ -545,18 +524,18 @@ const TableComponent = ({
     );
   };
 
-  // 모든 행에 단위 적용 핸들러
+  // 모든 행에 단위 적용 함수
   const applyUnitToAllRows = (selectedUnit: string) => {
     if (!itemDetails) return;
 
-    const updatedItems: ItemDetailType[] = itemDetails.map((item) => ({
+    const updatedItems: LogisticsItemDetail[] = itemDetails.map((item) => ({
       ...item,
       unit: selectedUnit,
     }));
     setItemDetails(updatedItems);
   };
 
-  // 모든 행에 마진 적용 핸들러
+  // 모든 행에 마진 적용 함수
   const applyMarginToAllRows = (marginValue: number) => {
     const updatedData = itemDetails.map((row) => {
       const updatedRow = {
@@ -596,22 +575,7 @@ const TableComponent = ({
     setItemDetails(updatedData); // 상태 업데이트
   };
 
-  // 배송일 변경 핸들러
-  const handleDeliveryBlur = (value: string) => {
-    const parsedValue = value ? parseInt(value.replace(/[^0-9]/g, "")) : 0;
-    const finalValue = isNaN(parsedValue) ? 0 : parsedValue;
-
-    setDeliveryDateOptions((prevOptions) => {
-      const newValue = `${finalValue}`;
-      return prevOptions.some((option) => option.value === newValue)
-        ? prevOptions
-        : [...prevOptions, { value: newValue }];
-    });
-
-    applyDeliveryToAllRows(finalValue);
-  };
-
-  // 모든 행에 배송일 적용 핸들러
+  // 모든 행에 납기일 적용 함수
   const applyDeliveryToAllRows = (deliveryValue: number) => {
     const updatedData = itemDetails.map((row) => ({
       ...row,
@@ -621,7 +585,7 @@ const TableComponent = ({
     setItemDetails(updatedData);
   };
 
-  // 마진에 따라 매출가격을 계산하는 함수
+  // 마진에 따라 매출가격을 계산하는 함수 예시
   const calculateSalesPrice = (purchasePrice: number, margin: number) => {
     return purchasePrice * (1 + margin / 100); // 마진을 백분율로 적용
   };
@@ -649,7 +613,7 @@ const TableComponent = ({
       e.preventDefault();
       const currentItem = itemDetails[rowIndex];
 
-      handleDeleteItem(currentItem.itemDetailId, currentItem.position);
+      handleDeleteItem(currentItem.logisticsItemId, currentItem.position);
       if (inputRefs.current[rowIndex - 1]?.[columnIndex]) {
         inputRefs.current[rowIndex - 1][columnIndex]?.focus();
       }
@@ -680,68 +644,30 @@ const TableComponent = ({
     }
   };
 
-  // PDF 다운로드 핸들러
-  const handleDownloadPdf = (
-    pdfUrl: string,
-    supplierName: string,
-    documentNumber: string
-  ) => {
-    if (pdfUrl) {
-      const link = document.createElement("a");
-      link.href = pdfUrl;
-      link.download = `${supplierName}_REQUEST FOR QUOTATION_${documentNumber}.pdf`;
-      link.click();
+  // 이전 PDF(REQUEST FOR QUOTATION) 다운로드 함수
+  // const handleDownloadPdf = (
+  //   pdfUrl: string,
+  //   supplierName: string,
+  //   documentNumber: string
+  // ) => {
+  //   if (pdfUrl) {
+  //     const link = document.createElement("a");
+  //     link.href = pdfUrl;
+  //     link.download = `${supplierName}_REQUEST FOR QUOTATION_${documentNumber}.pdf`;
+  //     link.click();
 
-      notification.success({
-        message: "Export Success",
-        description: "PDF file exported successfully.",
-      });
-    } else {
-      notification.error({
-        message: "Export Failed",
-        description: "Failed to export the PDF file.",
-      });
-    }
-  };
+  //     notification.success({
+  //       message: "Export Success",
+  //       description: "PDF file exported successfully.",
+  //     });
+  //   } else {
+  //     notification.error({
+  //       message: "Export Failed",
+  //       description: "Failed to export the PDF file.",
+  //     });
+  //   }
+  // };
 
-  // DESC 행 추가 핸들러
-  const handleAddDescRow = (index: number) => {
-    const newItem: ItemDetailType = {
-      position: index + 2,
-      indexNo: null,
-      itemDetailId: null,
-      itemId: null,
-      itemType: "DESC",
-      itemCode: "",
-      itemName: "",
-      itemRemark: "",
-      qty: 0,
-      unit: "",
-      salesPriceKRW: 0,
-      salesPriceGlobal: 0,
-      salesAmountKRW: 0,
-      salesAmountGlobal: 0,
-      margin: 0,
-      purchasePriceKRW: 0,
-      purchasePriceGlobal: 0,
-      purchaseAmountKRW: 0,
-      purchaseAmountGlobal: 0,
-      deliveryDate: 0,
-    };
-
-    const newItems = [
-      ...itemDetails.slice(0, index + 1),
-      newItem,
-      ...itemDetails.slice(index + 1).map((item, idx) => ({
-        ...item,
-        position: index + 3 + idx,
-      })),
-    ];
-
-    setItemDetails(newItems);
-  };
-
-  // 테이블 열 정의
   const columns: ColumnsType<any> = [
     {
       title: "Action",
@@ -761,7 +687,7 @@ const TableComponent = ({
             danger
             size="small"
             onClick={() =>
-              handleDeleteItem(record.itemDetailId, record.position)
+              handleDeleteItem(record.ordersItemId, record.position)
             }
             icon={<DeleteOutlined />}
           />
@@ -828,25 +754,7 @@ const TableComponent = ({
             <AutoComplete
               value={text}
               onChange={(value) => {
-                handleInputChange(index, "itemCode", value);
-              }}
-              onBlur={(e) => {
-                const value = (e.target as HTMLInputElement).value;
-                // 빈 문자열인 경우 아이템 정보 초기화
-                if (value === "") {
-                  setItemDetails((prev) => {
-                    const updated = [...prev];
-                    updated[index] = {
-                      ...updated[index],
-                      itemId: null,
-                      itemCode: "",
-                    };
-                    return updated;
-                  });
-                } else {
-                  // 아이템 코드 변경 핸들러
-                  handleItemCodeChange(index, value);
-                }
+                handleItemCodeChange(index, value);
               }}
               options={itemCodeOptions.map((option) => ({
                 ...option,
@@ -922,7 +830,7 @@ const TableComponent = ({
       fixed: "left",
       width: 200 * zoomLevel,
       render: (text: string, record: any, index: number) => (
-        <div style={{ position: "relative" }}>
+        <>
           <Input.TextArea
             autoSize={{ minRows: 1, maxRows: 10 }}
             ref={(el) => {
@@ -939,30 +847,9 @@ const TableComponent = ({
             style={{
               borderRadius: "4px",
               width: "100%",
-              paddingRight: "32px", // 버튼 공간 확보
             }}
           />
-          <Button
-            type="text"
-            icon={<PlusCircleOutlined />}
-            onClick={() => handleAddDescRow(index)}
-            style={{
-              position: "absolute",
-              right: "4px",
-              top: "50%",
-              transform: "translateY(-50%)",
-              width: "24px",
-              height: "24px",
-              padding: 0,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: "transparent",
-              border: "none",
-              zIndex: 1,
-            }}
-          />
-        </div>
+        </>
       ),
     },
     {
@@ -1084,7 +971,6 @@ const TableComponent = ({
             ? 0
             : text;
 
-        // 아이템 행 인덱스 계산
         const filteredIndex = itemDetails
           .filter((item: any) => item.itemType === "ITEM")
           .indexOf(record);
@@ -1133,7 +1019,6 @@ const TableComponent = ({
                   (indicator as HTMLElement).style.opacity = "0";
                 }
 
-                // 입력 값 포맷 변경 및 처리
                 const value = e.target.value;
                 const unformattedValue = value.replace(/,/g, "");
                 const updatedValue = isNaN(Number(unformattedValue))
@@ -1185,8 +1070,8 @@ const TableComponent = ({
               No.{rowNumber}
             </RowNumberIndicator>
             <MemoizedDisplayInput
-              type="text"
-              value={value?.toLocaleString("en-US")} // 포맷 변경 핸들러
+              type="text" // Change to "text" to handle formatted input
+              value={value?.toLocaleString("en-US")} // Display formatted value
               ref={(el) => {
                 if (!inputRefs.current[index]) {
                   inputRefs.current[index] = [];
@@ -1417,29 +1302,19 @@ const TableComponent = ({
     {
       title: (
         <div>
-          <AutoComplete
-            options={marginOptions}
+          <InputNumber
             placeholder="Margin"
-            onChange={(value) => {
-              if (window.marginTimer) {
-                clearTimeout(window.marginTimer);
-              }
-
-              window.marginTimer = setTimeout(() => {
-                const parsedValue = value
-                  ? parseFloat(value.replace(/ %/, ""))
-                  : 0;
-                const finalValue = isNaN(parsedValue) ? 0 : parsedValue;
-                applyMarginToAllRows(finalValue);
-              }, 300);
-            }}
-            onBlur={(e: React.FocusEvent<HTMLInputElement>) =>
-              handleMarginBlur(e.target.value)
+            parser={(value) =>
+              value ? parseFloat(value.replace(/ %/, "")) : 0
             }
+            onBlur={(e) => {
+              const parsedValue = Number(e.target.value) || 0; // 숫자 타입이 아닐 경우 기본값으로 0 설정
+
+              applyMarginToAllRows(parsedValue); // 모든 행에 마진 적용
+            }}
             style={{ width: "100%" }}
-          >
-            <Input />
-          </AutoComplete>
+            controls={false} // 스핀 버튼 제거
+          />
         </div>
       ),
       dataIndex: "margin",
@@ -1489,29 +1364,18 @@ const TableComponent = ({
     {
       title: (
         <div>
-          <AutoComplete
-            options={deliveryDateOptions}
+          <InputNumber
             placeholder="Delivery"
-            onChange={(value) => {
-              if (window.deliveryTimer) {
-                clearTimeout(window.deliveryTimer);
-              }
-
-              window.deliveryTimer = setTimeout(() => {
-                const parsedValue = value
-                  ? parseInt(value.replace(/[^0-9]/g, ""))
-                  : 0;
-                const finalValue = isNaN(parsedValue) ? 0 : parsedValue;
-                applyDeliveryToAllRows(finalValue);
-              }, 300);
-            }}
-            onBlur={(e: React.FocusEvent<HTMLInputElement>) =>
-              handleDeliveryBlur(e.target.value)
+            parser={(value) =>
+              value ? parseInt(value.replace(/[^0-9]/g, "")) : 0
             }
+            onBlur={(e) => {
+              const parsedValue = Number(e.target.value) || 0;
+              applyDeliveryToAllRows(parsedValue);
+            }}
             style={{ width: "100%" }}
-          >
-            <Input />
-          </AutoComplete>
+            controls={false}
+          />
         </div>
       ),
       dataIndex: "deliveryDate",
@@ -1542,67 +1406,14 @@ const TableComponent = ({
     },
   ];
 
-  // 문서번호 변경 핸들러
-  const handleSupplierInquiryNameChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    currentOfferId: number
-  ) => {
-    const newValue = e.target.value;
-    setSupplierInquiryName(newValue);
-
-    setDataSource((prevDataSource) => {
-      if (!prevDataSource) return prevDataSource;
-
-      return {
-        ...prevDataSource,
-        response: prevDataSource.response.map((item) => {
-          if (item.inquiryId === currentOfferId) {
-            return {
-              ...item,
-              supplierInquiryName: newValue,
-            };
-          }
-          return item;
-        }),
-      };
-    });
-
-    setNewDocumentInfo((prev) => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        documentNumber: newValue,
-      };
-    });
-  };
-
-  // margin 값이 입력되면 options에 추가하는 함수
-  const handleMarginBlur = (value: string) => {
-    const parsedValue = value ? parseFloat(value.replace(/ %/, "")) : 0;
-    const finalValue = isNaN(parsedValue) ? 0 : parsedValue;
-
-    // options에 새로운 값 추가 (중복 제거)
-    setMarginOptions((prevOptions) => {
-      const newValue = `${finalValue}`;
-      return prevOptions.some((option) => option.value === newValue)
-        ? prevOptions
-        : [...prevOptions, { value: newValue }];
-    });
-
-    applyMarginToAllRows(finalValue);
-  };
-
   return (
     <div style={{ overflowX: "auto" }}>
       <DocumentContainer>
         <div style={{ display: "flex", alignItems: "center" }}>
-          <DocumentLabel>Document No.</DocumentLabel>
-          <DocumentNumber>
-            <Input
-              value={supplierInquiryName}
-              onChange={(e) => handleSupplierInquiryNameChange(e, offerId)}
-            />
-          </DocumentNumber>
+          <DocumentLabel>Supplier</DocumentLabel>
+          <SupplierName>
+            <Input value={supplier.companyName} readOnly />
+          </SupplierName>
         </div>
         <ButtonGroup>
           <Tooltip title="Load excel file on your local">
@@ -1614,7 +1425,7 @@ const TableComponent = ({
               Load Excel File
             </Button>
           </Tooltip>
-          <Tooltip title="Export excel file on your table">
+          {/* <Tooltip title="Export excel file on your table">
             <Button
               type="dashed"
               icon={<ExportOutlined />}
@@ -1622,8 +1433,8 @@ const TableComponent = ({
             >
               Export Excel
             </Button>
-          </Tooltip>
-          <Tooltip title="Download PDF file before you send">
+          </Tooltip> */}
+          {/* <Tooltip title="Download PDF file before you send">
             <Button
               type="dashed"
               onClick={() =>
@@ -1633,7 +1444,7 @@ const TableComponent = ({
             >
               Download PDF File
             </Button>
-          </Tooltip>
+          </Tooltip> */}
         </ButtonGroup>
       </DocumentContainer>
       <Space style={{ marginBottom: 16 }}>
@@ -1677,7 +1488,7 @@ const TableComponent = ({
           columns={columns}
           dataSource={itemDetails}
           pagination={false}
-          scroll={{ y: 800 }}
+          scroll={{ y: 600 }}
           virtual
         />
       </div>

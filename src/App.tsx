@@ -15,7 +15,6 @@ import theme from "./style/Theme";
 import { refreshToken, removeTokens } from "./api/auth";
 import LoadingSpinner from "./components/LoadingSpinner";
 import OfferList from "./pages/OfferList";
-import QuotationList from "./pages/QuotationList";
 import TrashList from "./pages/TrashList";
 import OrderList from "./pages/OrderList";
 import AddSupplierOnInquiry from "./pages/AddSupplierOnInquiry";
@@ -24,6 +23,8 @@ import MakeComplexInquiry from "./pages/MakeComplexInquiry";
 import OrderDetail from "./pages/OrderDetail";
 import InvoiceList from "./pages/InvoiceList";
 import InvoiceDetail from "./pages/InvoiceDetail";
+import LogisticsList from "./pages/LogisticsList";
+import LogisticsDetail from "./pages/LogisticsDetail";
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -151,12 +152,6 @@ const App = () => {
             }
           />
           <Route
-            path="/quotationlist"
-            element={
-              isAuthenticated ? <QuotationList /> : <Navigate to="/userlogin" />
-            }
-          />
-          <Route
             path="/orderlist"
             element={
               isAuthenticated ? <OrderList /> : <Navigate to="/userlogin" />
@@ -166,6 +161,22 @@ const App = () => {
             path="/order/:orderId"
             element={
               isAuthenticated ? <OrderDetail /> : <Navigate to="/userlogin" />
+            }
+          />
+          <Route
+            path="/logisticslist"
+            element={
+              isAuthenticated ? <LogisticsList /> : <Navigate to="/userlogin" />
+            }
+          />
+          <Route
+            path="/logistics/:logisticsId"
+            element={
+              isAuthenticated ? (
+                <LogisticsDetail />
+              ) : (
+                <Navigate to="/userlogin" />
+              )
             }
           />
           <Route

@@ -13,13 +13,13 @@ import {
 } from "antd";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import styled from "styled-components";
-import { fetchOrderList, searchOrderList } from "../api/api";
+import { fetchLogisticsList, searchLogisticsList } from "../api/api";
 import type { ColumnsType } from "antd/es/table";
-import { OfferSearchParams, Order } from "../types/types";
+import { Logistics, OfferSearchParams } from "../types/types";
 import { useSearchParams } from "react-router-dom";
 import dayjs from "dayjs";
-import DetailOrderModal from "../components/orderList/DetailOrderModal";
 import Checkbox, { CheckboxChangeEvent } from "antd/es/checkbox";
+import DetailLogisticsModal from "../components/logisticsList/DetailLogisticsModal";
 
 const Container = styled.div`
   position: relative;
@@ -103,7 +103,7 @@ const StyledTag = styled(Tag)`
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
 `;
 
-const columns: ColumnsType<Order> = [
+const columns: ColumnsType<Logistics> = [
   {
     title: "Document Number",
     dataIndex: "documentNumber",
@@ -163,8 +163,8 @@ const columns: ColumnsType<Order> = [
   },
 ];
 
-const OrderList = () => {
-  const [data, setData] = useState<Order[]>([]);
+const LogisticsList = () => {
+  const [data, setData] = useState<Logistics[]>([]);
   const [searchParams, setSearchParams] = useSearchParams();
   const [totalCount, setTotalCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
@@ -186,7 +186,9 @@ const OrderList = () => {
   const [itemsPerPage, setItemsPerPage] = useState<number>(
     Number(searchParams.get("pageSize")) || 100
   );
-  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
+  const [selectedLogisticsId, setSelectedLogisticsId] = useState<number | null>(
+    null
+  );
   const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
   const [registerStartDate, setRegisterStartDate] = useState<string>(
     searchParams.get("startDate") ||
@@ -229,7 +231,7 @@ const OrderList = () => {
       viewMyOfferOnly,
     });
     try {
-      const response = await fetchOrderList(
+      const response = await fetchLogisticsList(
         currentPage,
         itemsPerPage,
         viewMyOfferOnly
@@ -237,7 +239,7 @@ const OrderList = () => {
       setData(response.orderList);
       setTotalCount(response.totalCount);
     } catch (error) {
-      console.error("OrderList fetchData error", error);
+      console.error("Logistics List fetchData error", error);
     } finally {
       setLoading(false);
     }
@@ -305,9 +307,9 @@ const OrderList = () => {
         }),
       };
 
-      const response = await searchOrderList(searchParams);
+      const response = await searchLogisticsList(searchParams);
 
-      setData(response.orderList);
+      setData(response.logisticsList);
       setTotalCount(response.totalCount);
     } catch (error) {
       message.error("Error occurred while searching");
@@ -335,8 +337,8 @@ const OrderList = () => {
   };
 
   // 행 클릭 시 모달 열기
-  const handleRowClick = (record: Order) => {
-    setSelectedOrderId(record.orderId ?? null);
+  const handleRowClick = (record: Logistics) => {
+    setSelectedLogisticsId(record.logisticsId ?? null);
     setIsDetailModalOpen(true);
   };
 
@@ -356,7 +358,7 @@ const OrderList = () => {
   return (
     <>
       <Container>
-        <Title>수주 / 발주 - Orders</Title>
+        <Title>물류 - Logistics</Title>
         <TableHeader>
           <SearchBar>
             <SearchSection>
@@ -499,11 +501,11 @@ const OrderList = () => {
           <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
         )}
       </Container>
-      {selectedOrderId !== null && (
-        <DetailOrderModal
+      {selectedLogisticsId !== null && (
+        <DetailLogisticsModal
           open={isDetailModalOpen}
           onClose={() => setIsDetailModalOpen(false)}
-          orderId={selectedOrderId}
+          logisticsId={selectedLogisticsId}
           fetchData={fetchData}
         />
       )}
@@ -511,4 +513,4 @@ const OrderList = () => {
   );
 };
 
-export default OrderList;
+export default LogisticsList;
