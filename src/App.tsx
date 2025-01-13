@@ -24,6 +24,8 @@ import MakeComplexInquiry from "./pages/MakeComplexInquiry";
 import OrderDetail from "./pages/OrderDetail";
 import InvoiceList from "./pages/InvoiceList";
 import InvoiceDetail from "./pages/InvoiceDetail";
+import LogisticsList from "./pages/LogisticsList";
+import LogisticsDetail from "./pages/LogisticsDetail";
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -166,6 +168,22 @@ const App = () => {
             path="/order/:orderId"
             element={
               isAuthenticated ? <OrderDetail /> : <Navigate to="/userlogin" />
+            }
+          />
+          <Route
+            path="/logisticslist"
+            element={
+              isAuthenticated ? <LogisticsList /> : <Navigate to="/userlogin" />
+            }
+          />
+          <Route
+            path="/logistics/:logisticsId"
+            element={
+              isAuthenticated ? (
+                <LogisticsDetail />
+              ) : (
+                <Navigate to="/userlogin" />
+              )
             }
           />
           <Route

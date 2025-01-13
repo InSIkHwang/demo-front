@@ -367,6 +367,29 @@ export interface Order {
   vesselName: string;
 }
 
+export interface Logistics {
+  companyName: string;
+  currency: number;
+  currencyType: string;
+  customerId?: number; // optional
+  discount?: number | null;
+  docManager: string;
+  docRemark: string;
+  documentId: number;
+  documentNumber: string;
+  documentStatus: string;
+  imoNo?: number; // optional
+  invChargeList?: InvCharge[]; // optional
+  logisticsId?: number;
+  quotationId?: number;
+  refNumber: string;
+  registerDate: string;
+  shippingDate: string;
+  vesselHullNo?: string;
+  vesselId?: number;
+  vesselName: string;
+}
+
 export interface orderAllResponses {
   orderList: Order[];
   totalCount: number;
@@ -438,8 +461,26 @@ export interface OrderResponse {
   orderCiPlResponse: CIPLHeaderFormData;
 }
 
+export interface LogisticsResponse {
+  documentInfo: Logistics;
+  invChargeList: InvCharge[];
+  itemDetailList: OrderItemDetail[];
+  suppliers: OrderSupplier[];
+  supplierInfoList: OrderSupplier[];
+  orderHeaderResponse: orderHeaderResponse;
+  orderCiPlResponse: CIPLHeaderFormData;
+}
+
 export interface OrderRequest {
   orderId: number;
+  supplierId: number;
+  documentEditInfo: Order;
+  invChargeList: InvCharge[];
+  itemDetailList: OrderItemDetail[];
+}
+
+export interface LogisticsRequest {
+  logisticsId: number;
   supplierId: number;
   documentEditInfo: Order;
   invChargeList: InvCharge[];

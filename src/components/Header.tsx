@@ -387,7 +387,14 @@ const Header = ({ isAuthenticated, onLogout }: HeaderProps) => {
           <MenuItem
             onClick={() => handleMenuItemClick(() => navigate("/orderlist"))}
           >
-            수주 관리 - Orders
+            수주 / 발주 관리 - Orders
+          </MenuItem>
+          <MenuItem
+            onClick={() =>
+              handleMenuItemClick(() => navigate("/logisticslist"))
+            }
+          >
+            물류 관리 - Logistics
           </MenuItem>
         </SubMenu>
         <MenuItem onClick={() => setInvoiceOpen(!isInvoiceOpen)}>

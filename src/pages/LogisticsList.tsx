@@ -20,6 +20,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import dayjs from "dayjs";
 import DetailOrderModal from "../components/orderList/DetailOrderModal";
 import Checkbox, { CheckboxChangeEvent } from "antd/es/checkbox";
+import DetailLogisticsModal from "../components/logisticsList/DetailLogisticsModal";
 
 const Container = styled.div`
   position: relative;
@@ -163,7 +164,7 @@ const columns: ColumnsType<Order> = [
   },
 ];
 
-const OrderList = () => {
+const LogisticsList = () => {
   const [data, setData] = useState<Order[]>([]);
   const [searchParams, setSearchParams] = useSearchParams();
   const [totalCount, setTotalCount] = useState<number>(0);
@@ -237,7 +238,7 @@ const OrderList = () => {
       setData(response.orderList);
       setTotalCount(response.totalCount);
     } catch (error) {
-      console.error("OrderList fetchData error", error);
+      console.error("Logistics List fetchData error", error);
     } finally {
       setLoading(false);
     }
@@ -356,7 +357,7 @@ const OrderList = () => {
   return (
     <>
       <Container>
-        <Title>수주 / 발주 - Orders</Title>
+        <Title>물류 - Logistics</Title>
         <TableHeader>
           <SearchBar>
             <SearchSection>
@@ -500,10 +501,10 @@ const OrderList = () => {
         )}
       </Container>
       {selectedOrderId !== null && (
-        <DetailOrderModal
+        <DetailLogisticsModal
           open={isDetailModalOpen}
           onClose={() => setIsDetailModalOpen(false)}
-          orderId={selectedOrderId}
+          logisticsId={selectedOrderId}
           fetchData={fetchData}
         />
       )}
@@ -511,4 +512,4 @@ const OrderList = () => {
   );
 };
 
-export default OrderList;
+export default LogisticsList;
