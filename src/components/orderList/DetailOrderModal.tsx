@@ -194,7 +194,7 @@ const DetailOrderModal = ({
       cancelText: "Cancel",
       onOk: async () => {
         try {
-          await deleteQutation(orderId);
+          // await deleteQutation(orderId);
           message.success("Deleted successfully.");
           onClose();
           fetchData();

@@ -13,12 +13,11 @@ import {
 } from "antd";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import styled from "styled-components";
-import { fetchOrderList, searchOrderList } from "../api/api";
+import { fetchLogisticsList, searchLogisticsList } from "../api/api";
 import type { ColumnsType } from "antd/es/table";
-import { OfferSearchParams, Order, orderAllResponses } from "../types/types";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Logistics, OfferSearchParams } from "../types/types";
+import { useSearchParams } from "react-router-dom";
 import dayjs from "dayjs";
-import DetailOrderModal from "../components/orderList/DetailOrderModal";
 import Checkbox, { CheckboxChangeEvent } from "antd/es/checkbox";
 import DetailLogisticsModal from "../components/logisticsList/DetailLogisticsModal";
 
@@ -104,7 +103,7 @@ const StyledTag = styled(Tag)`
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
 `;
 
-const columns: ColumnsType<Order> = [
+const columns: ColumnsType<Logistics> = [
   {
     title: "Document Number",
     dataIndex: "documentNumber",
@@ -165,7 +164,7 @@ const columns: ColumnsType<Order> = [
 ];
 
 const LogisticsList = () => {
-  const [data, setData] = useState<Order[]>([]);
+  const [data, setData] = useState<Logistics[]>([]);
   const [searchParams, setSearchParams] = useSearchParams();
   const [totalCount, setTotalCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
@@ -187,7 +186,9 @@ const LogisticsList = () => {
   const [itemsPerPage, setItemsPerPage] = useState<number>(
     Number(searchParams.get("pageSize")) || 100
   );
-  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
+  const [selectedLogisticsId, setSelectedLogisticsId] = useState<number | null>(
+    null
+  );
   const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
   const [registerStartDate, setRegisterStartDate] = useState<string>(
     searchParams.get("startDate") ||
@@ -230,12 +231,12 @@ const LogisticsList = () => {
       viewMyOfferOnly,
     });
     try {
-      const response = await fetchOrderList(
+      const response = await fetchLogisticsList(
         currentPage,
         itemsPerPage,
         viewMyOfferOnly
       );
-      setData(response.orderList);
+      setData(response.logisticsList);
       setTotalCount(response.totalCount);
     } catch (error) {
       console.error("Logistics List fetchData error", error);
@@ -306,9 +307,9 @@ const LogisticsList = () => {
         }),
       };
 
-      const response = await searchOrderList(searchParams);
+      const response = await searchLogisticsList(searchParams);
 
-      setData(response.orderList);
+      setData(response.logisticsList);
       setTotalCount(response.totalCount);
     } catch (error) {
       message.error("Error occurred while searching");
@@ -336,8 +337,8 @@ const LogisticsList = () => {
   };
 
   // 행 클릭 시 모달 열기
-  const handleRowClick = (record: Order) => {
-    setSelectedOrderId(record.orderId ?? null);
+  const handleRowClick = (record: Logistics) => {
+    setSelectedLogisticsId(record.documentId ?? null);
     setIsDetailModalOpen(true);
   };
 
@@ -500,11 +501,11 @@ const LogisticsList = () => {
           <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
         )}
       </Container>
-      {selectedOrderId !== null && (
+      {selectedLogisticsId !== null && (
         <DetailLogisticsModal
           open={isDetailModalOpen}
           onClose={() => setIsDetailModalOpen(false)}
-          logisticsId={selectedOrderId}
+          logisticsId={selectedLogisticsId}
           fetchData={fetchData}
         />
       )}

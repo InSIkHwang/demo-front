@@ -13,6 +13,7 @@ import {
   InvoiceRemarkDetail,
   Item,
   ItemDataType,
+  Logistics,
   OfferSearchParams,
   Order,
   OrderAckHeaderFormData,
@@ -1034,6 +1035,85 @@ export const saveCIPLHeader = async (
 //ORDER 확정 (ORDER -> INVOICE)
 export const confirmOrder = async (orderId: number) => {
   const response = await axios.put(`/api/orders/confirm/${orderId}`);
+
+  return response.data;
+};
+
+//----------------------------------------------------------------------------------
+// LOGISTICS 조회 관련
+
+//LOGISTICS 조회
+export const fetchLogisticsList = async (
+  page: number,
+  pageSize: number,
+  viewMyOfferOnly: boolean
+) => {
+  const response = await axios.get<{
+    totalCount: number;
+    logisticsList: Logistics[];
+  }>("/api/ci-pl", {
+    params: {
+      page: page - 1, // 페이지는 0부터 시작
+      pageSize: pageSize, // 페이지당 아이템 수
+      writer: viewMyOfferOnly ? "MY" : "ALL",
+    },
+  });
+
+  return response.data;
+};
+
+//LOGISTICS 상세 정보 조회
+export const fetchLogisticsDetail = async (logisticsId: number) => {
+  const response = await axios.get(`/api/ci-pl/${logisticsId}`);
+
+  return response.data;
+};
+
+//LOGISTICS 검색
+export const searchLogisticsList = async ({
+  registerStartDate = "",
+  registerEndDate = "",
+  query = "",
+  documentNumber = "",
+  refNumber = "",
+  customerName = "",
+  supplierName = "",
+  page,
+  pageSize,
+  writer,
+  itemName = "",
+  itemCode = "",
+  vesselName = "",
+}: OfferSearchParams): Promise<{
+  totalCount: number;
+  logisticsList: Logistics[];
+}> => {
+  const queryParams = {
+    registerStartDate,
+    registerEndDate,
+    query,
+    documentNumber,
+    refNumber,
+    customerName,
+    supplierName,
+    page: (page - 1).toString(),
+    pageSize: pageSize.toString(),
+    writer,
+    itemName,
+    itemCode,
+    vesselName,
+  };
+
+  const queryString = new URLSearchParams(
+    Object.entries(queryParams)
+      .filter(([_, value]) => value !== "")
+      .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {})
+  ).toString();
+
+  const response = await axios.post<{
+    totalCount: number;
+    logisticsList: Logistics[];
+  }>(`/api/ci-pl/search?${queryString}`);
 
   return response.data;
 };

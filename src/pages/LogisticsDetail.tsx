@@ -1,32 +1,22 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button, Checkbox, Divider, Input, message, Modal, Select } from "antd";
 import styled from "styled-components";
-import dayjs, { Dayjs } from "dayjs";
-import {
-  confirmOrder,
-  editOrder,
-  fetchOrderDetail,
-  saveCIPLHeader,
-  saveOrderHeader,
-} from "../api/api";
+import dayjs from "dayjs";
+import { fetchLogisticsDetail, saveCIPLHeader } from "../api/api";
 import {
   CIPLHeaderFormData,
   InvCharge,
-  Order,
-  OrderAckHeaderFormData,
-  OrderItemDetail,
-  orderRemark,
   LogisticsRequest,
-  OrderResponse,
   OrderSupplier,
   LogisticsResponse,
+  Logistics,
+  LogisticsItemDetail,
 } from "../types/types";
 import LoadingSpinner from "../components/LoadingSpinner";
 import FormComponent from "../components/orderDetail/FormComponent";
 import TableComponent from "../components/logisticsDetail/TableComponent";
 import TotalCardsComponent from "../components/makeOffer/TotalCardsComponent";
-import ChangeSupplierModal from "../components/orderDetail/ChangeSupplierModal";
 import { pdf } from "@react-pdf/renderer";
 import CIPLDocument from "../components/logisticsDetail/CIPL";
 import CIPLHeaderEditModal from "../components/logisticsDetail/CIPLHeaderEditModal";
@@ -48,16 +38,6 @@ const Title = styled.h1`
   color: #333;
 `;
 
-const INITIAL_HEADER_VALUES: OrderAckHeaderFormData = {
-  orderHeaderId: null,
-  portOfShipment: "BUSAN, KOREA",
-  deliveryTime: dayjs().format("DD MMM YYYY").toUpperCase(),
-  termsOfPayment: "",
-  incoterms: "EX WORKS",
-  receiverType: "CUSTOMER",
-  packing: "UNPACKED",
-};
-
 const INITIAL_PL_VALUES: CIPLHeaderFormData = {
   ciPlId: null,
   shipper:
@@ -75,28 +55,10 @@ const INITIAL_PL_VALUES: CIPLHeaderFormData = {
     "SHIPS SPARES IN TRANSIT\nPACKING DETAILS\n\nHS CODE: 8409.99-9000\nCOUNTRY OF ORIGIN: KOREA",
 };
 
-const TEST_PL_VALUES: CIPLHeaderFormData = {
-  ciPlId: 1,
-  shipper:
-    "BAS KOREA CO.\n43-4, Gyeongjeoncheol-ro 24beon-gil,\nGangseo-gu, Busan, Korea / 46719\nTel: +82-51-977-7070, Fax: +82-51-793-0635",
-  forAccountAndRiskOfMessers:
-    "MASTER OF DELBIN\nSHIP'S SPARES IN TRANSIT\nAddress: W128/A, Dubai Maritime City, U.A.E\nCompany name: AvidMarine\nContact Person: Seyed Amin For Hazim",
-  notifyParty: "Contact Number: +971522725950",
-  portOfLoading: "BUSAN, KOREA",
-  finalDestination: "",
-  vesselAndVoyage: "DELBIN",
-  sailingOnOr: "",
-  noAndDateOfInvoice: "V-24-6012-132-E/03, 20 DEC, 2024",
-  noAndDateOfPo: "BAS240829-074",
-  lcIssuingBank: "YSH MARINE",
-  remark:
-    "SHIPS SPARES IN TRANSIT\nPACKING DETAILS\n40 X 31 X 26 CM 14 KG 1 CARTON\nHS CODE: 8409.99-9000\nCOUNTRY OF ORIGIN: KOREA",
-};
-
 const LogisticsDetail = () => {
   const { logisticsId } = useParams();
-  const [formValues, setFormValues] = useState<Order>();
-  const [items, setItems] = useState<OrderItemDetail[]>([]);
+  const [formValues, setFormValues] = useState<Logistics>();
+  const [items, setItems] = useState<LogisticsItemDetail[]>([]);
   const [supplier, setSupplier] = useState<OrderSupplier>();
   const navigate = useNavigate();
   const [logisticsData, setLogisticsData] = useState<LogisticsResponse | null>(
@@ -109,7 +71,6 @@ const LogisticsDetail = () => {
     dcKrw: 0,
     dcGlobal: 0,
   });
-  const [supplierInfoList, setSupplierInfoList] = useState<OrderSupplier[]>([]);
   const [finalTotals, setFinalTotals] = useState({
     totalSalesAmountKRW: 0,
     totalSalesAmountGlobal: 0,
@@ -129,7 +90,7 @@ const LogisticsDetail = () => {
   const [pdfType, setPdfType] = useState<string>("CIPL");
 
   const [pdfCIPLHeader, setPdfCIPLHeader] =
-    useState<CIPLHeaderFormData>(TEST_PL_VALUES);
+    useState<CIPLHeaderFormData>(INITIAL_PL_VALUES);
   const [supplierInfoListModalVisible, setSupplierInfoListModalVisible] =
     useState<boolean>(false);
   const [loadedCIPLHeader, setLoadedCIPLHeader] =
@@ -169,9 +130,11 @@ const LogisticsDetail = () => {
   }, [handleKeyboardSave]);
 
   // 주문 상세 데이터 로드 함수
-  const loadOrderDetail = async () => {
+  const loadLogisticsDetail = async () => {
     try {
-      const data: OrderResponse = await fetchOrderDetail(Number(logisticsId));
+      const data: LogisticsResponse = await fetchLogisticsDetail(
+        Number(logisticsId)
+      );
 
       const sortedItems = data.itemDetailList.sort(
         (a, b) => a.position - b.position
@@ -186,7 +149,6 @@ const LogisticsDetail = () => {
         dcKrw: 0,
         dcGlobal: 0,
       });
-      setSupplierInfoList(data.supplierInfoList);
 
       setLoadedCIPLHeader({
         ciPlId: data?.orderCiPlResponse?.ciPlId || null,
@@ -220,8 +182,8 @@ const LogisticsDetail = () => {
         }
       );
     } catch (error) {
-      console.error("Order detail error:", error);
-      message.error("Failed to load order detail.");
+      console.error("Logistics detail error:", error);
+      message.error("Failed to load logistics detail.");
     } finally {
       setIsLoading(false);
     }
@@ -229,13 +191,13 @@ const LogisticsDetail = () => {
 
   // 주문 상세 데이터 로드 함수
   useEffect(() => {
-    loadOrderDetail();
+    loadLogisticsDetail();
   }, [logisticsId]);
 
   // 입력 값 변경 함수
   const handleInputChange = useCallback(
-    (index: number, key: keyof OrderItemDetail, value: any) => {
-      setItems((prevItems: OrderItemDetail[]) => {
+    (index: number, key: keyof LogisticsItemDetail, value: any) => {
+      setItems((prevItems: LogisticsItemDetail[]) => {
         if (!prevItems?.[index]) return prevItems;
         if (prevItems[index][key] === value) return prevItems;
 
@@ -329,7 +291,7 @@ const LogisticsDetail = () => {
   // 가격 입력 변경 함수
   const handlePriceInputChange = (
     index: number,
-    key: keyof OrderItemDetail,
+    key: keyof LogisticsItemDetail,
     value: any,
     currency: number
   ) => {
@@ -582,12 +544,12 @@ const LogisticsDetail = () => {
 
     try {
       // await editOrder(Number(logisticsId), request);
-      message.success("Order saved successfully");
+      message.success("Logistics saved successfully");
 
-      loadOrderDetail();
+      loadLogisticsDetail();
     } catch (error) {
-      console.error("Error saving order:", error);
-      message.error("Failed to save order. Please try again.");
+      console.error("Error saving logistics:", error);
+      message.error("Failed to save logistics. Please try again.");
     }
   };
 
@@ -642,7 +604,7 @@ const LogisticsDetail = () => {
       let localSendMailState = true; // 모달 내부에서 사용할 로컬 상태
 
       modalInstance = Modal.confirm({
-        title: "Order PDF File",
+        title: "Logistics PDF File",
         width: 500,
         content: (
           <div style={{ marginBottom: 20 }}>
@@ -699,12 +661,12 @@ const LogisticsDetail = () => {
     setPdfCIPLHeader(response);
   };
 
-  // 주문 컨펌 함수(ORDER -> INVOICE)
+  // 주문 컨펌 함수(ORDER -> LOGISTICS)
   const handleConfirmClick = async () => {
     try {
-      await confirmOrder(Number(logisticsId));
+      // await confirmOrder(Number(logisticsId));
       message.success("Confirmed successfully.");
-      navigate("/invoiceList");
+      navigate("/logisticsList");
     } catch (error) {
       console.error("Error occurred while confirming:", error);
       message.error("Failed to confirm. Please try again.");
@@ -849,14 +811,6 @@ const LogisticsDetail = () => {
           pdfCIPLHeader={pdfCIPLHeader}
           setPdfCIPLHeader={setPdfCIPLHeader}
           loadedCIPLHeader={loadedCIPLHeader}
-        />
-      )}
-      {supplierInfoListModalVisible && (
-        <ChangeSupplierModal
-          visible={supplierInfoListModalVisible}
-          onClose={handleCloseSupplierInfoListModal}
-          supplierInfoList={supplierInfoList}
-          setItems={setItems}
         />
       )}
     </Container>

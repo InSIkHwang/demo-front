@@ -313,7 +313,7 @@ const DetailQuotationModal = ({
       cancelText: "Cancel",
       onOk: async () => {
         try {
-          await deleteQutation(quotationId);
+          // await deleteQutation(quotationId);
           message.success("Deleted successfully.");
           onClose();
           fetchData();

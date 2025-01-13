@@ -25,6 +25,7 @@ import { ColumnsType } from "antd/es/table";
 import styled from "styled-components";
 import {
   ItemDetailType,
+  LogisticsItemDetail,
   OrderItemDetail,
   OrderSupplier,
 } from "../../types/types";
@@ -252,11 +253,11 @@ interface DisplayInputProps extends Omit<InputProps, "value" | "onChange"> {
 }
 
 interface TableComponentProps {
-  itemDetails: OrderItemDetail[];
-  setItemDetails: Dispatch<SetStateAction<OrderItemDetail[]>>;
+  itemDetails: LogisticsItemDetail[];
+  setItemDetails: Dispatch<SetStateAction<LogisticsItemDetail[]>>;
   handleInputChange: (
     index: number,
-    key: keyof OrderItemDetail,
+    key: keyof LogisticsItemDetail,
     value: any
   ) => void;
   currency: number;
@@ -265,7 +266,7 @@ interface TableComponentProps {
   handleMarginChange: (index: number, marginValue: number) => void;
   handlePriceInputChange: (
     index: number,
-    key: keyof OrderItemDetail,
+    key: keyof LogisticsItemDetail,
     value: any,
     currency: number
   ) => void;
@@ -387,14 +388,14 @@ TableComponentProps) => {
         ? mappedItems.map((item, idx) => ({
             ...item,
             position: idx + 1,
-            ordersItemId: null,
+            logisticsItemId: null,
           }))
         : [
             ...itemDetails,
             ...mappedItems.map((item, idx) => ({
               ...item,
               position: itemDetails.length + idx + 1,
-              ordersItemId: null,
+              logisticsItemId: null,
             })),
           ]
     );
@@ -489,15 +490,20 @@ TableComponentProps) => {
       })), // 기존 행 나머지의 position 업데이트
     ];
 
-    setItemDetails(newItems as OrderItemDetail[]);
+    setItemDetails(newItems as LogisticsItemDetail[]);
   };
 
   // 아이템 삭제 함수
-  const handleDeleteItem = (ordersItemId: number | null, position: number) => {
+  const handleDeleteItem = (
+    logisticsItemId: number | null,
+    position: number
+  ) => {
     // 선택한 항목을 삭제한 새로운 데이터 소스를 생성
     const updatedItemDetails = itemDetails.filter(
       (item) =>
-        !(item.ordersItemId === ordersItemId && item.position === position)
+        !(
+          item.logisticsItemId === logisticsItemId && item.position === position
+        )
     );
 
     // 남은 항목들의 position 값을 1부터 다시 정렬
@@ -522,7 +528,7 @@ TableComponentProps) => {
   const applyUnitToAllRows = (selectedUnit: string) => {
     if (!itemDetails) return;
 
-    const updatedItems: OrderItemDetail[] = itemDetails.map((item) => ({
+    const updatedItems: LogisticsItemDetail[] = itemDetails.map((item) => ({
       ...item,
       unit: selectedUnit,
     }));
@@ -607,7 +613,7 @@ TableComponentProps) => {
       e.preventDefault();
       const currentItem = itemDetails[rowIndex];
 
-      handleDeleteItem(currentItem.ordersItemId, currentItem.position);
+      handleDeleteItem(currentItem.logisticsItemId, currentItem.position);
       if (inputRefs.current[rowIndex - 1]?.[columnIndex]) {
         inputRefs.current[rowIndex - 1][columnIndex]?.focus();
       }

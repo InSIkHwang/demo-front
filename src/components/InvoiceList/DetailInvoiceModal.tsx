@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Modal,
   Descriptions,
@@ -11,11 +11,9 @@ import {
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import {
-  deleteQutation,
   fetchInvoiceDetail,
-  fetchOrderDetail,
 } from "../../api/api";
-import { InvoiceDetailIF, OrderResponse } from "../../types/types";
+import { InvoiceDetailIF } from "../../types/types";
 
 interface DetailInvoiceModalProps {
   open: boolean;

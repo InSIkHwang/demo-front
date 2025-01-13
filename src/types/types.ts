@@ -394,8 +394,31 @@ export interface orderAllResponses {
   orderList: Order[];
   totalCount: number;
 }
+
 export interface OrderItemDetail {
   ordersItemId: number | null;
+  itemType: "ITEM" | "MAKER" | "TYPE" | "DESC" | "DASH" | string;
+  itemCode: string;
+  itemName: string;
+  itemRemark: string;
+  qty: number;
+  position: number;
+  unit: string;
+  indexNo: string | null;
+  salesPriceKRW: number;
+  salesPriceGlobal: number;
+  salesAmountKRW: number;
+  salesAmountGlobal: number;
+  margin: number;
+  purchasePriceKRW: number;
+  purchasePriceGlobal: number;
+  purchaseAmountKRW: number;
+  purchaseAmountGlobal: number;
+  deliveryDate: number;
+}
+
+export interface LogisticsItemDetail {
+  logisticsItemId: number | null;
   itemType: "ITEM" | "MAKER" | "TYPE" | "DESC" | "DASH" | string;
   itemCode: string;
   itemName: string;
@@ -464,10 +487,9 @@ export interface OrderResponse {
 export interface LogisticsResponse {
   documentInfo: Logistics;
   invChargeList: InvCharge[];
-  itemDetailList: OrderItemDetail[];
+  itemDetailList: LogisticsItemDetail[];
   suppliers: OrderSupplier[];
   supplierInfoList: OrderSupplier[];
-  orderHeaderResponse: orderHeaderResponse;
   orderCiPlResponse: CIPLHeaderFormData;
 }
 
@@ -482,9 +504,9 @@ export interface OrderRequest {
 export interface LogisticsRequest {
   logisticsId: number;
   supplierId: number;
-  documentEditInfo: Order;
+  documentEditInfo: Logistics;
   invChargeList: InvCharge[];
-  itemDetailList: OrderItemDetail[];
+  itemDetailList: LogisticsItemDetail[];
 }
 
 export interface InvCharge {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Modal,
   Descriptions,
@@ -10,8 +10,8 @@ import {
 } from "antd";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import { confirmOrder, deleteQutation, fetchOrderDetail } from "../../api/api";
-import { OrderResponse } from "../../types/types";
+import { confirmOrder, fetchLogisticsDetail } from "../../api/api";
+import { LogisticsResponse } from "../../types/types";
 
 interface DetailLogisticsModalProps {
   open: boolean;
@@ -96,15 +96,14 @@ const currencySymbols = {
   JPY: "¥",
 } as const;
 
-const DetailOrderModal = ({
+const DetailLogisticsModal = ({
   open,
   onClose,
   logisticsId,
   fetchData,
 }: DetailLogisticsModalProps) => {
-  const [logisticsDetail, setOrderDetail] = useState<OrderResponse | null>(
-    null
-  );
+  const [logisticsDetail, setLogisticsDetail] =
+    useState<LogisticsResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [currencySymbol, setCurrencySymbol] = useState("");
   const navigate = useNavigate();
@@ -114,9 +113,9 @@ const DetailOrderModal = ({
     const fetchDetails = async () => {
       if (open) {
         try {
-          setOrderDetail(null);
-          const data = await fetchOrderDetail(logisticsId);
-          setOrderDetail(data);
+          setLogisticsDetail(null);
+          const data = await fetchLogisticsDetail(logisticsId);
+          setLogisticsDetail(data);
           const currencyType = logisticsDetail?.documentInfo.currencyType;
           if (
             currencyType &&
@@ -196,7 +195,7 @@ const DetailOrderModal = ({
       cancelText: "Cancel",
       onOk: async () => {
         try {
-          await deleteQutation(logisticsId);
+          // await deleteQutation(logisticsId);
           message.success("Deleted successfully.");
           onClose();
           fetchData();
@@ -211,7 +210,7 @@ const DetailOrderModal = ({
   // 확정 핸들러
   const handleConfirmClick = async () => {
     try {
-      await confirmOrder(logisticsId);
+      // await confirmOrder(logisticsId);
       message.success("Confirmed successfully.");
       onClose();
       fetchData();
@@ -475,4 +474,4 @@ const DetailOrderModal = ({
   );
 };
 
-export default DetailOrderModal;
+export default DetailLogisticsModal;

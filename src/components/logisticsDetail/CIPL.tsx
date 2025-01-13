@@ -24,6 +24,7 @@ import {
   OrderItemDetail,
   Order,
   CIPLHeaderFormData,
+  LogisticsItemDetail,
 } from "../../types/types";
 
 // 한글 글꼴 등록
@@ -56,7 +57,7 @@ Font.registerHyphenationCallback((word) => ["", word, ""]);
 interface CIPLDocumentProps {
   mode: string;
   info: Order;
-  items: OrderItemDetail[];
+  items: LogisticsItemDetail[];
   pdfHeader: CIPLHeaderFormData;
   viewMode: boolean;
   language: string;
@@ -454,7 +455,7 @@ const getDisplayNo = (itemType: string, itemIndex: number, indexNo: string) => {
 
 // 테이블 행을 렌더링하는 함수
 const renderTableRows = (
-  items: OrderItemDetail[],
+  items: LogisticsItemDetail[],
   language: string,
   mode: string
 ) => {
@@ -973,7 +974,7 @@ const CIPLDocument = ({
   withLogo,
 }: CIPLDocumentProps) => {
   const headerMessage = pdfHeader;
-  const calculateTotalSalesAmount = (items: OrderItemDetail[]) => {
+  const calculateTotalSalesAmount = (items: LogisticsItemDetail[]) => {
     if (language === "KOR") {
       return items.reduce((total, item) => total + item.salesAmountKRW, 0);
     } else {
