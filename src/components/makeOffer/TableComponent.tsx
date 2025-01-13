@@ -1677,7 +1677,7 @@ const TableComponent = ({
           columns={columns}
           dataSource={itemDetails}
           pagination={false}
-          scroll={{ y: 600 }}
+          scroll={{ y: 800 }}
           virtual
         />
       </div>

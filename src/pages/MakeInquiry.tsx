@@ -264,7 +264,14 @@ const MakeInquiry = () => {
         await handleSubmit();
       }
     },
-    [customerInquiryId, formValues.docNumber]
+    [
+      customerInquiryId,
+      formValues,
+      items,
+      vesselList,
+      selectedCustomerId,
+      selectedSuppliers,
+    ]
   );
 
   // 키보드 저장 핸들러 등록

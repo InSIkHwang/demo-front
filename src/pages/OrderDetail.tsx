@@ -166,7 +166,7 @@ const OrderDetail = () => {
         await handleSave();
       }
     },
-    [formValues?.refNumber]
+    [formValues, items, finalTotals, invChargeList, dcInfo]
   );
 
   // 단축키 이벤트 리스너 등록
