@@ -365,6 +365,7 @@ const styles = StyleSheet.create({
     fontSize: 9,
     color: "#142952",
     lineHeight: 1.8,
+    paddingRight: 50,
   },
 
   footer: {
@@ -577,9 +578,7 @@ const renderTableRows = (items: ItemDetailType[], language: string) => {
                   }}
                 >
                   <DescriptionIcon />
-                  <Text style={styles.desctypeCell}>
-                    {item?.itemName?.split("")}
-                  </Text>
+                  <Text style={styles.desctypeCell}>{item?.itemName}</Text>
                 </View>
               </View>
             ) : (

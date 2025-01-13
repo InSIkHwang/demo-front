@@ -360,6 +360,7 @@ const styles = StyleSheet.create({
     fontSize: 9,
     color: "#142952",
     lineHeight: 1.8,
+    paddingRight: 50,
   },
 
   footer: {
