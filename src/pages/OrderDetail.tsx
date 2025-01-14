@@ -71,6 +71,80 @@ const INITIAL_HEADER_VALUES: OrderAckHeaderFormData = {
   packing: "UNPACKED",
 };
 
+const ConfirmModalContent = ({
+  isProforma,
+  setIsProforma,
+  confirmDates,
+  setConfirmDates,
+}: {
+  isProforma: boolean;
+  setIsProforma: (checked: boolean) => void;
+  confirmDates: {
+    expectedReceivingDate: string;
+    deliveryDate: string;
+  };
+  setConfirmDates: (dates: {
+    expectedReceivingDate: string;
+    deliveryDate: string;
+  }) => void;
+}) => {
+  return (
+    <div style={{ marginTop: 16 }}>
+      <Checkbox
+        style={{
+          marginBottom: 16,
+          fontSize: 16,
+          color: "#1890ff",
+        }}
+        checked={isProforma}
+        onChange={(e) => setIsProforma(e.target.checked)}
+      >
+        Proforma Invoice
+      </Checkbox>
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ marginBottom: 8 }}>
+          Expected Receiving Date.(예상 입고일)
+        </div>
+        <DatePicker
+          style={{ width: "100%" }}
+          format="YYYY-MM-DD"
+          value={
+            confirmDates.expectedReceivingDate
+              ? dayjs(confirmDates.expectedReceivingDate)
+              : null
+          }
+          onChange={(date) => {
+            setConfirmDates({
+              expectedReceivingDate: date ? date.format("YYYY-MM-DD") : "",
+              deliveryDate: confirmDates.deliveryDate,
+            });
+          }}
+          placeholder="Expected Receiving Date.(예상 입고일)"
+          disabled={isProforma}
+        />
+      </div>
+      <div>
+        <div style={{ marginBottom: 8 }}>Delivery Date.(납기일)</div>
+        <DatePicker
+          style={{ width: "100%" }}
+          format="YYYY-MM-DD"
+          value={
+            confirmDates.deliveryDate ? dayjs(confirmDates.deliveryDate) : null
+          }
+          onChange={(date) => {
+            setConfirmDates({
+              expectedReceivingDate: confirmDates.expectedReceivingDate,
+              deliveryDate: date ? date.format("YYYY-MM-DD") : "",
+            });
+          }}
+          placeholder="Delivery Date.(납기일)"
+          disabled={isProforma}
+        />
+      </div>
+    </div>
+  );
+};
+
 const OrderDetail = () => {
   const { orderId } = useParams();
   const [formValues, setFormValues] = useState<Order>();
@@ -124,6 +198,8 @@ const OrderDetail = () => {
     expectedReceivingDate: "",
     deliveryDate: "",
   });
+  const [isProforma, setIsProforma] = useState(false);
+  const [confirmModalVisible, setConfirmModalVisible] = useState(false);
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -781,85 +857,31 @@ const OrderDetail = () => {
 
   // 주문 컨펌 함수
   const handleConfirmClick = () => {
-    let localConfirmDates = {
-      expectedReceivingDate: confirmDates.expectedReceivingDate,
-      deliveryDate: confirmDates.deliveryDate,
-    };
+    setConfirmModalVisible(true);
+  };
 
-    Modal.confirm({
-      title: "Confirm Order",
-      width: 500,
-      content: (
-        <div style={{ marginTop: 16 }}>
-          <div style={{ marginBottom: 16 }}>
-            <div style={{ marginBottom: 8 }}>
-              Expected Receiving Date.(예상 입고일)
-            </div>
-            <DatePicker
-              style={{ width: "100%" }}
-              format="YYYY-MM-DD"
-              defaultValue={
-                localConfirmDates.expectedReceivingDate
-                  ? dayjs(localConfirmDates.expectedReceivingDate)
-                  : null
-              }
-              onChange={(date) => {
-                localConfirmDates.expectedReceivingDate = date
-                  ? date.format("YYYY-MM-DD")
-                  : "";
-              }}
-              placeholder="Expected Receiving Date.(예상 입고일)"
-            />
-          </div>
-          <div>
-            <div style={{ marginBottom: 8 }}>Delivery Date.(납기일)</div>
-            <DatePicker
-              style={{ width: "100%" }}
-              format="YYYY-MM-DD"
-              defaultValue={
-                localConfirmDates.deliveryDate
-                  ? dayjs(localConfirmDates.deliveryDate)
-                  : null
-              }
-              onChange={(date) => {
-                localConfirmDates.deliveryDate = date
-                  ? date.format("YYYY-MM-DD")
-                  : "";
-              }}
-              placeholder="Delivery Date.(납기일)"
-            />
-          </div>
-        </div>
-      ),
-      onOk: async () => {
-        if (
-          !localConfirmDates.expectedReceivingDate ||
-          !localConfirmDates.deliveryDate
-        ) {
-          message.error(
-            "Please fill in all fields.(날짜를 모두 입력해주세요.)"
-          );
-          return Promise.reject();
-        }
+  const handleModalConfirm = async () => {
+    if (
+      !isProforma &&
+      (!confirmDates.expectedReceivingDate || !confirmDates.deliveryDate)
+    ) {
+      message.error("Please fill in all fields.(날짜를 모두 입력해주세요.)");
+      return;
+    }
 
-        try {
-          await confirmOrder(
-            Number(orderId),
-            localConfirmDates.expectedReceivingDate,
-            localConfirmDates.deliveryDate
-          );
-          console.log(localConfirmDates, "localConfirmDates");
-          message.success("Order confirmed successfully.");
-          navigate("/orderlist");
-        } catch (error) {
-          console.error("Error occurred while confirming:", error);
-          message.error("Failed to confirm. Please try again.");
-          return Promise.reject();
-        }
-      },
-      okText: "Confirm",
-      cancelText: "Cancel",
-    });
+    try {
+      await confirmOrder(
+        Number(orderId),
+        isProforma ? "" : confirmDates.expectedReceivingDate,
+        isProforma ? "" : confirmDates.deliveryDate,
+        isProforma
+      );
+      message.success("Order confirmed successfully.");
+      navigate("/orderlist");
+    } catch (error) {
+      console.error("Error occurred while confirming:", error);
+      message.error("Failed to confirm. Please try again.");
+    }
   };
 
   if (isLoading) {
@@ -1023,6 +1045,22 @@ const OrderDetail = () => {
           setItems={setItems}
         />
       )}
+      <Modal
+        title="Confirm Order"
+        open={confirmModalVisible}
+        onCancel={() => setConfirmModalVisible(false)}
+        onOk={handleModalConfirm}
+        width={500}
+        okText="Confirm"
+        cancelText="Cancel"
+      >
+        <ConfirmModalContent
+          isProforma={isProforma}
+          setIsProforma={setIsProforma}
+          confirmDates={confirmDates}
+          setConfirmDates={setConfirmDates}
+        />
+      </Modal>
     </Container>
   );
 };

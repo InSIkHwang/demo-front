@@ -979,12 +979,16 @@ export const saveOrderHeader = async (
 export const confirmOrder = async (
   orderId: number,
   expectedReceivingDate: string,
-  deliveryDate: string
+  deliveryDate: string,
+  isProforma: boolean
 ) => {
-  const response = await axios.put(`/api/orders/confirm/${orderId}`, {
-    expectedReceivingDate,
-    deliveryDate,
-  });
+  const response = await axios.put(
+    `/api/orders/confirm/${orderId}?isProforma=${isProforma}`,
+    {
+      expectedReceivingDate,
+      deliveryDate,
+    }
+  );
 
   return response.data;
 };
