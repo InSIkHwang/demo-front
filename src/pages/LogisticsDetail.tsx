@@ -576,12 +576,13 @@ const LogisticsDetail = () => {
 
     try {
       await editLogistics(Number(logisticsId), request);
-      message.success("Logistics saved successfully");
-
       loadLogisticsDetail();
+      message.success("Logistics saved successfully");
     } catch (error) {
       console.error("Error saving logistics:", error);
       message.error("Failed to save logistics. Please try again.");
+    } finally {
+      loadLogisticsDetail();
     }
   };
 
@@ -691,7 +692,7 @@ const LogisticsDetail = () => {
     }
   };
 
-  // 주문 컨펌 함수(ORDER -> LOGISTICS)
+  // 주문 컨펌 함수(LOGISTICS -> INVOICE)
   const handleConfirmClick = async () => {
     try {
       await confirmLogistics(Number(logisticsId));

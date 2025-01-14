@@ -1,6 +1,7 @@
 import { Form, Input } from "antd";
 import styled from "styled-components";
 import { Order } from "../../types/types";
+import { useEffect } from "react";
 
 const InquiryItemForm = styled(Form.Item)`
   margin-bottom: 8px;
@@ -19,9 +20,15 @@ interface InquiryFormProps {
 }
 
 const FormComponent = ({ formValues, setFormValues }: InquiryFormProps) => {
+  const [form] = Form.useForm();
+
+  useEffect(() => {
+    form.setFieldsValue(formValues);
+  }, [formValues, form]);
+
   return (
     <>
-      <Form layout="vertical" initialValues={formValues}>
+      <Form layout="vertical" form={form}>
         <FormRow>
           <InquiryItemForm
             label="문서번호(Document No.)"

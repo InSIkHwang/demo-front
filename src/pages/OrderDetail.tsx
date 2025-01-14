@@ -38,6 +38,11 @@ import OrderAckHeaderEditModal from "../components/orderDetail/OrderAckHeaderEdi
 import OrderAckPDFDocument from "../components/orderDetail/OrderAckPDFDocument";
 import ChangeSupplierModal from "../components/orderDetail/ChangeSupplierModal";
 import { pdf } from "@react-pdf/renderer";
+import {
+  parseEnglishDate,
+  parseKoreanDate,
+} from "../components/orderList/DetailOrderModal";
+import { parseDeliveryTime } from "../components/orderList/DetailOrderModal";
 
 const Container = styled.div`
   position: relative;
@@ -115,6 +120,10 @@ const OrderDetail = () => {
   const [pdfOrderAckFooter, setPdfOrderAckFooter] = useState<orderRemark[]>([]);
   const [supplierInfoListModalVisible, setSupplierInfoListModalVisible] =
     useState<boolean>(false);
+  const [confirmDates, setConfirmDates] = useState({
+    expectedReceivingDate: "",
+    deliveryDate: "",
+  });
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -220,6 +229,38 @@ const OrderDetail = () => {
             "1. 귀사의 무궁한 발전을 기원합니다.\n2. 상기와 같이 발주하오니 업무에 참조하시기 바랍니다.\n3. 세금 계산서 - 법인\n4. 희망 납기일 - 월 일 \n5. 예정 납기일 포함된 발주서 접수 회신 메일 부탁 드립니다. 감사합니다.",
         }
       );
+      // 날짜 초기값 설정
+      let expectedDate = null;
+      let deliveryDate = null;
+
+      // orderSupplierRemark에서 예상 입고일 파싱
+      if (data?.orderHeaderResponse?.orderSupplierRemark?.[0]?.orderRemark) {
+        const remarks =
+          data.orderHeaderResponse.orderSupplierRemark[0].orderRemark.split(
+            "\n"
+          );
+        for (const remark of remarks) {
+          const koreanDate = parseKoreanDate(remark);
+          const englishDate = parseEnglishDate(remark);
+          if (koreanDate || englishDate) {
+            expectedDate = koreanDate || englishDate;
+            break;
+          }
+        }
+      }
+
+      // orderCustomerHeader에서 납기일 파싱
+      if (data?.orderHeaderResponse?.orderCustomerHeader?.deliveryTime) {
+        deliveryDate = parseDeliveryTime(
+          data.orderHeaderResponse.orderCustomerHeader.deliveryTime
+        );
+      }
+
+      // 날짜 상태 업데이트
+      setConfirmDates({
+        expectedReceivingDate: expectedDate || "",
+        deliveryDate: deliveryDate || "",
+      });
     } catch (error) {
       console.error("Order detail error:", error);
       message.error("Failed to load order detail.");
@@ -741,8 +782,8 @@ const OrderDetail = () => {
   // 주문 컨펌 함수
   const handleConfirmClick = () => {
     let localConfirmDates = {
-      expectedReceivingDate: "",
-      deliveryDate: "",
+      expectedReceivingDate: confirmDates.expectedReceivingDate,
+      deliveryDate: confirmDates.deliveryDate,
     };
 
     Modal.confirm({
@@ -757,6 +798,11 @@ const OrderDetail = () => {
             <DatePicker
               style={{ width: "100%" }}
               format="YYYY-MM-DD"
+              defaultValue={
+                localConfirmDates.expectedReceivingDate
+                  ? dayjs(localConfirmDates.expectedReceivingDate)
+                  : null
+              }
               onChange={(date) => {
                 localConfirmDates.expectedReceivingDate = date
                   ? date.format("YYYY-MM-DD")
@@ -770,6 +816,11 @@ const OrderDetail = () => {
             <DatePicker
               style={{ width: "100%" }}
               format="YYYY-MM-DD"
+              defaultValue={
+                localConfirmDates.deliveryDate
+                  ? dayjs(localConfirmDates.deliveryDate)
+                  : null
+              }
               onChange={(date) => {
                 localConfirmDates.deliveryDate = date
                   ? date.format("YYYY-MM-DD")

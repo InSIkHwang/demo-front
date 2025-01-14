@@ -1,15 +1,7 @@
 import { useEffect } from "react";
-import {
-  Modal,
-  Button,
-  Input,
-  Form,
-  AutoComplete,
-} from "antd";
+import { Modal, Button, Input, Form, AutoComplete } from "antd";
 import styled from "styled-components";
-import {
-  CIPLHeaderFormData,
-} from "../../types/types";
+import { CIPLHeaderFormData, Logistics } from "../../types/types";
 
 const StyledModal = styled(Modal)`
   .ant-modal-content {
@@ -56,7 +48,6 @@ const CIPLHeaderEditModal = ({
   loadedCIPLHeader,
 }: HeaderEditModalProps) => {
   const [form] = Form.useForm<CIPLHeaderFormData>();
-
   useEffect(() => {
     form.setFieldsValue(pdfCIPLHeader);
   }, [form, pdfCIPLHeader]);

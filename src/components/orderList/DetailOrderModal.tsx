@@ -13,6 +13,7 @@ import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { confirmOrder, fetchOrderDetail } from "../../api/api";
 import { OrderResponse } from "../../types/types";
+import dayjs from "dayjs";
 
 interface DetailOrderModalProps {
   open: boolean;
@@ -97,6 +98,84 @@ const currencySymbols = {
   JPY: "¥",
 } as const;
 
+// 한글 날짜 파싱 함수
+export const parseKoreanDate = (text: string): string | null => {
+  // 모든 공백 제거 후 파싱
+  const cleanText = text.replace(/\s+/g, "");
+
+  // "희망납기일-1월24일" 또는 "희망납기일-01월24일" 형식 파싱
+  const koreanDatePattern = /희망납기일[-:]+(\d{1,2})월(\d{1,2})일/;
+  const match = cleanText.match(koreanDatePattern);
+
+  if (match) {
+    const month = match[1].padStart(2, "0");
+    const day = match[2].padStart(2, "0");
+    const year = new Date().getFullYear();
+    return `${year}-${month}-${day}`;
+  }
+  return null;
+};
+
+// 영문 날짜 파싱 함수
+export const parseEnglishDate = (text: string): string | null => {
+  // 연속된 공백을 단일 공백으로 변경
+  const cleanText = text.replace(/\s+/g, " ").trim();
+
+  // "EXPECTED DELIVERY DATE : 15 JAN 2025" 형식 파싱
+  const englishDatePattern =
+    /EXPECTED DELIVERY DATE:?\s*(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})/i;
+  const match = cleanText.match(englishDatePattern);
+
+  if (match) {
+    const day = match[1].padStart(2, "0");
+    const month = match[2].toUpperCase();
+    const year = match[3];
+    return `${year}-${getMonthNumber(month)}-${day}`;
+  }
+  return null;
+};
+
+// 월 이름을 숫자로 변환
+export const getMonthNumber = (month: string): string => {
+  const months: { [key: string]: string } = {
+    JAN: "01",
+    FEB: "02",
+    MAR: "03",
+    APR: "04",
+    MAY: "05",
+    JUN: "06",
+    JUL: "07",
+    AUG: "08",
+    SEP: "09",
+    OCT: "10",
+    NOV: "11",
+    DEC: "12",
+  };
+  return months[month.toUpperCase()] || "01";
+};
+
+// deliveryTime 파싱 함수
+export const parseDeliveryTime = (
+  deliveryTime: string | null
+): string | null => {
+  if (!deliveryTime) return null;
+
+  // 연속된 공백을 단일 공백으로 변경하고 앞뒤 공백 제거
+  const cleanText = deliveryTime.replace(/\s+/g, " ").trim();
+
+  // "25 JAN 2025" 또는 "25 JAN, 2025" 형식 파싱
+  const pattern = /(\d{1,2})\s+([A-Za-z]{3})[,\s]+(\d{4})/;
+  const match = cleanText.match(pattern);
+
+  if (match) {
+    const day = match[1].padStart(2, "0");
+    const month = getMonthNumber(match[2]);
+    const year = match[3];
+    return `${year}-${month}-${day}`;
+  }
+  return null;
+};
+
 const DetailOrderModal = ({
   open,
   onClose,
@@ -107,6 +186,10 @@ const DetailOrderModal = ({
   const [loading, setLoading] = useState<boolean>(true);
   const [currencySymbol, setCurrencySymbol] = useState("");
   const navigate = useNavigate();
+  const [confirmDates, setConfirmDates] = useState({
+    expectedReceivingDate: "",
+    deliveryDate: "",
+  });
 
   // 초기 렌더링 시 데이터 조회
   useEffect(() => {
@@ -116,7 +199,9 @@ const DetailOrderModal = ({
           setOrderDetail(null);
           const data = await fetchOrderDetail(orderId);
           setOrderDetail(data);
-          const currencyType = orderDetail?.documentInfo.currencyType;
+
+          // 통화 타입 설정
+          const currencyType = data?.documentInfo.currencyType;
           if (
             currencyType &&
             currencySymbols[currencyType as keyof typeof currencySymbols]
@@ -125,8 +210,43 @@ const DetailOrderModal = ({
               currencySymbols[currencyType as keyof typeof currencySymbols]
             );
           } else {
-            setCurrencySymbol(""); // currencyType이 undefined일 경우 빈 문자열 설정
+            setCurrencySymbol("");
           }
+
+          // 날짜 초기값 설정
+          let expectedDate = null;
+          let deliveryDate = null;
+
+          // orderSupplierRemark에서 예상 입고일 파싱
+          if (
+            data?.orderHeaderResponse?.orderSupplierRemark?.[0]?.orderRemark
+          ) {
+            const remarks =
+              data.orderHeaderResponse.orderSupplierRemark[0].orderRemark.split(
+                "\n"
+              );
+            for (const remark of remarks) {
+              const koreanDate = parseKoreanDate(remark);
+              const englishDate = parseEnglishDate(remark);
+              if (koreanDate || englishDate) {
+                expectedDate = koreanDate || englishDate;
+                break;
+              }
+            }
+          }
+
+          // orderCustomerHeader에서 납기일 파싱
+          if (data?.orderHeaderResponse?.orderCustomerHeader?.deliveryTime) {
+            deliveryDate = parseDeliveryTime(
+              data.orderHeaderResponse.orderCustomerHeader.deliveryTime
+            );
+          }
+
+          // 날짜 상태 업데이트
+          setConfirmDates({
+            expectedReceivingDate: expectedDate || "",
+            deliveryDate: deliveryDate || "",
+          });
         } catch (error) {
           message.error("There was an error fetching the data.");
         } finally {
@@ -210,8 +330,8 @@ const DetailOrderModal = ({
   // 주문 컨펌 함수
   const handleConfirmClick = () => {
     let localConfirmDates = {
-      expectedReceivingDate: "",
-      deliveryDate: "",
+      expectedReceivingDate: confirmDates.expectedReceivingDate,
+      deliveryDate: confirmDates.deliveryDate,
     };
 
     Modal.confirm({
@@ -226,6 +346,11 @@ const DetailOrderModal = ({
             <DatePicker
               style={{ width: "100%" }}
               format="YYYY-MM-DD"
+              defaultValue={
+                localConfirmDates.expectedReceivingDate
+                  ? dayjs(localConfirmDates.expectedReceivingDate)
+                  : null
+              }
               onChange={(date) => {
                 localConfirmDates.expectedReceivingDate = date
                   ? date.format("YYYY-MM-DD")
@@ -239,6 +364,11 @@ const DetailOrderModal = ({
             <DatePicker
               style={{ width: "100%" }}
               format="YYYY-MM-DD"
+              defaultValue={
+                localConfirmDates.deliveryDate
+                  ? dayjs(localConfirmDates.deliveryDate)
+                  : null
+              }
               onChange={(date) => {
                 localConfirmDates.deliveryDate = date
                   ? date.format("YYYY-MM-DD")
