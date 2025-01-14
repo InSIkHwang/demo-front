@@ -334,7 +334,6 @@ const DetailOrderModal = ({
       deliveryDate: confirmDates.deliveryDate,
     };
 
-    console.log(localConfirmDates, "localConfirmDates");
     Modal.confirm({
       title: "Confirm Order",
       width: 500,

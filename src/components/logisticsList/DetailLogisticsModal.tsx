@@ -10,7 +10,11 @@ import {
 } from "antd";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import { confirmOrder, fetchLogisticsDetail } from "../../api/api";
+import {
+  confirmLogistics,
+  confirmOrder,
+  fetchLogisticsDetail,
+} from "../../api/api";
 import { LogisticsResponse } from "../../types/types";
 
 interface DetailLogisticsModalProps {
@@ -210,7 +214,7 @@ const DetailLogisticsModal = ({
   // 확정 핸들러
   const handleConfirmClick = async () => {
     try {
-      // await confirmOrder(logisticsId);
+      await confirmLogistics(logisticsId);
       message.success("Confirmed successfully.");
       onClose();
       fetchData();

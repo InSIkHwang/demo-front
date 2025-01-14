@@ -1,4 +1,4 @@
-import { Form, Input } from "antd";
+import { AutoComplete, Form, Input } from "antd";
 import styled from "styled-components";
 import { Logistics } from "../../types/types";
 
@@ -17,6 +17,27 @@ interface InquiryFormProps {
   formValues: Logistics;
   setFormValues: (values: Logistics) => void;
 }
+
+const PACKING_OPTIONS = [
+  { value: " X  X CM  KG  CARTON" },
+  { value: " X  X CM  KG  WOODEN" },
+];
+
+const FORWARDER_OPTIONS = [
+  { value: "풀로그" },
+  { value: "DHL" },
+  { value: "KIMEX" },
+  { value: "마린트랜스" },
+  { value: "MNC" },
+  { value: "DTS" },
+];
+
+const LOC_OPTIONS = [
+  { value: "BAS" },
+  { value: "해성" },
+  { value: "해양" },
+  { value: "KMS" },
+];
 
 const FormComponent = ({ formValues, setFormValues }: InquiryFormProps) => {
   return (
@@ -106,35 +127,42 @@ const FormComponent = ({ formValues, setFormValues }: InquiryFormProps) => {
         </FormRow>
         <FormRow>
           <InquiryItemForm
-            label="Forwarder"
-            name="forwarder"
-            style={{ flex: 0.5 }}
-          >
-            <Input
-              value={formValues.forwarder}
-              onChange={(e) =>
-                setFormValues({ ...formValues, forwarder: e.target.value })
-              }
-            />
-          </InquiryItemForm>
-          <InquiryItemForm label="LOC" name="loc" style={{ flex: 0.5 }}>
-            <Input
-              value={formValues.loc}
-              onChange={(e) =>
-                setFormValues({ ...formValues, loc: e.target.value })
-              }
-            />
-          </InquiryItemForm>
-          <InquiryItemForm
             label="Packing Details"
             name="packingDetails"
             style={{ flex: 1 }}
           >
-            <Input
+            <AutoComplete
               value={formValues.packingDetails}
-              onChange={(e) =>
-                setFormValues({ ...formValues, packingDetails: e.target.value })
+              options={PACKING_OPTIONS}
+              onChange={(value) =>
+                setFormValues({ ...formValues, packingDetails: value })
               }
+              placeholder="Enter packing details"
+              style={{ width: "100%" }}
+            />
+          </InquiryItemForm>
+          <InquiryItemForm
+            label="Forwarder"
+            name="forwarder"
+            style={{ flex: 0.5 }}
+          >
+            <AutoComplete
+              value={formValues.forwarder}
+              options={FORWARDER_OPTIONS}
+              onChange={(value) =>
+                setFormValues({ ...formValues, forwarder: value })
+              }
+              placeholder="Enter forwarder"
+              style={{ width: "100%" }}
+            />
+          </InquiryItemForm>
+          <InquiryItemForm label="LOC" name="loc" style={{ flex: 0.5 }}>
+            <AutoComplete
+              value={formValues.loc}
+              options={LOC_OPTIONS}
+              onChange={(value) => setFormValues({ ...formValues, loc: value })}
+              placeholder="Enter LOC"
+              style={{ width: "100%" }}
             />
           </InquiryItemForm>
         </FormRow>
