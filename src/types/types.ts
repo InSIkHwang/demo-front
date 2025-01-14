@@ -15,6 +15,11 @@ export interface Customer {
   headerMessage: string;
 }
 
+export interface VesselResponse {
+  totalCount: number;
+  vessels: Vessel[];
+}
+
 export interface VesselList {
   id: number;
   // code: string;
@@ -45,7 +50,6 @@ export interface Supplier {
 
 export interface Vessel {
   id: number;
-  // code: string;
   vesselName: string;
   vesselCompanyName: string;
   imoNumber: number;

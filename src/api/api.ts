@@ -174,6 +174,32 @@ export const fetchCategory = async () => {
   return response.data;
 };
 
+//Vessel List 조회
+export const fetchVesselList = async (page: number, pageSize: number) => {
+  const response = await axios.get("/api/vessels", {
+    params: {
+      page: page - 1,
+      pageSize: pageSize,
+    },
+  });
+
+  return response.data;
+};
+
+//Vessel List 검색
+export const fetchVesselSearch = async (params: {
+  page: number;
+  pageSize: number;
+  query?: string;
+  vesselName?: string;
+  imoNumber?: string;
+  hullNumber?: string;
+  customerName?: string;
+}) => {
+  const response = await axios.get("/api/vessels/search", { params });
+  return response.data;
+};
+
 //fetch Vessel
 export const fetchVessel = async (vesselId: number) => {
   const response = await axios.get(`/api/vessels/${vesselId}`);
