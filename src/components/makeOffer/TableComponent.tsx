@@ -939,29 +939,31 @@ const TableComponent = ({
             style={{
               borderRadius: "4px",
               width: "100%",
-              paddingRight: "32px", // 버튼 공간 확보
+              paddingLeft: "32px", // 버튼 공간 확보
             }}
           />
-          <Button
-            type="text"
-            icon={<PlusCircleOutlined />}
-            onClick={() => handleAddDescRow(index)}
-            style={{
-              position: "absolute",
-              right: "4px",
-              top: "50%",
-              transform: "translateY(-50%)",
-              width: "24px",
-              height: "24px",
-              padding: 0,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: "transparent",
-              border: "none",
-              zIndex: 1,
-            }}
-          />
+          <Tooltip title="Add DESC type item">
+            <Button
+              type="text"
+              icon={<PlusCircleOutlined />}
+              onClick={() => handleAddDescRow(index)}
+              style={{
+                position: "absolute",
+                left: "4px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                width: "24px",
+                height: "24px",
+                padding: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "transparent",
+                border: "none",
+                zIndex: 1,
+              }}
+            />
+          </Tooltip>
         </div>
       ),
     },

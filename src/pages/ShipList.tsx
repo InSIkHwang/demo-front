@@ -6,14 +6,20 @@ import {
   Select,
   Pagination,
   Tag,
+  message,
 } from "antd";
 import { SearchOutlined, LeftOutlined, RightOutlined } from "@ant-design/icons";
 import CreateVesselModal from "../components/vessel/CreateVesselModal";
 import type { ColumnsType } from "antd/es/table";
 import styled from "styled-components";
-import axios from "../api/axios";
 import DetailVesselModal from "../components/vessel/DetailVesselModal";
-import { Vessel } from "../types/types";
+import { Vessel, VesselResponse } from "../types/types";
+import { fetchVesselList, fetchVesselSearch } from "../api/api";
+import {
+  keepPreviousData,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 
 const Container = styled.div`
   position: relative;
@@ -61,44 +67,52 @@ const PaginationWrapper = styled(Pagination)`
 const { Option } = Select;
 
 const ShipList = () => {
-  const [data, setData] = useState<Vessel[]>([]);
   const [searchText, setSearchText] = useState<string>("");
   const [searchCategory, setSearchCategory] = useState<string>("all");
-  const [loading, setLoading] = useState<boolean>(true);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isDetailVesselModalOpen, setIsDetailVesselModalOpen] =
     useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage, setItemsPerPage] = useState<number>(10);
   const [selectedVessel, setSelectedVessel] = useState<Vessel | null>(null);
-  const [totalCount, setTotalCount] = useState<number>();
 
-  useEffect(() => {
-    if (searchText) {
-      fetchFilteredData();
-    } else {
-      fetchData();
-    }
-  }, [currentPage, itemsPerPage]);
-
-  //데이터 FETCH
-  const fetchData = async () => {
-    try {
-      const response = await axios.get("/api/vessels", {
-        params: {
-          page: currentPage - 1, // 페이지는 0
-          pageSize: itemsPerPage,
-        },
-      });
-      setData(response.data.vessels);
-      setTotalCount(response.data.totalCount);
-      setLoading(false);
-    } catch (error) {
-      setData([]); // 오류 발생 시 빈 배열로 초기화
-      console.error("Error fetching data:", error);
-      setLoading(false);
-    }
+  const handleSearch = () => {
+    refetch();
   };
+
+  // 선박 목록 조회 쿼리
+  const {
+    data: vesselData,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery<VesselResponse>({
+    queryKey: ["vessels", currentPage, itemsPerPage],
+    queryFn: async () => {
+      const params: any = {
+        page: currentPage - 1,
+        pageSize: itemsPerPage,
+      };
+
+      if (searchText) {
+        if (searchCategory === "all") {
+          params.query = searchText;
+        } else {
+          params[searchCategory] = searchText;
+        }
+        return await fetchVesselSearch(params);
+      }
+      return await fetchVesselList(currentPage, itemsPerPage);
+    },
+    placeholderData: (previousData) => previousData,
+  });
+
+  // Error
+  useEffect(() => {
+    if (error) {
+      message.error("Failed to fetch data");
+    }
+  }, [error]);
 
   // 모달 열릴 때 스크롤 방지
   useEffect(() => {
@@ -112,34 +126,6 @@ const ShipList = () => {
       document.body.style.overflow = "auto";
     };
   }, [isModalOpen, isDetailVesselModalOpen]);
-
-  //검색 API 로직
-  const fetchFilteredData = async () => {
-    try {
-      const params: any = {
-        page: currentPage - 1, // 페이지는 0부터 시작
-        pageSize: itemsPerPage, // 페이지당 아이템 수
-      };
-      if (searchCategory === "vesselName") {
-        params.vesselName = searchText;
-      } else if (searchCategory === "all") {
-        params.query = searchText;
-      } else if (searchCategory === "imoNumber") {
-        params.imoNumber = searchText;
-      } else if (searchCategory === "hullNumber") {
-        params.hullNumber = searchText;
-      } else if (searchCategory === "customerName") {
-        params.customerName = searchText;
-      }
-      const response = await axios.get("/api/vessels/search", { params });
-      setData(response.data.vessels);
-      setTotalCount(response.data.totalCount);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching filtered data:", error);
-      setLoading(false);
-    }
-  };
 
   const columns: ColumnsType<Vessel> = [
     {
@@ -229,7 +215,7 @@ const ShipList = () => {
               onChange={(e) => setSearchText(e.target.value)}
               onPressEnter={() => {
                 if (currentPage === 1) {
-                  fetchFilteredData();
+                  handleSearch();
                 } else {
                   setCurrentPage(1);
                 }
@@ -239,7 +225,7 @@ const ShipList = () => {
                 <SearchOutlined
                   onClick={() => {
                     if (currentPage === 1) {
-                      fetchFilteredData();
+                      handleSearch();
                     } else {
                       setCurrentPage(1);
                     }
@@ -252,49 +238,46 @@ const ShipList = () => {
             New Vessel
           </Button>
         </TableHeader>
-        {data?.length > 0 && ( // 데이터가 있을 때만 페이지네이션을 표시
-          <>
-            <Table
-              columns={columns}
-              dataSource={data}
-              pagination={false}
-              loading={loading}
-              rowKey="id"
-              onRow={(record) => ({
-                onClick: () => openDetailVesselModal(record),
-              })}
-              style={{ cursor: "pointer" }}
-            />
-            <PaginationWrapper
-              current={currentPage}
-              pageSize={itemsPerPage}
-              total={totalCount}
-              onChange={handlePageChange}
-              onShowSizeChange={handlePageSizeChange}
-              showSizeChanger
-              pageSizeOptions={[30, 50, 100]}
-              showQuickJumper
-              itemRender={(page, type, originalElement) => {
-                if (type === "prev") {
-                  return <LeftOutlined />;
-                }
-                if (type === "next") {
-                  return <RightOutlined />;
-                }
-                return originalElement;
-              }}
-            />
-          </>
-        )}
+        {vesselData &&
+          vesselData.vessels.length > 0 && ( // 데이터가 있을 때만 페이지네이션을 표시
+            <>
+              <Table
+                columns={columns}
+                dataSource={vesselData.vessels}
+                pagination={false}
+                loading={isLoading}
+                rowKey="id"
+                onRow={(record) => ({
+                  onClick: () => openDetailVesselModal(record),
+                })}
+                style={{ cursor: "pointer" }}
+              />
+              <PaginationWrapper
+                current={currentPage}
+                pageSize={itemsPerPage}
+                total={vesselData.totalCount}
+                onChange={handlePageChange}
+                onShowSizeChange={handlePageSizeChange}
+                showSizeChanger
+                pageSizeOptions={[30, 50, 100]}
+                showQuickJumper
+                itemRender={(page, type, originalElement) => {
+                  if (type === "prev") {
+                    return <LeftOutlined />;
+                  }
+                  if (type === "next") {
+                    return <RightOutlined />;
+                  }
+                  return originalElement;
+                }}
+              />
+            </>
+          )}
       </Container>
       {isModalOpen && (
         <CreateVesselModal
           onUpdate={() => {
-            if (searchText) {
-              fetchFilteredData();
-            } else {
-              fetchData();
-            }
+            refetch();
           }}
           onClose={closeModal}
         />
@@ -304,11 +287,7 @@ const ShipList = () => {
           vessel={selectedVessel}
           onClose={closeDetailVesselModal}
           onUpdate={() => {
-            if (searchText) {
-              fetchFilteredData();
-            } else {
-              fetchData();
-            }
+            refetch();
           }}
         />
       )}

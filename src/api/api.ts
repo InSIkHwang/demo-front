@@ -82,12 +82,6 @@ export const postUserSignUp = async (
   return response.data;
 };
 
-export const fetchCustomerDetail = async (customerId: number) => {
-  const response = await axios.get(`/api/customers/${customerId}`);
-
-  return response.data;
-};
-
 //----------------------------------------------------------------------------------
 // 매출처, 의뢰처, 선박, 아이템 관련
 
@@ -140,8 +134,8 @@ export const fetchItemData = async (itemCode: string) => {
   return response.data;
 };
 
-//Supplier 상세 정보 조회
-export const fetchSupplierDetail = async (id: number, category: string) => {
+//Customer, Supplier 상세 정보 조회
+export const fetchCompanyDetail = async (id: number, category: string) => {
   if (category === "supplier") {
     const response = await axios.get(`/api/suppliers/${id}`);
     return response.data;
@@ -177,6 +171,32 @@ export const DeleteMaker = async (
 export const fetchCategory = async () => {
   const response = await axios.get("/api/suppliers/category-all");
 
+  return response.data;
+};
+
+//Vessel List 조회
+export const fetchVesselList = async (page: number, pageSize: number) => {
+  const response = await axios.get("/api/vessels", {
+    params: {
+      page: page - 1,
+      pageSize: pageSize,
+    },
+  });
+
+  return response.data;
+};
+
+//Vessel List 검색
+export const fetchVesselSearch = async (params: {
+  page: number;
+  pageSize: number;
+  query?: string;
+  vesselName?: string;
+  imoNumber?: string;
+  hullNumber?: string;
+  customerName?: string;
+}) => {
+  const response = await axios.get("/api/vessels/search", { params });
   return response.data;
 };
 
@@ -959,12 +979,16 @@ export const saveOrderHeader = async (
 export const confirmOrder = async (
   orderId: number,
   expectedReceivingDate: string,
-  deliveryDate: string
+  deliveryDate: string,
+  isProforma: boolean
 ) => {
-  const response = await axios.put(`/api/orders/confirm/${orderId}`, {
-    expectedReceivingDate,
-    deliveryDate,
-  });
+  const response = await axios.put(
+    `/api/orders/confirm/${orderId}?isProforma=${isProforma}`,
+    {
+      expectedReceivingDate,
+      deliveryDate,
+    }
+  );
 
   return response.data;
 };

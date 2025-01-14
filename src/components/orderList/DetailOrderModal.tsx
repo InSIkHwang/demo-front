@@ -8,6 +8,7 @@ import {
   Divider,
   message,
   DatePicker,
+  Checkbox,
 } from "antd";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
@@ -176,6 +177,80 @@ export const parseDeliveryTime = (
   return null;
 };
 
+const ConfirmModalContent = ({
+  isProforma,
+  setIsProforma,
+  confirmDates,
+  setConfirmDates,
+}: {
+  isProforma: boolean;
+  setIsProforma: (checked: boolean) => void;
+  confirmDates: {
+    expectedReceivingDate: string;
+    deliveryDate: string;
+  };
+  setConfirmDates: (dates: {
+    expectedReceivingDate: string;
+    deliveryDate: string;
+  }) => void;
+}) => {
+  return (
+    <div style={{ marginTop: 16 }}>
+      <Checkbox
+        style={{
+          marginBottom: 16,
+          fontSize: 16,
+          color: "#1890ff",
+        }}
+        checked={isProforma}
+        onChange={(e) => setIsProforma(e.target.checked)}
+      >
+        Proforma Invoice
+      </Checkbox>
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ marginBottom: 8 }}>
+          Expected Receiving Date.(예상 입고일)
+        </div>
+        <DatePicker
+          style={{ width: "100%" }}
+          format="YYYY-MM-DD"
+          value={
+            confirmDates.expectedReceivingDate
+              ? dayjs(confirmDates.expectedReceivingDate)
+              : null
+          }
+          onChange={(date) => {
+            setConfirmDates({
+              expectedReceivingDate: date ? date.format("YYYY-MM-DD") : "",
+              deliveryDate: confirmDates.deliveryDate,
+            });
+          }}
+          placeholder="Expected Receiving Date.(예상 입고일)"
+          disabled={isProforma}
+        />
+      </div>
+      <div>
+        <div style={{ marginBottom: 8 }}>Delivery Date.(납기일)</div>
+        <DatePicker
+          style={{ width: "100%" }}
+          format="YYYY-MM-DD"
+          value={
+            confirmDates.deliveryDate ? dayjs(confirmDates.deliveryDate) : null
+          }
+          onChange={(date) => {
+            setConfirmDates({
+              expectedReceivingDate: confirmDates.expectedReceivingDate,
+              deliveryDate: date ? date.format("YYYY-MM-DD") : "",
+            });
+          }}
+          placeholder="Delivery Date.(납기일)"
+          disabled={isProforma}
+        />
+      </div>
+    </div>
+  );
+};
+
 const DetailOrderModal = ({
   open,
   onClose,
@@ -190,6 +265,8 @@ const DetailOrderModal = ({
     expectedReceivingDate: "",
     deliveryDate: "",
   });
+  const [isProforma, setIsProforma] = useState(false);
+  const [confirmModalVisible, setConfirmModalVisible] = useState(false);
 
   // 초기 렌더링 시 데이터 조회
   useEffect(() => {
@@ -329,84 +406,31 @@ const DetailOrderModal = ({
 
   // 주문 컨펌 함수
   const handleConfirmClick = () => {
-    let localConfirmDates = {
-      expectedReceivingDate: confirmDates.expectedReceivingDate,
-      deliveryDate: confirmDates.deliveryDate,
-    };
+    setConfirmModalVisible(true);
+  };
 
-    Modal.confirm({
-      title: "Confirm Order",
-      width: 500,
-      content: (
-        <div style={{ marginTop: 16 }}>
-          <div style={{ marginBottom: 16 }}>
-            <div style={{ marginBottom: 8 }}>
-              Expected Receiving Date.(예상 입고일)
-            </div>
-            <DatePicker
-              style={{ width: "100%" }}
-              format="YYYY-MM-DD"
-              defaultValue={
-                localConfirmDates.expectedReceivingDate
-                  ? dayjs(localConfirmDates.expectedReceivingDate)
-                  : null
-              }
-              onChange={(date) => {
-                localConfirmDates.expectedReceivingDate = date
-                  ? date.format("YYYY-MM-DD")
-                  : "";
-              }}
-              placeholder="Expected Receiving Date.(예상 입고일)"
-            />
-          </div>
-          <div>
-            <div style={{ marginBottom: 8 }}>Delivery Date.(납기일)</div>
-            <DatePicker
-              style={{ width: "100%" }}
-              format="YYYY-MM-DD"
-              defaultValue={
-                localConfirmDates.deliveryDate
-                  ? dayjs(localConfirmDates.deliveryDate)
-                  : null
-              }
-              onChange={(date) => {
-                localConfirmDates.deliveryDate = date
-                  ? date.format("YYYY-MM-DD")
-                  : "";
-              }}
-              placeholder="Delivery Date.(납기일)"
-            />
-          </div>
-        </div>
-      ),
-      onOk: async () => {
-        if (
-          !localConfirmDates.expectedReceivingDate ||
-          !localConfirmDates.deliveryDate
-        ) {
-          message.error(
-            "Please fill in all fields.(날짜를 모두 입력해주세요.)"
-          );
-          return Promise.reject();
-        }
+  const handleModalConfirm = async () => {
+    if (
+      !isProforma &&
+      (!confirmDates.expectedReceivingDate || !confirmDates.deliveryDate)
+    ) {
+      message.error("Please fill in all fields.(날짜를 모두 입력해주세요.)");
+      return;
+    }
 
-        try {
-          await confirmOrder(
-            Number(orderId),
-            localConfirmDates.expectedReceivingDate,
-            localConfirmDates.deliveryDate
-          );
-          message.success("Order confirmed successfully.");
-          navigate("/orderlist");
-        } catch (error) {
-          console.error("Error occurred while confirming:", error);
-          message.error("Failed to confirm. Please try again.");
-          return Promise.reject();
-        }
-      },
-      okText: "Confirm",
-      cancelText: "Cancel",
-    });
+    try {
+      await confirmOrder(
+        Number(orderId),
+        isProforma ? "" : confirmDates.expectedReceivingDate,
+        isProforma ? "" : confirmDates.deliveryDate,
+        isProforma
+      );
+      message.success("Order confirmed successfully.");
+      navigate("/orderlist");
+    } catch (error) {
+      console.error("Error occurred while confirming:", error);
+      message.error("Failed to confirm. Please try again.");
+    }
   };
 
   // 테이블 열 정의
@@ -519,147 +543,165 @@ const DetailOrderModal = ({
   ];
 
   return (
-    <StyledModal
-      title="Info"
-      open={open}
-      onCancel={onClose}
-      footer={[
-        <Button key="confirm" type="primary" onClick={handleConfirmClick}>
-          Confirm
-        </Button>,
-        <Button
-          type="primary"
-          onClick={(e) => {
-            e.stopPropagation();
-            navigate(`/order/${orderId}`);
-          }}
-        >
-          Edit
-        </Button>,
-        <Button key="delete" danger onClick={handleDeleteClick}>
-          Delete
-        </Button>,
-        <Button key="close" onClick={onClose}>
-          Close
-        </Button>,
-      ]}
-      width={1200}
-    >
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        orderDetail && (
-          <>
-            <Descriptions bordered column={2} size="small">
-              <Descriptions.Item label="Document Number">
-                {orderDetail.documentInfo.documentNumber}
-              </Descriptions.Item>
-              <Descriptions.Item label="Registration Date">
-                {orderDetail.documentInfo.registerDate}
-              </Descriptions.Item>
-              <Descriptions.Item label="Customer Name">
-                {orderDetail.documentInfo.companyName}
-              </Descriptions.Item>
-              <Descriptions.Item label="REF NO.">
-                {orderDetail.documentInfo.refNumber}
-              </Descriptions.Item>
-              <Descriptions.Item label="Currency">
-                {orderDetail.documentInfo.currencyType}
-              </Descriptions.Item>
-              <Descriptions.Item label="Exchange Rate">
-                {`$${orderDetail.documentInfo.currency?.toFixed(0)}`}
-              </Descriptions.Item>
-              <Descriptions.Item label="Vessel Name">
-                {orderDetail.documentInfo.vesselName}
-              </Descriptions.Item>
-              <Descriptions.Item label="Document Manager">
-                {orderDetail.documentInfo.docManager}
-              </Descriptions.Item>
-              <Descriptions.Item label="Document Status">
-                <TagStyled color="blue">
-                  {orderDetail.documentInfo.documentStatus}
-                </TagStyled>
-              </Descriptions.Item>
-              <Descriptions.Item label="Remark">
-                {orderDetail.documentInfo.docRemark}
-              </Descriptions.Item>
-            </Descriptions>
-            <Descriptions
-              className="descriptions-totals"
-              layout="vertical"
-              bordered
-              column={7}
-              size="small"
-              style={{ marginTop: 10 }}
-            >
-              <Descriptions.Item label="Total Item">
-                {totalItem}
-              </Descriptions.Item>
-              <Descriptions.Item label="Total Sales Amount">
-                <AmountTotal>
-                  <span>{`₩ ${totalSalesAmountKrw?.toLocaleString(
-                    "ko-KR"
-                  )}`}</span>
-                  <DividerStyled
-                    style={{ borderColor: "#ccc" }}
-                    type="vertical"
-                  />
-                  <span>{`${currencySymbol} ${totalSalesAmountGlobal?.toLocaleString(
-                    "en-US"
-                  )}`}</span>
-                </AmountTotal>
-              </Descriptions.Item>
-              <Descriptions.Item label="Total Purchase Amount">
-                <AmountTotal>
-                  <span>{`₩ ${totalPurchaseAmountKrw?.toLocaleString(
-                    "ko-KR"
-                  )}`}</span>
-                  <DividerStyled
-                    style={{ borderColor: "#ccc" }}
-                    type="vertical"
-                  />
-                  <span>{`${currencySymbol} ${totalPurchaseAmountGlobal?.toLocaleString(
-                    "en-US"
-                  )}`}</span>
-                </AmountTotal>
-              </Descriptions.Item>
-              <Descriptions.Item label="Total Margin Amount">
-                <AmountTotal>
-                  <span>{`₩ ${totalMarginAmountKrw?.toLocaleString(
-                    "ko-KR"
-                  )}`}</span>
-                  <DividerStyled
-                    style={{ borderColor: "#ccc" }}
-                    type="vertical"
-                  />
-                  <span>{`${currencySymbol} ${totalMarginAmountGlobal?.toLocaleString(
-                    "en-US"
-                  )}`}</span>
-                </AmountTotal>
-              </Descriptions.Item>
-              <Descriptions.Item label="Purchase Margin Rate">
-                {`${purchaseMarginRate}%`}
-              </Descriptions.Item>
-              <Descriptions.Item label="Sales Margin Rate">
-                {`${salesMarginRate}%`}
-              </Descriptions.Item>
-            </Descriptions>
-            <Divider variant="dashed" style={{ borderColor: "#007bff" }}>
-              Item List
-            </Divider>
-            <TableStyled
-              columns={columns}
-              dataSource={orderDetail.itemDetailList}
-              pagination={false}
-              rowKey="position"
-              scroll={{ y: 300 }}
-              bordered
-              size="small"
-            />
-          </>
-        )
-      )}
-    </StyledModal>
+    <>
+      <StyledModal
+        title="Info"
+        open={open}
+        onCancel={onClose}
+        footer={[
+          <Button key="confirm" type="primary" onClick={handleConfirmClick}>
+            Confirm
+          </Button>,
+          <Button
+            type="primary"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/order/${orderId}`);
+            }}
+          >
+            Edit
+          </Button>,
+          <Button key="delete" danger onClick={handleDeleteClick}>
+            Delete
+          </Button>,
+          <Button key="close" onClick={onClose}>
+            Close
+          </Button>,
+        ]}
+        width={1200}
+      >
+        {loading ? (
+          <p>Loading...</p>
+        ) : (
+          orderDetail && (
+            <>
+              <Descriptions bordered column={2} size="small">
+                <Descriptions.Item label="Document Number">
+                  {orderDetail.documentInfo.documentNumber}
+                </Descriptions.Item>
+                <Descriptions.Item label="Registration Date">
+                  {orderDetail.documentInfo.registerDate}
+                </Descriptions.Item>
+                <Descriptions.Item label="Customer Name">
+                  {orderDetail.documentInfo.companyName}
+                </Descriptions.Item>
+                <Descriptions.Item label="REF NO.">
+                  {orderDetail.documentInfo.refNumber}
+                </Descriptions.Item>
+                <Descriptions.Item label="Currency">
+                  {orderDetail.documentInfo.currencyType}
+                </Descriptions.Item>
+                <Descriptions.Item label="Exchange Rate">
+                  {`$${orderDetail.documentInfo.currency?.toFixed(0)}`}
+                </Descriptions.Item>
+                <Descriptions.Item label="Vessel Name">
+                  {orderDetail.documentInfo.vesselName}
+                </Descriptions.Item>
+                <Descriptions.Item label="Document Manager">
+                  {orderDetail.documentInfo.docManager}
+                </Descriptions.Item>
+                <Descriptions.Item label="Document Status">
+                  <TagStyled color="blue">
+                    {orderDetail.documentInfo.documentStatus}
+                  </TagStyled>
+                </Descriptions.Item>
+                <Descriptions.Item label="Remark">
+                  {orderDetail.documentInfo.docRemark}
+                </Descriptions.Item>
+              </Descriptions>
+              <Descriptions
+                className="descriptions-totals"
+                layout="vertical"
+                bordered
+                column={7}
+                size="small"
+                style={{ marginTop: 10 }}
+              >
+                <Descriptions.Item label="Total Item">
+                  {totalItem}
+                </Descriptions.Item>
+                <Descriptions.Item label="Total Sales Amount">
+                  <AmountTotal>
+                    <span>{`₩ ${totalSalesAmountKrw?.toLocaleString(
+                      "ko-KR"
+                    )}`}</span>
+                    <DividerStyled
+                      style={{ borderColor: "#ccc" }}
+                      type="vertical"
+                    />
+                    <span>{`${currencySymbol} ${totalSalesAmountGlobal?.toLocaleString(
+                      "en-US"
+                    )}`}</span>
+                  </AmountTotal>
+                </Descriptions.Item>
+                <Descriptions.Item label="Total Purchase Amount">
+                  <AmountTotal>
+                    <span>{`₩ ${totalPurchaseAmountKrw?.toLocaleString(
+                      "ko-KR"
+                    )}`}</span>
+                    <DividerStyled
+                      style={{ borderColor: "#ccc" }}
+                      type="vertical"
+                    />
+                    <span>{`${currencySymbol} ${totalPurchaseAmountGlobal?.toLocaleString(
+                      "en-US"
+                    )}`}</span>
+                  </AmountTotal>
+                </Descriptions.Item>
+                <Descriptions.Item label="Total Margin Amount">
+                  <AmountTotal>
+                    <span>{`₩ ${totalMarginAmountKrw?.toLocaleString(
+                      "ko-KR"
+                    )}`}</span>
+                    <DividerStyled
+                      style={{ borderColor: "#ccc" }}
+                      type="vertical"
+                    />
+                    <span>{`${currencySymbol} ${totalMarginAmountGlobal?.toLocaleString(
+                      "en-US"
+                    )}`}</span>
+                  </AmountTotal>
+                </Descriptions.Item>
+                <Descriptions.Item label="Purchase Margin Rate">
+                  {`${purchaseMarginRate}%`}
+                </Descriptions.Item>
+                <Descriptions.Item label="Sales Margin Rate">
+                  {`${salesMarginRate}%`}
+                </Descriptions.Item>
+              </Descriptions>
+              <Divider variant="dashed" style={{ borderColor: "#007bff" }}>
+                Item List
+              </Divider>
+              <TableStyled
+                columns={columns}
+                dataSource={orderDetail.itemDetailList}
+                pagination={false}
+                rowKey="position"
+                scroll={{ y: 300 }}
+                bordered
+                size="small"
+              />
+            </>
+          )
+        )}
+      </StyledModal>
+      <Modal
+        title="Confirm Order"
+        open={confirmModalVisible}
+        onCancel={() => setConfirmModalVisible(false)}
+        onOk={handleModalConfirm}
+        width={500}
+        okText="Confirm"
+        cancelText="Cancel"
+      >
+        <ConfirmModalContent
+          isProforma={isProforma}
+          setIsProforma={setIsProforma}
+          confirmDates={confirmDates}
+          setConfirmDates={setConfirmDates}
+        />
+      </Modal>
+    </>
   );
 };
 

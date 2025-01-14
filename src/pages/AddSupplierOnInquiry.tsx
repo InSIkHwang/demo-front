@@ -5,7 +5,7 @@ import { FileSearchOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import {
   editSupplierInquiryToSend,
-  fetchSupplierDetail,
+  fetchCompanyDetail,
   fetchVessel,
   searchInquiryWithMaker,
 } from "../api/api";
@@ -186,7 +186,7 @@ const AddSupplierOnInquiry = () => {
   }, [selectedSuppliers, data?.sendSupplier]);
 
   const loadSupplierDetail = async () => {
-    const supplierDetail = await fetchSupplierDetail(
+    const supplierDetail = await fetchCompanyDetail(
       currentSupplierId,
       "supplier"
     );

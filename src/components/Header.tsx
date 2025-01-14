@@ -177,18 +177,37 @@ const LogoutButton = styled.div`
 
 const SideMenu = styled(motion.div)`
   position: fixed;
-  top: 70px;
+  height: calc(100vh - 70px); // 헤더 높이(70px)를 제외한 높이
+  top: 70px; // 헤더 높이만큼 아래로
   left: 0;
-  height: calc(100% - 70px);
   width: 300px;
   background: rgba(33, 37, 41, 0.95);
   backdrop-filter: blur(10px);
   color: white;
   padding: 24px;
   z-index: 2000;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   border-right: 1px solid rgba(255, 255, 255, 0.1);
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+  }
 `;
 
 const MenuItem = styled.div`
@@ -448,7 +467,7 @@ const Header = ({ isAuthenticated, onLogout }: HeaderProps) => {
             style={{ marginLeft: "auto", cursor: "pointer" }}
           />
         </MenuItem>
-        <SubMenu $isOpen={isTrashOpen}>
+        <SubMenu $isOpen={isTrashOpen} style={{ paddingBottom: "50px" }}>
           <MenuItem
             onClick={() => handleMenuItemClick(() => navigate("/trashlist"))}
           >

@@ -18,7 +18,7 @@ import {
   AddMaker,
   DeleteMaker,
   fetchCategory,
-  fetchSupplierDetail,
+  fetchCompanyDetail,
   searchSupplierUseMaker,
 } from "../../api/api";
 import LoadingSpinner from "../LoadingSpinner";
@@ -200,7 +200,7 @@ const DetailCompanyModal = ({
   const getCompanyDetails = async () => {
     setIsLoading(true);
     try {
-      const supplierDetail = await fetchSupplierDetail(company.id, category);
+      const supplierDetail = await fetchCompanyDetail(company.id, category);
       setFormData(supplierDetail);
       setLoadData(supplierDetail);
       setMakerCategoryList(supplierDetail.makerCategoryList);

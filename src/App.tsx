@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
 import Header from "./components/Header";
@@ -25,6 +26,8 @@ import InvoiceList from "./pages/InvoiceList";
 import InvoiceDetail from "./pages/InvoiceDetail";
 import LogisticsList from "./pages/LogisticsList";
 import LogisticsDetail from "./pages/LogisticsDetail";
+
+const queryClient = new QueryClient();
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -66,161 +69,179 @@ const App = () => {
   }
 
   return (
-    <BrowserRouter>
-      <ThemeProvider theme={theme}>
-        <Header isAuthenticated={isAuthenticated} onLogout={handleLogout} />
-        <Routes>
-          <Route
-            path="/"
-            element={
-              isAuthenticated ? (
-                <CustomerInquiryList />
-              ) : (
-                <Navigate to="/userlogin" />
-              )
-            }
-          />
-          <Route
-            path="/userlogin"
-            element={<UserLogin onLogin={handleLogin} />}
-          />
-          <Route path="/usersignup" element={<UserSignUp />} />
-          <Route
-            path="/home"
-            element={isAuthenticated ? <Home /> : <Navigate to="/home" />}
-          />
-          <Route
-            path="/customerlist"
-            element={
-              isAuthenticated ? <CustomerList /> : <Navigate to="/userlogin" />
-            }
-          />
-          <Route
-            path="/supplierlist"
-            element={
-              isAuthenticated ? <SupplierList /> : <Navigate to="/userlogin" />
-            }
-          />
-          <Route
-            path="/shiplist"
-            element={
-              isAuthenticated ? <ShipList /> : <Navigate to="/userlogin" />
-            }
-          />
-          <Route
-            path="/makeinquiry"
-            element={
-              isAuthenticated ? <MakeInquiry /> : <Navigate to="/userlogin" />
-            }
-          />
-          <Route
-            path="/addsupplierininquiry/:documentNumber"
-            element={
-              isAuthenticated ? (
-                <AddSupplierOnInquiry />
-              ) : (
-                <Navigate to="/userlogin" />
-              )
-            }
-          />
-          <Route
-            path="/makeinquiry/:customerInquiryId"
-            element={
-              isAuthenticated ? <MakeInquiry /> : <Navigate to="/userlogin" />
-            }
-          />
-          <Route
-            path="/customerInquirylist"
-            element={
-              isAuthenticated ? (
-                <CustomerInquiryList />
-              ) : (
-                <Navigate to="/userlogin" />
-              )
-            }
-          />
-          <Route
-            path="/supplierInquirylist"
-            element={
-              isAuthenticated ? <OfferList /> : <Navigate to="/userlogin" />
-            }
-          />
-          <Route
-            path="/makeoffer/:documentId"
-            element={
-              isAuthenticated ? <MakeOffer /> : <Navigate to="/userlogin" />
-            }
-          />
-          <Route
-            path="/orderlist"
-            element={
-              isAuthenticated ? <OrderList /> : <Navigate to="/userlogin" />
-            }
-          />
-          <Route
-            path="/order/:orderId"
-            element={
-              isAuthenticated ? <OrderDetail /> : <Navigate to="/userlogin" />
-            }
-          />
-          <Route
-            path="/logisticslist"
-            element={
-              isAuthenticated ? <LogisticsList /> : <Navigate to="/userlogin" />
-            }
-          />
-          <Route
-            path="/logistics/:logisticsId"
-            element={
-              isAuthenticated ? (
-                <LogisticsDetail />
-              ) : (
-                <Navigate to="/userlogin" />
-              )
-            }
-          />
-          <Route
-            path="/invoiceList"
-            element={
-              isAuthenticated ? <InvoiceList /> : <Navigate to="/userlogin" />
-            }
-          />
-          <Route
-            path="/invoice/:invoiceId"
-            element={
-              isAuthenticated ? <InvoiceDetail /> : <Navigate to="/userlogin" />
-            }
-          />
-          <Route
-            path="/trashlist"
-            element={
-              isAuthenticated ? <TrashList /> : <Navigate to="/userlogin" />
-            }
-          />
-          <Route
-            path="/makecomplexinquiry"
-            element={
-              isAuthenticated ? (
-                <MakeComplexInquiry />
-              ) : (
-                <Navigate to="/userlogin" />
-              )
-            }
-          />
-          <Route
-            path="/makecomplexinquiry/:complexInquiryId"
-            element={
-              isAuthenticated ? (
-                <MakeComplexInquiry />
-              ) : (
-                <Navigate to="/userlogin" />
-              )
-            }
-          />
-        </Routes>
-        <Footer />
-      </ThemeProvider>
-    </BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <ThemeProvider theme={theme}>
+          <Header isAuthenticated={isAuthenticated} onLogout={handleLogout} />
+          <Routes>
+            <Route
+              path="/"
+              element={
+                isAuthenticated ? (
+                  <CustomerInquiryList />
+                ) : (
+                  <Navigate to="/userlogin" />
+                )
+              }
+            />
+            <Route
+              path="/userlogin"
+              element={<UserLogin onLogin={handleLogin} />}
+            />
+            <Route path="/usersignup" element={<UserSignUp />} />
+            <Route
+              path="/home"
+              element={isAuthenticated ? <Home /> : <Navigate to="/home" />}
+            />
+            <Route
+              path="/customerlist"
+              element={
+                isAuthenticated ? (
+                  <CustomerList />
+                ) : (
+                  <Navigate to="/userlogin" />
+                )
+              }
+            />
+            <Route
+              path="/supplierlist"
+              element={
+                isAuthenticated ? (
+                  <SupplierList />
+                ) : (
+                  <Navigate to="/userlogin" />
+                )
+              }
+            />
+            <Route
+              path="/shiplist"
+              element={
+                isAuthenticated ? <ShipList /> : <Navigate to="/userlogin" />
+              }
+            />
+            <Route
+              path="/makeinquiry"
+              element={
+                isAuthenticated ? <MakeInquiry /> : <Navigate to="/userlogin" />
+              }
+            />
+            <Route
+              path="/addsupplierininquiry/:documentNumber"
+              element={
+                isAuthenticated ? (
+                  <AddSupplierOnInquiry />
+                ) : (
+                  <Navigate to="/userlogin" />
+                )
+              }
+            />
+            <Route
+              path="/makeinquiry/:customerInquiryId"
+              element={
+                isAuthenticated ? <MakeInquiry /> : <Navigate to="/userlogin" />
+              }
+            />
+            <Route
+              path="/customerInquirylist"
+              element={
+                isAuthenticated ? (
+                  <CustomerInquiryList />
+                ) : (
+                  <Navigate to="/userlogin" />
+                )
+              }
+            />
+            <Route
+              path="/supplierInquirylist"
+              element={
+                isAuthenticated ? <OfferList /> : <Navigate to="/userlogin" />
+              }
+            />
+            <Route
+              path="/makeoffer/:documentId"
+              element={
+                isAuthenticated ? <MakeOffer /> : <Navigate to="/userlogin" />
+              }
+            />
+            <Route
+              path="/orderlist"
+              element={
+                isAuthenticated ? <OrderList /> : <Navigate to="/userlogin" />
+              }
+            />
+            <Route
+              path="/order/:orderId"
+              element={
+                isAuthenticated ? <OrderDetail /> : <Navigate to="/userlogin" />
+              }
+            />
+            <Route
+              path="/logisticslist"
+              element={
+                isAuthenticated ? (
+                  <LogisticsList />
+                ) : (
+                  <Navigate to="/userlogin" />
+                )
+              }
+            />
+            <Route
+              path="/logistics/:logisticsId"
+              element={
+                isAuthenticated ? (
+                  <LogisticsDetail />
+                ) : (
+                  <Navigate to="/userlogin" />
+                )
+              }
+            />
+            <Route
+              path="/invoiceList"
+              element={
+                isAuthenticated ? <InvoiceList /> : <Navigate to="/userlogin" />
+              }
+            />
+            <Route
+              path="/invoice/:invoiceId"
+              element={
+                isAuthenticated ? (
+                  <InvoiceDetail />
+                ) : (
+                  <Navigate to="/userlogin" />
+                )
+              }
+            />
+            <Route
+              path="/trashlist"
+              element={
+                isAuthenticated ? <TrashList /> : <Navigate to="/userlogin" />
+              }
+            />
+            <Route
+              path="/makecomplexinquiry"
+              element={
+                isAuthenticated ? (
+                  <MakeComplexInquiry />
+                ) : (
+                  <Navigate to="/userlogin" />
+                )
+              }
+            />
+            <Route
+              path="/makecomplexinquiry/:complexInquiryId"
+              element={
+                isAuthenticated ? (
+                  <MakeComplexInquiry />
+                ) : (
+                  <Navigate to="/userlogin" />
+                )
+              }
+            />
+          </Routes>
+          <Footer />
+        </ThemeProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
   );
 };
 
