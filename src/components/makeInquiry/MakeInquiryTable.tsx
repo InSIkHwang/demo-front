@@ -153,7 +153,11 @@ interface TableSectionProps extends MakeInquiryTableProps {
   columns: ColumnsType<any>;
   tables: InquiryTable[];
   setTables: React.Dispatch<React.SetStateAction<InquiryTable[]>>;
-  handleAddItem: (tableIndex: number, position: number) => void;
+  handleAddItem: (
+    tableIndex: number,
+    position: number,
+    isDESC: boolean
+  ) => void;
   setCurrentTableNo: Dispatch<SetStateAction<number>>;
   zoomLevel: number;
   setZoomLevel: Dispatch<SetStateAction<number>>;
@@ -440,7 +444,7 @@ function TableSection({
             type="primary"
             icon={<PlusCircleOutlined />}
             size="middle"
-            onClick={() => handleAddItem(tableIndex, items.length)}
+            onClick={() => handleAddItem(tableIndex, items.length, false)}
           >
             Add Item
           </Button>
@@ -734,7 +738,7 @@ function MakeInquiryTable({
     if (e.ctrlKey && e.key === "Enter") {
       e.preventDefault();
       const currentItem = tables[tableIndex].itemDetails[rowIndex];
-      handleAddItem(tableIndex, currentItem.position);
+      handleAddItem(tableIndex, currentItem.position, false);
 
       // 새로운 행이 추가된 후 다음 행의 같은 컬럼으로 포커스 이동
       const nextRowRefs = inputRefs.current[tableIndex]?.[rowIndex + 1];
@@ -781,96 +785,99 @@ function MakeInquiryTable({
     }
   };
 
-  const handleAddItem = useCallback((tableIndex: number, position: number) => {
-    setTables((prevTables) => {
-      const updatedTables = [...prevTables];
-      const targetTable = { ...updatedTables[tableIndex] };
-      const currentTableItems = targetTable?.itemDetails;
+  const handleAddItem = useCallback(
+    (tableIndex: number, position: number, isDESC: boolean) => {
+      setTables((prevTables) => {
+        const updatedTables = [...prevTables];
+        const targetTable = { ...updatedTables[tableIndex] };
+        const currentTableItems = targetTable?.itemDetails;
 
-      // 현재 테이블에서 선택한 아이템의 실제 인덱스 찾기
-      const itemIndexInTable =
-        currentTableItems?.findIndex((item) => item?.position === position) ??
-        -1;
+        // 현재 테이블에서 선택한 아이템의 실제 인덱스 찾기
+        const itemIndexInTable =
+          currentTableItems?.findIndex((item) => item?.position === position) ??
+          -1;
 
-      // 현재 테이블의 최대 position 찾기
-      const maxPosition = Math.max(
-        ...currentTableItems.map((item) => item.position)
-      );
+        // 현재 테이블의 최대 position 찾기
+        const maxPosition = Math.max(
+          ...currentTableItems.map((item) => item.position)
+        );
 
-      const newItem: InquiryItem = {
-        position: maxPosition + 1, // 현재 테이블의 최대 position + 1
-        tableNo: tableIndex + 1,
-        itemType: "ITEM",
-        itemCode: "",
-        itemName: "",
-        itemRemark: "",
-        qty: 0,
-        unit: "",
-      };
+        const newItem: InquiryItem = {
+          position: maxPosition + 1, // 현재 테이블의 최대 position + 1
+          tableNo: tableIndex + 1,
+          itemType: isDESC ? "DESC" : "ITEM",
+          itemCode: "",
+          itemName: "",
+          itemRemark: "",
+          qty: 0,
+          unit: "",
+        };
 
-      // 현재 테이블의 아이템들 업데이트
-      targetTable.itemDetails = [
-        ...currentTableItems.slice(0, itemIndexInTable + 1), // 현재 아이템까지
-        newItem, // 새 아이템
-        ...currentTableItems.slice(itemIndexInTable + 1), // 나머지 아이템들
-      ];
+        // 현재 테이블의 아이템들 업데이트
+        targetTable.itemDetails = [
+          ...currentTableItems.slice(0, itemIndexInTable + 1), // 현재 아이템까지
+          newItem, // 새 아이템
+          ...currentTableItems.slice(itemIndexInTable + 1), // 나머지 아이템들
+        ];
 
-      // position 재정렬
-      targetTable.itemDetails = targetTable.itemDetails.map((item, idx) => ({
-        ...item,
-        position: idx + 1,
-      }));
+        // position 재정렬
+        targetTable.itemDetails = targetTable.itemDetails.map((item, idx) => ({
+          ...item,
+          position: idx + 1,
+        }));
 
-      updatedTables[tableIndex] = targetTable;
-      return updatedTables;
-    });
-
-    setItems((prevItems) => {
-      // 현재 테이블의 아이템들만 필터링
-      const currentTableItems = prevItems.filter(
-        (item) => item.tableNo === tableIndex + 1
-      );
-      const otherTableItems = prevItems.filter(
-        (item) => item.tableNo !== tableIndex + 1
-      );
-
-      // 현재 테이블에서 선택한 아이템의 인덱스 찾기
-      const itemIndex = currentTableItems.findIndex(
-        (item) => item.position === position
-      );
-
-      // 새 아이템 생성
-      const newItem: InquiryItem = {
-        position: itemIndex + 2, // 선택한 아이템 다음 위치
-        tableNo: tableIndex + 1,
-        itemType: "ITEM",
-        itemCode: "",
-        itemName: "",
-        itemRemark: "",
-        qty: 0,
-        unit: "",
-      };
-
-      // 현재 테이블의 아이템들 업데이트
-      const updatedTableItems = [
-        ...currentTableItems.slice(0, itemIndex + 1),
-        newItem,
-        ...currentTableItems.slice(itemIndex + 1),
-      ].map((item, idx) => ({
-        ...item,
-        position: idx + 1, // position을 1부터 순차적으로 재할당
-      }));
-
-      // 모든 테이블의 아이템들 합치기
-      return [...otherTableItems, ...updatedTableItems].sort((a, b) => {
-        // tableNo로 먼저 정렬하고, 같은 테이블 내에서는 position으로 정렬
-        if (a.tableNo !== b.tableNo) {
-          return a.tableNo - b.tableNo;
-        }
-        return a.position - b.position;
+        updatedTables[tableIndex] = targetTable;
+        return updatedTables;
       });
-    });
-  }, []);
+
+      setItems((prevItems) => {
+        // 현재 테이블의 아이템들만 필터링
+        const currentTableItems = prevItems.filter(
+          (item) => item.tableNo === tableIndex + 1
+        );
+        const otherTableItems = prevItems.filter(
+          (item) => item.tableNo !== tableIndex + 1
+        );
+
+        // 현재 테이블에서 선택한 아이템의 인덱스 찾기
+        const itemIndex = currentTableItems.findIndex(
+          (item) => item.position === position
+        );
+
+        // 새 아이템 생성
+        const newItem: InquiryItem = {
+          position: itemIndex + 2, // 선택한 아이템 다음 위치
+          tableNo: tableIndex + 1,
+          itemType: isDESC ? "DESC" : "ITEM",
+          itemCode: "",
+          itemName: "",
+          itemRemark: "",
+          qty: 0,
+          unit: "",
+        };
+
+        // 현재 테이블의 아이템들 업데이트
+        const updatedTableItems = [
+          ...currentTableItems.slice(0, itemIndex + 1),
+          newItem,
+          ...currentTableItems.slice(itemIndex + 1),
+        ].map((item, idx) => ({
+          ...item,
+          position: idx + 1, // position을 1부터 순차적으로 재할당
+        }));
+
+        // 모든 테이블의 아이템들 합치기
+        return [...otherTableItems, ...updatedTableItems].sort((a, b) => {
+          // tableNo로 먼저 정렬하고, 같은 테이블 내에서는 position으로 정렬
+          if (a.tableNo !== b.tableNo) {
+            return a.tableNo - b.tableNo;
+          }
+          return a.position - b.position;
+        });
+      });
+    },
+    []
+  );
 
   const handleDeleteItem = useCallback(
     (tableIndex: number, position: number) => {
@@ -1081,9 +1088,35 @@ function MakeInquiryTable({
                 borderColor: duplicateStates[record.position]?.name
                   ? "#faad14"
                   : "#d9d9d9",
+                width: "100%",
+                paddingLeft: "32px", // 버튼 공간 확보
               }}
               autoSize={{ minRows: 1, maxRows: 10 }} // 최소 1행, 최대 4행으로 정
             />
+            <Tooltip title="Add DESC type item">
+              <Button
+                type="text"
+                icon={<PlusCircleOutlined />}
+                onClick={() =>
+                  handleAddItem(record.tableNo - 1, record.position, true)
+                }
+                style={{
+                  position: "absolute",
+                  left: "5px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  width: "24px",
+                  height: "24px",
+                  padding: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: "transparent",
+                  border: "none",
+                  zIndex: 1,
+                }}
+              />
+            </Tooltip>
             {duplicateStates[record.position]?.name && (
               <div style={{ color: "#faad14", marginTop: "5px" }}>
                 duplicate name.
@@ -1199,33 +1232,6 @@ function MakeInquiryTable({
       width: 110 * zoomLevel,
     },
     {
-      title: "Remark",
-      dataIndex: "itemRemark",
-      key: "itemRemark",
-      render: (text: string, record: InquiryItem, index: number) => {
-        const tableIndex = record.tableNo - 1;
-        return (
-          <Input.TextArea
-            autoSize={{ minRows: 1, maxRows: 10 }}
-            value={text}
-            ref={(el) => {
-              if (!inputRefs.current[tableIndex]) {
-                inputRefs.current[tableIndex] = [];
-              }
-              if (!inputRefs.current[tableIndex][index]) {
-                inputRefs.current[tableIndex][index] = [];
-              }
-              inputRefs.current[tableIndex][index][5] = el;
-            }}
-            onKeyDown={(e) => handleNextRowKeyDown(e, tableIndex, index, 5)}
-            onChange={(e) =>
-              handleInputChange(index, "itemRemark", e.target.value)
-            }
-          />
-        );
-      },
-    },
-    {
       title: "Action",
       key: "action",
       render: (_: any, record: any) => (
@@ -1235,7 +1241,9 @@ function MakeInquiryTable({
             type="default"
             style={{ marginRight: 10 }}
             size="small"
-            onClick={() => handleAddItem(record.tableNo - 1, record.position)}
+            onClick={() =>
+              handleAddItem(record.tableNo - 1, record.position, false)
+            }
           />
           <Button
             icon={<DeleteOutlined />}
