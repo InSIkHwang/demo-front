@@ -617,7 +617,7 @@ const OrderDetail = () => {
     const request: OrderRequest = {
       orderId: Number(orderId),
       supplierId: supplier?.supplierId || 0,
-      documentEditInfo: formValues,
+      documentEditInfo: { ...formValues, discount: dcInfo.dcPercent },
       invChargeList: invChargeList,
       itemDetailList: items,
     };

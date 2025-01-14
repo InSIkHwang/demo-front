@@ -136,7 +136,16 @@ const LogisticsDetail = () => {
         await handleSave();
       }
     },
-    [formValues, items, finalTotals, invChargeList, dcInfo]
+    [
+      logisticsId,
+      supplier,
+      formValues,
+      dcInfo,
+      invChargeList,
+      items,
+      logisticsDate,
+      finalTotals,
+    ]
   );
 
   // 단축키 이벤트 리스너 등록
@@ -568,7 +577,7 @@ const LogisticsDetail = () => {
     const request: LogisticsRequest = {
       logisticsId: Number(logisticsId),
       supplierId: supplier?.supplierId || 0,
-      documentEditInfo: formValues,
+      documentEditInfo: { ...formValues, discount: dcInfo.dcPercent },
       invChargeList: invChargeList,
       itemDetailList: items,
       logisticsDate: logisticsDate,
