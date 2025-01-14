@@ -4,7 +4,7 @@ import PDFDocument from "./PDFDocument";
 import { emailSendData, InquiryItem, VesselList } from "../../types/types";
 import dayjs from "dayjs";
 import { message } from "antd";
-import { fetchSupplierDetail } from "../../api/api";
+import { fetchCompanyDetail } from "../../api/api";
 
 interface FormValues {
   docNumber: string;
@@ -42,10 +42,7 @@ const generateMailData = async (
 
   // 매입처별 메일 데이터 생성
   for (const supplierTag of selectedSupplierTag) {
-    const supplierDetail = await fetchSupplierDetail(
-      supplierTag.id,
-      "supplier"
-    );
+    const supplierDetail = await fetchCompanyDetail(supplierTag.id, "supplier");
 
     const mailData: emailSendData = {
       supplierId: supplierTag.id,

@@ -82,12 +82,6 @@ export const postUserSignUp = async (
   return response.data;
 };
 
-export const fetchCustomerDetail = async (customerId: number) => {
-  const response = await axios.get(`/api/customers/${customerId}`);
-
-  return response.data;
-};
-
 //----------------------------------------------------------------------------------
 // 매출처, 의뢰처, 선박, 아이템 관련
 
@@ -140,8 +134,8 @@ export const fetchItemData = async (itemCode: string) => {
   return response.data;
 };
 
-//Supplier 상세 정보 조회
-export const fetchSupplierDetail = async (id: number, category: string) => {
+//Customer, Supplier 상세 정보 조회
+export const fetchCompanyDetail = async (id: number, category: string) => {
   if (category === "supplier") {
     const response = await axios.get(`/api/suppliers/${id}`);
     return response.data;

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Modal, Button, Input, message } from "antd";
 import styled from "styled-components";
 import { Supplier } from "../../types/types";
-import { fetchSupplierDetail } from "../../api/api";
+import { fetchCompanyDetail } from "../../api/api";
 
 const StyledModal = styled(Modal)`
   .ant-modal-content {
@@ -63,7 +63,7 @@ const HeaderEditModal = ({
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await fetchSupplierDetail(
+      const response = await fetchCompanyDetail(
         pdfCompanyTag[0].id,
         "supplier"
       );

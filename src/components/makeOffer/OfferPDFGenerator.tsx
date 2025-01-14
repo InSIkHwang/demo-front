@@ -14,7 +14,7 @@ import {
   offerEmailSendData,
   HeaderFormData,
 } from "../../types/types";
-import { fetchCustomerDetail } from "../../api/api";
+import { fetchCompanyDetail } from "../../api/api";
 import { message } from "antd";
 
 interface PDFGeneratorProps {
@@ -65,7 +65,7 @@ const OfferPDFGenerator = ({
 
   // 매출처 정보 가져오기
   const fetchCustomerInfo = useCallback(async () => {
-    const response = await fetchCustomerDetail(customerTag.id);
+    const response = await fetchCompanyDetail(customerTag.id, "customer");
     const mappedResponse = {
       name: response.companyName ?? "",
       email: response.email ?? "",
