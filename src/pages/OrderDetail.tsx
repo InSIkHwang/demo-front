@@ -43,6 +43,7 @@ import {
   parseKoreanDate,
 } from "../components/orderList/DetailOrderModal";
 import { parseDeliveryTime } from "../components/orderList/DetailOrderModal";
+import PDFDownloadComponent from "../components/orderDetail/PDFDownloadComponent";
 
 const Container = styled.div`
   position: relative;
@@ -723,16 +724,46 @@ const OrderDetail = () => {
     setLanguage(value === "PO" ? "KOR" : "ENG");
   };
 
+  // PDF 다운로드 로직
+  const downloadPDF = async (doc: JSX.Element, fileName: string) => {
+    try {
+      const pdfBlob = await pdf(doc).toBlob();
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName.endsWith(".pdf") ? fileName : `${fileName}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("PDF Download Error:", error);
+      message.error("PDF Download Error");
+    }
+  };
+
   // 공통 함수: PDF 다운로드
-  const handlePDFDownload = async () => {
+  const handleMultiplePDFDownload = async (
+    selectedTypes: {
+      type: string;
+      language: string;
+      fileName: string;
+      checked: boolean;
+    }[],
+    updateProgress: (downloaded: number) => void
+  ) => {
     if (!formValues || !supplier || !items || !supplier.supplierId) {
       message.error("Please fill in all fields.");
       return;
     }
 
-    try {
-      let doc;
-      if (pdfType === "PO") {
+    let downloadedCount = 0;
+
+    for (const { type, language, fileName, checked } of selectedTypes) {
+      if (!checked) continue;
+      let doc: JSX.Element | undefined;
+
+      if (type === "PO") {
         doc = (
           <PurchaseOrderPDFDocument
             info={formValues}
@@ -745,7 +776,7 @@ const OrderDetail = () => {
             supplier={supplier}
           />
         );
-      } else if (pdfType === "OA") {
+      } else if (type === "OA") {
         doc = (
           <OrderAckPDFDocument
             info={formValues}
@@ -759,79 +790,19 @@ const OrderDetail = () => {
             invChargeList={invChargeList}
           />
         );
+      } else {
+        console.error(`Unsupported document type: ${type}`);
+        message.error(`Unsupported document type: ${type}`);
+        continue;
       }
 
-      const pdfBlob = await pdf(doc).toBlob();
-      let defaultFileName = "";
-
-      if (pdfType === "PO" && language === "KOR") {
-        defaultFileName = `${
-          supplier.korCompanyName || supplier.companyName
-        }_발주서_${formValues.documentNumber}.pdf`;
-      } else if (pdfType === "PO" && language === "ENG") {
-        defaultFileName = `${supplier.companyName}_Purchase_Order_${formValues.documentNumber}.pdf`;
-      } else if (pdfType === "OA" && language === "KOR") {
-        defaultFileName = `${formValues.refNumber}(주문확인서).pdf`;
-      } else if (pdfType === "OA" && language === "ENG") {
-        defaultFileName = `${formValues.refNumber}(ORDER_ACK).pdf`;
-      } else if (pdfType === "CIPL") {
-        defaultFileName = `${formValues.refNumber}(INVOICE/PACKING LIST).pdf`;
-      } else if (pdfType === "PL") {
-        defaultFileName = `${formValues.refNumber}(PACKING LIST).pdf`;
+      if (doc) {
+        downloadedCount++;
+        updateProgress(downloadedCount);
+        await downloadPDF(doc, fileName);
+      } else {
+        message.error("Failed to generate PDF document.");
       }
-
-      let modalInstance: any;
-      let localSendMailState = true; // 모달 내부에서 사용할 로컬 상태
-
-      modalInstance = Modal.confirm({
-        title: "Order PDF File",
-        width: 500,
-        content: (
-          <div style={{ marginBottom: 20 }}>
-            <span>File name: </span>
-            <Input
-              defaultValue={defaultFileName}
-              id="fileNameInput"
-              onPressEnter={() => {
-                modalInstance.destroy();
-              }}
-            />
-            <Divider variant="dashed" style={{ borderColor: "#007bff" }}>
-              Send mail or not
-            </Divider>
-            <Checkbox
-              defaultChecked={true}
-              onChange={(e) => {
-                localSendMailState = e.target.checked;
-              }}
-            >
-              I will send customer an e-mail immediately
-            </Checkbox>
-          </div>
-        ),
-        onOk: async () => {
-          const inputElement = document.getElementById(
-            "fileNameInput"
-          ) as HTMLInputElement;
-          const fileName = inputElement.value || defaultFileName;
-
-          const url = URL.createObjectURL(pdfBlob);
-          const link = document.createElement("a");
-          link.href = url;
-          link.download = fileName.endsWith(".pdf")
-            ? fileName
-            : `${fileName}.pdf`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
-        },
-        okText: "Download",
-        cancelText: "Cancel",
-      });
-    } catch (error) {
-      console.error("PDF Download Error:", error);
-      message.error("PDF Download Error");
     }
   };
 
@@ -978,13 +949,13 @@ const OrderDetail = () => {
         >
           {showPDFPreview ? "Close Preview" : "PDF Preview"}
         </Button>
-        <Button
-          style={{ marginLeft: 10 }}
-          onClick={handlePDFDownload}
-          type="default"
-        >
-          PDF Download
-        </Button>
+        {supplier && formValues && (
+          <PDFDownloadComponent
+            onDownload={handleMultiplePDFDownload}
+            supplier={supplier}
+            formValues={formValues}
+          />
+        )}
       </div>
       {pdfType === "PO" && showPDFPreview && formValues && supplier && (
         <PurchaseOrderPDFDocument
