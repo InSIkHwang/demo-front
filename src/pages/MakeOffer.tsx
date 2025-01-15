@@ -1338,8 +1338,21 @@ const MakeOffer = () => {
         label: (
           <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             {supplier.supplierInfo.supplierName}
-            {supplier.inquiryStatus === "NA" && (
-              <span style={{ color: "red", fontWeight: "bold" }}> (N/A)</span>
+            {supplier.inquiryStatus === "NA" ? (
+              <span
+                style={{
+                  color: "red",
+                  fontSize: 10,
+                }}
+              >
+                {" "}
+                (N/A)
+              </span>
+            ) : (
+              <span style={{ color: "#525252", fontSize: 10 }}>
+                {" "}
+                ({supplier.inquiryStatus})
+              </span>
             )}
 
             <DeleteOutlined
