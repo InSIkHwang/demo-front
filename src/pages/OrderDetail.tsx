@@ -17,6 +17,7 @@ import {
   editOrder,
   fetchOrderDetail,
   saveOrderHeader,
+  updateOrderStatus,
 } from "../api/api";
 import {
   InvCharge,
@@ -762,6 +763,15 @@ const OrderDetail = () => {
     for (const { type, language, fileName, checked } of selectedTypes) {
       if (!checked) continue;
       let doc: JSX.Element | undefined;
+
+      try {
+        await updateOrderStatus(Number(orderId), type);
+      } catch (error) {
+        message.error("Error updating order status");
+        console.error("Error updating order status:", error);
+
+        return;
+      }
 
       if (type === "PO") {
         doc = (

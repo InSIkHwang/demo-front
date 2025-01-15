@@ -274,6 +274,7 @@ interface TableComponentProps {
   setSupplierInquiryName: Dispatch<SetStateAction<string>>;
   setNewDocumentInfo: Dispatch<SetStateAction<FormValuesType | null>>;
   setDataSource: Dispatch<SetStateAction<OfferResponse | null>>;
+  handleNAClick: (supplierInquiryId: number) => void;
 }
 
 // DisplayInput 컴포넌트를 TableComponent 외부로 이동
@@ -359,6 +360,7 @@ const TableComponent = ({
   setSupplierInquiryName,
   setNewDocumentInfo,
   setDataSource,
+  handleNAClick,
 }: TableComponentProps) => {
   const inputRefs = useRef<(TextAreaRef | null)[][]>([]);
   const [itemCodeOptions, setItemCodeOptions] = useState<
@@ -1605,6 +1607,15 @@ const TableComponent = ({
               onChange={(e) => handleSupplierInquiryNameChange(e, offerId)}
             />
           </DocumentNumber>
+          <Button
+            onClick={() => {
+              handleNAClick(offerId);
+            }}
+            danger
+            style={{ marginLeft: 10 }}
+          >
+            N/A
+          </Button>
         </div>
         <ButtonGroup>
           <Tooltip title="Load excel file on your local">

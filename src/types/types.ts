@@ -619,6 +619,7 @@ export interface OfferResponse {
       quotationRemarkId: number | null;
       quotationRemark: string;
     }[];
+    inquiryStatus: string;
   }[];
 }
 
