@@ -606,9 +606,7 @@ const renderTableRows = (
                   }}
                 >
                   <DescriptionIcon />
-                  <Text style={styles.desctypeCell}>
-                    {item?.itemName?.split("")}
-                  </Text>
+                  <Text style={styles.desctypeCell}>{item?.itemName}</Text>
                 </View>
               </View>
             ) : (
