@@ -172,7 +172,7 @@ const InvoiceList = () => {
     searchParams.get("searchText") || ""
   );
   const [searchCategory, setSearchCategory] = useState<string>(
-    searchParams.get("searchCategory") || "documentNumber"
+    searchParams.get("searchCategory") || "query"
   );
   const [searchSubCategory, setSearchSubCategory] = useState<string>(
     searchParams.get("searchSubCategory") || "itemName"

@@ -15,7 +15,20 @@ import {
 } from "antd";
 import axios from "../../api/axios";
 import styled from "styled-components";
-import { fetchCategory, searchSupplierUseMaker } from "../../api/api";
+import {
+  checkCompanyCodeUnique,
+  createCompany,
+  fetchCategory,
+  searchSupplierUseMaker,
+} from "../../api/api";
+import { debounce } from "lodash";
+import {
+  QueryCache,
+  QueryClient,
+  useMutation,
+  useQuery,
+} from "@tanstack/react-query";
+import { CompanyPayload } from "../../types/types";
 
 const { Option } = Select;
 
@@ -116,20 +129,6 @@ const StyledTag = styled(Tag)`
   }
 `;
 
-interface Payload {
-  code: string;
-  companyName: string;
-  korCompanyName?: string;
-  phoneNumber: string;
-  representative: string;
-  email: string;
-  address: string;
-  communicationLanguage: string;
-  makerCategoryList?: { category: string; makers: string[] }[]; // supplier일 때만 전송
-  supplierRemark?: string; // supplier일 때만 전송
-  margin?: number;
-}
-
 interface ModalProps {
   category: string;
   onClose: () => void;
@@ -150,10 +149,6 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
     supplierRemark: "",
     margin: 0,
   });
-
-  const [isCodeUnique, setIsCodeUnique] = useState(true);
-  const [isCheckingCode, setIsCheckingCode] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [makerCategoryList, setMakerCategoryList] = useState<
     { category: string; makers: string[] }[]
   >([]);
@@ -165,23 +160,36 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
   const [isAddingNewCategory, setIsAddingNewCategory] = useState(false);
   const [newCategory, setNewCategory] = useState("");
 
-  // 카테고리 목록 로드
-  useEffect(() => {
-    const fetchCategoryList = async () => {
-      try {
-        const response = await fetchCategory();
-        const sortedCategories = response.categoryType.sort(
-          (a: string, b: string) => a.localeCompare(b)
-        );
-        setCategoryList(sortedCategories);
-        setInitialCategoryList(sortedCategories);
-      } catch (error) {
-        console.error("Error fetching category list:", error);
-      }
-    };
+  const queryClient = new QueryClient({
+    queryCache: new QueryCache({
+      onError: (error: any, query: any) => {
+        if (query.meta.errorMessage) {
+          message.error(query.meta.errorMessage);
+        }
+      },
+    }),
+  });
 
-    fetchCategoryList();
-  }, []);
+  // 카테고리 목록 로드
+  const { data: categoryData } = useQuery({
+    queryKey: ["category"],
+    queryFn: fetchCategory,
+    meta: {
+      errorMessage:
+        "Failed to fetch category list(카테고리 목록을 불러오는데 실패했습니다.)",
+    },
+  });
+
+  // categoryData가 변경될 때마다 상태 업데이트를 위한 useEffect 추가
+  useEffect(() => {
+    if (categoryData?.categoryType) {
+      const sortedCategories = [...categoryData.categoryType].sort(
+        (a: string, b: string) => a.localeCompare(b)
+      );
+      setCategoryList(sortedCategories);
+      setInitialCategoryList(sortedCategories);
+    }
+  }, [categoryData]);
 
   // 입력 핸들러
   const handleChange = (
@@ -295,64 +303,31 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
     );
   };
 
-  // 디바운스 함수
-  const debounce = <T extends (...args: any[]) => void>(
-    func: T,
-    delay: number
-  ) => {
-    let timer: NodeJS.Timeout;
-    return (...args: Parameters<T>) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => func(...args), delay);
-    };
-  };
-
-  // 코드 고유성 검사 함수
-  const checkCodeUnique = debounce(async () => {
-    if ((formData.code + "").trim() === "") {
-      setIsCodeUnique(true);
-      return;
-    }
-    setIsCheckingCode(true);
-    try {
-      const endpoint =
-        category === "customer"
-          ? `/api/customers/check-code/${formData.code}`
-          : `/api/suppliers/check-code/${formData.code}`;
-      const response = await axios.get(endpoint);
-      setIsCodeUnique(!response.data); // 응답 T/F를 반전시킴
-    } catch (error) {
-      message.error("Error checking code unique");
-      setIsCodeUnique(true); // 오류가 발생하면 기본적으로 유효하다고 처리
-    } finally {
-      setIsCheckingCode(false);
-    }
-  }, 200);
-
-  // 코드 고유성 검사 효과
-  useEffect(() => {
-    checkCodeUnique();
-  }, [formData.code]);
+  const { data: isCodeUnique = true, isFetching: isCheckingCode } = useQuery({
+    queryKey: ["checkCompanyCode", category, formData.code],
+    queryFn: () => checkCompanyCodeUnique(category, formData.code),
+    enabled: formData.code.trim() !== "", // 코드가 비어있지 않을 때만 실행
+    staleTime: 30000, // 30초 동안 캐시 유지
+    meta: {
+      errorMessage: "Failed to check code uniqueness(코드 고유성 확인 실패)",
+    },
+  });
 
   // 새 데이터 생성 함수
-  const postCreate = async (values: {
-    code: string;
-    name: string;
-    korName: string;
-    contact: string;
-    manager: string;
-    email: string;
-    address: string;
-    language: string;
-    supplierRemark: string;
-    margin: number;
-  }) => {
-    try {
-      setLoading(true);
-      const endpoint =
-        category === "customer" ? "/api/customers" : "/api/suppliers";
-
-      const payload: Payload = {
+  const createCompanyMutation = useMutation({
+    mutationFn: (values: {
+      code: string;
+      name: string;
+      korName: string;
+      contact: string;
+      manager: string;
+      email: string;
+      address: string;
+      language: string;
+      supplierRemark: string;
+      margin: number;
+    }) => {
+      const payload: CompanyPayload = {
         code: values.code,
         companyName: values.name,
         phoneNumber: values.contact,
@@ -363,7 +338,6 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
         supplierRemark: values.supplierRemark,
       };
 
-      // category가 supplier인 경우 makerCategoryList 추가
       if (category === "supplier") {
         payload.makerCategoryList = makerCategoryList;
         payload.korCompanyName = values.korName;
@@ -372,29 +346,30 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
         payload.margin = Number(values.margin);
       }
 
-      await axios.post(endpoint, payload);
-
+      return createCompany(category, payload);
+    },
+    onSuccess: () => {
       notification.success({
-        message: "Registration complete",
-        description: "You have registered successfully.",
+        message: "Registration completed",
+        description: "Successfully registered.",
       });
+      queryClient.invalidateQueries({ queryKey: [`${category}List`] });
       onUpdate();
       onClose();
-    } catch (error) {
+    },
+    onError: (error: any) => {
       console.error("Error posting data:", error);
       notification.error({
         message: "Registration failed",
-        description: "An error occurred while registering.",
+        description: "An error occurred during registration.",
       });
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+  });
 
-  // 제출 핸들러
+  // 제출 핸들러 수정
   const handleSubmit = async (values: any) => {
-    if (!isCodeUnique) return; // 코드가 유효하지 않으면 제출하지 않음
-    await postCreate(values);
+    if (!isCodeUnique) return;
+    createCompanyMutation.mutate(values);
   };
 
   return (
@@ -407,7 +382,7 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
           ? "New customer registration"
           : category === "supplier"
           ? "New Supplier registration"
-          : "등록"
+          : "Registration"
       }
       width={700}
     >
@@ -632,9 +607,12 @@ const CreateCompanyModal = ({ category, onClose, onUpdate }: ModalProps) => {
         <Button
           type="primary"
           htmlType="submit"
-          loading={loading}
+          loading={createCompanyMutation.isPending}
           disabled={
-            !isCodeUnique || formData.code === "" || formData.name === ""
+            !isCodeUnique ||
+            formData.code === "" ||
+            formData.name === "" ||
+            createCompanyMutation.isPending
           }
           block
           size="middle"

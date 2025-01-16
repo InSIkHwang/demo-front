@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Table, Input, Button as AntButton, Select, Pagination } from "antd";
+import {
+  Table,
+  Input,
+  Button as AntButton,
+  Select,
+  Pagination,
+  message,
+} from "antd";
 import { SearchOutlined, LeftOutlined, RightOutlined } from "@ant-design/icons";
 import CreateCompanyModal from "../components/company/CreateCompanyModal";
 import type { ColumnsType } from "antd/es/table";
@@ -7,6 +14,9 @@ import styled from "styled-components";
 import DetailCompanyModal from "../components/company/DetailCompanyModal";
 import axios from "../api/axios";
 import { Customer } from "../types/types";
+import { useQuery } from "@tanstack/react-query";
+import { debounce } from "lodash";
+import { fetchCustomerList, fetchCustomerSearch } from "../api/api";
 
 const Container = styled.div`
   position: relative;
@@ -54,10 +64,8 @@ const PaginationWrapper = styled(Pagination)`
 const { Option } = Select;
 
 const CustomerList = () => {
-  const [data, setData] = useState<Customer[]>([]);
   const [searchText, setSearchText] = useState<string>("");
   const [searchCategory, setSearchCategory] = useState<string>("all");
-  const [loading, setLoading] = useState<boolean>(true);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isDetailCompanyModalOpen, setIsDetailCompanyModalOpen] =
     useState<boolean>(false);
@@ -66,35 +74,58 @@ const CustomerList = () => {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
     null
   );
-  const [totalCount, setTotalCount] = useState<number>();
-
+  const [debouncedSearch, setDebouncedSearch] = useState<string>("");
   const category = "customer";
 
   useEffect(() => {
-    if (searchText) {
-      fetchFilteredData();
-    } else {
-      fetchData();
-    }
-  }, [currentPage, itemsPerPage]);
+    const debouncedSearch = debounce((text: string) => {
+      setDebouncedSearch(text);
+    }, 500);
 
-  const fetchData = async () => {
-    try {
-      const response = await axios.get("/api/customers", {
-        params: {
-          page: currentPage - 1, // 페이지는 0부터 시작
-          pageSize: itemsPerPage, // 페이지당 아이템 수
-        },
-      });
-      setData(response.data.customers);
-      setTotalCount(response.data.totalCount);
-      setLoading(false);
-    } catch (error) {
-      setData([]); // 오류 발생 시 빈 배열로 초기화
-      console.error("Error fetching data:", error);
-      setLoading(false);
+    debouncedSearch(searchText);
+
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [searchText]);
+
+  const {
+    data: customers,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["customers", currentPage, itemsPerPage, debouncedSearch],
+    queryFn: async () => {
+      const params: any = {
+        page: currentPage - 1,
+        pageSize: itemsPerPage,
+      };
+
+      if (debouncedSearch) {
+        if (searchCategory === "code") {
+          params.code = debouncedSearch;
+        } else if (searchCategory === "companyName") {
+          params.companyName = debouncedSearch;
+        } else if (searchCategory === "all") {
+          params.query = debouncedSearch;
+        } else if (searchCategory === "vesselName") {
+          params.vesselName = debouncedSearch;
+        }
+        return await fetchCustomerSearch(params);
+      }
+      return await fetchCustomerList(params);
+    },
+
+    staleTime: 30000,
+  });
+
+  // Error
+  useEffect(() => {
+    if (error) {
+      message.error("Failed to fetch data");
     }
-  };
+  }, [error]);
 
   // 모달 열릴 때 스크롤 방지
   useEffect(() => {
@@ -108,45 +139,6 @@ const CustomerList = () => {
       document.body.style.overflow = "auto";
     };
   }, [isModalOpen, isDetailCompanyModalOpen]);
-
-  const debounce = <T extends (...args: any[]) => void>(
-    func: T,
-    delay: number
-  ) => {
-    let timer: NodeJS.Timeout;
-    return (...args: Parameters<T>) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => func(...args), delay);
-    };
-  };
-
-  //검색 API 로직
-  const fetchFilteredData = debounce(async () => {
-    try {
-      const params: any = {
-        page: currentPage - 1, // 페이지는 0부터 시작
-        pageSize: itemsPerPage, // 페이지당 아이템 수
-      };
-
-      if (searchCategory === "code") {
-        params.code = searchText;
-      } else if (searchCategory === "companyName") {
-        params.companyName = searchText;
-      } else if (searchCategory === "all") {
-        params.query = searchText;
-      } else if (searchCategory === "vesselName") {
-        params.vesselName = searchText;
-      }
-
-      const response = await axios.get("/api/customers/search", { params });
-      setData(response.data.customers);
-      setTotalCount(response.data.totalCount);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching filtered data:", error);
-      setLoading(false);
-    }
-  }, 200);
 
   const columns: ColumnsType<Customer> = [
     {
@@ -240,9 +232,7 @@ const CustomerList = () => {
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               onPressEnter={() => {
-                if (currentPage === 1) {
-                  fetchFilteredData();
-                } else {
+                if (currentPage !== 1) {
                   setCurrentPage(1);
                 }
               }}
@@ -250,9 +240,7 @@ const CustomerList = () => {
               suffix={
                 <SearchOutlined
                   onClick={() => {
-                    if (currentPage === 1) {
-                      fetchFilteredData();
-                    } else {
+                    if (currentPage !== 1) {
                       setCurrentPage(1);
                     }
                   }}
@@ -264,13 +252,13 @@ const CustomerList = () => {
             New Customer
           </Button>
         </TableHeader>
-        {data?.length > 0 && ( // 데이터가 있을 때만 페이지네이션을 표시
+        {customers?.customers?.length > 0 && ( // 데이터가 있을 때만 페이지네이션을 표시
           <>
             <Table
               columns={columns}
-              dataSource={data}
+              dataSource={customers?.customers}
               pagination={false}
-              loading={loading}
+              loading={isLoading}
               rowKey="code"
               onRow={(record) => ({
                 onClick: () => openDetailCompanyModal(record),
@@ -281,7 +269,7 @@ const CustomerList = () => {
             <PaginationWrapper
               current={currentPage}
               pageSize={itemsPerPage}
-              total={totalCount}
+              total={customers?.totalCount}
               onChange={handlePageChange}
               onShowSizeChange={handlePageSizeChange}
               showSizeChanger
@@ -305,11 +293,7 @@ const CustomerList = () => {
           category={category}
           onClose={closeModal}
           onUpdate={() => {
-            if (searchText) {
-              fetchFilteredData();
-            } else {
-              fetchData();
-            }
+            refetch();
           }}
         />
       )}
@@ -319,11 +303,7 @@ const CustomerList = () => {
           company={selectedCustomer}
           onClose={closeDetailCompanyModal}
           onUpdate={() => {
-            if (searchText) {
-              fetchFilteredData();
-            } else {
-              fetchData();
-            }
+            refetch();
           }}
         />
       )}

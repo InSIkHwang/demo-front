@@ -72,10 +72,6 @@ const ShipList = () => {
   const [itemsPerPage, setItemsPerPage] = useState<number>(10);
   const [selectedVessel, setSelectedVessel] = useState<Vessel | null>(null);
 
-  const handleSearch = () => {
-    refetch();
-  };
-
   // 선박 목록 조회 쿼리
   const {
     data: vesselData,
@@ -210,9 +206,7 @@ const ShipList = () => {
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               onPressEnter={() => {
-                if (currentPage === 1) {
-                  handleSearch();
-                } else {
+                if (currentPage !== 1) {
                   setCurrentPage(1);
                 }
               }}
@@ -220,9 +214,7 @@ const ShipList = () => {
               suffix={
                 <SearchOutlined
                   onClick={() => {
-                    if (currentPage === 1) {
-                      handleSearch();
-                    } else {
+                    if (currentPage !== 1) {
                       setCurrentPage(1);
                     }
                   }}
