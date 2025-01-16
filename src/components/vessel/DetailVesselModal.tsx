@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import axios from "../../api/axios";
 import {
   Modal,
@@ -13,6 +13,8 @@ import {
 import { Vessel } from "../../types/types";
 import styled from "styled-components";
 import { vesselCheckImoAndHullUnique } from "../../api/api";
+import { useQuery } from "@tanstack/react-query";
+import { debounce } from "lodash";
 
 const { Title } = Typography;
 
@@ -108,8 +110,6 @@ const ButtonGroup = styled.div`
 const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(vessel);
-  const [isImoUnique, setIsImoUnique] = useState(true);
-  const [isHullUnique, setIsHullUnique] = useState(true);
   const [customerSuggestions, setCustomerSuggestions] = useState<any[]>([]);
   const [isCustomerLoading, setIsCustomerLoading] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<{
@@ -123,80 +123,68 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
   const originalImoNumber = vessel.imoNumber;
 
   // 코드 고유성 검사 효과
-  useEffect(() => {
-    const checkUnique = async (
-      type: string,
-      value: string | number | null,
-      originalValue: string | number | null
-    ) => {
-      if (originalValue !== value) {
-        if (!value) {
-          return true; // 값이 없으면 중복 아님
-        }
-        try {
-          const response = await vesselCheckImoAndHullUnique(type, value);
-          return response;
-        } catch (error) {
-          console.error(`Error checking ${type} unique:`, error);
-          return true; // 오류 발생 시 기본적으로 유효한 값으로 처리
-        }
-      } else {
-        return true; // 기존 값과 같으면 유효한 것으로 처리
-      }
-    };
+  const useCheckVesselUnique = (type: string, value: any) => {
+    const debouncedQueryFn = useMemo(
+      () =>
+        debounce(async () => {
+          if (!value) return true;
+          try {
+            return await vesselCheckImoAndHullUnique(type, value);
+          } catch (error) {
+            console.error(`Error checking ${type} unique:`, error);
+            return true;
+          }
+        }, 500),
+      [type, value]
+    );
 
-    // IMO, HULL No. 고유성 검사 함수
-    const checkImoAndHullUnique = async () => {
-      const isImoValid =
-        formData.imoNumber && (formData.imoNumber + "").toString().length >= 7
-          ? await checkUnique(
-              "imo-number",
-              formData.imoNumber,
-              vessel.imoNumber
-            )
-          : true;
-      const isHullValid = await checkUnique(
-        "hull-number",
-        formData.hullNumber,
-        vessel.hullNumber
-      );
-      setIsImoUnique(isImoValid);
-      setIsHullUnique(isHullValid);
-    };
-
-    checkImoAndHullUnique();
-  }, [
-    formData.imoNumber,
-    formData.hullNumber,
-    vessel.imoNumber,
-    vessel.hullNumber,
-  ]);
+    return useQuery({
+      queryKey: ["vesselUnique", type, value],
+      queryFn: debouncedQueryFn,
+      enabled: !!value,
+      staleTime: 30000,
+    });
+  };
+  // IMO, HULL No. 고유성 검사
+  const { data: isImoUnique = true } = useCheckVesselUnique(
+    "imo-number",
+    formData.imoNumber
+  );
+  const { data: isHullUnique = true } = useCheckVesselUnique(
+    "hull-number",
+    formData.hullNumber
+  );
 
   // 매출처 검색 함수
-  const fetchCustomerSuggestions = async (customerName: string) => {
-    if (!(customerName + "").trim()) {
-      setCustomerSuggestions([]);
-      return;
-    }
-    setIsCustomerLoading(true);
-    try {
-      const response = await axios.get(
-        `/api/customers/check-name?query=${customerName}`
-      );
-      setCustomerSuggestions(response.data.customerDetailResponse);
-    } catch (error) {
-      console.error("Error fetching customer suggestions:", error);
-    } finally {
-      setIsCustomerLoading(false);
-    }
-  };
+  const debouncedFetchCustomerSuggestions = useMemo(
+    () =>
+      debounce(async (customerName: string) => {
+        if (!(customerName + "").trim()) {
+          setCustomerSuggestions([]);
+          setSelectedCustomer(null);
+          return;
+        }
+        setIsCustomerLoading(true);
+        try {
+          const response = await axios.get(
+            `/api/customers/check-name?query=${customerName}`
+          );
+          setCustomerSuggestions(response.data.customerDetailResponse);
+        } catch (error) {
+          console.error("Error fetching customer suggestions:", error);
+        } finally {
+          setIsCustomerLoading(false);
+        }
+      }, 500),
+    []
+  );
 
   // 매출처 검색 핸들러
   const handleSearch = (value: string) => {
     if (value !== selectedCustomer?.companyName) {
       setSelectedCustomer(null);
     }
-    fetchCustomerSuggestions(value);
+    debouncedFetchCustomerSuggestions(value);
   };
 
   // 매출처 선택 핸들러
