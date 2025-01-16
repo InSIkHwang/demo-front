@@ -993,6 +993,22 @@ export const confirmOrder = async (
   return response.data;
 };
 
+//OREDER PDF 다운 시 상태 업데이트
+export const updateOrderStatus = async (orderId: number, type: string) => {
+  let status = "";
+  if (type === "PO") {
+    status = "PO_COMPLETED";
+  } else if (type === "OA") {
+    status = "OA_COMPLETED";
+  }
+
+  const response = await axios.put(
+    `/api/orders/update-status/${orderId}?status=${status}`
+  );
+
+  return response.data;
+};
+
 //----------------------------------------------------------------------------------
 // LOGISTICS 조회 관련
 

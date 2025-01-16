@@ -1311,67 +1311,107 @@ const MakeOffer = () => {
       });
     };
 
+    // N/A 처리 함수
+    const handleNAClick = (supplierInquiryId: number) => {
+      Modal.confirm({
+        title: "Handle N/A",
+        content: "Are you sure you want to handle N/A?",
+        okText: "Ok",
+        cancelText: "Cancel",
+        onOk: async () => {
+          try {
+            await changeOfferStatus(supplierInquiryId, "NA");
+            message.success("N/A handled successfully.");
+            loadOfferDetail();
+          } catch (error) {
+            console.error("Error handling N/A:", error);
+            message.error("Failed to handle N/A. Please try again.");
+          }
+        },
+      });
+    };
+
     // 매입처 탭 렌더링
-    const items = dataSource.response.map((supplier) => ({
-      key: supplier.inquiryId.toString(),
-      label: (
-        <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          {supplier.supplierInfo.supplierName}
-          <DeleteOutlined
-            style={{ color: "#ff4d4f" }}
-            onClick={(e) => {
-              e.stopPropagation(); // 탭 클릭 이벤트 전파 방지
-              handleDeleteSupplier(
-                supplier.inquiryId,
-                supplier.supplierInfo.supplierName
-              );
-            }}
-          />
-        </span>
-      ),
-      children: (
-        <>
-          <TableComponent
-            itemDetails={currentDetailItems}
-            setItemDetails={setCurrentDetailItems}
-            handleInputChange={handleInputChange}
-            currency={formValues.currency}
-            roundToTwoDecimalPlaces={roundToTwoDecimalPlaces}
-            calculateTotalAmount={calculateTotalAmount}
-            handleMarginChange={handleMarginChange}
-            handlePriceInputChange={handlePriceInputChange}
-            offerId={supplier.inquiryId}
-            documentNumber={dataSource.documentInfo.documentNumber}
-            supplierName={supplier.supplierInfo.supplierName}
-            pdfUrl={supplier.pdfUrl}
-            tableTotals={tableTotals}
-            applyDcAndCharge={applyDcAndCharge}
-            dcInfo={dcInfo}
-            setDcInfo={setDcInfo}
-            invChargeList={invChargeList}
-            setInvChargeList={setInvChargeList}
-            supplierInquiryName={currentSupplierInquiryName}
-            setSupplierInquiryName={setCurrentSupplierInquiryName}
-            setNewDocumentInfo={setNewDocumentInfo}
-            setDataSource={setDataSource}
-          />
-          <Button
-            type="primary"
-            htmlType="submit"
-            style={{ float: "right", width: 100, marginBottom: 20 }}
-            onClick={() => handleSave(false, activeKey)}
-            disabled={
-              !formValues.refNumber || formValues.refNumber.trim() === ""
-            }
-          >
-            Save
-          </Button>
-          <Divider variant="dashed" style={{ borderColor: "#007bff" }}>
-            Integrated data
-          </Divider>
-        </>
-      ),
-    }));
+    const items = dataSource.response.map((supplier) => {
+      return {
+        key: supplier.inquiryId.toString(),
+        label: (
+          <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            {supplier.supplierInfo.supplierName}
+            {supplier.inquiryStatus === "NA" ? (
+              <span
+                style={{
+                  color: "red",
+                  fontSize: 10,
+                }}
+              >
+                {" "}
+                (N/A)
+              </span>
+            ) : (
+              <span style={{ color: "#525252", fontSize: 10 }}>
+                {" "}
+                ({supplier.inquiryStatus})
+              </span>
+            )}
+
+            <DeleteOutlined
+              style={{ color: "#ff4d4f" }}
+              onClick={(e) => {
+                e.stopPropagation(); // 탭 클릭 이벤트 전파 방지
+                handleDeleteSupplier(
+                  supplier.inquiryId,
+                  supplier.supplierInfo.supplierName
+                );
+              }}
+            />
+          </span>
+        ),
+        children: (
+          <>
+            <TableComponent
+              itemDetails={currentDetailItems}
+              setItemDetails={setCurrentDetailItems}
+              handleInputChange={handleInputChange}
+              currency={formValues.currency}
+              roundToTwoDecimalPlaces={roundToTwoDecimalPlaces}
+              calculateTotalAmount={calculateTotalAmount}
+              handleMarginChange={handleMarginChange}
+              handlePriceInputChange={handlePriceInputChange}
+              offerId={supplier.inquiryId}
+              documentNumber={dataSource.documentInfo.documentNumber}
+              supplierName={supplier.supplierInfo.supplierName}
+              pdfUrl={supplier.pdfUrl}
+              tableTotals={tableTotals}
+              applyDcAndCharge={applyDcAndCharge}
+              dcInfo={dcInfo}
+              setDcInfo={setDcInfo}
+              invChargeList={invChargeList}
+              setInvChargeList={setInvChargeList}
+              supplierInquiryName={currentSupplierInquiryName}
+              setSupplierInquiryName={setCurrentSupplierInquiryName}
+              setNewDocumentInfo={setNewDocumentInfo}
+              setDataSource={setDataSource}
+              handleNAClick={handleNAClick}
+            />
+            <Button
+              type="primary"
+              htmlType="submit"
+              style={{ float: "right", width: 100, marginBottom: 20 }}
+              onClick={() => handleSave(false, activeKey)}
+              disabled={
+                !formValues.refNumber || formValues.refNumber.trim() === ""
+              }
+            >
+              Save
+            </Button>
+            <Divider variant="dashed" style={{ borderColor: "#007bff" }}>
+              Integrated data
+            </Divider>
+          </>
+        ),
+      };
+    });
 
     return (
       <Tabs

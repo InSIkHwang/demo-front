@@ -583,8 +583,8 @@ const renderTableRows = (items: ItemDetailType[], language: string) => {
               </View>
             ) : (
               <View style={[styles.tableBigCol]}>
-                <Text style={styles.nonItemtypeCell}>
-                  {item?.itemName?.split("")}
+                <Text style={[styles.nonItemtypeCell]}>
+                  {item?.itemName.split("")}
                 </Text>
               </View>
             )}

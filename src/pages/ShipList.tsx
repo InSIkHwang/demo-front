@@ -15,11 +15,7 @@ import styled from "styled-components";
 import DetailVesselModal from "../components/vessel/DetailVesselModal";
 import { Vessel, VesselResponse } from "../types/types";
 import { fetchVesselList, fetchVesselSearch } from "../api/api";
-import {
-  keepPreviousData,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 const Container = styled.div`
   position: relative;

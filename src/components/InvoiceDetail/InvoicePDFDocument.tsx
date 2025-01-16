@@ -592,9 +592,7 @@ const renderTableRows = (items: OrderItemDetail[], language: string) => {
                   }}
                 >
                   <DescriptionIcon />
-                  <Text style={styles.desctypeCell}>
-                    {item?.itemName?.split("")}
-                  </Text>
+                  <Text style={styles.desctypeCell}>{item?.itemName}</Text>
                 </View>
               </View>
             ) : (
