@@ -12,8 +12,11 @@ import {
 } from "antd";
 import { Vessel } from "../../types/types";
 import styled from "styled-components";
-import { vesselCheckImoAndHullUnique } from "../../api/api";
-import { useQuery } from "@tanstack/react-query";
+import {
+  deleteVesselCustomer,
+  vesselCheckImoAndHullUnique,
+} from "../../api/api";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { debounce } from "lodash";
 
 const { Title } = Typography;
@@ -117,6 +120,7 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
     id: number;
   } | null>(null);
   const [searchCustomer, setSearchCustomer] = useState<string>("");
+  const queryClient = useQueryClient();
 
   const [form] = Form.useForm();
 
@@ -259,6 +263,42 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
         await deleteData();
         onUpdate();
         onClose();
+      },
+    });
+  };
+
+  // 고객사 삭제 뮤테이션
+  const deleteCustomerMutation = useMutation({
+    mutationFn: ({
+      vesselId,
+      customerId,
+    }: {
+      vesselId: number;
+      customerId: number;
+    }) => deleteVesselCustomer(vesselId, customerId),
+    onSuccess: () => {
+      message.success("Successfully deleted.");
+      queryClient.invalidateQueries({ queryKey: ["companyDetail", vessel.id] });
+    },
+    onError: (error) => {
+      console.error("Error deleting customer:", error);
+      message.error("An error occurred while deleting.");
+    },
+  });
+
+  // 고객사 삭제 확인 모달
+  const showDeleteConfirm = (customerId: number, customerName: string) => {
+    Modal.confirm({
+      title: "Delete Customer",
+      content: `Are you sure you want to delete ${customerName}?`,
+      okText: "Delete",
+      cancelText: "Cancel",
+      okType: "danger",
+      onOk: () => {
+        deleteCustomerMutation.mutate({
+          vesselId: formData.id,
+          customerId: customerId,
+        });
       },
     });
   };
@@ -444,7 +484,16 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
           {formData.customers.map(
             (customer) =>
               customer.companyName && (
-                <StyledTag key={customer.id}>{customer.companyName}</StyledTag>
+                <StyledTag
+                  key={customer.id}
+                  closable={isEditing}
+                  onClose={(e) => {
+                    e.preventDefault();
+                    showDeleteConfirm(customer.id, customer.companyName);
+                  }}
+                >
+                  {customer.companyName}
+                </StyledTag>
               )
           )}
         </StyledFormItem>

@@ -567,17 +567,14 @@ const TableComponent = ({
       };
 
       // 새로운 매출단가(KRW) 계산
-      const salesPriceKRW = calculateSalesPrice(
-        updatedRow.purchasePriceKRW,
-        marginValue
+      const salesPriceKRW = Math.round(
+        calculateSalesPrice(updatedRow.purchasePriceKRW, marginValue)
       );
       updatedRow.salesPriceKRW = salesPriceKRW;
 
       // 매출총액(KRW) 계산
-      updatedRow.salesAmountKRW = calculateTotalAmount(
-        updatedRow.salesPriceKRW,
-        updatedRow.qty,
-        "KRW"
+      updatedRow.salesAmountKRW = Math.round(
+        calculateTotalAmount(updatedRow.salesPriceKRW, updatedRow.qty, "KRW")
       );
 
       // Global 가격 계산 (환 적용)

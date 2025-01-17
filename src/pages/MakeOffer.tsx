@@ -669,6 +669,8 @@ const MakeOffer = () => {
     const salesPriceKRW = Math.round(
       purchasePriceKRW * (1 + marginValue / 100)
     );
+    console.log(salesPriceKRW);
+
     const salesAmountKRW = calculateTotalAmount(salesPriceKRW, qty, "KRW");
 
     const exchangeRate = formValues.currency;

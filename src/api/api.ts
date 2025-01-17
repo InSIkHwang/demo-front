@@ -284,6 +284,12 @@ export const vesselCheckImoAndHullUnique = async (
   return !response.data; //응답 반전
 };
 
+//선박에 등록된 매출처 삭제
+export const deleteVesselCustomer = async (vesselId: number, customerId: number) => {
+  const response = await axios.delete(`/api/vessels/${vesselId}/customers/${customerId}`);
+  return response.data;
+};
+
 //----------------------------------------------------------------------------------
 // INQUIRY 작성 관련
 

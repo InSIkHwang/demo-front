@@ -930,12 +930,51 @@ const OrderDetail = () => {
     footer: orderRemark[]
   ) => {
     const response = await saveOrderHeader(Number(orderId), header, footer);
-    if (header.receiverType === "PO") {
+
+    if (header.receiverType === "SUPPLIER") {
       setPdfPOHeader(response.orderSupplierHeader);
       setPdfPOFooter(response.orderSupplierRemark);
-    } else if (header.receiverType === "OA") {
+
+      // 날짜 초기값 설정
+      let expectedDate = null;
+
+      // orderSupplierRemark에서 예상 입고일 파싱
+      if (response.orderSupplierRemark?.[0]?.orderRemark) {
+        const remarks = response.orderSupplierRemark[0].orderRemark.split("\n");
+        for (const remark of remarks) {
+          const koreanDate = parseKoreanDate(remark);
+          const englishDate = parseEnglishDate(remark);
+          if (koreanDate || englishDate) {
+            expectedDate = koreanDate || englishDate;
+            break;
+          }
+        }
+      }
+
+      // 날짜 상태 업데이트
+      setConfirmDates({
+        ...confirmDates,
+        expectedReceivingDate: expectedDate || "",
+      });
+    } else if (header.receiverType === "CUSTOMER") {
       setPdfOrderAckHeader(response.orderCustomerHeader);
       setPdfOrderAckFooter(response.orderCustomerRemark);
+
+      // 날짜 초기값 설정
+      let deliveryDate = null;
+
+      // orderCustomerHeader에서 납기일 파싱
+      if (response.orderCustomerHeader?.deliveryTime) {
+        deliveryDate = parseDeliveryTime(
+          response.orderCustomerHeader.deliveryTime
+        );
+      }
+
+      // 날짜 상태 업데이트
+      setConfirmDates({
+        ...confirmDates,
+        deliveryDate: deliveryDate || "",
+      });
     }
   };
 
@@ -1095,7 +1134,6 @@ const OrderDetail = () => {
           invChargeList={invChargeList}
         />
       )}
-
       {pdfType === "PO" && headerEditModalVisible && (
         <POHeaderEditModal
           visible={headerEditModalVisible}
