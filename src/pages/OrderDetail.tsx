@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Button,
@@ -202,6 +202,10 @@ const OrderDetail = () => {
   });
   const [isProforma, setIsProforma] = useState(false);
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
+
+  const prevItems = useRef<typeof items>([]);
+  const [isUpdatingGlobalPrices, setIsUpdatingGlobalPrices] =
+    useState<boolean>(false);
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -412,6 +416,73 @@ const OrderDetail = () => {
     (price: number, qty: number) => roundToTwoDecimalPlaces(price * qty),
     []
   );
+
+  //환율 변경 시 모든 아이템의 글로벌 가격을 업데이트하는 함수
+  //KRW 가격을 기준으로 현재 설정된 환율에 따라 글로벌 가격을 재계산
+  const updateGlobalPrices = useCallback(() => {
+    setItems((prevItems) => {
+      if (!prevItems || !supplier) return prevItems;
+
+      const updatedItems = prevItems.map((record) => {
+        if (!record || record.itemType !== "ITEM") return record;
+
+        // 기존 KRW 가격 기준으로 새로운 Global 가격 계산
+        const updatedSalesPriceGlobal = convertCurrency(
+          record.salesPriceKRW,
+          formValues?.currency || 1050,
+          "USD"
+        );
+        const updatedPurchasePriceGlobal = convertCurrency(
+          record.purchasePriceKRW,
+          formValues?.currency || 1050,
+          "USD"
+        );
+
+        // 금액 계산은 한 번만 수행
+        const salesAmountKRW = calculateTotalAmount(
+          record.salesPriceKRW,
+          record.qty
+        );
+        const salesAmountGlobal = calculateTotalAmount(
+          updatedSalesPriceGlobal,
+          record.qty
+        );
+        const purchaseAmountKRW = calculateTotalAmount(
+          record.purchasePriceKRW,
+          record.qty
+        );
+        const purchaseAmountGlobal = calculateTotalAmount(
+          updatedPurchasePriceGlobal,
+          record.qty
+        );
+
+        return {
+          ...record,
+          salesPriceGlobal: updatedSalesPriceGlobal,
+          purchasePriceGlobal: updatedPurchasePriceGlobal,
+          salesAmountKRW,
+          salesAmountGlobal,
+          purchaseAmountKRW,
+          purchaseAmountGlobal,
+        };
+      });
+
+      return updatedItems;
+    });
+  }, [supplier, formValues?.currency, convertCurrency, calculateTotalAmount]);
+
+  // 환율 변경 시 실행되는 useEffect
+  useEffect(() => {
+    if (formValues?.currency) {
+      const timer = setTimeout(async () => {
+        setIsUpdatingGlobalPrices(true); // 업데이트 시작
+        updateGlobalPrices(); // updateGlobalPrices가 완료될 때까지 대기
+        applyDcAndCharge("multiple"); // 그 후에 DC와 Charge 적용
+        setIsUpdatingGlobalPrices(false); // 업데이트 완료
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [formValues?.currency]);
 
   // 마진 변경 함수
   const handleMarginChange = (index: number, marginValue: number) => {
@@ -674,6 +745,30 @@ const OrderDetail = () => {
       totalProfitPercent: updatedTotalProfitPercent,
     });
   };
+
+  // combinedItemDetails 변경 시 실행되는 useEffect 수정
+  useEffect(() => {
+    if (items.length > 0) {
+      const hasChanged =
+        JSON.stringify(items) !== JSON.stringify(prevItems.current);
+
+      if (hasChanged && !isUpdatingGlobalPrices) {
+        // 글로벌 가격 업데이트 중이 아닐 때만 실행
+        prevItems.current = items;
+        applyDcAndCharge("multiple");
+      }
+    }
+  }, [items]);
+
+  // 환율 변경 시 실행되는 useEffect
+  useEffect(() => {
+    if (items.length > 0) {
+      const timer = setTimeout(() => {
+        applyDcAndCharge("multiple");
+      }, 300); // 300ms 후에 실행
+      return () => clearTimeout(timer); // cleanup 함수
+    }
+  }, [formValues?.currency]);
 
   const handlePDFPreview = () => {
     applyDcAndCharge("multiple");
