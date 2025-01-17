@@ -815,7 +815,7 @@ export interface InvoiceDocument {
   customerId: number;
   vesselId: number;
   discount: number | null;
-  imoNo: number; // 추가 필요
+  imoNumber: number; // 추가 필요
 }
 
 export interface InvoiceHeaderDetail {
