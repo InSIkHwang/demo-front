@@ -155,8 +155,8 @@ const ExcelUploadModal = ({
         // 마진 계산 (소수점 둘째 자리까지)
         marginPercent = parseFloat(
           (
-            ((mappedRow.salesPriceGlobal - purchasePriceGlobal) /
-              (purchasePriceGlobal || 1)) *
+            ((mappedRow.salesPriceGlobal - mappedRow.purchasePriceGlobal) /
+              (mappedRow.purchasePriceGlobal || 1)) *
             100
           ).toFixed(2)
         );
@@ -168,8 +168,8 @@ const ExcelUploadModal = ({
         // 마진 계산 (소수점 둘째 자리까지)
         marginPercent = parseFloat(
           (
-            ((mappedRow.salesPriceKRW - purchasePriceKRW) /
-              (purchasePriceKRW || 1)) *
+            ((mappedRow.salesPriceKRW - mappedRow.purchasePriceKRW) /
+              (mappedRow.purchasePriceKRW || 1)) *
             100
           ).toFixed(2)
         );

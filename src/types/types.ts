@@ -65,6 +65,20 @@ export interface Vessel {
   }[];
 }
 
+export interface CompanyPayload {
+  code: string;
+  companyName: string;
+  korCompanyName?: string;
+  phoneNumber: string;
+  representative: string;
+  email: string;
+  address: string;
+  communicationLanguage: string;
+  makerCategoryList?: { category: string; makers: string[] }[]; // supplier일 때만 전송
+  supplierRemark?: string; // supplier일 때만 전송
+  margin?: number;
+}
+
 export interface InquiryItem {
   itemDetailId?: number | null;
   itemId?: number | null;
@@ -801,7 +815,7 @@ export interface InvoiceDocument {
   customerId: number;
   vesselId: number;
   discount: number | null;
-  imoNo: number; // 추가 필요
+  imoNumber: number; // 추가 필요
 }
 
 export interface InvoiceHeaderDetail {

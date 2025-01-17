@@ -3,6 +3,8 @@ import { Modal } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import { useEffect, useState } from "react";
 import { OrderAckHeaderFormData, orderRemark } from "../../types/types";
+import { parseKoreanDate } from "../orderList/DetailOrderModal";
+import { parseEnglishDate } from "../orderList/DetailOrderModal";
 
 const POHeaderEditModal = ({
   visible,
@@ -62,6 +64,9 @@ const POHeaderEditModal = ({
       }));
     }
   };
+
+  console.log(tempFooter);
+  console.log(pdfPOFooter);
 
   useEffect(() => {
     setTempFooter(pdfPOFooter);

@@ -113,7 +113,6 @@ interface SearchMakerModalProps {
   onCategorySearch: (value: string) => void;
   onSearch: (value: string, categoryWord: string) => void;
   onCheckboxChange: (supplier: any) => void;
-  removeListDuplicates: (list: any[]) => any[];
   setMakerSearch: (value: string) => void;
 }
 
@@ -130,21 +129,37 @@ const SearchMakerModal = ({
   onCategorySearch,
   onSearch,
   onCheckboxChange,
-  removeListDuplicates,
   setMakerSearch,
 }: SearchMakerModalProps) => {
-  // 디바운스된 검색 함수 생성
-  const debouncedSearch = useCallback(
-    debounce((value: string, categoryWord: string) => {
-      onSearch(value, categoryWord);
-    }, 500),
-    [onSearch]
-  );
-
   const handleSearch = (value: string) => {
     setMakerSearch(value); // 즉시 검색어 상태 업데이트
-    debouncedSearch(value, categoryWord); // 디바운스된 검색 실행
+    onSearch(value, categoryWord); // 디바운스된 검색 실행
   };
+
+  const removeDuplicateSuppliers = (makerSupplierList: MakerSupplierList[]) => {
+    return makerSupplierList.map((makerSupplier) => {
+      // Set을 사용하여 중복 제거를 위한 id 추적
+      const uniqueIds = new Set();
+
+      // supplierList 내의 중복 제거
+      const uniqueSuppliers = makerSupplier.supplierList.filter((supplier) => {
+        if (uniqueIds.has(supplier.id)) {
+          return false;
+        }
+        uniqueIds.add(supplier.id);
+        return true;
+      });
+
+      // 중복이 제거된 supplierList로 업데이트
+      return {
+        ...makerSupplier,
+        supplierList: uniqueSuppliers,
+      };
+    });
+  };
+
+  // 중복 제거된 makerSupplierList 생성
+  const uniqueMakerSupplierList = removeDuplicateSuppliers(makerSupplierList);
 
   return (
     <StyledModal
@@ -166,7 +181,7 @@ const SearchMakerModal = ({
         <Input.Search />
       </AutoComplete>
       <List
-        dataSource={removeListDuplicates(makerSupplierList)}
+        dataSource={uniqueMakerSupplierList}
         renderItem={(item) => (
           <StyledListItem>
             <MakerTitle>
@@ -174,7 +189,7 @@ const SearchMakerModal = ({
               <CategoryBadge>{item.category}</CategoryBadge>
             </MakerTitle>
             <SupplierContainer>
-              {item.supplierList.map((supplier: any) => (
+              {item.supplierList.map((supplier: any, index: number) => (
                 <StyledCheckbox
                   key={supplier.id}
                   onChange={() => onCheckboxChange(supplier)}

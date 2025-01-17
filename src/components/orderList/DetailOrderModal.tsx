@@ -124,7 +124,7 @@ export const parseEnglishDate = (text: string): string | null => {
 
   // "EXPECTED DELIVERY DATE : 15 JAN 2025" 형식 파싱
   const englishDatePattern =
-    /EXPECTED DELIVERY DATE:?\s*(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})/i;
+    /EXPECTED DELIVERY DATE\s*:?\s*(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})/i;
   const match = cleanText.match(englishDatePattern);
 
   if (match) {

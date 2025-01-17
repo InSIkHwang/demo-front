@@ -866,7 +866,7 @@ const InvoicePDFDocument = ({
           headerMessage,
           language,
           info.refNumber,
-          info.imoNo + "",
+          info.imoNumber + "",
           invoiceNumber || "",
           pdfType,
           isOriginal,

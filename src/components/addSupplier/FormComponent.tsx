@@ -210,24 +210,28 @@ const FormComponent = ({
     if (value) {
       try {
         const data = await searchSupplierUseMaker(value, categoryType!.trim());
-        const makerSupplierList = data.makerSupplierList.map((maker) => ({
-          maker: maker.maker,
-          category: maker.category,
-          supplierList: maker.supplierList.map((supplier) => ({
+        // 메이커 리스트 데이터 변환
+        const makerSupplierList = data.map((item) => ({
+          maker: item.maker,
+          category: item.category,
+          supplierList: item.supplierList.map((supplier) => ({
             name: supplier.companyName,
             korName: supplier.korCompanyName || supplier.companyName,
             id: supplier.supplierId,
             code: supplier.code,
-            email: supplier.email,
+            email: supplier.email || "",
             communicationLanguage: supplier.communicationLanguage || "KOR",
+            supplierRemark: supplier.supplierRemark || "",
           })),
         }));
 
         // 상태 업데이트
         setMakerSupplierList(makerSupplierList);
-        const makerOptions = data.makerSupplierList.map((maker) => ({
-          label: `${maker.maker} (${maker.category})`,
-          value: maker.maker,
+
+        // 메이커 옵션 생성 - 카테고리와 함께 표시
+        const makerOptions = data.map((item) => ({
+          label: `${item.maker} (${item.category})`,
+          value: item.maker,
         }));
         setMakerOptions(makerOptions);
       } catch (error) {
@@ -427,7 +431,6 @@ const FormComponent = ({
                   onCategorySearch={handleCategorySearch}
                   onSearch={handleSearch}
                   onCheckboxChange={handleCheckboxChange}
-                  removeListDuplicates={removeListDuplicates}
                   setMakerSearch={setMakerSearch}
                 />
               )}

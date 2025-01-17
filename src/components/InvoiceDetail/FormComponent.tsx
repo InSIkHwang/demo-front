@@ -87,8 +87,12 @@ const FormComponent = ({ formValues }: InquiryFormProps) => {
           >
             <Input value={formValues.vesselName} disabled />
           </InquiryItemForm>
-          <InquiryItemForm label="IMO No." name="imoNo" style={{ flex: 0.5 }}>
-            <Input value={formValues.imoNo} disabled />
+          <InquiryItemForm
+            label="IMO No."
+            name="imoNumber"
+            style={{ flex: 0.5 }}
+          >
+            <Input value={formValues.imoNumber} disabled />
           </InquiryItemForm>
           <InquiryItemForm
             label="비고(Remark)"

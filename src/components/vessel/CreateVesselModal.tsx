@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import axios from "../../api/axios";
 import styled from "styled-components";
 import { AutoComplete, Input, Button, Form, Modal, notification } from "antd";
 import { vesselCheckImoAndHullUnique } from "../../api/api";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { debounce } from "lodash";
 
 const StyledModal = styled(Modal)`
   .ant-modal-content {
@@ -74,6 +76,7 @@ interface ModalProps {
 }
 
 const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
+  const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     vesselName: "",
     vesselCompanyName: "",
@@ -85,8 +88,6 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
     customerId: undefined,
   });
 
-  const [isImoUnique, setIsImoUnique] = useState(true);
-  const [isHullUnique, setIsHullUnique] = useState(true);
   const [customerSuggestions, setCustomerSuggestions] = useState<any[]>([]);
   const [isCustomerLoading, setIsCustomerLoading] = useState(false);
   const [customerError, setCustomerError] = useState<string | null>(
@@ -105,65 +106,75 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
     });
   };
 
-  // 중복 코드 체크 로직
-  useEffect(() => {
-    const checkUnique = async (type: string, value: any) => {
-      if (!value) {
-        return true;
-      }
-      try {
-        const response = await vesselCheckImoAndHullUnique(type, value);
-        return response;
-      } catch (error) {
-        console.error(`Error checking ${type} unique:`, error);
-        return true; // 오류 발생 시 기본적으로 유효한 코드로 처리
-      }
-    };
+  const useCheckVesselUnique = (type: string, value: any) => {
+    // debounce된 쿼리 함수 생성
+    const debouncedQueryFn = useMemo(
+      () =>
+        debounce(async () => {
+          if (!value) return true;
+          try {
+            return await vesselCheckImoAndHullUnique(type, value);
+          } catch (error) {
+            console.error(`Error checking ${type} unique:`, error);
+            return true;
+          }
+        }, 500),
+      [type, value]
+    );
 
-    // 7자리 이상일 때만 imoNumber 검사
-    const checkImoAndHullUnique = async () => {
-      const isImoValid =
-        formData.imoNumber && (formData.imoNumber + "").toString().length >= 7
-          ? await checkUnique("imo-number", formData.imoNumber)
-          : true;
-
-      const isHullValid = await checkUnique("hull-number", formData.hullNumber);
-
-      setIsImoUnique(isImoValid);
-      setIsHullUnique(isHullValid);
-    };
-
-    checkImoAndHullUnique();
-  }, [formData.imoNumber, formData.hullNumber]);
-
-  // 매입처 검색 함수
-  const fetchCustomerSuggestions = async (customerName: string) => {
-    if (!(customerName + "").trim()) {
-      setCustomerSuggestions([]);
-      setSelectedCustomer(null);
-      return;
-    }
-    setIsCustomerLoading(true);
-    try {
-      const response = await axios.get(
-        `/api/customers/check-name?query=${customerName}`
-      );
-      const searchCustomer = response.data.customerDetailResponse;
-
-      setCustomerSuggestions(searchCustomer);
-    } catch (error) {
-      console.error("Error fetching customer suggestions:", error);
-    } finally {
-      setIsCustomerLoading(false);
-    }
+    return useQuery({
+      queryKey: ["vesselUnique", type, value],
+      queryFn: debouncedQueryFn,
+      enabled: !!value,
+      staleTime: 30000,
+    });
   };
+
+  // IMO 번호 중복 체크
+  const { data: isImoUnique = true } = useCheckVesselUnique(
+    "imo-number",
+    formData.imoNumber && (formData.imoNumber + "").toString().length >= 7
+      ? formData.imoNumber
+      : null
+  );
+
+  // Hull 번호 중복 체크
+  const { data: isHullUnique = true } = useCheckVesselUnique(
+    "hull-number",
+    formData.hullNumber
+  );
+
+  // 매출처 검색 함수
+  const debouncedFetchCustomerSuggestions = useMemo(
+    () =>
+      debounce(async (customerName: string) => {
+        if (!(customerName + "").trim()) {
+          setCustomerSuggestions([]);
+          setSelectedCustomer(null);
+          return;
+        }
+        setIsCustomerLoading(true);
+        try {
+          const response = await axios.get(
+            `/api/customers/check-name?query=${customerName}`
+          );
+          const searchCustomer = response.data.customerDetailResponse;
+          setCustomerSuggestions(searchCustomer);
+        } catch (error) {
+          console.error("Error fetching customer suggestions:", error);
+        } finally {
+          setIsCustomerLoading(false);
+        }
+      }, 500),
+    []
+  );
 
   // 매입처 검색 핸들러
   const handleSearch = (value: string) => {
     if (value !== selectedCustomer?.companyName) {
       setSelectedCustomer(null);
     }
-    fetchCustomerSuggestions(value);
+    debouncedFetchCustomerSuggestions(value);
   };
 
   // 매입처 선택 핸들러
@@ -182,10 +193,10 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
     setCustomerError(null); // 이전 오류 제거
   };
 
-  // 데이터 생성 함수
-  const postCreate = async () => {
-    try {
-      await axios.post(`/api/vessels`, {
+  // 선박 생성 뮤테이션
+  const createVesselMutation = useMutation({
+    mutationFn: async () => {
+      const response = await axios.post(`/api/vessels`, {
         vesselName: formData.vesselName,
         vesselCompanyName: "default",
         imoNumber: Number(formData.imoNumber),
@@ -194,23 +205,29 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
         countryOfManufacture: formData.countryOfManufacture,
         customerId: formData.customerId,
       });
+      return response.data;
+    },
+    onSuccess: () => {
+      // 캐시 무효화
+      queryClient.invalidateQueries({ queryKey: ["vessels"] });
       notification.success({
         message: "Registration complete",
         description: "You have registered successfully.",
       });
-    } catch (error) {
+      onUpdate();
+      onClose();
+    },
+    onError: (error: any) => {
       console.error("Error posting data:", error);
       notification.error({
         message: "Registration failed",
         description: "An error occurred while registering.",
       });
-    }
-  };
+    },
+  });
 
   // 제출 핸들러
   const handleSubmit = async (values: any) => {
-    // if (!isImoUnique) return;
-
     if (!formData.customerId) {
       setCustomerError("Please select a customer");
       return;
@@ -221,9 +238,7 @@ const CreateVesselModal = ({ onClose, onUpdate }: ModalProps) => {
       return;
     }
 
-    await postCreate();
-    onUpdate();
-    onClose();
+    createVesselMutation.mutate();
   };
 
   return (

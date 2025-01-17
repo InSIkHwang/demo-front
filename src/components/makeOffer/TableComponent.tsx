@@ -19,6 +19,7 @@ import {
   InputProps,
   InputRef,
   Space,
+  message,
 } from "antd";
 import { ColumnsType } from "antd/es/table";
 import styled from "styled-components";
@@ -239,7 +240,7 @@ interface TableComponentProps {
   ) => void;
   currency: number;
   roundToTwoDecimalPlaces: (value: number) => number;
-  calculateTotalAmount: (price: number, qty: number) => number;
+  calculateTotalAmount: (price: number, qty: number, type: string) => number;
   handleMarginChange: (index: number, marginValue: number) => void;
   handlePriceInputChange: (
     index: number,
@@ -443,7 +444,14 @@ const TableComponent = ({
 
   const handleExportButtonClick = async () => {
     try {
-      // 선택한 파일들의 름을 서버로 전송
+      // 로딩 상태 표시 시작
+      message.loading({
+        content: "Excel file export in progress...",
+        key: "exportLoading",
+        duration: 0,
+      });
+
+      // 선택한 파일들의 이름을 서버로 전송
       const response = await handleOfferExport(offerId);
 
       // 사용자가 경로를 설정하여 파일을 다운로드할 수 있도록 설정
@@ -452,14 +460,18 @@ const TableComponent = ({
       link.download = "exported_file.xlsx"; // 사용자에게 보여질 파일 이름
       link.click(); // 다운로드 트리거
 
-      notification.success({
-        message: "Export Success",
-        description: "Excel file exported successfully.",
+      // 성공 메시지 표시 (로딩 메시지 교체)
+      message.success({
+        content: "Excel file exported successfully.",
+        key: "exportLoading",
+        duration: 2,
       });
     } catch (error) {
-      notification.error({
-        message: "Export Failed",
-        description: "Failed to export the Excel file.",
+      // 에러 메시지 표시 (로딩 메시지 교체)
+      message.error({
+        content: "Excel file export failed.",
+        key: "exportLoading",
+        duration: 2,
       });
     }
   };
@@ -567,16 +579,14 @@ const TableComponent = ({
       };
 
       // 새로운 매출단가(KRW) 계산
-      const salesPriceKRW = calculateSalesPrice(
-        updatedRow.purchasePriceKRW,
-        marginValue
+      const salesPriceKRW = Math.round(
+        calculateSalesPrice(updatedRow.purchasePriceKRW, marginValue)
       );
       updatedRow.salesPriceKRW = salesPriceKRW;
 
       // 매출총액(KRW) 계산
-      updatedRow.salesAmountKRW = calculateTotalAmount(
-        updatedRow.salesPriceKRW,
-        updatedRow.qty
+      updatedRow.salesAmountKRW = Math.round(
+        calculateTotalAmount(updatedRow.salesPriceKRW, updatedRow.qty, "KRW")
       );
 
       // Global 가격 계산 (환 적용)
@@ -589,7 +599,8 @@ const TableComponent = ({
       // 매출총액(Global) 계산
       updatedRow.salesAmountGlobal = calculateTotalAmount(
         updatedRow.salesPriceGlobal,
-        updatedRow.qty
+        updatedRow.qty,
+        "USD"
       );
 
       return updatedRow;
@@ -1250,7 +1261,8 @@ const TableComponent = ({
             type="text" // Change to "text" to handle formatted input
             value={calculateTotalAmount(
               record.purchasePriceKRW,
-              record.qty
+              record.qty,
+              "KRW"
             )?.toLocaleString("ko-KR")} // Display formatted value
             onChange={(value) =>
               handleInputChange(index, "purchaseAmountKRW", value)
@@ -1273,7 +1285,8 @@ const TableComponent = ({
             type="text" // Change to "text" to handle formatted input
             value={calculateTotalAmount(
               record.purchasePriceGlobal,
-              record.qty
+              record.qty,
+              "USD"
             )?.toLocaleString("en-US")} // Display formatted value
             onChange={(value) =>
               handleInputChange(index, "purchaseAmountGlobal", value)
@@ -1390,7 +1403,8 @@ const TableComponent = ({
             type="text"
             value={calculateTotalAmount(
               record.salesPriceKRW,
-              record.qty
+              record.qty,
+              "KRW"
             )?.toLocaleString("ko-KR")}
             style={{ width: "100%" }}
             readOnly
@@ -1410,7 +1424,8 @@ const TableComponent = ({
             type="text"
             value={calculateTotalAmount(
               record.salesPriceGlobal,
-              record.qty
+              record.qty,
+              "USD"
             )?.toLocaleString("en-US")}
             style={{ width: "100%" }}
             readOnly

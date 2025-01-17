@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Button,
@@ -203,6 +203,10 @@ const OrderDetail = () => {
   const [isProforma, setIsProforma] = useState(false);
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
 
+  const prevItems = useRef<typeof items>([]);
+  const [isUpdatingGlobalPrices, setIsUpdatingGlobalPrices] =
+    useState<boolean>(false);
+
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       event.preventDefault();
@@ -250,6 +254,9 @@ const OrderDetail = () => {
 
   // 언어 변경 시 PDF 헤더 및 푸터 업데이트
   useEffect(() => {
+    if (pdfPOHeader.orderHeaderId || pdfOrderAckHeader.orderHeaderId) {
+      return;
+    }
     if (language === "KOR") {
       setPdfPOHeader((prev) => ({
         orderHeaderId: prev.orderHeaderId,
@@ -390,9 +397,8 @@ const OrderDetail = () => {
 
   // 소수점 둘째자리까지 반올림하는 함수
   const roundToTwoDecimalPlaces = useCallback((value: number) => {
-    return Math.round(value * 100) / 100;
+    return Number(parseFloat(value.toFixed(2)));
   }, []);
-
   // 환율을 적용하여 KRW와 USD를 상호 변환하는 함수
   const convertCurrency = useCallback(
     (
@@ -413,6 +419,73 @@ const OrderDetail = () => {
     (price: number, qty: number) => roundToTwoDecimalPlaces(price * qty),
     []
   );
+
+  //환율 변경 시 모든 아이템의 글로벌 가격을 업데이트하는 함수
+  //KRW 가격을 기준으로 현재 설정된 환율에 따라 글로벌 가격을 재계산
+  const updateGlobalPrices = useCallback(() => {
+    setItems((prevItems) => {
+      if (!prevItems || !supplier) return prevItems;
+
+      const updatedItems = prevItems.map((record) => {
+        if (!record || record.itemType !== "ITEM") return record;
+
+        // 기존 KRW 가격 기준으로 새로운 Global 가격 계산
+        const updatedSalesPriceGlobal = convertCurrency(
+          record.salesPriceKRW,
+          formValues?.currency || 1050,
+          "USD"
+        );
+        const updatedPurchasePriceGlobal = convertCurrency(
+          record.purchasePriceKRW,
+          formValues?.currency || 1050,
+          "USD"
+        );
+
+        // 금액 계산은 한 번만 수행
+        const salesAmountKRW = calculateTotalAmount(
+          record.salesPriceKRW,
+          record.qty
+        );
+        const salesAmountGlobal = calculateTotalAmount(
+          updatedSalesPriceGlobal,
+          record.qty
+        );
+        const purchaseAmountKRW = calculateTotalAmount(
+          record.purchasePriceKRW,
+          record.qty
+        );
+        const purchaseAmountGlobal = calculateTotalAmount(
+          updatedPurchasePriceGlobal,
+          record.qty
+        );
+
+        return {
+          ...record,
+          salesPriceGlobal: updatedSalesPriceGlobal,
+          purchasePriceGlobal: updatedPurchasePriceGlobal,
+          salesAmountKRW,
+          salesAmountGlobal,
+          purchaseAmountKRW,
+          purchaseAmountGlobal,
+        };
+      });
+
+      return updatedItems;
+    });
+  }, [supplier, formValues?.currency, convertCurrency, calculateTotalAmount]);
+
+  // 환율 변경 시 실행되는 useEffect
+  useEffect(() => {
+    if (formValues?.currency) {
+      const timer = setTimeout(async () => {
+        setIsUpdatingGlobalPrices(true); // 업데이트 시작
+        updateGlobalPrices(); // updateGlobalPrices가 완료될 때까지 대기
+        applyDcAndCharge("multiple"); // 그 후에 DC와 Charge 적용
+        setIsUpdatingGlobalPrices(false); // 업데이트 완료
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [formValues?.currency]);
 
   // 마진 변경 함수
   const handleMarginChange = (index: number, marginValue: number) => {
@@ -548,7 +621,9 @@ const OrderDetail = () => {
 
   // 공통 함수: 할인 적용
   const applyDiscount = (amount: number, discountPercent: number | undefined) =>
-    discountPercent ? amount * (1 - discountPercent / 100) : amount;
+    discountPercent
+      ? roundToTwoDecimalPlaces(amount * (1 - discountPercent / 100))
+      : amount;
 
   // 공통 함수: 환율 적용
   const convertToGlobal = (amount: number, exchangeRate: number) =>
@@ -582,19 +657,26 @@ const OrderDetail = () => {
 
     // 공통 계산
     const totalSalesAmountKRW = updatedItems.reduce(
-      (sum, item) => sum + (item.salesPriceKRW || 0) * (item.qty || 0),
+      (sum, item) =>
+        sum + Math.round(item.salesPriceKRW || 0) * (item.qty || 0),
       0
     );
     const totalSalesAmountGlobal = updatedItems.reduce(
-      (sum, item) => sum + (item.salesPriceGlobal || 0) * (item.qty || 0),
+      (sum, item) =>
+        sum +
+        roundToTwoDecimalPlaces(item.salesPriceGlobal || 0) * (item.qty || 0),
       0
     );
     const totalPurchaseAmountKRW = updatedItems.reduce(
-      (sum, item) => sum + (item.purchasePriceKRW || 0) * (item.qty || 0),
+      (sum, item) =>
+        sum + Math.round(item.purchasePriceKRW || 0) * (item.qty || 0),
       0
     );
     const totalPurchaseAmountGlobal = updatedItems.reduce(
-      (sum, item) => sum + (item.purchasePriceGlobal || 0) * (item.qty || 0),
+      (sum, item) =>
+        sum +
+        roundToTwoDecimalPlaces(item.purchasePriceGlobal || 0) *
+          (item.qty || 0),
       0
     );
 
@@ -656,8 +738,8 @@ const OrderDetail = () => {
     setFinalTotals({
       totalSalesAmountKRW: Math.round(updatedTotalSalesAmountKRW),
       totalSalesAmountGlobal: updatedTotalSalesAmountGlobal,
-      totalPurchaseAmountKRW,
-      totalPurchaseAmountGlobal,
+      totalPurchaseAmountKRW: Math.round(totalPurchaseAmountKRW),
+      totalPurchaseAmountGlobal: totalPurchaseAmountGlobal,
       totalSalesAmountUnDcKRW: Math.round(totalSalesAmountKRW),
       totalSalesAmountUnDcGlobal: totalSalesAmountGlobal,
       totalPurchaseAmountUnDcKRW: Math.round(totalPurchaseAmountKRW),
@@ -666,6 +748,30 @@ const OrderDetail = () => {
       totalProfitPercent: updatedTotalProfitPercent,
     });
   };
+
+  // combinedItemDetails 변경 시 실행되는 useEffect 수정
+  useEffect(() => {
+    if (items.length > 0) {
+      const hasChanged =
+        JSON.stringify(items) !== JSON.stringify(prevItems.current);
+
+      if (hasChanged && !isUpdatingGlobalPrices) {
+        // 글로벌 가격 업데이트 중이 아닐 때만 실행
+        prevItems.current = items;
+        applyDcAndCharge("multiple");
+      }
+    }
+  }, [items]);
+
+  // 환율 변경 시 실행되는 useEffect
+  useEffect(() => {
+    if (items.length > 0) {
+      const timer = setTimeout(() => {
+        applyDcAndCharge("multiple");
+      }, 300); // 300ms 후에 실행
+      return () => clearTimeout(timer); // cleanup 함수
+    }
+  }, [formValues?.currency]);
 
   const handlePDFPreview = () => {
     applyDcAndCharge("multiple");
@@ -721,8 +827,6 @@ const OrderDetail = () => {
 
   const handlePdfTypeChange = (value: string) => {
     setPdfType(value);
-    // OA 선택 시 영어로, PO 선택 시 한글로 자동 변경
-    setLanguage(value === "PO" ? "KOR" : "ENG");
   };
 
   // PDF 다운로드 로직
@@ -827,12 +931,51 @@ const OrderDetail = () => {
     footer: orderRemark[]
   ) => {
     const response = await saveOrderHeader(Number(orderId), header, footer);
-    if (header.receiverType === "PO") {
+
+    if (header.receiverType === "SUPPLIER") {
       setPdfPOHeader(response.orderSupplierHeader);
-      setPdfPOFooter(response.orderSupplierRemark);
-    } else if (header.receiverType === "OA") {
+      setPdfPOFooter(response.orderSupplierRemark[0]);
+
+      // 날짜 초기값 설정
+      let expectedDate = null;
+
+      // orderSupplierRemark에서 예상 입고일 파싱
+      if (response.orderSupplierRemark?.[0]?.orderRemark) {
+        const remarks = response.orderSupplierRemark[0].orderRemark.split("\n");
+        for (const remark of remarks) {
+          const koreanDate = parseKoreanDate(remark);
+          const englishDate = parseEnglishDate(remark);
+          if (koreanDate || englishDate) {
+            expectedDate = koreanDate || englishDate;
+            break;
+          }
+        }
+      }
+
+      // 날짜 상태 업데이트
+      setConfirmDates({
+        ...confirmDates,
+        expectedReceivingDate: expectedDate || "",
+      });
+    } else if (header.receiverType === "CUSTOMER") {
       setPdfOrderAckHeader(response.orderCustomerHeader);
       setPdfOrderAckFooter(response.orderCustomerRemark);
+
+      // 날짜 초기값 설정
+      let deliveryDate = null;
+
+      // orderCustomerHeader에서 납기일 파싱
+      if (response.orderCustomerHeader?.deliveryTime) {
+        deliveryDate = parseDeliveryTime(
+          response.orderCustomerHeader.deliveryTime
+        );
+      }
+
+      // 날짜 상태 업데이트
+      setConfirmDates({
+        ...confirmDates,
+        deliveryDate: deliveryDate || "",
+      });
     }
   };
 
@@ -992,7 +1135,6 @@ const OrderDetail = () => {
           invChargeList={invChargeList}
         />
       )}
-
       {pdfType === "PO" && headerEditModalVisible && (
         <POHeaderEditModal
           visible={headerEditModalVisible}

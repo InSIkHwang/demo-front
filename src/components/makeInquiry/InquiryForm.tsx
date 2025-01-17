@@ -1,4 +1,10 @@
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
   Form,
   Input,
@@ -34,6 +40,7 @@ import {
 import ShipListModal from "../vessel/ShipListModal";
 import SearchMakerModal from "./SearchMakerModal";
 import { MakerSupplierList } from "../../types/types";
+import { debounce } from "lodash";
 
 const { Option } = Select;
 
@@ -316,6 +323,7 @@ const InquiryForm = ({
 
   // 선택된 매입처 추가 함수
   const handleAddSelectedSuppliers = () => {
+    // 기존 selectedSuppliers 업데이트
     setSelectedSuppliers((prevSuppliers) => {
       const updatedSuppliers = [
         ...prevSuppliers,
@@ -328,6 +336,43 @@ const InquiryForm = ({
       ];
 
       return updatedSuppliers;
+    });
+
+    // tables 업데이트
+    setTables((prevTables) => {
+      const updatedTables = [...prevTables];
+      const targetTable = { ...updatedTables[0] };
+
+      // 새로 선택된 suppliers를 순회하면서 추가
+      checkedSuppliers.forEach((selectedSupplier) => {
+        // 이미 존재하는 supplier인지 확인
+        const isExisting = targetTable.supplierList?.some(
+          (supplier: any) => supplier.supplierId === selectedSupplier.id
+        );
+
+        if (!isExisting) {
+          // supplierList가 없으면 새로 생성
+          if (!targetTable.supplierList) {
+            targetTable.supplierList = [];
+          }
+
+          // 새로운 supplier 추가
+          targetTable.supplierList.push({
+            inquiryItemDetailId: undefined,
+            supplierId: selectedSupplier.id,
+            code: selectedSupplier.code,
+            companyName: selectedSupplier.name,
+            korCompanyName: selectedSupplier.korName,
+            representative: "",
+            email: selectedSupplier.email || "",
+            communicationLanguage: selectedSupplier.communicationLanguage,
+            supplierRemark: selectedSupplier.supplierRemark,
+          });
+        }
+      });
+
+      updatedTables[0] = targetTable;
+      return updatedTables;
     });
 
     handleModalClose();
@@ -404,41 +449,51 @@ const InquiryForm = ({
   };
 
   // 메이커를 이용한 매입처 검색 함수
-  const handleMakerSearch = async (
-    value: string,
-    categoryType: string | null
-  ) => {
-    if (value) {
-      try {
-        const data = await searchSupplierUseMaker(value, categoryType!.trim());
-        const makerSupplierList = data.makerSupplierList.map((maker) => ({
-          maker: maker.maker,
-          category: maker.category,
-          supplierList: maker.supplierList.map((supplier) => ({
-            name: supplier.companyName,
-            korName: supplier.korCompanyName || supplier.companyName,
-            id: supplier.supplierId,
-            code: supplier.code,
-            email: supplier.email,
-            communicationLanguage: supplier.communicationLanguage || "KOR",
-            supplierRemark: supplier.supplierRemark || "",
-          })),
-        }));
+  const handleMakerSearch = useMemo(
+    () =>
+      debounce(async (value: string, categoryType: string | null) => {
+        if (value) {
+          try {
+            const data = await searchSupplierUseMaker(
+              value,
+              categoryType!.trim()
+            );
 
-        // 상태 업데이트
-        setMakerSupplierList(makerSupplierList);
-        const makerOptions = data.makerSupplierList.map((maker) => ({
-          label: `${maker.maker} (${maker.category})`,
-          value: maker.maker,
-        }));
-        setMakerOptions(makerOptions);
-      } catch (error) {
-        message.error("An error occurred while searching.");
-      }
-    } else {
-      setMakerSupplierList([]);
-    }
-  };
+            // 메이커 리스트 데이터 변환
+            const makerSupplierList = data.map((item) => ({
+              maker: item.maker,
+              category: item.category,
+              supplierList: item.supplierList.map((supplier) => ({
+                name: supplier.companyName,
+                korName: supplier.korCompanyName || supplier.companyName,
+                id: supplier.supplierId,
+                code: supplier.code,
+                email: supplier.email || "",
+                communicationLanguage: supplier.communicationLanguage || "KOR",
+                supplierRemark: supplier.supplierRemark || "",
+              })),
+            }));
+
+            // 상태 업데이트
+            setMakerSupplierList(makerSupplierList);
+
+            // 메이커 옵션 생성 - 카테고리와 함께 표시
+            const makerOptions = data.map((item) => ({
+              key: item.maker + item.category,
+              label: `${item.maker} (${item.category})`,
+              value: item.maker,
+            }));
+            setMakerOptions(makerOptions);
+          } catch (error) {
+            message.error("An error occurred while searching.");
+          }
+        } else {
+          setMakerOptions([]);
+          setMakerSupplierList([]);
+        }
+      }, 500),
+    []
+  );
 
   // 검색 함수
   const handleSearch = (value: string, categoryType: string | null) => {
@@ -447,22 +502,6 @@ const InquiryForm = ({
     } else if (selectedType === "MAKER") {
       handleMakerSearch(value, categoryType);
     }
-  };
-
-  // 메이커 검색 모달 중복 제거 함수
-  const removeListDuplicates = (list: any[]) => {
-    const uniqueItems: any[] = [];
-    const seenIds = new Set();
-
-    list.forEach((item) => {
-      const supplierId = item.supplierList[0].id;
-      if (!seenIds.has(supplierId)) {
-        uniqueItems.push(item);
-        seenIds.add(supplierId);
-      }
-    });
-
-    return uniqueItems;
   };
 
   // 카테고리 검색 함수
@@ -842,7 +881,6 @@ const InquiryForm = ({
                 onCategorySearch={handleCategorySearch}
                 onSearch={handleSearch}
                 onCheckboxChange={handleCheckboxChange}
-                removeListDuplicates={removeListDuplicates}
                 setMakerSearch={setMakerSearch}
               />
             )}

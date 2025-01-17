@@ -16,12 +16,21 @@ import axios from "../../api/axios";
 import styled from "styled-components";
 import {
   AddMaker,
+  checkCompanyCodeUnique,
+  deleteCompany,
   DeleteMaker,
   fetchCategory,
   fetchCompanyDetail,
   searchSupplierUseMaker,
+  updateCompany,
 } from "../../api/api";
 import LoadingSpinner from "../LoadingSpinner";
+import {
+  QueryClient,
+  QueryCache,
+  useQuery,
+  useMutation,
+} from "@tanstack/react-query";
 
 const { Option } = Select;
 const { confirm } = Modal;
@@ -160,13 +169,9 @@ const DetailCompanyModal = ({
   onUpdate,
 }: ModalProps) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<Company | null>(null);
   const [loadData, setLoadData] = useState<Company | null>(null);
-  const [loading, setLoading] = useState(false);
   const [form] = AntForm.useForm();
-  const [isCodeUnique, setIsCodeUnique] = useState(true);
-  const [isCheckingCode, setIsCheckingCode] = useState(false);
   const [makerCategoryList, setMakerCategoryList] = useState<
     { category: string; makers: string[] }[]
   >([]);
@@ -178,52 +183,59 @@ const DetailCompanyModal = ({
   const [isAddingNewCategory, setIsAddingNewCategory] = useState(false);
   const [newCategory, setNewCategory] = useState("");
 
-  // 카테고리 목록 로드
-  useEffect(() => {
-    const fetchCategoryList = async () => {
-      try {
-        const response = await fetchCategory();
-        const sortedCategories = response.categoryType.sort(
-          (a: string, b: string) => a.localeCompare(b)
-        );
-        setCategoryList(sortedCategories);
-        setInitialCategoryList(sortedCategories);
-      } catch (error) {
-        console.error("Error fetching category list:", error);
-      }
-    };
+  const queryClient = new QueryClient({
+    queryCache: new QueryCache({
+      onError: (error: any, query: any) => {
+        if (query.meta.errorMessage) {
+          message.error(query.meta.errorMessage);
+        }
+      },
+    }),
+  });
 
-    fetchCategoryList();
-  }, []);
+  // 카테고리 목록 로드
+  const { data: categoryData } = useQuery({
+    queryKey: ["category"],
+    queryFn: fetchCategory,
+    meta: {
+      errorMessage:
+        "Failed to fetch category list(카테고리 목록을 불러오는데 실패했습니다.)",
+    },
+  });
+
+  // categoryData가 변경될 때마다 상태 업데이트를 위한 useEffect 추가
+  useEffect(() => {
+    if (categoryData?.categoryType) {
+      const sortedCategories = [...categoryData.categoryType].sort(
+        (a: string, b: string) => a.localeCompare(b)
+      );
+      setCategoryList(sortedCategories);
+      setInitialCategoryList(sortedCategories);
+    }
+  }, [categoryData]);
 
   // 매입처 상세 정보 가져오기
-  const getCompanyDetails = async () => {
-    setIsLoading(true);
-    try {
-      const supplierDetail = await fetchCompanyDetail(company.id, category);
-      setFormData(supplierDetail);
-      setLoadData(supplierDetail);
-      setMakerCategoryList(supplierDetail.makerCategoryList);
-    } catch (error) {
-      console.error("Error fetching supplier details:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const {
+    data: companyDetail,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ["companyDetail", company.id, category],
+    queryFn: () => fetchCompanyDetail(company.id, category),
+    enabled: !!company.id,
+    staleTime: 30000,
+    meta: {
+      errorMessage: "고객사/매입처 상세 정보를 불러오는데 실패했습니다.",
+    },
+  });
 
   useEffect(() => {
-    if (company.id) {
-      getCompanyDetails();
+    if (companyDetail) {
+      setFormData(companyDetail);
+      setLoadData(companyDetail);
+      setMakerCategoryList(companyDetail.makerCategoryList || []);
     }
-  }, []);
-
-  // 코드 고유성 검사 효과
-  useEffect(() => {
-    if (formData) {
-      // formData가 null이 아닐 때만 실행
-      checkCodeUnique();
-    }
-  }, [formData?.code]);
+  }, [companyDetail]);
 
   // 메이커 검색 핸들러
   const handleMakerSearch = async (
@@ -240,9 +252,10 @@ const DetailCompanyModal = ({
       try {
         const data = await searchSupplierUseMaker(value, categoryType);
 
-        const makerOptions = data.makerSupplierList.map((item) => ({
+        // 메이커 옵션 생성 - 카테고리와 함께 표시
+        const makerOptions = data.map((item) => ({
+          label: `${item.maker} (${item.category})`,
           value: item.maker,
-          label: item.maker,
         }));
 
         setMakerOptions(makerOptions);
@@ -294,7 +307,7 @@ const DetailCompanyModal = ({
         try {
           await AddMaker(formData.id, selectedCategory, makerSearch);
 
-          getCompanyDetails();
+          refetch();
           message.success("maker has been added successfully.");
         } catch (error) {
           console.error("Error add maker:", error);
@@ -327,7 +340,7 @@ const DetailCompanyModal = ({
         onOk: async () => {
           try {
             await DeleteMaker(formData.id, category, maker);
-            getCompanyDetails();
+            refetch();
             message.success("Maker has been deleted successfully.");
           } catch (error) {
             console.error("Error deleting maker:", error);
@@ -358,95 +371,77 @@ const DetailCompanyModal = ({
   };
 
   // 코드 고유성 검사 함수
-  const checkCodeUnique = async () => {
-    if (formData) {
-      // formData가 null이 아닐 때만 실행
-      if (company.code !== formData.code) {
-        if ((formData.code + "").trim() === "") {
-          setIsCodeUnique(true);
-          return;
-        }
-        setIsCheckingCode(true);
-        try {
-          const endpoint =
-            category === "customer"
-              ? `/api/customers/check-code/${formData.code}`
-              : `/api/suppliers/check-code/${formData.code}`;
-          const response = await axios.get(endpoint);
-          setIsCodeUnique(!response.data); // 응답 T/F를 반전시킴
-        } catch (error) {
-          message.error("Error checking code unique");
-          setIsCodeUnique(true); // 오류가 발생하면 기본적으로 유효하다고 처리
-        } finally {
-          setIsCheckingCode(false);
-        }
-      } else if (company.code === formData.code) {
-        setIsCodeUnique(true);
-        setIsCheckingCode(false);
+  const { data: isCodeUnique = true, isFetching: isCheckingCode } = useQuery({
+    queryKey: ["checkCompanyCode", category, formData?.code],
+    queryFn: () => {
+      // 로드된 데이터의 코드와 현재 폼 데이터의 코드가 같으면 true 반환
+      if (loadData && formData && loadData.code === formData.code) {
+        return true;
       }
-    }
-  };
+      // 다른 경우에는 API 호출하여 중복 체크
+      return checkCompanyCodeUnique(category, formData?.code || "");
+    },
+    enabled: formData?.code.trim() !== "" && isEditing, // 편집 모드이고 코드가 비어있지 않을 때만 실행
+    staleTime: 30000,
+    meta: {
+      errorMessage: "Failed to check code uniqueness(코드 고유성 확인 실패)",
+    },
+  });
 
   // 데이터 업데이트 함수
-  const editData = async () => {
-    if (formData) {
-      try {
-        const endpoint =
-          category === "customer"
-            ? `/api/customers/${formData.id}`
-            : `/api/suppliers/${formData.id}`;
-        await axios.put(endpoint, formData);
-        message.success("Successfully updated.");
-      } catch (error) {
-        message.error("An error occurred while updating.");
-      }
-    }
+  const updateCompanyMutation = useMutation({
+    mutationFn: () => {
+      if (!formData) throw new Error("Please check supplier.");
+      return updateCompany(category, formData.id, formData);
+    },
+    onSuccess: () => {
+      message.success("Successfully updated.");
+      queryClient.invalidateQueries({
+        queryKey: ["companyDetail", company.id],
+      });
+      queryClient.invalidateQueries({ queryKey: [`${category}List`] });
+      onUpdate();
+      setIsEditing(false);
+    },
+    onError: () => {
+      message.error("An error occurred while updating.");
+    },
+  });
+
+  const deleteCompanyMutation = useMutation({
+    mutationFn: () => {
+      if (!formData) throw new Error("Please check supplier.");
+      return deleteCompany(category, formData.id);
+    },
+    onSuccess: () => {
+      message.success("Successfully deleted.");
+      queryClient.invalidateQueries({ queryKey: [`${category}List`] });
+      onUpdate();
+      onClose();
+    },
+    onError: () => {
+      message.error("An error occurred while deleting.");
+    },
+  });
+
+  // 핸들러 수정
+  const handleSubmit = () => {
+    updateCompanyMutation.mutate();
   };
 
-  // 데이터 삭제 함수
-  const deleteData = async () => {
-    if (formData) {
-      try {
-        const endpoint =
-          category === "customer"
-            ? `/api/customers/${formData.id}`
-            : `/api/suppliers/${formData.id}`;
-        await axios.delete(endpoint);
-        message.success("Successfully deleted.");
-      } catch (error) {
-        message.error("An error occurred while deleting.");
-      }
-    }
-  };
-
-  // 제출 핸들러
-  const handleSubmit = async () => {
-    setLoading(true);
-    await editData();
-    setLoading(false);
-    onUpdate();
-    setIsEditing(false);
-    getCompanyDetails();
-  };
-
-  // 삭제 핸들러
-  const handleDelete = async () => {
+  const handleDelete = () => {
     Modal.confirm({
-      title: "Are you sure you want to delete?",
+      title: "Are you sure you want to delete this supplier?",
       okText: "Delete",
       okType: "danger",
       cancelText: "Cancel",
-      onOk: async () => {
-        setLoading(true);
-        await deleteData();
-        setLoading(false);
-        onUpdate();
-        onClose();
+      onOk: () => {
+        deleteCompanyMutation.mutate();
       },
     });
   };
 
-  if (!formData) {
+  if (isLoading || !formData) {
     return <LoadingSpinner />;
   }
 
@@ -462,7 +457,7 @@ const DetailCompanyModal = ({
         form={form}
         layout="horizontal"
         labelCol={{ span: 7 }}
-        initialValues={formData || undefined}
+        initialValues={formData}
         onValuesChange={handleChange}
         size="small"
       >
@@ -626,7 +621,7 @@ const DetailCompanyModal = ({
                   )}
                 </div>
               )}
-              {formData.makerCategoryList?.map(({ category, makers }) => (
+              {formData?.makerCategoryList?.map(({ category, makers }) => (
                 <>
                   <Divider
                     orientation="left"
@@ -662,11 +657,12 @@ const DetailCompanyModal = ({
               <Button
                 type="primary"
                 onClick={handleSubmit}
-                loading={loading}
+                loading={updateCompanyMutation.isPending}
                 disabled={
                   !isCodeUnique ||
-                  formData.code === "" ||
-                  formData.companyName === ""
+                  formData?.code === "" ||
+                  formData?.companyName === "" ||
+                  updateCompanyMutation.isPending
                 }
                 size="middle"
               >
@@ -692,7 +688,13 @@ const DetailCompanyModal = ({
               Edit
             </Button>
           )}
-          <Button danger onClick={handleDelete} loading={loading} size="middle">
+          <Button
+            danger
+            onClick={handleDelete}
+            loading={deleteCompanyMutation.isPending}
+            disabled={deleteCompanyMutation.isPending}
+            size="middle"
+          >
             Delete
           </Button>
           <Button onClick={onClose} size="middle">

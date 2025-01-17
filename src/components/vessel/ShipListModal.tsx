@@ -5,6 +5,9 @@ import styled from "styled-components";
 import axios from "../../api/axios";
 import DetailVesselModal from "../vessel/DetailVesselModal";
 import { Vessel } from "../../types/types";
+import { useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import { debounce } from "lodash";
 
 const SearchBar = styled.div`
   display: flex;
@@ -38,25 +41,14 @@ interface ShipListModalProps {
 }
 
 const ShipListModal = ({ isVisible, onClose }: ShipListModalProps) => {
-  const [data, setData] = useState<Vessel[]>([]);
   const [searchText, setSearchText] = useState<string>("");
   const [searchCategory, setSearchCategory] = useState<string>("all");
-  const [loading, setLoading] = useState<boolean>(true);
   const [isDetailVesselModalOpen, setIsDetailVesselModalOpen] =
     useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage, setItemsPerPage] = useState<number>(10);
   const [selectedVessel, setSelectedVessel] = useState<Vessel | null>(null);
-  const [totalCount, setTotalCount] = useState<number>();
-
-  // 데이터 로드 효과
-  useEffect(() => {
-    if (searchText) {
-      fetchFilteredData();
-    } else {
-      fetchData();
-    }
-  }, [currentPage, itemsPerPage]);
+  const [debouncedSearchText, setDebouncedSearchText] = useState<string>("");
 
   // 모달 열기 효과
   useEffect(() => {
@@ -69,54 +61,63 @@ const ShipListModal = ({ isVisible, onClose }: ShipListModalProps) => {
     return () => {
       document.body.style.overflow = "auto";
     };
-  }, [, isDetailVesselModalOpen]);
+  }, [isDetailVesselModalOpen]);
 
-  // 데이터 로드 함수
-  const fetchData = async () => {
-    try {
-      const response = await axios.get("/api/vessels", {
-        params: {
-          page: currentPage - 1,
-          pageSize: itemsPerPage,
-        },
-      });
-      setData(response.data.vessels);
-      setTotalCount(response.data.totalCount);
-      setLoading(false);
-    } catch (error) {
-      setData([]);
-      console.error("Error fetching data:", error);
-      setLoading(false);
-    }
-  };
+  // debounce 적용
+  useEffect(() => {
+    const debouncedSearch = debounce((text: string) => {
+      setDebouncedSearchText(text);
+    }, 500);
 
-  // 필터링된 데이터 로드 함수
-  const fetchFilteredData = async () => {
-    try {
+    debouncedSearch(searchText);
+
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [searchText]);
+
+  // 선박 목록 조회 쿼리
+  const {
+    data: vesselData,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: [
+      "vessels",
+      currentPage,
+      itemsPerPage,
+      debouncedSearchText,
+      searchCategory,
+    ],
+    queryFn: async () => {
       const params: any = {
         page: currentPage - 1,
         pageSize: itemsPerPage,
       };
-      if (searchCategory === "vesselName") {
-        params.vesselName = searchText;
-      } else if (searchCategory === "all") {
-        params.query = searchText;
-      } else if (searchCategory === "imoNumber") {
-        params.imoNumber = searchText;
-      } else if (searchCategory === "hullNumber") {
-        params.hullNumber = searchText;
-      } else if (searchCategory === "customerName") {
-        params.customerName = searchText;
+
+      if (debouncedSearchText) {
+        if (searchCategory === "vesselName") {
+          params.vesselName = debouncedSearchText;
+        } else if (searchCategory === "all") {
+          params.query = debouncedSearchText;
+        } else if (searchCategory === "imoNumber") {
+          params.imoNumber = debouncedSearchText;
+        } else if (searchCategory === "hullNumber") {
+          params.hullNumber = debouncedSearchText;
+        } else if (searchCategory === "customerName") {
+          params.customerName = debouncedSearchText;
+        }
+        return axios.get("/api/vessels/search", { params });
       }
-      const response = await axios.get("/api/vessels/search", { params });
-      setData(response.data.vessels);
-      setTotalCount(response.data.totalCount);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching filtered data:", error);
-      setLoading(false);
-    }
-  };
+
+      return axios.get("/api/vessels", { params });
+    },
+    select: (response) => ({
+      vessels: response.data.vessels,
+      totalCount: response.data.totalCount,
+    }),
+    staleTime: 30000,
+  });
 
   // 테이블 열 정의
   const columns = [
@@ -190,9 +191,7 @@ const ShipListModal = ({ isVisible, onClose }: ShipListModalProps) => {
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
           onPressEnter={() => {
-            if (currentPage === 1) {
-              fetchFilteredData();
-            } else {
+            if (currentPage !== 1) {
               setCurrentPage(1);
             }
           }}
@@ -200,9 +199,7 @@ const ShipListModal = ({ isVisible, onClose }: ShipListModalProps) => {
           suffix={
             <SearchOutlined
               onClick={() => {
-                if (currentPage === 1) {
-                  fetchFilteredData();
-                } else {
+                if (currentPage !== 1) {
                   setCurrentPage(1);
                 }
               }}
@@ -214,20 +211,20 @@ const ShipListModal = ({ isVisible, onClose }: ShipListModalProps) => {
       <TableWrapper>
         <Table
           columns={columns}
-          dataSource={data}
+          dataSource={vesselData?.vessels}
           pagination={false}
-          loading={loading}
+          loading={isLoading}
           rowKey="id"
           onRow={(record) => ({
             onClick: () => openDetailVesselModal(record),
           })}
           style={{ cursor: "pointer" }}
         />
-        {data?.length > 0 && (
+        {vesselData?.totalCount > 0 && (
           <PaginationWrapper
             current={currentPage}
             pageSize={itemsPerPage}
-            total={totalCount}
+            total={vesselData?.totalCount}
             onChange={handlePageChange}
             onShowSizeChange={handlePageSizeChange}
             showSizeChanger
@@ -246,11 +243,7 @@ const ShipListModal = ({ isVisible, onClose }: ShipListModalProps) => {
           vessel={selectedVessel}
           onClose={() => setIsDetailVesselModalOpen(false)}
           onUpdate={() => {
-            if (searchText) {
-              fetchFilteredData();
-            } else {
-              fetchData();
-            }
+            refetch();
           }}
         />
       )}

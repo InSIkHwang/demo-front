@@ -1,4 +1,4 @@
-import { Form, Input } from "antd";
+import { Form, Input, InputNumber, Select } from "antd";
 import styled from "styled-components";
 import { Order } from "../../types/types";
 import { useEffect } from "react";
@@ -21,6 +21,7 @@ interface InquiryFormProps {
 
 const FormComponent = ({ formValues, setFormValues }: InquiryFormProps) => {
   const [form] = Form.useForm();
+  const { Option } = Select;
 
   useEffect(() => {
     form.setFieldsValue(formValues);
@@ -64,17 +65,48 @@ const FormComponent = ({ formValues, setFormValues }: InquiryFormProps) => {
             name="currencyType"
             style={{ flex: 1 }}
           >
-            <Input value={formValues.currencyType} disabled />
+            <Select
+              value={formValues.currencyType}
+              onChange={(value) => {
+                let currency = 0;
+                if (value === "USD") {
+                  currency = 1050;
+                } else if (value === "EUR") {
+                  currency = 1150;
+                } else if (value === "INR") {
+                  currency = 14;
+                }
+
+                // 한 번의 setFormValues 호출로 두 값을 모두 업데이트
+                setFormValues({
+                  ...formValues,
+                  currencyType: value,
+                  currency: currency,
+                });
+
+                form.setFieldsValue({ currency: currency });
+              }}
+            >
+              {["USD", "EUR", "INR"].map((currencyType) => (
+                <Option key={currencyType} value={currencyType}>
+                  {currencyType}
+                </Option>
+              ))}
+            </Select>
           </InquiryItemForm>
           <InquiryItemForm
             label="환율(Exchange Rate)"
             name="currency"
             style={{ flex: 1 }}
           >
-            <Input
+            <InputNumber
               type="number"
               value={formValues.currency || 0} // currency의 초기값이 없는 경우 빈 문자열
-              disabled
+              onChange={(value) =>
+                setFormValues({ ...formValues, currency: value || 0 })
+              }
+              min={0}
+              style={{ width: "100%" }}
             />
           </InquiryItemForm>
         </FormRow>

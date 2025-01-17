@@ -251,7 +251,7 @@ const MakeOffer = () => {
 
   // 소수점 둘째자리까지 반올림하는 함수
   const roundToTwoDecimalPlaces = useCallback((value: number) => {
-    return Math.round(value * 100) / 100;
+    return Number(parseFloat(value.toFixed(2)));
   }, []);
 
   // 환율을 적용하여 KRW와 USD를 상호 변환하는 함수
@@ -262,7 +262,7 @@ const MakeOffer = () => {
       toCurrency: "KRW" | "USD" | "EUR" | "INR"
     ) => {
       if (toCurrency === "KRW") {
-        return roundToTwoDecimalPlaces(value * currency);
+        return Math.round(value * currency);
       }
       return roundToTwoDecimalPlaces(value / currency);
     },
@@ -311,7 +311,12 @@ const MakeOffer = () => {
 
   // 총 금액 계산 함수
   const calculateTotalAmount = useCallback(
-    (price: number, qty: number) => roundToTwoDecimalPlaces(price * qty),
+    (price: number, qty: number, type: string) => {
+      if (type === "KRW") {
+        return Math.round(price * qty);
+      }
+      return roundToTwoDecimalPlaces(price * qty);
+    },
     []
   );
 
@@ -339,19 +344,23 @@ const MakeOffer = () => {
         // 금액 계산은 한 번만 수행
         const salesAmountKRW = calculateTotalAmount(
           record.salesPriceKRW,
-          record.qty
+          record.qty,
+          "KRW"
         );
         const salesAmountGlobal = calculateTotalAmount(
           updatedSalesPriceGlobal,
-          record.qty
+          record.qty,
+          "USD"
         );
         const purchaseAmountKRW = calculateTotalAmount(
           record.purchasePriceKRW,
-          record.qty
+          record.qty,
+          "KRW"
         );
         const purchaseAmountGlobal = calculateTotalAmount(
           updatedPurchasePriceGlobal,
-          record.qty
+          record.qty,
+          "USD"
         );
 
         return {
@@ -604,18 +613,25 @@ const MakeOffer = () => {
       // 수량 기반 금액 계산
       const qty = updatedItem.qty || 0;
       const amounts = {
-        salesAmountKRW: calculateTotalAmount(updatedItem.salesPriceKRW, qty),
+        salesAmountKRW: calculateTotalAmount(
+          updatedItem.salesPriceKRW,
+          qty,
+          "KRW"
+        ),
         salesAmountGlobal: calculateTotalAmount(
           updatedItem.salesPriceGlobal,
-          qty
+          qty,
+          "USD"
         ),
         purchaseAmountKRW: calculateTotalAmount(
           updatedItem.purchasePriceKRW,
-          qty
+          qty,
+          "KRW"
         ),
         purchaseAmountGlobal: calculateTotalAmount(
           updatedItem.purchasePriceGlobal,
-          qty
+          qty,
+          "USD"
         ),
       };
 
@@ -653,13 +669,19 @@ const MakeOffer = () => {
     const salesPriceKRW = Math.round(
       purchasePriceKRW * (1 + marginValue / 100)
     );
-    const salesAmountKRW = calculateTotalAmount(salesPriceKRW, qty);
+    console.log(salesPriceKRW);
+
+    const salesAmountKRW = calculateTotalAmount(salesPriceKRW, qty, "KRW");
 
     const exchangeRate = formValues.currency;
     const salesPriceGlobal = roundToTwoDecimalPlaces(
       salesPriceKRW / exchangeRate
     );
-    const salesAmountGlobal = calculateTotalAmount(salesPriceGlobal, qty);
+    const salesAmountGlobal = calculateTotalAmount(
+      salesPriceGlobal,
+      qty,
+      "USD"
+    );
 
     updatedItems[index] = {
       ...currentItem,
@@ -871,24 +893,27 @@ const MakeOffer = () => {
     setIsMailSenderVisible(false);
   };
   /*******************************최종가격 적용*******************************/
-  // 공 함수: reduce를 사용한 합계 계산
+  // 공통 함수: reduce를 사용한 합계 계산
   const calculateTotal = (
     data: Array<any>,
     key: string,
     qtyKey: string = "qty"
   ) => {
     return data.reduce((acc: number, record: any) => {
+      const type = key === "chargePriceKRW" ? "KRW" : "USD";
       const price = record[key] || 0; // chargePriceKRW
       // data가 invChargeList인 경우에만 qty를 1로 정
       const qty =
         data === invChargeList ? record[qtyKey] || 1 : record[qtyKey] || 0;
-      return acc + calculateTotalAmount(price, qty);
+      return acc + calculateTotalAmount(price, qty, type);
     }, 0);
   };
 
   // 공통 함수: 할인 적용
   const applyDiscount = (amount: number, discountPercent: number | undefined) =>
-    discountPercent ? amount * (1 - discountPercent / 100) : amount;
+    discountPercent
+      ? roundToTwoDecimalPlaces(amount * (1 - discountPercent / 100))
+      : amount;
 
   // 공통 함수: 환율 적용
   const convertToGlobal = (amount: number, exchangeRate: number) =>
@@ -910,7 +935,11 @@ const MakeOffer = () => {
             const salesPriceKRW = Math.round(
               purchasePriceKRW * (1 + margin / 100)
             );
-            const salesAmountKRW = calculateTotalAmount(salesPriceKRW, qty);
+            const salesAmountKRW = calculateTotalAmount(
+              salesPriceKRW,
+              qty,
+              "KRW"
+            );
 
             const exchangeRate = formValues.currency;
             const salesPriceGlobal = convertToGlobal(
@@ -919,7 +948,8 @@ const MakeOffer = () => {
             );
             const salesAmountGlobal = calculateTotalAmount(
               salesPriceGlobal,
-              qty
+              qty,
+              "USD"
             );
 
             return {
@@ -937,26 +967,32 @@ const MakeOffer = () => {
 
     // 공통 계산
     const totalSalesAmountKRW = updatedItems.reduce(
-      (sum, item) => sum + (item.salesPriceKRW || 0) * (item.qty || 0),
+      (sum, item) =>
+        sum + (Math.round(item.salesPriceKRW) || 0) * (item.qty || 0),
       0
     );
     const totalSalesAmountGlobal = updatedItems.reduce(
-      (sum, item) => sum + (item.salesPriceGlobal || 0) * (item.qty || 0),
+      (sum, item) =>
+        sum +
+        (roundToTwoDecimalPlaces(item.salesPriceGlobal) || 0) * (item.qty || 0),
       0
     );
     const totalPurchaseAmountKRW = updatedItems.reduce(
-      (sum, item) => sum + (item.purchasePriceKRW || 0) * (item.qty || 0),
+      (sum, item) =>
+        sum + (Math.round(item.purchasePriceKRW) || 0) * (item.qty || 0),
       0
     );
     const totalPurchaseAmountGlobal = updatedItems.reduce(
-      (sum, item) => sum + (item.purchasePriceGlobal || 0) * (item.qty || 0),
+      (sum, item) =>
+        sum +
+        (roundToTwoDecimalPlaces(item.purchasePriceGlobal) || 0) *
+          (item.qty || 0),
       0
     );
 
     // 할인 적용된 총액 계산
-    const newTotalSalesAmountKRW = applyDiscount(
-      totalSalesAmountKRW,
-      dcInfo.dcPercent
+    const newTotalSalesAmountKRW = Math.round(
+      applyDiscount(totalSalesAmountKRW, dcInfo.dcPercent)
     );
     const newTotalSalesAmountGlobal = applyDiscount(
       totalSalesAmountGlobal,
@@ -964,9 +1000,8 @@ const MakeOffer = () => {
     );
 
     // charge 계산
-    const chargePriceKRWTotal = calculateTotal(
-      invChargeList || [],
-      "chargePriceKRW"
+    const chargePriceKRWTotal = Math.round(
+      calculateTotal(invChargeList || [], "chargePriceKRW")
     );
     const chargePriceGlobalTotal = calculateTotal(
       invChargeList || [],
@@ -1014,8 +1049,8 @@ const MakeOffer = () => {
       ? setFinalTotals({
           totalSalesAmountKRW: Math.round(updatedTotalSalesAmountKRW),
           totalSalesAmountGlobal: updatedTotalSalesAmountGlobal,
-          totalPurchaseAmountKRW,
-          totalPurchaseAmountGlobal,
+          totalPurchaseAmountKRW: Math.round(totalPurchaseAmountKRW),
+          totalPurchaseAmountGlobal: totalPurchaseAmountGlobal,
           totalSalesAmountUnDcKRW: Math.round(totalSalesAmountKRW),
           totalSalesAmountUnDcGlobal: totalSalesAmountGlobal,
           totalPurchaseAmountUnDcKRW: Math.round(totalPurchaseAmountKRW),
@@ -1024,15 +1059,15 @@ const MakeOffer = () => {
           totalProfitPercent: updatedTotalProfitPercent,
         })
       : setTableTotals({
-          totalSalesAmountKRW: Math.round(totalSalesAmountKRW),
+          totalSalesAmountKRW: totalSalesAmountKRW,
           totalSalesAmountGlobal: totalSalesAmountGlobal,
           totalPurchaseAmountKRW,
           totalPurchaseAmountGlobal,
-          totalSalesAmountUnDcKRW: Math.round(totalSalesAmountKRW),
+          totalSalesAmountUnDcKRW: totalSalesAmountKRW,
           totalSalesAmountUnDcGlobal: totalSalesAmountGlobal,
-          totalPurchaseAmountUnDcKRW: Math.round(totalPurchaseAmountKRW),
+          totalPurchaseAmountUnDcKRW: totalPurchaseAmountKRW,
           totalPurchaseAmountUnDcGlobal: totalPurchaseAmountGlobal,
-          totalProfit: Math.round(totalProfit),
+          totalProfit: totalProfit,
           totalProfitPercent: totalProfitPercent,
         });
   };

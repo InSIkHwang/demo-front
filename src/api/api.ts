@@ -4,6 +4,7 @@ import { AxiosError } from "axios";
 
 import {
   CIPLHeaderFormData,
+  CompanyPayload,
   Customer,
   HeaderFormData,
   Inquiry,
@@ -85,6 +86,28 @@ export const postUserSignUp = async (
 //----------------------------------------------------------------------------------
 // 매출처, 의뢰처, 선박, 아이템 관련
 
+//Customer 리스트 조회
+export const fetchCustomerList = async (params: {
+  page: number;
+  pageSize: number;
+}) => {
+  const response = await axios.get("/api/customers", { params });
+  return response.data;
+};
+
+//Customer 리스트 검색
+export const fetchCustomerSearch = async (params: {
+  page: number;
+  pageSize: number;
+  query?: string;
+  code?: string;
+  companyName?: string;
+  vesselName?: string;
+}) => {
+  const response = await axios.get("/api/customers/search", { params });
+  return response.data;
+};
+
 //Customers 검색
 export const fetchCompanyNames = async (customerName: string) => {
   const response = await axios.get<{
@@ -122,7 +145,7 @@ export const searchSupplierUseMaker = async (
     )}&itemType=MAKER&categoryType=${encodeURIComponent(categoryType || "")}`
   );
 
-  return response.data;
+  return response.data.makerSupplierList;
 };
 
 //Item 검색
@@ -143,6 +166,51 @@ export const fetchCompanyDetail = async (id: number, category: string) => {
     const response = await axios.get(`/api/customers/${id}`);
     return response.data;
   }
+};
+
+// Customer, Supplier 코드 중복 체크
+export const checkCompanyCodeUnique = async (
+  category: string,
+  code: string
+) => {
+  const endpoint =
+    category === "customer"
+      ? `/api/customers/check-code/${code}`
+      : `/api/suppliers/check-code/${code}`;
+
+  const response = await axios.get(endpoint);
+  return !response.data; // 응답 T/F를 반전시켜 반환
+};
+
+// Customer, Supplier 등록
+export const createCompany = async (
+  category: string,
+  payload: CompanyPayload
+) => {
+  const endpoint =
+    category === "customer" ? "/api/customers" : "/api/suppliers";
+  const response = await axios.post(endpoint, payload);
+  return response.data;
+};
+
+// Customer, Supplier 수정
+export const updateCompany = async (
+  category: string,
+  id: number,
+  data: any
+) => {
+  const endpoint =
+    category === "customer" ? `/api/customers/${id}` : `/api/suppliers/${id}`;
+  const response = await axios.put(endpoint, data);
+  return response.data;
+};
+
+// Customer, Supplier 삭제
+export const deleteCompany = async (category: string, id: number) => {
+  const endpoint =
+    category === "customer" ? `/api/customers/${id}` : `/api/suppliers/${id}`;
+  const response = await axios.delete(endpoint);
+  return response.data;
 };
 
 //Supplier add Maker
@@ -214,6 +282,17 @@ export const vesselCheckImoAndHullUnique = async (
   const response = await axios.get(`/api/vessels/check/${type}/${value}`);
 
   return !response.data; //응답 반전
+};
+
+//선박에 등록된 매출처 삭제
+export const deleteVesselCustomer = async (
+  vesselId: number,
+  customerId: number
+) => {
+  const response = await axios.delete(
+    `/api/vessels/exclude-customer/${vesselId}?customerId=${customerId}`
+  );
+  return response.data;
 };
 
 //----------------------------------------------------------------------------------

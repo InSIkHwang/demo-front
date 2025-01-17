@@ -911,7 +911,9 @@ const PurchaseOrderPDFDocument = ({
                           { width: "100%", lineHeight: 1.5 },
                         ]}
                       >
-                        {pdfFooter.orderRemark}
+                        {Array.isArray(pdfFooter)
+                          ? pdfFooter[0]?.orderRemark
+                          : pdfFooter?.orderRemark}
                       </Text>
                     </View>
                   </View>
