@@ -210,15 +210,6 @@ const MakeOffer = () => {
     loadOfferDetail();
   }, []);
 
-  //currentDetailItems의 모든 아이템의 salesPriceKrw을 계산하여 반환하는 함수
-  const calculateSalesPriceKrw = useCallback(() => {
-    return currentDetailItems.reduce((sum, item) => {
-      return sum + (item.salesPriceKRW || 0) * (item.qty || 0);
-    }, 0);
-  }, [currentDetailItems]);
-
-  console.log(calculateSalesPriceKrw());
-
   // 단축키 저장 핸들러
   const handleKeyboardSave = useCallback(
     async (event: KeyboardEvent) => {
@@ -320,7 +311,12 @@ const MakeOffer = () => {
 
   // 총 금액 계산 함수
   const calculateTotalAmount = useCallback(
-    (price: number, qty: number) => roundToTwoDecimalPlaces(price * qty),
+    (price: number, qty: number, type: string) => {
+      if (type === "KRW") {
+        return Math.round(price * qty);
+      }
+      return roundToTwoDecimalPlaces(price * qty);
+    },
     []
   );
 
@@ -348,19 +344,23 @@ const MakeOffer = () => {
         // 금액 계산은 한 번만 수행
         const salesAmountKRW = calculateTotalAmount(
           record.salesPriceKRW,
-          record.qty
+          record.qty,
+          "KRW"
         );
         const salesAmountGlobal = calculateTotalAmount(
           updatedSalesPriceGlobal,
-          record.qty
+          record.qty,
+          "USD"
         );
         const purchaseAmountKRW = calculateTotalAmount(
           record.purchasePriceKRW,
-          record.qty
+          record.qty,
+          "KRW"
         );
         const purchaseAmountGlobal = calculateTotalAmount(
           updatedPurchasePriceGlobal,
-          record.qty
+          record.qty,
+          "USD"
         );
 
         return {
@@ -613,18 +613,25 @@ const MakeOffer = () => {
       // 수량 기반 금액 계산
       const qty = updatedItem.qty || 0;
       const amounts = {
-        salesAmountKRW: calculateTotalAmount(updatedItem.salesPriceKRW, qty),
+        salesAmountKRW: calculateTotalAmount(
+          updatedItem.salesPriceKRW,
+          qty,
+          "KRW"
+        ),
         salesAmountGlobal: calculateTotalAmount(
           updatedItem.salesPriceGlobal,
-          qty
+          qty,
+          "USD"
         ),
         purchaseAmountKRW: calculateTotalAmount(
           updatedItem.purchasePriceKRW,
-          qty
+          qty,
+          "KRW"
         ),
         purchaseAmountGlobal: calculateTotalAmount(
           updatedItem.purchasePriceGlobal,
-          qty
+          qty,
+          "USD"
         ),
       };
 
@@ -662,13 +669,17 @@ const MakeOffer = () => {
     const salesPriceKRW = Math.round(
       purchasePriceKRW * (1 + marginValue / 100)
     );
-    const salesAmountKRW = Math.round(calculateTotalAmount(salesPriceKRW, qty));
+    const salesAmountKRW = calculateTotalAmount(salesPriceKRW, qty, "KRW");
 
     const exchangeRate = formValues.currency;
     const salesPriceGlobal = roundToTwoDecimalPlaces(
       salesPriceKRW / exchangeRate
     );
-    const salesAmountGlobal = calculateTotalAmount(salesPriceGlobal, qty);
+    const salesAmountGlobal = calculateTotalAmount(
+      salesPriceGlobal,
+      qty,
+      "USD"
+    );
 
     updatedItems[index] = {
       ...currentItem,
@@ -880,18 +891,19 @@ const MakeOffer = () => {
     setIsMailSenderVisible(false);
   };
   /*******************************최종가격 적용*******************************/
-  // 공 함수: reduce를 사용한 합계 계산
+  // 공통 함수: reduce를 사용한 합계 계산
   const calculateTotal = (
     data: Array<any>,
     key: string,
     qtyKey: string = "qty"
   ) => {
     return data.reduce((acc: number, record: any) => {
+      const type = key === "chargePriceKRW" ? "KRW" : "USD";
       const price = record[key] || 0; // chargePriceKRW
       // data가 invChargeList인 경우에만 qty를 1로 정
       const qty =
         data === invChargeList ? record[qtyKey] || 1 : record[qtyKey] || 0;
-      return acc + calculateTotalAmount(price, qty);
+      return acc + calculateTotalAmount(price, qty, type);
     }, 0);
   };
 
@@ -918,10 +930,14 @@ const MakeOffer = () => {
         : combinedItemDetails.map((currentItem) => {
             const { purchasePriceKRW = 0, qty = 0, margin = 0 } = currentItem;
 
-            const salesPriceKRW = roundToTwoDecimalPlaces(
+            const salesPriceKRW = Math.round(
               purchasePriceKRW * (1 + margin / 100)
             );
-            const salesAmountKRW = calculateTotalAmount(salesPriceKRW, qty);
+            const salesAmountKRW = calculateTotalAmount(
+              salesPriceKRW,
+              qty,
+              "KRW"
+            );
 
             const exchangeRate = formValues.currency;
             const salesPriceGlobal = convertToGlobal(
@@ -930,7 +946,8 @@ const MakeOffer = () => {
             );
             const salesAmountGlobal = calculateTotalAmount(
               salesPriceGlobal,
-              qty
+              qty,
+              "USD"
             );
 
             return {

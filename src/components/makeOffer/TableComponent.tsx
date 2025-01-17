@@ -239,7 +239,7 @@ interface TableComponentProps {
   ) => void;
   currency: number;
   roundToTwoDecimalPlaces: (value: number) => number;
-  calculateTotalAmount: (price: number, qty: number) => number;
+  calculateTotalAmount: (price: number, qty: number, type: string) => number;
   handleMarginChange: (index: number, marginValue: number) => void;
   handlePriceInputChange: (
     index: number,
@@ -576,7 +576,8 @@ const TableComponent = ({
       // 매출총액(KRW) 계산
       updatedRow.salesAmountKRW = calculateTotalAmount(
         updatedRow.salesPriceKRW,
-        updatedRow.qty
+        updatedRow.qty,
+        "KRW"
       );
 
       // Global 가격 계산 (환 적용)
@@ -589,7 +590,8 @@ const TableComponent = ({
       // 매출총액(Global) 계산
       updatedRow.salesAmountGlobal = calculateTotalAmount(
         updatedRow.salesPriceGlobal,
-        updatedRow.qty
+        updatedRow.qty,
+        "USD"
       );
 
       return updatedRow;
@@ -1250,7 +1252,8 @@ const TableComponent = ({
             type="text" // Change to "text" to handle formatted input
             value={calculateTotalAmount(
               record.purchasePriceKRW,
-              record.qty
+              record.qty,
+              "KRW"
             )?.toLocaleString("ko-KR")} // Display formatted value
             onChange={(value) =>
               handleInputChange(index, "purchaseAmountKRW", value)
@@ -1273,7 +1276,8 @@ const TableComponent = ({
             type="text" // Change to "text" to handle formatted input
             value={calculateTotalAmount(
               record.purchasePriceGlobal,
-              record.qty
+              record.qty,
+              "USD"
             )?.toLocaleString("en-US")} // Display formatted value
             onChange={(value) =>
               handleInputChange(index, "purchaseAmountGlobal", value)
@@ -1390,7 +1394,8 @@ const TableComponent = ({
             type="text"
             value={calculateTotalAmount(
               record.salesPriceKRW,
-              record.qty
+              record.qty,
+              "KRW"
             )?.toLocaleString("ko-KR")}
             style={{ width: "100%" }}
             readOnly
@@ -1410,7 +1415,8 @@ const TableComponent = ({
             type="text"
             value={calculateTotalAmount(
               record.salesPriceGlobal,
-              record.qty
+              record.qty,
+              "USD"
             )?.toLocaleString("en-US")}
             style={{ width: "100%" }}
             readOnly
