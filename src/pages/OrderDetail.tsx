@@ -934,7 +934,7 @@ const OrderDetail = () => {
 
     if (header.receiverType === "SUPPLIER") {
       setPdfPOHeader(response.orderSupplierHeader);
-      setPdfPOFooter(response.orderSupplierRemark);
+      setPdfPOFooter(response.orderSupplierRemark[0]);
 
       // 날짜 초기값 설정
       let expectedDate = null;

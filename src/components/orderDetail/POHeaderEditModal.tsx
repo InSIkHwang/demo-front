@@ -65,6 +65,9 @@ const POHeaderEditModal = ({
     }
   };
 
+  console.log(tempFooter);
+  console.log(pdfPOFooter);
+
   useEffect(() => {
     setTempFooter(pdfPOFooter);
   }, [pdfPOHeader, pdfPOFooter]);
