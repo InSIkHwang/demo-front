@@ -252,9 +252,10 @@ const DetailCompanyModal = ({
       try {
         const data = await searchSupplierUseMaker(value, categoryType);
 
-        const makerOptions = data.makerSupplierList.map((item) => ({
+        // 메이커 옵션 생성 - 카테고리와 함께 표시
+        const makerOptions = data.map((item) => ({
+          label: `${item.maker} (${item.category})`,
           value: item.maker,
-          label: item.maker,
         }));
 
         setMakerOptions(makerOptions);

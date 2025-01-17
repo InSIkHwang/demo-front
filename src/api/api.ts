@@ -145,7 +145,7 @@ export const searchSupplierUseMaker = async (
     )}&itemType=MAKER&categoryType=${encodeURIComponent(categoryType || "")}`
   );
 
-  return response.data;
+  return response.data.makerSupplierList;
 };
 
 //Item 검색
