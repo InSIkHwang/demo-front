@@ -254,6 +254,9 @@ const OrderDetail = () => {
 
   // 언어 변경 시 PDF 헤더 및 푸터 업데이트
   useEffect(() => {
+    if (pdfPOHeader.orderHeaderId || pdfOrderAckHeader.orderHeaderId) {
+      return;
+    }
     if (language === "KOR") {
       setPdfPOHeader((prev) => ({
         orderHeaderId: prev.orderHeaderId,
@@ -824,8 +827,6 @@ const OrderDetail = () => {
 
   const handlePdfTypeChange = (value: string) => {
     setPdfType(value);
-    // OA 선택 시 영어로, PO 선택 시 한글로 자동 변경
-    setLanguage(value === "PO" ? "KOR" : "ENG");
   };
 
   // PDF 다운로드 로직

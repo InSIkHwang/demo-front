@@ -279,6 +279,7 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
     onSuccess: () => {
       message.success("Successfully deleted.");
       queryClient.invalidateQueries({ queryKey: ["companyDetail", vessel.id] });
+      onUpdate();
     },
     onError: (error) => {
       console.error("Error deleting customer:", error);
