@@ -209,6 +209,7 @@ const ShipList = () => {
                 if (currentPage !== 1) {
                   setCurrentPage(1);
                 }
+                refetch();
               }}
               style={{ width: 300, marginRight: 10 }}
               suffix={
@@ -217,6 +218,7 @@ const ShipList = () => {
                     if (currentPage !== 1) {
                       setCurrentPage(1);
                     }
+                    refetch();
                   }}
                 />
               }
