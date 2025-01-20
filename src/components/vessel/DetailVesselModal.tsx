@@ -276,9 +276,16 @@ const DetailVesselModal = ({ vessel, onClose, onUpdate }: ModalProps) => {
       vesselId: number;
       customerId: number;
     }) => deleteVesselCustomer(vesselId, customerId),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       message.success("Successfully deleted.");
       queryClient.invalidateQueries({ queryKey: ["companyDetail", vessel.id] });
+
+      setFormData((prev) => ({
+        ...prev,
+        customers: prev.customers.filter(
+          (customer) => customer.id !== variables.customerId
+        ),
+      }));
       onUpdate();
     },
     onError: (error) => {
